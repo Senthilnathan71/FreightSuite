@@ -156,13 +156,52 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     this.initForm();
   }
 
-  sendManualMail(): void {
+  async sendManualMail(): Promise<void> {
+    const menuMasterSid = this.currentMenuId || Number(this.MenuMasterSid || sessionStorage.getItem('currentMenuId'));
+    const selectedCreditRequest = this.expandedIndex !== null && this.creditRequest.at(this.expandedIndex)
+      ? this.creditRequest.at(this.expandedIndex)
+      : this.creditRequest.at(0);
+    const customerBranchSid =
+      selectedCreditRequest?.get('CustomerBranchSid')?.getRawValue() ||
+      this.customerData?.CustomerBranchSid ||
+      this.customerData?.CustomerBranch?.[0]?.CustomerBranchSid ||
+      null;
+    const customerMasterSid =
+      this.customerId ||
+      this.customerData?.CustomerMasterSid ||
+      null;
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid,
+      customerMasterSid,
+      menuMasterSid
+    });
+    const organizationEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .filter((email): email is string => !!email)
+          .map(email => email.trim())
+      )
+    ).join(', ');
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      menuMasterSid,
       action: 'UPDATE',
-      context: {}
+      context: {
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid,
+        resourceSid: this.customerData?.CustomerMasterSid || this.customerId,
+        toEmail: organizationEmail,
+        ccEmail,
+        organizationEmail,
+        customerEmail: organizationEmail,
+        customerBranchSid,
+        customerMasterSid,
+        userName: this.userData?.userName
+      }
     });
   }
 

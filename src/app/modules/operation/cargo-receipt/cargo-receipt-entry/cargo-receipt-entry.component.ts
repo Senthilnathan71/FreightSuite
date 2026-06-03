@@ -537,13 +537,51 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
 
     }
 
-  sendManualMail(): void {
+  async sendManualMail(): Promise<void> {
+    const menuMasterSid = this.currentMenuId || Number(this.MenuMasterSid || sessionStorage.getItem('currentMenuId'));
+    const customerBranchSid =
+      this.bookingData?.CustomerBranchSid ||
+      this.bookingData?.customerBranch?.CustomerBranchSid ||
+      this.bookingData?.CustomerBranch?.CustomerBranchSid ||
+      null;
+    const customerMasterSid =
+      this.bookingData?.CustomerMasterSid ||
+      this.bookingData?.customerMaster?.CustomerMasterSid ||
+      this.bookingData?.CustomerMaster?.CustomerMasterSid ||
+      this.bookingData?.customerBranch?.CustomerMasterSid ||
+      this.bookingData?.CustomerBranch?.CustomerMasterSid ||
+      null;
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid,
+      customerMasterSid,
+      menuMasterSid
+    });
+    const organizationEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .filter((email): email is string => !!email)
+          .map(email => email.trim())
+      )
+    ).join(', ');
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      menuMasterSid,
       action: 'UPDATE',
-      context: {}
+      context: {
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid,
+        resourceSid: this.bookingData?.BookingHeaderSid || this.BookingHeaderSid,
+        toEmail: organizationEmail,
+        ccEmail,
+        organizationEmail,
+        customerEmail: organizationEmail,
+        customerBranchSid,
+        customerMasterSid
+      }
     });
   }
 

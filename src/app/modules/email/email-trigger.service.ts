@@ -346,7 +346,7 @@ ${userName}`
         });
 
         if (configs.length === 0) {
-          this.appSettingService.showInfo('No manual mail configuration found.');
+          this.openEmailPopup(this.buildDefaultManualEmailConfig(attachmentFile), context, attachmentFile);
           return;
         }
 
@@ -364,6 +364,17 @@ ${userName}`
         }
       }
     });
+  }
+
+  private buildDefaultManualEmailConfig(attachmentFile?: File): any {
+    return {
+      AutoPopup: 'P',
+      AttachmentRequire: attachmentFile ? 'Y' : 'N',
+      ToEmailidFrom: '{{toEmail}}',
+      CcEmailidFrom: '{{ccEmail}}',
+      MailSubject: '',
+      MailBody: ''
+    };
   }
 
   private delegateSIMail(context: any): void {

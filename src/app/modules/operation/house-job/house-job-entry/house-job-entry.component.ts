@@ -5490,14 +5490,46 @@ getVoyageTypeBasedOnDept(deptId: number) {
     if (pdfBlob) {
       attachmentFile = new File([pdfBlob], (this.bookingData?.ShipmentNo || 'HouseJob') + '.pdf', { type: 'application/pdf' });
     }
+    const menuMasterSid = this.currentMenuId;
+    const customerBranchSid =
+      this.bookingData?.CustomerBranchSid ||
+      this.houseJobForm?.get('CustomerBranchSid')?.getRawValue() ||
+      this.housejobData?.CustomerBranchSid ||
+      this.bookingHeader?.CustomerBranchSid ||
+      this.selectedCustomerBranch?.CustomerBranchSid ||
+      null;
+    const customerMasterSid =
+      this.bookingData?.CustomerMasterSid ||
+      this.houseJobForm?.get('CustomerMasterSid')?.getRawValue() ||
+      this.housejobData?.CustomerMasterSid ||
+      this.bookingHeader?.CustomerMasterSid ||
+      this.selectedCustomerBranch?.CustomerMasterSid ||
+      null;
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid,
+      customerMasterSid,
+      menuMasterSid
+    });
+    const organizationEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .map((email: string) => (email || '').trim())
+          .filter((email: string) => !!email)
+      )
+    ).join(', ');
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: this.currentMenuId,
+      menuMasterSid,
       action: 'UPDATE',
       attachmentFile,
       context: {
-        HouseJobSid: this.housejobData?.HouseJobSid || this.HouseJobSid,
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid,
+        resourceSid: this.housejobData?.HouseJobSid || this.HouseJobSid,
         ShipmentNo: this.bookingData?.ShipmentNo,
         BookingNo: this.bookingData?.BookingNo || this.bookingHeader?.BookingNo,
         JobNo: this.bookingData?.JobNo,
@@ -5511,8 +5543,12 @@ getVoyageTypeBasedOnDept(deptId: number) {
         shipperName: this.bookingData?.ShipperName,
         consigneeName: this.bookingData?.ConsigneeName,
         userName: this.userData?.userName,
-        toEmail: this.bookingData?.Email || this.selectedCustomerBranch?.Email || '',
-        customerBranchSid: this.bookingData?.CustomerBranchSid || null
+        toEmail: organizationEmail,
+        ccEmail,
+        organizationEmail,
+        customerEmail: organizationEmail,
+        customerBranchSid,
+        customerMasterSid
       }
     });
     const payload = {

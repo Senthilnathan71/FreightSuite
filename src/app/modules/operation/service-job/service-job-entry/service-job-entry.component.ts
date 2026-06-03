@@ -1621,15 +1621,49 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     if (pdfBlob) {
       attachmentFile = new File([pdfBlob], (this.serviceJobData?.ServiceJobNo || 'ServiceJob') + '.pdf', { type: 'application/pdf' });
     }
+    const menuMasterSid = this.MenuMasterSid || this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
+    const customerBranchSid =
+      this.serviceJobData?.CustomerBranchSid ||
+      this.serviceJobForm?.get('CustomerBranchSid')?.getRawValue() ||
+      this.selectedCustomerBranch?.CustomerBranchSid ||
+      null;
+    const customerMasterSid =
+      this.serviceJobData?.CustomerMasterSid ||
+      this.serviceJobForm?.get('CustomerMasterSid')?.getRawValue() ||
+      this.selectedCustomerBranch?.CustomerMasterSid ||
+      null;
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid,
+      customerMasterSid,
+      menuMasterSid
+    });
+    const organizationEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .map((email: string) => (email || '').trim())
+          .filter((email: string) => !!email)
+      )
+    ).join(', ');
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: this.MenuMasterSid,
+      menuMasterSid,
       action: 'UPDATE',
       attachmentFile,
       context: {
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid,
+        resourceSid: this.serviceJobData?.HouseJobSid || this.HouseJobSid,
         userName: this.userData?.userName,
-        toEmail: ''
+        toEmail: organizationEmail,
+        ccEmail,
+        organizationEmail,
+        customerEmail: organizationEmail,
+        customerBranchSid,
+        customerMasterSid
       }
     });
     const payload = {

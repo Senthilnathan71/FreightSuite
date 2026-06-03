@@ -113,7 +113,7 @@
         </button>
       </div>
       <div class="action-group" *ngIf="isEditMode">
-        <button class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()" [disabled]="isSuspended">
+        <button type="button" class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()" [disabled]="isSuspended">
           <i class="fas fa-envelope me-1"></i>
           <span>Send Mail</span>
         </button>
