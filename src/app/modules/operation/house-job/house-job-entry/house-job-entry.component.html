@@ -10,11 +10,7 @@
       </div>
       <!-- In the header-brand section -->
 <div class="brand-content">
-  @if(selectedDepartmentType === "AIR"){
-    <h1 class="workspace-title">House AirWay Bill</h1>
-  }@else{
-    <h1 class="workspace-title">House Job</h1>
-  }
+  <h1 class="workspace-title">{{ houseDocumentTitle }}</h1>
 </div>
 @if(isEditMode){
 <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
@@ -251,13 +247,13 @@
         'input-label': true,
         'bg-transparent': !b['HBLNo']?.getRawValue()
       }">
-      {{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}
+      {{ houseDocumentNoLabel }}
       <i
         *ngIf="b['HBLNo']?.value"
         class="fas fa-copy ms-1"
         style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
-        [title]="selectedCargoMode === 'AIR' ? 'Copy HAWBL No' : 'Copy HBL No'"
-        (click)="copyDocumentNumber('HBLNo', selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No', $event)"
+        [title]="'Copy ' + houseDocumentNoLabel"
+        (click)="copyDocumentNumber('HBLNo', houseDocumentNoLabel, $event)"
       ></i>
       @if(!selectedDepartment?.departmentName?.toLowerCase().includes('export')) {
                 <span class="text-danger">*</span>
@@ -267,11 +263,11 @@
     <!-- Add validation message -->
     <div *ngIf="selectedDepartment?.ExportImport === 'Import' && b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)" 
          class="invalid-feedback d-block">
-      HBL Number is required for Import
+      {{ houseDocumentNoLabel }} is required for Import
     </div>
     <div *ngIf="b['HBLNo'].hasError('duplicate') && (b['HBLNo'].dirty || b['HBLNo'].touched)"
          class="invalid-feedback d-block">
-      {{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}} already exists
+      {{ houseDocumentNoLabel }} already exists
     </div>
   </div>
 </div>
@@ -289,14 +285,14 @@
             <i-feather name="calendar" class="feather-sm"></i-feather>
           </button>
         </div>
-        <label for="" class="input-label">{{selectedCargoMode === 'AIR' ? 'HAWBL Date' : 'HBL Date'}} <span class="text-danger">*</span></label>
+        <label for="" class="input-label">{{ houseDocumentDateLabel }} <span class="text-danger">*</span></label>
         @if(houseJobForm.get('HBLDate')?.touched && houseJobForm.get('HBLDate')?.invalid){
         <div class="error-message">
           @if(houseJobForm.get('HBLDate')?.hasError('required')){
           <span>Required</span>
           }
           @if(houseJobForm.get('HBLDate')?.hasError('invalidDate')){
-          <span>HBL date must be within the financial year</span>
+          <span>{{ houseDocumentDateLabel }} must be within the financial year</span>
           }
         </div>
         }
@@ -1274,7 +1270,7 @@
           <!-- Quick Stats -->
           <div class="stats-widget border border-top-0">
             <div class="widget-header">
-              <h5 class="widget-title">House Summary</h5>
+              <h5 class="widget-title">{{ houseSummaryTitle }}</h5>
             </div>
             @if(selectedCargoMode === "FCL"){
             <div class="widget-body">
@@ -1381,22 +1377,22 @@
               <h5 class="widget-title">Recent Activity</h5>
             </div>
             <div class="widget-body">
-              <div class="activity-item">
+              <div class="activity-item" *ngFor="let log of houseJobActivityTimeline">
                 <div class="activity-icon">
-                  <i class="fas fa-plus"></i>
+                  <i class="fas" [ngClass]="log.icon"></i>
                 </div>
                 <div class="activity-content">
-                  <div class="activity-text">Booking created</div>
-                  <div class="activity-time">2 minutes ago</div>
+                  <div class="activity-text">{{ log.label }}</div>
+                  <div class="activity-time">{{ log.at | timeAgo }}</div>
                 </div>
               </div>
-              <div class="activity-item">
+              <div class="activity-item" *ngIf="houseJobActivityTimeline.length === 0">
                 <div class="activity-icon">
-                  <i class="fas fa-edit"></i>
+                  <i class="fas fa-clock"></i>
                 </div>
                 <div class="activity-content">
-                  <div class="activity-text">Customer updated</div>
-                  <div class="activity-time">5 minutes ago</div>
+                  <div class="activity-text">No saved activity yet</div>
+                  <div class="activity-time">Save this {{ houseDocumentTitle }} to start activity</div>
                 </div>
               </div>
             </div>
@@ -2816,7 +2812,7 @@
                 <div class="custom-form-group">
                   <input type="text" id="hbl-count-input" placeholder="" class="form-control custom-input-field sm"
                     formControlName="HBLCount">
-                  <label for="hbl-count-input" class="input-label">HBL Count <span class="text-danger">*</span></label>
+                  <label for="hbl-count-input" class="input-label">{{ houseDocumentCountLabel }} <span class="text-danger">*</span></label>
                 </div>
               </aside>
           <aside class="col-md-3 d-none">
@@ -2826,7 +2822,7 @@
               <label for="text-input" [ngClass]="{
                         'input-label': true,
                         'bg-transparent': !o['HBLNo']?.getRawValue()
-                         }">{{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span
+                         }">{{ houseDocumentNoLabel }}<span
                   class="text-danger"></span></label>
             </div>
           </aside>
@@ -6111,7 +6107,7 @@
 
     <div class="col-12 col-lg-6">
       <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{ houseDocumentNoLabel }}</div>
         <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
       </div>
       <div class="d-flex mb-1 flex-wrap">
@@ -6296,7 +6292,7 @@
 
         <div class="col-12 col-lg-6">
           <div class="d-flex mb-1 flex-wrap">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{ houseDocumentNoLabel }}</div>
             <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
           </div>
           <div class="d-flex mb-1 flex-wrap">
