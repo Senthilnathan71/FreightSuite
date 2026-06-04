@@ -281,6 +281,31 @@ ${userName}`
     };
   }
 
+  async hasManualMailConfig(companyId: number, menuMasterSid: number): Promise<boolean> {
+    if (!companyId || !menuMasterSid) {
+      return false;
+    }
+
+    const resp: any = await firstValueFrom(this.emailService.getAllByCompany(companyId));
+    const configs = Array.isArray(resp?.data) ? resp.data : [];
+    return configs.some((config: any) => {
+      const trigger = String(config?.Trigger || '').trim().toUpperCase();
+      const isManualTrigger = trigger === 'M' || trigger === 'MANUAL';
+      const configCompanySids = Array.isArray(config?.CompanyMasterSids)
+        ? config.CompanyMasterSids.map((sid: any) => Number(sid)).filter((sid: number) => sid > 0)
+        : [];
+      const configCompanySid = Number(config?.CompanyMasterSid);
+      const belongsToCompany =
+        configCompanySids.includes(Number(companyId)) ||
+        (configCompanySid > 0 && configCompanySid === Number(companyId));
+
+      return belongsToCompany &&
+        Number(config.MenuMasterSid) === Number(menuMasterSid) &&
+        isManualTrigger &&
+        config.Status === 'A';
+    });
+  }
+
   triggerEmails(params: EmailTriggerParams): void {
     const { companyId, branchId, menuMasterSid, action, context, changedFields, attachmentFile } = params;
     const menuSid = Number(menuMasterSid);

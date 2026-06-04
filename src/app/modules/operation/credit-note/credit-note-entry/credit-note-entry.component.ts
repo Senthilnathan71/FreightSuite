@@ -176,6 +176,7 @@ export class CreditNoteEntryComponent {
   private taxMastersReady: Promise<void> = Promise.resolve();
   creditNoteData: any;
   currentMenuId: number;
+  canSendManualMail: boolean = false;
   isViewMode: boolean = false;
   get isEditMode() {
     return !!this.headerId && !this.isViewMode;
@@ -426,6 +427,7 @@ export class CreditNoteEntryComponent {
 
       this.currentMenuId = this.mps.getMenuId();
       this.mps.init().subscribe();
+      this.loadManualMailConfigVisibility();
 
       // Assigning value to global variables
       this.currentCompanyCountryId =
@@ -481,6 +483,18 @@ export class CreditNoteEntryComponent {
 
     this.loadLookups();
     this.spinner.show();
+  }
+
+  private async loadManualMailConfigVisibility(): Promise<void> {
+    try {
+      this.canSendManualMail = await this.emailTriggerService.hasManualMailConfig(
+        this.currentCompany?.CompanyMasterSid,
+        this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'))
+      );
+    } catch (error) {
+      console.error('Error checking manual mail configuration:', error);
+      this.canSendManualMail = false;
+    }
   }
 
   private loadTermsAndConditionsConfig(): void {
@@ -3221,6 +3235,7 @@ export class CreditNoteEntryComponent {
   }
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     const menuMasterSid = this.getCurrentMenuMasterSidForEmail() || Number(sessionStorage.getItem('currentMenuId'));
     const customerBranchSid = this.getCustomerBranchSidForEmail();
     const customerMasterSid = this.getCustomerMasterSidForEmail();
@@ -3268,6 +3283,7 @@ export class CreditNoteEntryComponent {
         customerMasterSid
       }
     });
+     this.spinner.hide();
   }
 
   onCancel() {
