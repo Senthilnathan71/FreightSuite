@@ -1633,6 +1633,66 @@ export class ReportRegistryService {
       console.warn('Transhipment Cargo Report component not yet created:', error);
     }
 
+    try {
+      const { ImportNominationBookingComponent } = await import(
+        '../components/reports/import-nomination-booking/import-nomination-booking.component'
+      );
+
+      this.registerReport({
+        id: 'nomination-booking',
+        title: 'Import Nomination Booking Report',
+        component: ImportNominationBookingComponent,
+        filenameTemplate: 'Import_Nomination_Booking_report',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Import Nomination Booking Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Import Nomination Booking Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Import Nomination Booking Report component not yet created:', error);
+    }
+
+     try {
+      const { DailyJobRegisterComponent } = await import(
+        '../components/reports/daily-job-register/daily-job-register.component'
+      );
+
+      this.registerReport({
+        id: 'daily-job-register',
+        title: 'Daily Job Register',
+        component: DailyJobRegisterComponent,
+        filenameTemplate: 'daily_job_register',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Daily Job Register',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Daily Job Register Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn('Daily Job Register component not yet created:', error);
+    }
+
   }
 
   /**

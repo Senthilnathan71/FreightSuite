@@ -91,7 +91,7 @@
       
       </div>
 
-          <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
+          <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode && canSendManualMail"
             (click)="sendManualMail()" [disabled]="(this.creditNoteData?.Status !== 'A')">
             <i class="fas fa-envelope me-1"></i> Send Mail
           </button>

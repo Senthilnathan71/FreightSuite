@@ -5480,6 +5480,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     let pdfBlob: Blob | undefined;
     try {
       pdfBlob = await this.generatePDFBlob();
@@ -5568,6 +5569,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
         next: () => { },
         error: (err) => console.error(err)
       });
+      this.spinner.hide();
   }
 
   navigateBack() {

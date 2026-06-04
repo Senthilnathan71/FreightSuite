@@ -28,6 +28,7 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -43,7 +44,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     SearchableDropdown,
     NgbDropdownModule,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    NgxSpinnerModule,
 ],
   templateUrl: './cargo-receipt-entry.component.html',
   styleUrl: './cargo-receipt-entry.component.scss',
@@ -96,6 +98,7 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
     private masterService: MasterService,
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
+    private spinner: NgxSpinnerService,
   ) {
     effect(() => {
       const cfsData = this.dropdownStore.customerTypeData();
@@ -538,6 +541,7 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
     }
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     const menuMasterSid = this.currentMenuId || Number(this.MenuMasterSid || sessionStorage.getItem('currentMenuId'));
     const customerBranchSid =
       this.bookingData?.CustomerBranchSid ||
@@ -583,6 +587,7 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
         customerMasterSid
       }
     });
+    this.spinner.hide();
   }
 
 }
