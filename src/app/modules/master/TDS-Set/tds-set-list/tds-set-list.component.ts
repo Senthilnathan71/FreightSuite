@@ -131,8 +131,6 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
             search: this.filterValue.trim(),
             page: Number(this.page),
             pageSize: Number(this.pageSize),
-            activeCompanyId: this.currentCompany?.CompanyMasterSid,
-            activeBranchId: this.currentBranch?.BranchMasterSid,
             sortColumn: this.sortColumn,
             sortDirection: this.sortDirection
         };

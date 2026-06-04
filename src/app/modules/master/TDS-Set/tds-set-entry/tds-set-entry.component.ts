@@ -5,7 +5,7 @@ import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { catchError, debounceTime, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -33,6 +33,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { TDS_DEDUCTEE_TYPES } from 'src/app/common/tds-deductee-types';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -94,20 +95,7 @@ export class TdsSetEntryComponent implements OnInit, HasUnsavedChanges {
     exPageSize = 5;
     totalNumberOfExemptions: number;
 
-    companyTypeList = [
-        { id: '1', name: 'Artificial Juridical Person' },
-        { id: '2', name: 'Association Of Persons(AOP)' },
-        { id: '3', name: 'Body Of Individuals' },
-        { id: '4', name: 'Company' },
-        { id: '5', name: 'Firm' },
-        { id: '6', name: 'Government Agency' },
-        { id: '7', name: 'Hindu Undivided Family' },
-        { id: '8', name: 'Individual(proprietor)' },
-        { id: '9', name: 'Limited Liability Partnership(LLP)' },
-        { id: '10', name: 'Local Authority' },
-        { id: '11', name: 'Trust' },
-        { id: '12', name: 'Others' },
-    ];
+    companyTypeList = TDS_DEDUCTEE_TYPES;
 
     today = this.calendar.getToday();
     todayDate = new Date(this.today.year, this.today.month - 1, this.today.day);
@@ -203,8 +191,15 @@ export class TdsSetEntryComponent implements OnInit, HasUnsavedChanges {
             TDSSetAnnualLimit: ['', [Validators.required]],
             EffectiveFrom: ['', [Validators.required]],
             status: ['Active'],
-        })
+        }, { validators: [this.transactionLeAnnualValidator] })
     }
+
+    // MH-6: per-payment threshold must be <= annual aggregate threshold.
+    private transactionLeAnnualValidator = (g: AbstractControl): ValidationErrors | null => {
+        const tx = Number(g.get('TransactionLimit')?.value || 0);
+        const an = Number(g.get('AnnualLimit')?.value || 0);
+        return tx > an ? { txGtAnnual: { tx, an } } : null;
+    };
 
     loadTDS(TDSSetHeaderSid) {
         this.masterService.fetchTdsById(TDSSetHeaderSid).subscribe(
@@ -255,7 +250,6 @@ export class TdsSetEntryComponent implements OnInit, HasUnsavedChanges {
 
         const payload = {
             ...formValue,
-            CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
             status: formValue.status === 'Active' ? 'A' : 'S',
             ...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
         }
@@ -389,7 +383,7 @@ export class TdsSetEntryComponent implements OnInit, HasUnsavedChanges {
         IncomeCategory: [''],
         ITSectionCode: ['', [Validators.required]],
         TDSAmount: [''],
-        TDSRate: [''],
+        TDSRate: ['', [Validators.min(0), Validators.max(100)]],
         EffectiveFrom: ['', [Validators.required]],
         detailStatus: ['Active']
     });

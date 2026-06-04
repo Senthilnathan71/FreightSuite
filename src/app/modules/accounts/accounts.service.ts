@@ -129,12 +129,30 @@ export class AccountsService {
     );
   }
 
+  createSupplierTDSBatch(rows: any[]) {
+    return this.http.post('supplier-tds-mapping/create-batch', { rows }).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  updateSupplierTDSBatch(rows: { SupplierTdsMappingSid: number; payload: any }[]) {
+    return this.http.patch('supplier-tds-mapping/update-batch', { rows }).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
   updateSupplierTDSById(SupplierTdsMappingSid: number, payload: any) {
     return this.http.patch<{ data: any }>(`supplier-tds-mapping/update/${SupplierTdsMappingSid}`, payload).pipe(
       map((resp) => {
        let response = resp;
         return response;
       })
+    );
+  }
+
+  getSupplierTDSByCustomer(payload: { CustomerMasterSid: number; CompanyMasterSid: number }) {
+    return this.http.post('supplier-tds-mapping/by-customer', payload).pipe(
+      map((resp: any) => resp)
     );
   }
 
@@ -164,13 +182,11 @@ export class AccountsService {
       })
     )
   }
-  getAllTDSSet(CompanyMasterSid:number){
-    return this.http.post<{data:any}>('tds',{CompanyMasterSid}).pipe(
-      map((resp:any)=>{
-        let response = resp;
-        return response;
-      })
-    )
+  getAllTDSSet(companyType?: string, countryMasterSid?: number) {
+    return this.http.post<{ data: any }>('tds', {
+      ...(companyType ? { CompanyType: companyType } : {}),
+      ...(countryMasterSid ? { CountryMasterSid: countryMasterSid } : {}),
+    }).pipe(map((resp: any) => resp));
   }
 
   getCustomerBranchByCusId(CustomerMasterSid:number){

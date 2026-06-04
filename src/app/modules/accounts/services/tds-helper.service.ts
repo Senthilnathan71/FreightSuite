@@ -3,6 +3,15 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { AccountsService } from '../accounts.service';
 
+export interface ApplicableRateParams {
+  isLocal: boolean;
+  isSpecified: boolean;
+  hasPAN: boolean;
+  isExempt: boolean;
+  certPct: number;
+  baseRate: number | null;
+}
+
 /**
  * Reusable TDS helper for voucher screens (payment, receipt, JV).
  *
@@ -21,6 +30,8 @@ export class TdsHelperService {
   supplierTdsMapping: any | null = null;
   customerCompanyType: string | null = null;
   cumulativeTaxableAmount = 0;             // FY cumulative for this vendor
+  certificateCumulativeDeducted = 0;       // SM-9: FY-to-date TDS withheld for this vendor
+  certificateExhausted = false;            // SM-9: certificate amount cap reached
   isTDSEnabled = false;
   limitNote: string | null = null;
   autoReason: string | null = null;
@@ -43,8 +54,9 @@ export class TdsHelperService {
     });
   }
 
-  loadTDSSets(CompanyMasterSid: number): Observable<void> {
-    return this.accountsService.getAllTDSSet(CompanyMasterSid).pipe(
+  loadTDSSets(_CompanyMasterSid?: number): Observable<void> {
+    // TDS Set Header is a global master — no CompanyMasterSid filter.
+    return this.accountsService.getAllTDSSet().pipe(
       tap((res: any) => {
         this.tdsSetList = res?.data || [];
       }),
@@ -79,6 +91,8 @@ export class TdsHelperService {
           this.supplierTdsMapping = data.mapping ?? null;
           this.customerCompanyType = data.customerCompanyType ?? null;
           this.cumulativeTaxableAmount = Number(data.cumulativeTaxableAmount ?? 0);
+          this.certificateCumulativeDeducted = Number(data.certificateCumulativeDeducted ?? 0);
+          this.certificateExhausted = !!data.certificateExhausted;
           if (this.supplierTdsMapping) {
             this.isTDSEnabled = true;
             this.populateFromMapping(this.supplierTdsMapping, args.voucherDate, args.tdsForm);
@@ -111,7 +125,17 @@ export class TdsHelperService {
           new Date(b.EffectiveFrom).getTime() - new Date(a.EffectiveFrom).getTime(),
       )[0];
 
-    const isExempt = mapping.TaxExempt === 'Y';
+    // SM-9: certificate cap reached → revert to master rate, surface reason.
+    const isExempt = mapping.TaxExempt === 'Y' && !this.certificateExhausted;
+    const masterRate = Number(applicable?.TDSRate ?? 0);
+
+    let reason = '';
+    if (mapping.TaxExempt === 'Y' && this.certificateExhausted) {
+      reason = `Lower-deduction certificate cap of ₹${mapping.CertificateAmt} reached (cumulative TDS deducted so far this FY: ₹${this.certificateCumulativeDeducted}). Reverting to master rate ${masterRate}%.`;
+      this.limitNote = reason;
+      this.autoReason = reason;
+    }
+
     tdsForm.patchValue(
       {
         TDSSetHeaderSid: mapping.TDSSetHeaderSid,
@@ -120,7 +144,8 @@ export class TdsHelperService {
         ITSectionCode: isExempt ? (mapping.ITSecCode ?? '') : (applicable?.ITSectionCode ?? ''),
         CertificateNo: mapping.CertificateNo ?? '',
         CertificateAmt: mapping.CertificateAmt ?? '',
-        TDSRate: isExempt ? Number(mapping.CertificatePercentage ?? 0) : Number(applicable?.TDSRate ?? 0),
+        TDSRate: isExempt ? Number(mapping.CertificatePercentage ?? 0) : masterRate,
+        ...(reason ? { Reason: reason } : {}),
       },
       { emitEvent: false },
     );
@@ -262,12 +287,94 @@ export class TdsHelperService {
     this.supplierTdsMapping = null;
     this.customerCompanyType = null;
     this.cumulativeTaxableAmount = 0;
+    this.certificateCumulativeDeducted = 0;
+    this.certificateExhausted = false;
     this.isTDSEnabled = false;
     this.limitNote = null;
     this.autoReason = null;
     this.allRatesForSet = [];
     this.tdsRateList = [];
   }
+
+  // ─── TDS Matrix ───────────────────────────────────────────────────────────
+
+  /**
+   * Pure TDS matrix computation — mirrors TdsCalculationService.computeApplicableRate
+   * on the backend. Returns the numeric rate, or null when a required input is absent.
+   *
+   * Future rule changes (Transporter / Vessel Operator exemption, Sec 206AB) should be
+   * applied here AND in the backend service simultaneously so all UIs stay consistent.
+   */
+  computeApplicableRate(params: ApplicableRateParams): number | null {
+    const { isLocal, isSpecified, hasPAN, isExempt, certPct, baseRate } = params;
+
+    if (!isLocal) {
+      if (isExempt) return certPct > 0 ? this.capRate(certPct) : null;
+      return baseRate;
+    }
+
+    if (isSpecified) {
+      if (hasPAN) {
+        if (isExempt) return certPct > 0 ? Math.max(5, this.capRate(certPct * 2)) : null;
+        return baseRate != null ? Math.max(5, this.capRate(baseRate * 2)) : null;
+      }
+      if (isExempt) return certPct > 0 ? Math.max(this.capRate(certPct * 2), 20) : null;
+      return baseRate != null ? Math.max(this.capRate(baseRate * 2), 20) : null;
+    }
+
+    // Non-Specified
+    if (hasPAN) {
+      if (isExempt) return certPct > 0 ? this.capRate(certPct) : null;
+      return baseRate;
+    }
+    if (isExempt) return certPct > 0 ? Math.max(this.capRate(certPct), 20) : null;
+    return baseRate != null ? Math.max(baseRate, 20) : 20;
+  }
+
+  capRate(rate: number): number {
+    return Math.round(Math.min(Math.max(rate, 0), 100) * 100) / 100;
+  }
+
+  /**
+   * Picks the best-matching base rate from a cached TDSSetRate array.
+   * Filters by CompanyType, then CountryMasterSid, then EffectiveFrom <= today.
+   */
+  lookupBaseRate(
+    rates: any[],
+    customerCompanyType: string | null,
+    customerCountrySid: number | null,
+  ): number | null {
+    if (!rates.length) return null;
+
+    const target = (customerCompanyType || '').trim().toLowerCase();
+    let candidates = target
+      ? rates.filter(r => (r?.CompanyType ?? '').toString().trim().toLowerCase() === target)
+      : rates.slice();
+    if (!candidates.length) candidates = rates.slice();
+
+    if (customerCountrySid) {
+      const byCountry = candidates.filter(
+        r => r?.CountryMasterSid == null || Number(r.CountryMasterSid) === Number(customerCountrySid),
+      );
+      if (byCountry.length) candidates = byCountry;
+    }
+
+    const today = new Date();
+    const effective = candidates.filter(r => {
+      if (r?.status && r.status !== 'A') return false;
+      if (!r?.EffectiveFrom) return true;
+      return new Date(r.EffectiveFrom) <= today;
+    });
+    if (!effective.length) return null;
+
+    effective.sort(
+      (a, b) => new Date(b.EffectiveFrom ?? 0).getTime() - new Date(a.EffectiveFrom ?? 0).getTime(),
+    );
+    const rate = Number(effective[0]?.TDSRate);
+    return Number.isFinite(rate) ? rate : null;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
 
   private filterRatesByCompanyType(rates: any[]): any[] {
     if (!this.customerCompanyType) return rates;
