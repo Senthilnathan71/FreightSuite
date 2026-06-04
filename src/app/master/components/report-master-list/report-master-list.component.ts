@@ -87,6 +87,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       label: 'Report',
       icon: 'fas fa-file-alt',
       action: 'report',
+      disabled: this.totalLengthOfCollection === 0
     },
     {
       label: 'Reset',
@@ -109,13 +110,13 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
   }
 
   override ngOnInit(): void {
+    this.mps.init().subscribe();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
       
     }
-    this.mps.init().subscribe();
 
     this.paginationService.clearState(this.config.storageKey);
 
