@@ -7,8 +7,8 @@
   </div>
   <div class="fu-titlebar__actions" *ngIf="activeModal">
     <button type="button" class="fu-btn fu-btn--sec" (click)="closeModal()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      Close
+
+      X
     </button>
   </div>
 </div>
@@ -37,7 +37,7 @@
         </span>
         <input type="text" [(ngModel)]="searchTerm" placeholder="Search subject, remarks…" />
       </div>
-      <button type="button" class="fu-btn fu-btn--add" (click)="addNew()" [disabled]="loading">
+      <button type="button" class="btn btn-info" (click)="addNew()" [disabled]="loading">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Followup
       </button>
@@ -115,9 +115,9 @@
           <div class="card-body border-none">
             <form [formGroup]="activeForm">
 
-              <div class="row">
+              <div class="fu-form-grid">
 
-                <aside class="col-md-4">
+                <aside class="fu-form-field">
                   <div 
                     class="custom-form-group custom-form-group-select-date" 
                     [class.filled]="!!activeForm.get('FollowupDate')?.value"
@@ -148,7 +148,7 @@
                   </div>
                 </aside>
 
-                <aside class="col-md-4">
+                <aside class="fu-form-field">
                   <div 
                     class="custom-form-group custom-form-group-select" 
                     [class.filled]="!!activeForm.get('FollowupAction')?.value"
@@ -169,7 +169,7 @@
                   </div>
                 </aside>
 
-                <aside class="col-md-4" *ngIf="showInternalUserField">
+                <aside class="fu-form-field" *ngIf="showInternalUserField">
                   <div 
                     class="custom-form-group custom-form-group-select" 
                     *ngIf="showInternalUserField"
@@ -193,7 +193,7 @@
                   </div>
                 </aside>
 
-                <aside class="col-md-4" *ngIf="showExternalUserField">
+                <aside class="fu-form-field" *ngIf="showExternalUserField">
                   <div
                     class="custom-form-group custom-form-group-select"
                     *ngIf="showExternalUserField"
@@ -208,10 +208,10 @@
                   </div>
                 </aside>
 
-                <aside class="col-md-4" *ngIf="!showInternalUserField && !showExternalUserField">
+                <aside class="fu-form-field fu-form-field--empty" *ngIf="!showInternalUserField && !showExternalUserField">
                 </aside>
 
-                <aside class="col-md-8">
+                <aside class="fu-form-field">
                   <div class="custom-form-group">
                     <input type="text" class="custom-input-field sm" formControlName="Subject" placeholder=" " />
                     <label class="input-label">Subject <span class="text-danger">*</span></label>
@@ -220,18 +220,18 @@
                   </div>
                 </aside>
 
-                <aside class="col-md-4">
+                <aside class="fu-form-field fu-form-field--remarks">
+                  <div class="custom-form-group" [class.filled]="!!activeForm.get('Remarks')?.value">
+                    <input type="text" class="custom-input-field sm" formControlName="Remarks" placeholder=" " />
+                    <label class="input-label">Remarks</label>
+                  </div>
+                </aside>
+
+                <aside class="fu-form-field">
                   <div class="custom-form-group custom-form-group-select" [class.filled]="!!activeForm.get('Status')?.value">
                     <ng-select class="ng-select" formControlName="Status" [items]="modeOfStatus" bindLabel="name" bindValue="name"
                       appendTo="body"></ng-select>
                     <label class="input-label">Status <span class="text-danger">*</span></label>
-                  </div>
-                </aside>
-
-                <aside class="col-md-8">
-                  <div class="custom-form-group" [class.filled]="!!activeForm.get('Remarks')?.value">
-                    <textarea class="custom-input-field sm" formControlName="Remarks" rows="2" placeholder=" "></textarea>
-                    <label class="input-label">Remarks</label>
                   </div>
                 </aside>
 
@@ -267,40 +267,27 @@
                 </div>
               </ng-template>
 
-              <!-- ─ Checkboxes ──────────────────────────────────────────── -->
-              <div class="d-flex gap-4 mt-2 pt-2 border-top">
-                <div class="form-check" *ngIf="showPublic">
-                  <input type="checkbox" class="form-check-input" id="fuPublicCheck" formControlName="Public" />
-                  <label class="form-check-label" for="fuPublicCheck">Public</label>
-                </div>
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="fuSentEmailCheck" formControlName="sentEmail" />
-                  <label class="form-check-label" for="fuSentEmailCheck">Send Email</label>
-                </div>
-              </div>
-
               <!-- ─ Edit action bar ─────────────────────────────────────── -->
               <div class="fu-edit-actions">
                 <div class="fu-edit-actions__left">
-                  <ng-container *ngIf="row.CreatedOn; else newRowMeta">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    {{formatRowDate(row.CreatedOn)}}
-                    <ng-container *ngIf="row.CreatedBy">· by <strong>{{row.CreatedBy}}</strong></ng-container>
-                  </ng-container>
-                  <ng-template #newRowMeta>
-                    <span class="fu-dirty-dot"></span>
-                    <span style="color:var(--warn); font-weight:600;">New followup</span>
-                  </ng-template>
+                  <div class="form-check" *ngIf="showPublic">
+                    <input type="checkbox" class="form-check-input" id="fuPublicCheck" formControlName="Public" />
+                    <label class="form-check-label" for="fuPublicCheck">Public</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="fuSentEmailCheck" formControlName="sentEmail" />
+                    <label class="form-check-label" for="fuSentEmailCheck">Send Email</label>
+                  </div>
                 </div>
                 <div class="fu-edit-actions__right">
                   <!-- Cancel -->
-                  <button type="button" class="fu-btn fu-btn--ghost"
+                  <button type="button" class="btn btn-secondary"
                           (click)="closeRow()"
                           [disabled]="loading">
                     Close
                   </button>
                   <!-- Save -->
-                  <button type="button" class="fu-btn fu-btn--save"
+                  <button type="button" class="btn btn-info"
                           appPreventMultiClick
                           (click)="saveRow(row)"
                           [disabled]="loading || isRowLocked(row)">
