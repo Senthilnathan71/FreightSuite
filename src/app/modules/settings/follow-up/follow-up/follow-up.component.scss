@@ -2,7 +2,10 @@
    Follow-Up Component — Design matching Claude Design handoff (Followups.html)
    Bootstrap is still loaded globally; this file adds all the custom layer.
    ───────────────────────────────────────────────────────────────────────────── */
-
+.fu-card--editing .fu-row {
+  background: #eef7ff;
+  border-bottom: 1px solid #bcd5e8;
+}
 :host {
   /* Design tokens */
   --brand:       #1c628f;
@@ -35,8 +38,8 @@
   justify-content: space-between;
   background: var(--brand);
   color: #fff;
-  padding: 12px 18px;
-  border-radius: var(--r) var(--r) 0 0;
+  padding: 2px 5px;
+
 
   &__left { display: flex; align-items: baseline; }
 
@@ -63,7 +66,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 13px;
+  // padding: 7px 13px;
   border-radius: var(--r-sm);
   border: 1px solid transparent;
   font: 600 13px/1.4 inherit;
@@ -135,7 +138,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 18px;
+  padding: 7px 10px;
   border-bottom: 1px solid var(--line-soft);
   background: #fafbfc;
   flex-wrap: wrap;
@@ -185,32 +188,77 @@
 }
 
 // ── Filter chips ─────────────────────────────────────────────────────────────
-.fu-chips { display: flex; gap: 4px; }
+.fu-chips { display: flex; gap: 5px; }
 
 .fu-chip {
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--ink-soft);
-  padding: 5px 10px;
+  --chip-color: var(--brand);
+  --chip-bg: #eef6fb;
+  --chip-border: #c8deec;
+  --chip-shadow: rgba(28,98,143,.18);
+
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  color: var(--chip-color);
+  padding: 4px 7px;
   border-radius: 999px;
   font: 600 12px/1 inherit;
   cursor: pointer;
-  transition: background 120ms, border-color 120ms, color 120ms;
+  box-shadow: 0 1px 2px rgba(20,40,60,.04);
+  transition: background 120ms, border-color 120ms, color 120ms, box-shadow 120ms;
 
-  &.active  { background: var(--brand); color: #fff; border-color: var(--brand); }
-  &:not(.active):hover { background: #f1f4f8; }
+  &:nth-child(2) {
+    --chip-color: #b85f00;
+    --chip-bg: #fff1dc;
+    --chip-border: #efc684;
+    --chip-shadow: rgba(184,95,0,.18);
+  }
+
+  &:nth-child(3) {
+    --chip-color: #1f7a45;
+    --chip-bg: #e6f6ee;
+    --chip-border: #addcc2;
+    --chip-shadow: rgba(31,122,69,.18);
+  }
+
+  &.active  {
+    background: var(--chip-color);
+    color: #fff;
+    border-color: var(--chip-color);
+    box-shadow: 0 3px 8px var(--chip-shadow);
+  }
+
+  &:not(.active):hover {
+    background: #fff;
+    border-color: var(--chip-color);
+    box-shadow: 0 3px 8px var(--chip-shadow);
+  }
 
   &__count {
-    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.74);
+    color: var(--chip-color);
+    font-weight: 700;
     font-size: 11px;
-    opacity: .75;
-    margin-left: 3px;
+    margin-left: 4px;
+    box-shadow: inset 0 0 0 1px var(--chip-border);
+  }
+
+  &.active &__count {
+    background: rgba(255,255,255,.18);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.28);
   }
 }
 
 // ── List ─────────────────────────────────────────────────────────────────────
 .fu-list {
-  padding: 14px 18px 22px;
+  padding: 10px 10px 22px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -249,13 +297,32 @@
   grid-template-columns: 88px 110px 1fr 130px 112px 36px;
   align-items: center;
   gap: 14px;
-  padding: 12px 14px;
+  padding: 10px 10px;
   cursor: pointer;
   transition: background 120ms;
 
   &:hover { background: #f8fafc; }
   .fu-card--editing &  { background: #f6fbff; cursor: default; }
   .fu-card--locked &   { cursor: not-allowed; }
+
+  .fu-card--editing & {
+    position: relative;
+    // padding: 14px 18px 14px 20px;
+    background:
+      linear-gradient(90deg, rgba(28,98,143,.10), rgba(28,98,143,.025) 46%, rgba(201,122,22,.06));
+    border-bottom: 1px solid #cfdce8;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--brand);
+    }
+  }
 
   // Date column
   &__date {
@@ -269,6 +336,10 @@
       font-size: 11px;
       color: var(--muted);
       font-weight: 500;
+    }
+
+    .fu-card--editing & {
+      color: var(--brand);
     }
   }
 
@@ -293,6 +364,17 @@
     &[data-act="Internal"]::before { background: #5b8def; }
     &[data-act="External"]::before { background: #e0a82e; }
     &[data-act="Both"]::before     { background: #8e6dd2; }
+
+    .fu-card--editing & {
+      color: var(--ink);
+      font-weight: 700;
+
+      &::before {
+        width: 10px;
+        height: 10px;
+        box-shadow: 0 0 0 4px rgba(122,138,156,.16);
+      }
+    }
   }
 
   // Subject + remarks preview
@@ -313,6 +395,16 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .fu-card--editing & {
+      color: var(--brand-dark);
+      font-size: 14px;
+
+      em {
+        color: #71849a !important;
+        font-weight: 600 !important;
+      }
     }
   }
 
@@ -339,6 +431,16 @@
       font-weight: 700;
       margin-right: 6px;
       flex-shrink: 0;
+    }
+
+    .fu-card--editing & {
+      color: var(--ink-soft);
+
+      .fu-avatar {
+        background: #dfeefa;
+        color: var(--brand);
+        box-shadow: inset 0 0 0 1px #c5dced;
+      }
     }
   }
 
@@ -367,6 +469,13 @@
       &.badge--active  { background: #e6f4ec; color: var(--ok);      &::before { background: var(--ok); } }
       &.badge--done    { background: #eef2f7; color: var(--ink-soft); &::before { background: var(--muted); } }
       &.badge--pending { background: #fff3e1; color: var(--warn);     &::before { background: var(--warn); } }
+
+      .fu-card--editing & {
+        padding: 5px 11px;
+        background: #fff4df;
+        border: 1px solid #f3cf9a;
+        box-shadow: 0 2px 8px rgba(201,122,22,.12);
+      }
     }
   }
 
@@ -380,12 +489,23 @@
     .fu-card--editing & {
       color: var(--brand);
       transform: rotate(180deg);
+
+      svg {
+        padding: 3px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #e7f2fa;
+        box-shadow: inset 0 0 0 1px #c7ddeb;
+      }
     }
   }
 }
 
 // ── App form-control sizing inside the expanded card ─────────────────────────
 :host ::ng-deep .card-body {
+  padding: 18px 10px 12px;
+
   .input-group-sm .form-control {
     font-size: 13px;
     padding: 5px 8px;
@@ -402,21 +522,43 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 14px;
+  // margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid var(--line-soft);
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
 
   &__left {
     display: flex;
-    gap: 8px;
+    gap: 24px;
     align-items: center;
-    color: var(--muted);
-    font-size: 12px;
+    color: var(--brand);
+    font-size: 14px;
+    font-weight: 600;
   }
 
   &__right { display: flex; gap: 8px; flex-wrap: wrap; }
+}
+
+:host ::ng-deep .fu-edit-actions {
+  .form-check {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    margin: 0;
+    padding-left: 0;
+  }
+
+  .form-check-input {
+    width: 20px;
+    height: 20px;
+    margin: 0 10px 0 0;
+    cursor: pointer;
+  }
+
+  .form-check-label {
+    cursor: pointer;
+  }
 }
 
 .fu-dirty-dot {
@@ -442,27 +584,149 @@
 
 // ── Footer hint ───────────────────────────────────────────────────────────────
 .fu-footer {
-  padding: 12px 18px;
-  border-top: 1px solid var(--line-soft);
-  color: var(--muted);
+  margin: 14px 18px 18px;
+  padding: 10px 14px 10px 16px;
+  border: 1px solid #cfe0ed;
+  border-left: 4px solid var(--brand);
+  color: var(--ink-soft);
   font-size: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fafbfc;
-  border-radius: 0 0 var(--r) var(--r);
+  gap: 14px;
+  background: linear-gradient(90deg, #f3f9fd 0%, #ffffff 58%, #fff8ee 100%);
+  border-radius: var(--r-sm);
+  box-shadow: 0 4px 14px rgba(28,98,143,.08);
+
+  > span:first-child {
+    position: relative;
+    padding-left: 18px;
+    font-weight: 600;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 4px rgba(28,98,143,.12);
+      transform: translateY(-50%);
+    }
+  }
+
+  > span:last-child {
+    color: var(--muted);
+    white-space: nowrap;
+  }
 
   .kbd {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11px;
-    padding: 2px 6px;
-    border: 1px solid var(--line);
+    font-size: 10.5px;
+    padding: 3px 7px;
+    border: 1px solid #c8d7e4;
     border-radius: 3px;
     background: #fff;
-    color: var(--ink-soft);
+    color: var(--brand);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(20,40,60,.08);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .fu-footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
 
 // ── NgbDatepicker panel z-index ───────────────────────────────────────────────
 :host ::ng-deep ngb-datepicker { z-index: 1060; }
+
+.fu-form-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: 34px;
+  row-gap: 20px;
+  align-items: start;
+}
+
+.fu-form-field {
+  grid-column: span 2;
+  min-width: 0;
+
+  &--half {
+    grid-column: span 3;
+  }
+
+  &--wide {
+    grid-column: span 4;
+  }
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+
+  &--empty {
+    visibility: hidden;
+    min-height: 38px;
+  }
+}
+
+:host ::ng-deep .fu-form-grid {
+  .custom-form-group {
+    margin-bottom: 0;
+  }
+
+  .custom-input-field,
+  .form-control,
+  .ng-select {
+    width: 100%;
+  }
+
+  .input-group {
+    flex-wrap: nowrap;
+  }
+
+  .custom-form-group-select-date .input-group .btn {
+    flex: 0 0 38px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .fu-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 22px;
+  }
+
+  .fu-form-field {
+    grid-column: span 1;
+  }
+
+  .fu-form-field--wide,
+  .fu-form-field--half,
+  .fu-form-field--full {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 575.98px) {
+  :host ::ng-deep .card-body {
+    padding-inline: 2px;
+  }
+
+  .fu-form-grid {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .fu-form-field,
+  .fu-form-field--half,
+  .fu-form-field--wide,
+  .fu-form-field--full {
+    grid-column: 1 / -1;
+  }
+}
