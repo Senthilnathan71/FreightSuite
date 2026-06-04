@@ -39,19 +39,18 @@
                             {{ isSaving ? 'Saving...' : 'Save' }}
                         </button> -->
                         <div class="action-group primary">
-  <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
-          [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
-          (click)="onSubmit()"  
-          [disabled]="!reportForm.valid || isSaving " >
-    <i class="fas fa-save me-1"></i>
-    <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
-    <span *ngIf="hasUnsavedChanges()"
-          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
-          title="You have unsaved changes">
-      <span class="visually-hidden">unsaved changes</span>
-    </span>
-  </button>
-</div>
+                            <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+                                [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
+                                (click)="onSubmit()" [disabled]="!reportForm.valid || isSaving ">
+                                <i class="fas fa-save me-1"></i>
+                                <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+                                <span *ngIf="hasUnsavedChanges()"
+                                    class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                                    title="You have unsaved changes">
+                                    <span class="visually-hidden">unsaved changes</span>
+                                </span>
+                            </button>
+                        </div>
                         <div ngbDropdown class="d-inline-block">
                             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                                 ngbDropdownToggle>
@@ -87,7 +86,7 @@
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="reportName">
                                 <label for="text-input" class="input-label">Report Name <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                                 @if(reportForm.get('reportName').touched && reportForm.get('reportName').invalid){
                                 <div class="error-message">
                                     @if(reportForm.get('reportName').hasError('required')){
@@ -102,7 +101,7 @@
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                                     formControlName="displayName">
                                 <label for="text-input" class="input-label">Report Display Name <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                                 @if(reportForm.get('displayName').touched && reportForm.get('displayName').invalid){
                                 <div class="error-message">
                                     @if(reportForm.get('displayName').hasError('required')){
@@ -113,14 +112,15 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select"  [class.filled]="!!reportForm.get('reportMenuId')?.value">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!reportForm.get('reportMenuId')?.value">
                                 <ng-select class="ng-select" [items]="reportMenus" bindLabel="MenuName"
-                                    bindValue="MenuMasterSid" formControlName="reportMenuId" placeholder="Select Menu">
+                                    bindValue="MenuMasterSid" formControlName="reportMenuId" placeholder="">
                                 </ng-select>
 
 
                                 <label for="text-input" class="input-label">Report Menu <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                                 @if(reportForm.get('reportMenuId').touched && reportForm.get('reportMenuId').invalid){
                                 <div class="error-message">
                                     @if(reportForm.get('reportMenuId').hasError('required')){
@@ -131,13 +131,13 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!reportForm.get('reportFormatId')?.value">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!reportForm.get('reportFormatId')?.value">
                                 <ng-select class="ng-select" [items]="modeofreportFormat"
-                                    formControlName="reportFormatId" bindValue="name" placeholder="Select report format"
-                                    bindLabel="name">
+                                    formControlName="reportFormatId" bindValue="name" placeholder="" bindLabel="name">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Report Format <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                                 @if(reportForm.get('reportFormatId').touched &&
                                 reportForm.get('reportFormatId').invalid){
                                 <div class="error-message">
@@ -149,12 +149,13 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!reportForm.get('reportType')?.value">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!reportForm.get('reportType')?.value">
                                 <ng-select class="ng-select" [items]="modeofreportType" formControlName="reportType"
-                                    bindValue="name" placeholder="Select report type" bindLabel="name">
+                                    bindValue="name" placeholder="" bindLabel="name">
                                 </ng-select>
                                 <label for="text-input" class="input-label">Report Type <span
-                                        class="text-danger"></span></label>
+                                        class="text-danger">*</span></label>
                                 @if(reportForm.get('reportType').touched &&
                                 reportForm.get('reportType').invalid){
                                 <div class="error-message">
@@ -166,24 +167,56 @@
                             </div>
                         </aside>
                         <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select-date">
-                                <textarea
-                                    id="excluded-companies"
-                                    placeholder="Enter comma-separated company IDs (e.g., 3,5,7)"
-                                    class="custom-input-field sm"
-                                    formControlName="excludedCompanyIds"
-                                    rows="1">
-                                </textarea>
-                                <label for="excluded-companies" class="input-label">
-                                    Excluded Companies <span class="text-info">(comma-separated IDs)</span>
+                            <div class="custom-form-group custom-form-group-select excluded-company-wrapper"
+                                [class.filled]="(reportForm.get('excludedCompanyIds')?.value?.length ?? 0) > 0">
+
+                                <ng-select formControlName="excludedCompanyIds" [items]="eligibleCompanyOptions"
+                                    [multiple]="true" [closeOnSelect]="false" [searchable]="true" [clearable]="true"
+                                    bindLabel="companyName" bindValue="CompanyMasterSid" placeholder="" appendTo="body"
+                                    class="company-select">
+
+                                    <!-- Multi Select Display -->
+                                    <ng-template ng-multi-label-tmp let-items="items">
+                                        <div class="selected-pill" *ngIf="items.length">
+                                            {{ items[0].companyName }}
+                                        </div>
+
+                                        <div class="count-pill" *ngIf="items.length > 1">
+                                            +{{ items.length - 1 }}
+                                        </div>
+                                    </ng-template>
+
+                                    <!-- Select All -->
+                                    <ng-template ng-header-tmp>
+                                        <div class="select-all-row">
+                                            <button type="button" class="btn btn-link btn-sm p-0"
+                                                (click)="toggleSelectAllExcluded()">
+                                                {{
+                                                (reportForm.get('excludedCompanyIds')?.value?.length ?? 0)
+                                                === eligibleCompanyOptions.length
+                                                ? 'Unselect All'
+                                                : 'Select All'
+                                                }}
+                                            </button>
+                                        </div>
+                                    </ng-template>
+
+                                    <!-- Options -->
+                                    <ng-template ng-option-tmp let-item="item">
+                                        <div class="company-option">
+                                            <strong>{{ item.companyName }}</strong>
+                                            <small *ngIf="item.companyCode">
+                                                ({{ item.companyCode }})
+                                            </small>
+                                        </div>
+                                    </ng-template>
+
+                                </ng-select>
+
+                                <label class="input-label">
+                                    Excluded Companies
                                 </label>
-                                @if(reportForm.get('excludedCompanyIds')?.touched && reportForm.get('excludedCompanyIds')?.invalid){
-                                    <div class="error-message">
-                                        @if(reportForm.get('excludedCompanyIds')?.hasError('pattern')){
-                                            <span>Please enter valid comma-separated numbers</span>
-                                        }
-                                    </div>
-                                }
+
                             </div>
                         </aside>
                     </div>
@@ -204,61 +237,50 @@
                     <table class="table table-hover align-middle no-wrap table-borderless table-sm mb-1">
                         <thead>
                             <tr class="bg-info text-light">
-                                <th class="bg-transparent text-light text-center" width="3%"></th>
-                                <th class="bg-transparent text-light">Parameter Name</th>
-                                <th class="bg-transparent text-light">Field Type</th>
-                                <th class="bg-transparent text-light">Dropdown Value (JSON)</th>
-                                <th class="bg-transparent text-light">Parameter Query</th>
+                                <th class="bg-transparent text-light" style="min-width: 30px"></th>
+                                <th class="bg-transparent text-light" style="min-width: 200px">Parameter Name</th>
+                                <th class="bg-transparent text-light" style="min-width: 150px">Field Type</th>
+                                <th class="bg-transparent text-light" style="min-width: 250px">Dropdown Value (JSON)</th>
+                                <th class="bg-transparent text-light" style="min-width: 250px">Parameter Query</th>
                             </tr>
                         </thead>
                         <tbody formArrayName="parameters">
                             <tr *ngFor="let param of parameters.controls; let i = index" [formGroupName]="i">
-                                 <td class="text-center">
-                                    <button type="button"
-                                            class="btn btn-sm"
-                                            (click)="removeParameter(i)"
-                                            [disabled]="parameters.length === 0">
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm" (click)="removeParameter(i)"
+                                        [disabled]="parameters.length === 0">
                                         <i class="fas fa-trash fs-2 text-danger"></i>
                                     </button>
                                 </td>
                                 <td>
-                                    <input type="text" class="custom-input-field sm"
-                                           formControlName="ParameterName"
-                                           placeholder="Enter parameter name">
+                                    <input type="text" class="custom-input-field sm" formControlName="ParameterName"
+                                        placeholder="">
                                     <small class="text-danger"
-                                           *ngIf="param.get('ParameterName')?.touched && param.get('ParameterName')?.invalid">
+                                        *ngIf="param.get('ParameterName')?.touched && param.get('ParameterName')?.invalid">
                                         Required
                                     </small>
                                 </td>
                                 <td>
-                                    <ng-select class="ng-select-sm"
-                                               [items]="parameterFieldTypes"
-                                               bindLabel="label"
-                                               bindValue="value"
-                                               formControlName="ParameterFieldType"
-                                               placeholder="Select type" appendTo="body">
+                                    <ng-select class="ng-select-sm" [items]="parameterFieldTypes" bindLabel="label"
+                                        bindValue="label" formControlName="ParameterFieldType" placeholder=""
+                                        appendTo="body">
                                     </ng-select>
                                     <small class="text-danger"
-                                           *ngIf="param.get('ParameterFieldType')?.touched && param.get('ParameterFieldType')?.invalid">
+                                        *ngIf="param.get('ParameterFieldType')?.touched && param.get('ParameterFieldType')?.invalid">
                                         Required
                                     </small>
                                 </td>
                                 <td>
-                                    <textarea class="form-control form-control-sm"
-                                              formControlName="DropDownValue"
-                                              rows=""
-                                              placeholder='{"key1":"value1","key2":"value2"}'
-                                              [disabled]="param.get('ParameterFieldType')?.value !== 'DROPDOWN'">
+                                    <textarea class="form-control form-control-sm" formControlName="DropDownValue"
+                                        rows="1" placeholder='{"key1":"value1","key2":"value2"}'
+                                        [disabled]="param.get('ParameterFieldType')?.value !== 'DROPDOWN'">
                                     </textarea>
                                 </td>
                                 <td>
-                                    <textarea class="form-control form-control-sm"
-                                              formControlName="ParameterQuery"
-                                              rows="1"
-                                              placeholder="Enter SQL query">
+                                    <textarea class="form-control form-control-sm" formControlName="ParameterQuery"
+                                        rows="1" placeholder="Enter SQL query">
                                     </textarea>
                                 </td>
-                               
                             </tr>
                             <tr *ngIf="parameters.length === 0">
                                 <td colspan="5" class="text-center text-muted py-3">
@@ -272,49 +294,3 @@
         </div>
     </div>
 </form>
-
-
-<ng-template #auditLogModal let-modal>
-    <div class="modal-header bg-info text-white p-2">
-        <h5 class="modal-title mb-0">Audit Logs</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body p-3">
-        <div class="table-responsive">
-            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-                <thead>
-                    <tr>
-                        <th>Changed At</th>
-                        <th>Changed By</th>
-                        <th>Operation</th>
-                        <th class="text-center">Old Value</th>
-                        <th class="text-center">New Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let log of auditLogs">
-                        <td>{{ log.changedAt | date:'medium' }}</td>
-                        <td>{{ log.changedBy || '-' }}</td>
-                        <td>{{ log.operation }}</td>
-                        <td class="bg-light-danger">
-                            <ul>
-                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-                            </ul>
-                        </td>
-                        <td class="bg-light-success">
-                            <ul>
-                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr *ngIf="auditLogs.length === 0">
-                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-    </div>
-</ng-template>

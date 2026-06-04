@@ -41,26 +41,36 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   userData: any;
+  eligibleCompanyOptions: any[] = [];
+  excludedCompanyIds: number[] = [];
 
   modeofreportFormat = [
     { id: 1, name: "XL" },
     { id: 2, name: "PDF" },
-    { id: 3, name: "XML" }
+    { id: 3, name: "BOTH" }
   ];
 
   modeofreportType = [
-    { id: 1, name: "Ope Report" },
-    { id: 2, name: "Fin Report" },
-    { id: 3, name: "Ana Report" }
+    { id: 1, name: "OPERATION" },
+    { id: 2, name: "ACCOUNTS" },
+    { id: 3, name: "MANAGEMENT" }
   ];
   reportMenus: any[] = [];
 
   parameterFieldTypes = [
-    { value: 'DATE', label: 'Date' },
-    { value: 'DROPDOWN', label: 'Dropdown' },
-    { value: 'NUMBER', label: 'Number' },
-    { value: 'TEXT', label: 'Text' },
-    { value: 'YEAR', label: 'Year' }
+    { value: 'TEXT', label: 'TEXT' },
+    { value: 'NUMBER', label: 'NUMBER' },
+    { value: 'DATE', label: 'DATE' },
+    { value: 'EMAIL', label: 'EMAIL' },
+    { value: 'TEXTAREA', label: 'TEXTAREA' },
+    { value: 'DROPDOWN', label: 'DROPDOWN' },
+    { value: 'DROPDOWN_M', label: 'DROPDOWN M' },
+    { value: 'DROPDOWN_D', label: 'DROPDOWN D' },
+    { value: 'CHECKBOX', label: 'CHECKBOX' },
+    { value: 'RADIO', label: 'RADIO' },
+    { value: 'FILE', label: 'FILE' },
+    { value: 'URL', label: 'URL' },
+    { value: 'PHONE', label: 'PHONE' },
   ];
 
   constructor(
@@ -78,6 +88,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
     this.initForm();
     this.subscribeToFormChanges();
     this.menuDropdown();
+    this.loadEligibleCompanies();
 
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -109,6 +120,37 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
       this.onSubmit(resolve);
     });
   }
+
+  private loadEligibleCompanies(): void {
+  this.masterService.getAllCompanies().subscribe({
+    next: (resp: any) => {
+      const list = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+      const normalized = list
+        .filter((c: any) => c?.status === 'A' || c?.Status === 'A' || c?.status === undefined)
+        .map((c: any) => ({
+          CompanyMasterSid: Number(c.CompanyMasterSid),
+          companyName: c.companyName || c.CompanyName || `Company ${c.CompanyMasterSid}`,
+          companyCode: c.companyCode || c.CompanyCode || ''
+        }))
+        .filter((c: any) => !!c.CompanyMasterSid);
+
+      const dedupedMap = new Map<number, any>();
+      normalized.forEach((c: any) => {
+        if (!dedupedMap.has(c.CompanyMasterSid)) dedupedMap.set(c.CompanyMasterSid, c);
+      });
+      this.eligibleCompanyOptions = Array.from(dedupedMap.values());
+    },
+    error: () => { this.eligibleCompanyOptions = []; }
+  });
+}
+
+private parseExcludedCompanyIds(raw: any): number[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.map(Number).filter(Boolean);
+  if (typeof raw === 'object' && Array.isArray(raw.company)) return raw.company.map(Number).filter(Boolean);
+  if (typeof raw === 'string') return raw.split(',').map(s => Number(s.trim())).filter(Boolean);
+  return [];
+}
 
   private subscribeToFormChanges(): void {
     this.reportForm.valueChanges
@@ -169,7 +211,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
       reportMenuId: [null, Validators.required],
       reportFormatId: [null, Validators.required],
       reportType: ["", Validators.required],
-      excludedCompanyIds: ['', [Validators.pattern(/^(\d+)(,\s*\d+)*$/)]],
+      excludedCompanyIds: [[]],
       Status: ['A'],
       parameters: this.fb.array([])
     });
@@ -203,7 +245,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
   }
 
   menuDropdown() {
-    this.masterService.getAllMenu().subscribe({
+    this.masterService.getReportMenu().subscribe({
       next: (resp: any) => {
         this.reportMenus = resp;
       },
@@ -238,7 +280,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
           reportMenuId: resp.data.ReportMenuSid,
           reportFormatId: resp.data.ReportFormat,
           reportType: resp.data.ReportType,
-          excludedCompanyIds: this.formatExcludedCompanies(resp.data.ReportExcludedCompany)
+          excludedCompanyIds: this.parseExcludedCompanyIds(resp.data.ReportExcludedCompany)
         });
 
         // Fetch and populate parameters
@@ -308,9 +350,9 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
       ReportMenuSid: raw.reportMenuId,
       ReportFormat: raw.reportFormatId,
       ReportType: raw.reportType,
-      ReportExcludedCompany: raw.excludedCompanyIds
-        ? raw.excludedCompanyIds.split(',').map((id: string) => parseInt(id.trim()))
-        : null,
+      ReportExcludedCompany: Array.isArray(raw.excludedCompanyIds) && raw.excludedCompanyIds.length
+  ? raw.excludedCompanyIds          // already number[]
+  : null,
       CreatedBy: currentUser,
       UpdatedBy: currentUser,
       CompanySid: this.currentCompany?.CompanyMasterSid,
@@ -364,6 +406,13 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
         });
     }
   }
+
+  toggleSelectAllExcluded(): void {
+  const ctrl = this.reportForm.get('excludedCompanyIds');
+  const allSids = this.eligibleCompanyOptions.map(c => c.CompanyMasterSid);
+  const current: number[] = ctrl?.value ?? [];
+  ctrl?.setValue(current.length === allSids.length ? [] : allSids);
+}
 
   resetForm() {
     if (this.isEditMode) {
@@ -443,33 +492,6 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
     modalRef.componentInstance.item = this.reportData;
     modalRef.componentInstance.idLabel = 'Report Master Id';
     modalRef.componentInstance.idValue = this.reportData?.ReportMasterSid;
-  }
-
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.ReportMasterSid) return;
-
-    this.masterService.getAuditLogs('ReportMaster', this.ReportMasterSid.toString()).subscribe({
-      next: (logs: any[]) => {
-        const formatFields = (val: any) => {
-          if (!val) return ['NA'];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          delete obj.updatedOn;
-          if (Object.keys(obj).length === 0) return ['NA'];
-          return Object.entries(obj).map(
-            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-          );
-        };
-
-        this.auditLogs = logs.map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal)
-        }));
-
-        this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-      },
-      error: err => console.error('Error fetching audit logs:', err)
-    });
   }
 
   ngOnDestroy(): void {

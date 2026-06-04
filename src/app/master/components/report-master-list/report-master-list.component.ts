@@ -6,7 +6,6 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 import { MatDialog } from '@angular/material/dialog';
 
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
@@ -61,18 +60,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        condition: (row: any) => true,
-        state: !this.mps.can('view')
       },
-      {
-        icon: 'fas fa-trash',
-        label: 'Delete',
-        action: 'delete',
-        tooltip: 'Delete',
-        class: 'text-danger',
-        condition: (row: any) => true,
-        state: !this.mps.can('delete')
-      }
     ],
     trackByKey: 'ReportMasterSid',
     emptyMessage: 'No Reports found'
@@ -94,14 +82,11 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       label: 'Create',
       icon: 'fas fa-plus',
       action: 'create',
-      condition: true,
-      disabled: !this.mps.can('insert')
     },
     {
       label: 'Report',
       icon: 'fas fa-file-alt',
       action: 'report',
-      disabled: false
     },
     {
       label: 'Reset',
@@ -220,9 +205,6 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       case 'view':
         this.router.navigate(['/master/report-master/entry', event.row.ReportMasterSid]);
         break;
-      case 'delete':
-        this.deleteReport(event.row.ReportMasterSid);
-        break;
     }
   }
 
@@ -260,28 +242,6 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       ],
       fileName: 'Report-Master',
       title: companyName
-    });
-  }
-
-  // Delete functionality
-  deleteReport(reportId: number): void {
-    const modalRef = this.dialog.open(DeleteWarningComponent);
-    modalRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.masterService.deleteReportMasterDetail(reportId).subscribe({
-          next: (res: any) => {
-            if (res.status) {
-              this.appSettingService.showSuccess('Report deleted successfully.');
-              this.loadData();
-            } else {
-              this.appSettingService.showError(res.message);
-            }
-          },
-          error: (error) => {
-            this.appSettingService.showError(this.getErrorMessage(error, 'Error deleting report.'));
-          }
-        });
-      }
     });
   }
 }
