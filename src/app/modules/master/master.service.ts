@@ -4155,6 +4155,15 @@ createReportMaster(payload: any) {
     )
   }
 
+  getReportMenu(){
+    return this.http.get<{data:any[]}>('report-master/menu').pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
   getAllMainMenus(){
     return this.http.get<{data:any[]}>('menu/main-menus').pipe(
       map((resp)=>{

@@ -430,6 +430,7 @@ private normalizeStatus(value: string): 'A' | 'S' {
     { id: '8', name: 'Limited Liability Company(LLC)' },
     { id: '9', name: 'Limited Liability Partnership(LLP)' },
     { id: '10', name: 'Local Authority' },
+    { id: '11', name: 'Private Limited Liability(LTD)' },
   ];
   customerBranchEmailResults: any;
   customerBranchLoginData: any;
@@ -715,6 +716,12 @@ this.mps.init().subscribe();
       this.updateTaxIdFieldValidation();
       this.updateTaxIdFieldState();
       this.getStatesByCountryId(); // Load states when country changes
+      const dialCode = this.getFormDialCode();
+      this.branches.controls.forEach((branch: AbstractControl) => {
+      branch.get('CustBranchPhoneCode')?.setValue(dialCode, {
+        emitEvent: false
+      });
+    });
     });
 
     this.customerForm.get('status')?.valueChanges
@@ -748,6 +755,13 @@ this.mps.init().subscribe();
   async saveChanges(): Promise<boolean> {
     return this.onSubmit();
   }
+
+  get filteredCompanyList() {
+  if (this.isIndianCountry()) {
+    return this.companyList;
+  }
+  return this.companyList.filter(c => c.id !== '11');
+}
 
   private initializeUnsavedChangesTracking(): void {
     if (!this.customerForm || this.isUnsavedTrackingInitialized) return;
@@ -952,6 +966,7 @@ clearCustomerSearch(): void {
   }
 
   addBranchFormGroup(data?: any): FormGroup {
+    const dialCode = this.getFormDialCode();
     const parsedBranchPhone = this.parsePhone(data?.ContactNo ?? data?.CustBranchPhone ?? '');
     const branchPhoneCode =
       data?.CustBranchPhoneCode ||
@@ -968,7 +983,7 @@ clearCustomerSearch(): void {
        CustBranchCode: [data?.Branch_Code || ''],
       Contact_Person: [data?.Contact_Person || ''],
       CustBranchZipPostCode: [data?.Zip_PostBox || '', [Validators.maxLength(10)]],
-      CustBranchPhoneCode: [branchPhoneCode],
+      CustBranchPhoneCode: [dialCode],
       CustBranchPhone: [parsedBranchPhone.phoneNumber, [Validators.maxLength(15), this.phoneNumberValidator]],
       CustBranchEmail: [data?.Email || null, [ EmailValidators.multipleEmails()]],
       CustBranchAddress: [data?.Address || '', [Validators.required]],

@@ -4294,7 +4294,7 @@ isSeaDepartment(): boolean {
           action: 'PDF Downloaded'
         },
         newVal: {
-          Email: 'Invoice Pdf Downloaded',
+          PDF: 'Invoice Pdf Downloaded',
         }
       };
 
