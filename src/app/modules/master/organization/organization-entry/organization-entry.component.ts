@@ -1842,7 +1842,7 @@ private clearBranchStateAndCityOnCountryChange(): void {
 private validatePanHolderType(fourthChar: string, companyType: string): { isValid: boolean; message: string } {
   const holderTypeMap: { [key: string]: { types: string[], description: string } } = {
     'C': { 
-      types: ['Company', 'Limited Liability Company(LLC)', 'Limited Liability Partnership(LLP)'], 
+      types: ['Company', 'Limited Liability Company(LLC)', 'Limited Liability Partnership(LLP)','Private Limited Liability(LTD)'], 
       description: 'Company' 
     },
     'P': { 
@@ -1880,7 +1880,8 @@ private validatePanHolderType(fourthChar: string, companyType: string): { isVali
     'G': { 
       types: ['Government Agency'], 
       description: 'Government' 
-    }
+    },
+    
   };
 
   const holderInfo = holderTypeMap[fourthChar];

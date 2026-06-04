@@ -41,7 +41,7 @@
                         <div class="action-group primary">
                             <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
                                 [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
-                                (click)="onSubmit()" [disabled]="!reportForm.valid || isSaving ">
+                                (click)="onSubmit()" [disabled]="!reportForm.valid || isSaving || (!mps.can('update') && isEditMode)">
                                 <i class="fas fa-save me-1"></i>
                                 <span>{{ isSaving ? "Saving..." : "Save" }}</span>
                                 <span *ngIf="hasUnsavedChanges()"
@@ -242,6 +242,7 @@
                                 <th class="bg-transparent text-light" style="min-width: 150px">Field Type</th>
                                 <th class="bg-transparent text-light" style="min-width: 250px">Dropdown Value (JSON)</th>
                                 <th class="bg-transparent text-light" style="min-width: 250px">Parameter Query</th>
+                                <th class="bg-transparent text-light" style="min-width: 250px">Validation Rules</th>
                             </tr>
                         </thead>
                         <tbody formArrayName="parameters">
@@ -272,13 +273,18 @@
                                 </td>
                                 <td>
                                     <textarea class="form-control form-control-sm" formControlName="DropDownValue"
-                                        rows="1" placeholder='{"key1":"value1","key2":"value2"}'
+                                        rows="1" placeholder='[{"label1":"data","value1":"data"},{"label2":"data","value2":"data"}]'
                                         [disabled]="param.get('ParameterFieldType')?.value !== 'DROPDOWN'">
                                     </textarea>
                                 </td>
                                 <td>
                                     <textarea class="form-control form-control-sm" formControlName="ParameterQuery"
                                         rows="1" placeholder="Enter SQL query">
+                                    </textarea>
+                                </td>
+                                <td>
+                                    <textarea class="form-control form-control-sm" formControlName="ValidationRules"
+                                        rows="1" placeholder='{"key1":"value1","key2":"value2"}'>
                                     </textarea>
                                 </td>
                             </tr>
