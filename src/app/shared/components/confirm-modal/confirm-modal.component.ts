@@ -12,9 +12,10 @@ export type ConfirmAction = 'confirm' | 'cancel';
   template: `
     <div class="modal-header">
       <div class="title-wrap">
-        <div>
-          <h5 class="modal-title">{{ title }}</h5>
-        </div>
+        <span class="title-icon">
+          <i class="fas fa-question-circle"></i>
+        </span>
+        <h5 class="modal-title">{{ title }}</h5>
       </div>
       <button type="button"
               class="btn-close"
@@ -25,7 +26,9 @@ export type ConfirmAction = 'confirm' | 'cancel';
 
     <div class="modal-body">
       <div class="message-panel">
-        <div class="message-accent"></div>
+        <span class="message-icon">
+          <i class="fas fa-info-circle"></i>
+        </span>
         <div class="message-content">
           <p class="modal-message" [innerHTML]="safeMessage"></p>
         </div>
@@ -34,98 +37,164 @@ export type ConfirmAction = 'confirm' | 'cancel';
 
     <div class="modal-footer">
       <button type="button"
-              class="btn btn-secondary btn-sm"
+              class="btn btn-light cancel-btn"
               (click)="onCancel()">
         Cancel
       </button>
 
       <button type="button"
-              class="btn btn-info btn-sm"
+              class="btn btn-primary confirm-btn"
               (click)="onConfirm()">
         {{ confirmLabel }}
       </button>
     </div>
   `,
-  styles: [`
-    .modal-content {
-      border-radius: 20px;
-      background: #ffffff;
-      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.2);
-      overflow: hidden;
-      border: 1px solid #e6edf5;
-    }
+ styles: [`
+  :host {
+    display: block;
+  }
 
-    .modal-header {
-      position: relative;
-      background: linear-gradient(90deg, #f8fbff 0%, #ffffff 100%) !important;
-      border-bottom: none;
-      padding: 1.1rem 1.4rem 0.85rem 1.4rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-    }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e7eef6;
+  }
 
-    .modal-header::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #0ea5e9, #38bdf8, #bae6fd);
-    }
+  .title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-    .title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
+  .title-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: 50%;
+    background: #eaf8ff;
+    color: #087aa8;
+    font-size: 14px;
+  }
 
-    .modal-title {
-      font-weight: 600;
-      color: #333;
-    }
+  .modal-title {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 600;
+  }
 
+  .btn-close {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: #f3f6f9;
+    background-size: 10px;
+    opacity: .8;
+  }
 
+  .btn-close:hover {
+    background-color: #e8eef5;
+    opacity: 1;
+  }
+
+  .modal-body {
+    padding: 14px 16px;
+    background: #fff;
+  }
+
+  .message-panel {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #dde8f1;
+    border-left: 3px solid #f59e0b;
+    border-radius: 6px;
+    background: #f8fbff;
+  }
+
+  .message-icon {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    border-radius: 50%;
+    background: #fff7ed;
+    color: #ea580c;
+    font-size: 12px;
+  }
+
+  .message-content {
+    min-width: 0;
+  }
+
+  .modal-message {
+    margin: 0;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: pre-line;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0 16px 14px;
+    background: #fff;
+    border-top: none;
+  }
+
+  .cancel-btn,
+  .confirm-btn {
+    min-width: 72px;
+    padding: 1px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .cancel-btn {
+    color: #475467;
+    border: 1px solid #d0d5dd;
+    background: #fff;
+  }
+
+  .cancel-btn:hover {
+    background: #f8fafc;
+  }
+
+  .confirm-btn {
+    background: #087aa8;
+    border-color: #087aa8;
+    box-shadow: 0 3px 10px rgba(8, 122, 168, 0.18);
+  }
+
+  .confirm-btn:hover {
+    background: #06698f;
+    border-color: #06698f;
+  }
+
+  @media (max-width: 575px) {
+    .modal-header,
     .modal-body {
-      padding: 1.1rem 1.4rem 0.9rem 1.4rem;
-      font-size: 15px;
-      color: #555;
-      background: #ffffff;
-    }
-      
-    .modal-message {
-      white-space: pre-line;
-      margin: 0;
+      padding: 12px;
     }
 
     .modal-footer {
-      border-top: none;
-      padding: 0.5rem 1.25rem 0.75rem;
-      background: #ffffff;
-      gap: 0.5rem;
+      padding: 0 12px 12px;
     }
-
-    .message-panel {
-      display: grid;
-      grid-template-columns: 6px 1fr;
-      gap: 12px;
-      border-radius: 14px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      overflow: hidden;
-    }
-
-    .message-accent {
-      background: linear-gradient(180deg, #f59e0b, #f97316);
-    }
-
-    .message-content {
-      padding: 12px 14px;
-    }
-
-  `]
+  }
+`]
 })
 export class ConfirmDialogComponent {
 

@@ -1,0 +1,43 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <app-print-header></app-print-header>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Daily Job Register Report
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">Register Date</strong>
+                    <p class="ms-1 my-0">: {{ fullData?.dateLabel || (params?.ToDate | formatDate) }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info" style="white-space:nowrap">
+                        <th class="bg-transparent text-light text-center">Job</th>
+                        <th class="bg-transparent text-light text-center">{{ fullData?.dateLabel || (params?.ToDate | formatDate) }}</th>
+                        <th class="bg-transparent text-light text-center">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data; let i=index" style="white-space:nowrap">
+                        <td>{{ item.job }}</td>
+                        <td class="text-end">{{ item.dateCount | number:'1.0-3' }}</td>
+                        <td class="text-end text-danger fw-bold">{{ item.total | number:'1.0-3' }}</td>
+                    </tr>
+                    <tr *ngIf="!fullData?.data || fullData.data?.length === 0">
+                        <td colspan="3" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <app-print-footer></app-print-footer>
+</div>

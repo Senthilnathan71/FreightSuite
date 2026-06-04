@@ -4070,6 +4070,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     try {
       let pdfBlob: Blob | undefined;
       try {
@@ -4131,6 +4132,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
           customerMasterSid
         }
       });
+      this.spinner.hide();
     } catch (error) {
       console.error('MAWB manual mail error:', error);
       this.appSettingService.showError('Error preparing mail.');

@@ -380,6 +380,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     const menuMasterSid = this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
     const customerBranchSid =
       this.vendorInvoiceData?.CustomerBranchSid ||
@@ -422,6 +423,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         userName: this.userData?.userName
       }
     });
+    this.spinner.hide()
   }
 
   ngOnInit(): void {

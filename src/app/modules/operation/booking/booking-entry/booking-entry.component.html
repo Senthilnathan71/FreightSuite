@@ -19,7 +19,7 @@
       <button
         *ngIf="isEditMode"
         type="button"
-        class="btn btn-sm booking-copy-icon-btn ms-2"
+        class="btn btn-sm copy-icon-btn ms-1"
         (click)="copyBooking()"
         [disabled]="!bookingData || isSaving || isDirty"
         ngbTooltip="Copy"
@@ -1550,7 +1550,7 @@
                             <input type="text" formControlName="ShippingBillNo" class="custom-input-field sm" [textWithNumbers]="20">
                           </td>
                           <td>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center" style="margin-top:4px">
                               <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #dp="ngbDatepicker"
                                 [minDate]="minDate" (keydown.arrowDown)="dp.open()" (click)="dp.toggle()"
                                 formControlName="ShippingBillDate" container="body" />
@@ -2207,7 +2207,7 @@
                   <td>
                     <!-- <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
                     [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter] ="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"> -->
-                    <div class="d-flex align-items-center"style="margin-top: 4px;" >
+                    <div class="d-flex align-items-center" style="margin-top: 4px;" >
                      
                         <input class="form-control" placeholder="" name="dp" ngbDatepicker #d2="ngbDatepicker"
                           (click)="d2.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()"

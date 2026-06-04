@@ -538,7 +538,7 @@
   <div class="custom-form-group custom-form-group-select"
     [class.filled]="customerForm.get('CompanyType')?.value"
     [class.is-invalid]="customerForm.get('CompanyType')?.invalid && customerForm.get('CompanyType')?.touched">
-    <ng-select [items]="companyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
+    <ng-select [items]="filteredCompanyList" bindLabel="name" bindValue="name" formControlName="CompanyType"
       placeholder="" [searchable]="false" [clearable]="false" 
       (change)="onCompanyTypeChange()">
     </ng-select>
@@ -947,7 +947,7 @@
                 </aside>
 
                 <!-- GSTIN Section - ONLY show for India when PAN Available is checked -->
-      <aside class="col-md-3" *ngIf="shouldShowGSTFields(branchIndex)">
+      <aside class="col-md-6" *ngIf="shouldShowGSTFields(branchIndex)">
         <div class="custom-form-group gstin-group aos-horizontal">
       
           <!-- State Code -->

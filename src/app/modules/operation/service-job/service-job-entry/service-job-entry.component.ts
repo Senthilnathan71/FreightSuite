@@ -1616,6 +1616,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
 
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     const pdfBlob = await this.generatePDFBlob();
     let attachmentFile: File | undefined;
     if (pdfBlob) {
@@ -1683,6 +1684,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
         next: () => { },
         error: (err) => console.error(err)
       });
+      this.spinner.hide();
   }
 
   navigateBack() {

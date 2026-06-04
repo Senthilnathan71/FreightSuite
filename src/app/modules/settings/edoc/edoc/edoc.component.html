@@ -11,29 +11,29 @@
 
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-outline-light btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="closeTemplate()">
                             <i class="fas fa-chevron-left me-1"></i>
                             Close
                         </button>
 
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-outline-light btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="addNewEdoc()"
                             [disabled]="isFormDisabled || isSaving">
                             <i class="fas fa-plus me-1"></i>
                             Add
                         </button>
 
-                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-outline-light btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="resetForm()"
                             [disabled]="isFormDisabled || isSaving">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-outline-light btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="onSubmit()"
                             [disabled]="isFormDisabled || isSaving">
-                            <i class="fas fa-save me-1"></i>
+                            <i class="fas fa-save me-0"></i>
                             Save
                         </button>
                     </div>
@@ -44,6 +44,15 @@
         <div class="row m-1 edoc-form-shell">
             <div class="col-md-6 pe-md-1 ps-0">
                 <div class="card h-100 mb-0 edoc-panel">
+                    <div class="edoc-panel-title p-2">
+                        <span class="edoc-panel-title__icon">
+                            <i class="fas fa-file-alt"></i>
+                        </span>
+                        <span>
+                            <strong>Document Details</strong>
+                            <small>Upload and classify the attachment</small>
+                        </span>
+                    </div>
                     <div class="card-body">
                         <div class="row">
 
@@ -90,7 +99,7 @@
                             </aside> -->
 
                             <aside class="col-md-12">
-                                <div class="custom-form-group mt-0">
+                                <div class="custom-form-group mt-0 edoc-upload-box">
                                     <!-- File input (hidden when form is locked) -->
                                     <input *ngIf="!isFormDisabled"
                                         type="file" id="file-input" multiple class="custom-input-field sm"
@@ -215,6 +224,15 @@
             </div>
             <div class="col-md-6 mt-md-0 mt-1 ps-md-1">
                 <div class="card h-100 mb-0 edoc-panel edoc-followup-panel">
+                    <div class="edoc-panel-title edoc-panel-title--followup p-2">
+                        <span class="edoc-panel-title__icon">
+                            <i class="fas fa-bell"></i>
+                        </span>
+                        <span>
+                            <strong>Follow-up</strong>
+                            <small>Set reminder action and owner</small>
+                        </span>
+                    </div>
                     <div class="card-body">
                         <div class="row">
                             <aside class="col-md-6">
@@ -385,7 +403,7 @@
     <div class="row bg-white mb-2 pt-2 rounded shadow-sm mx-0 edoc-preview-shell">
 
         <div class="col-12" *ngIf="existingFiles.length">
-            <div class="edoc-section-header mb-2">
+            <div class="edoc-section-header mb-0">
                 <button type="button" class="btn btn-light-secondary btn-sm edoc-collapse-btn" (click)="toggleDocumentList()">
                     <i class="fas me-1" [class.fa-chevron-down]="isDocumentListCollapsed"
                         [class.fa-chevron-up]="!isDocumentListCollapsed"></i>
@@ -393,7 +411,7 @@
                 </button>
             </div>
 
-            <div class="list-group edoc-file-list mb-2" *ngIf="!isDocumentListCollapsed">
+            <div class="list-group edoc-file-list mb-1" *ngIf="!isDocumentListCollapsed">
                 <button *ngFor="let file of existingFiles; let i = index" type="button"
                     class="list-group-item list-group-item-action edoc-file-item"
                     [class.active]="selectedFile?.AttachDocumentSid === file.AttachDocumentSid"
@@ -418,15 +436,21 @@
         <div class="col-12">
 
             <!-- File Info Header -->
-            <div class="edoc-preview-header mb-3" *ngIf="selectedFile">
+            <div class="edoc-preview-header mb-1" *ngIf="selectedFile">
                 <div class="edoc-preview-title">
                     <h5 class="mb-1">
                         <i [class]="getFileIcon(selectedFile.FileName)" class="me-2"></i>
                         {{ selectedFile.FileName }}
                     </h5>
-                    <small class="text-muted">
-                        Document No: {{ selectedFile.AttachDocmentNo || 'N/A' }} |
-                        Date: {{ selectedFile.DocumentDate | date:'dd/MM/yyyy' }}
+                    <small class="edoc-preview-meta">
+                        <span>
+                            <i class="fas fa-hashtag"></i>
+                            Document No: <strong>{{ selectedFile.AttachDocmentNo || 'N/A' }}</strong>
+                        </span>
+                        <span>
+                            <i class="fas fa-calendar-alt"></i>
+                            Date: <strong>{{ selectedFile.DocumentDate | date:'dd/MM/yyyy' }}</strong>
+                        </span>
                     </small>
                 </div>
                 <div class="edoc-preview-actions">

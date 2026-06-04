@@ -2833,6 +2833,7 @@ isSeaDepartment(): boolean {
   }
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     const pdfBlob = await this.generatePDFBlob();
     let attachmentFile: File | undefined;
     if (pdfBlob) {
@@ -2887,6 +2888,7 @@ isSeaDepartment(): boolean {
         next: () => { },
         error: (err) => console.error(err)
       });
+      this.spinner.hide();
   }
 
   goBack() {
@@ -4292,7 +4294,7 @@ isSeaDepartment(): boolean {
           action: 'PDF Downloaded'
         },
         newVal: {
-          Email: 'Invoice Pdf Downloaded',
+          PDF: 'Invoice Pdf Downloaded',
         }
       };
 

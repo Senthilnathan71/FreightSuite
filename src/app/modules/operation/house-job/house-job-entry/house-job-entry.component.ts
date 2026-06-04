@@ -74,6 +74,7 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { PerformaInvoiceComponent } from '../report/performa-invoice/performa-invoice.component';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -131,6 +132,7 @@ type Html2PdfOptions = {
     CustomsComponent,
     MultiSelectComponent,
     RouterModule,
+    TimeAgoPipe,
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
@@ -300,6 +302,7 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
   followUpResetTrigger:any;
   currentFollowUpFormValue:any;
 auditLogs: any[] = []; // Stores audit logs
+  houseJobActivityTimeline: { label: string; at: string | Date; icon: string }[] = [];
   selectedShipment: any;
   auditLogModalRef!: NgbModalRef;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
@@ -2172,6 +2175,106 @@ get isSuspended() : boolean {
     return response?.HouseStatus || 'Job Generated';
   }
 
+  get isAirDepartment(): boolean {
+    return this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType) === 'AIR';
+  }
+
+  get houseDocumentTitle(): string {
+    return this.isAirDepartment ? 'House Air Waybill' : 'House Job';
+  }
+
+  get houseSummaryTitle(): string {
+    return this.isAirDepartment ? 'House Air Waybill Summary' : 'House Summary';
+  }
+
+  get houseDocumentNoLabel(): string {
+    return this.isAirDepartment ? 'HAWBL No' : 'HBL No';
+  }
+
+  get houseDocumentCountLabel(): string {
+    return this.isAirDepartment ? 'HAWBL Count' : 'HBL Count';
+  }
+
+  get houseDocumentDateLabel(): string {
+    return this.isAirDepartment ? 'HAWBL Date' : 'HBL Date';
+  }
+
+  private buildHouseJobActivityTimeline(houseJob: any): { label: string; at: string | Date; icon: string }[] {
+    if (!houseJob) {
+      return [];
+    }
+
+    const createdAt = this.getActivityDate(houseJob.createdOn, houseJob.CreatedOn);
+    const updatedBy = houseJob.updatedBy || houseJob.UpdatedBy;
+    const updatedAt = updatedBy ? this.getActivityDate(houseJob.updatedOn, houseJob.UpdatedOn) : null;
+    const hasLinkedBooking = !!(houseJob.BookingHeaderSid || houseJob.bookingHeader?.BookingHeaderSid);
+    const bookingNo = houseJob.BookingNo || houseJob.bookingHeader?.BookingNo;
+    const houseStatus = this.getEffectiveHouseStatus(houseJob);
+    const activity: { label: string; at: string | Date; icon: string }[] = [];
+
+    if (createdAt) {
+      activity.push({
+        label: hasLinkedBooking && bookingNo
+          ? `${this.houseDocumentTitle} generated from booking ${bookingNo}`
+          : `${this.houseDocumentTitle} manually created`,
+        at: createdAt,
+        icon: hasLinkedBooking ? 'fa-link' : 'fa-plus',
+      });
+    }
+
+    if (updatedAt && !this.isSameActivityTime(createdAt, updatedAt)) {
+      activity.push({
+        label: `${this.houseDocumentTitle} updated`,
+        at: updatedAt,
+        icon: 'fa-edit',
+      });
+    }
+
+    if (houseStatus && houseStatus !== 'Job Generated' && updatedAt) {
+      activity.push({
+        label: `Status: ${houseStatus}`,
+        at: updatedAt,
+        icon: this.getHouseStatusActivityIcon(houseStatus),
+      });
+    }
+
+    return activity.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  }
+
+  private getActivityDate(...values: any[]): string | Date | null {
+    return values.find(value => {
+      if (!value) {
+        return false;
+      }
+      const date = new Date(value);
+      return !Number.isNaN(date.getTime());
+    }) || null;
+  }
+
+  private isSameActivityTime(first: string | Date | null, second: string | Date | null): boolean {
+    if (!first || !second) {
+      return false;
+    }
+
+    return new Date(first).getTime() === new Date(second).getTime();
+  }
+
+  private getHouseStatusActivityIcon(status: string): string {
+    if (this.isClosedJobStatus(status)) {
+      return 'fa-check';
+    }
+
+    if (status === 'Suspended') {
+      return 'fa-ban';
+    }
+
+    if (status === 'Sailed') {
+      return 'fa-ship';
+    }
+
+    return 'fa-info-circle';
+  }
+
   loadOtherLookups() {
     forkJoin({
       currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
@@ -2210,6 +2313,7 @@ get isSuspended() : boolean {
           this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
           this.housejobData = resp.data;
+          this.houseJobActivityTimeline = this.buildHouseJobActivityTimeline(resp.data);
           this.minDate = undefined;
           const HBLDate = this.housejobData?.HBLDate ? new Date(this.housejobData?.HBLDate) : undefined;
           this.minDODate = HBLDate ? this.toNgbDateStruct(HBLDate) : undefined;
@@ -3331,7 +3435,7 @@ private applyExportToImportFieldLocks(): void {
 
   private getHouseJobFieldLabel(fieldName: string): string {
     if (fieldName === 'HBLNo') {
-      return this.selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No';
+      return this.houseDocumentNoLabel;
     }
 
     const fieldLabels: Record<string, string> = {
@@ -3348,7 +3452,7 @@ private applyExportToImportFieldLocks(): void {
       POD: 'POD',
       FPD: 'FPD',
       IncoTerms: 'Inco Terms',
-      HBLDate: 'HBL Date',
+      HBLDate: this.houseDocumentDateLabel,
       status: 'Status',
       HouseStatus: 'House Status',
       CargoType: 'Cargo Type',
@@ -3387,7 +3491,6 @@ private applyExportToImportFieldLocks(): void {
       return message;
     }
 
-    const hblLabel = this.selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No';
     const replacements: Array<[RegExp, string]> = [
       [/\bDepartmentMasterSid\b|\bDepartment Master Sid\b/gi, 'Department'],
       [/\bCustomerMasterSid\b|\bCustomer Master Sid\b/gi, 'Customer'],
@@ -3402,8 +3505,8 @@ private applyExportToImportFieldLocks(): void {
       [/\bDestinationAgent\b/gi, 'Destination Agent'],
       [/\bAgentName\b/gi, 'Agent Name'],
       [/\bIncoTerms\b/gi, 'Inco Terms'],
-      [/\bHBLNo\b/gi, hblLabel],
-      [/\bHBLDate\b/gi, 'HBL Date'],
+      [/\bHBLNo\b/gi, this.houseDocumentNoLabel],
+      [/\bHBLDate\b/gi, this.houseDocumentDateLabel],
       [/\bHouseStatus\b/gi, 'House Status']
     ];
 
@@ -3530,7 +3633,7 @@ onCurrencyChange(event: any) {
       const fyStartDate = new Date(fy.StartDate);
       const fyEndDate = new Date(fy.EndDate);
       if (HBLDate < fyStartDate || HBLDate > fyEndDate) {
-          this.appSettingService.showWarning('HBL date must be within the financial year');
+          this.appSettingService.showWarning(`${this.houseDocumentDateLabel} must be within the financial year`);
         this.houseJobForm.get('HBLDate')?.setErrors({ invalidDate: true });
         this.houseJobForm.get('HBLDate')?.markAsTouched();
         resolve?.(false);
@@ -3636,7 +3739,7 @@ onCurrencyChange(event: any) {
     }
   }
   if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
-    this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
+    this.appSettingService.showWarning(`${this.houseDocumentNoLabel} is required for Import operations. Please enter a valid ${this.houseDocumentNoLabel}.`);
     
     // Focus on HBLNo field
     const hblNoElement = document.querySelector('[formControlName="HBLNo"]');
@@ -4240,7 +4343,7 @@ validateHBLNo(): boolean {
   
   // If it's Import department and HBLNo is empty, show error
   if (exportImportType === 'Import' && (!hblNo || hblNo.trim() === '')) {
-    this.appSettingService.showWarning('HBL Number is required for Import operations. Please enter a valid HBL Number.');
+    this.appSettingService.showWarning(`${this.houseDocumentNoLabel} is required for Import operations. Please enter a valid ${this.houseDocumentNoLabel}.`);
     
     // Mark the field as touched to show validation error
     this.houseJobForm.get('HBLNo')?.markAsTouched();
@@ -5480,6 +5583,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     let pdfBlob: Blob | undefined;
     try {
       pdfBlob = await this.generatePDFBlob();
@@ -5568,6 +5672,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
         next: () => { },
         error: (err) => console.error(err)
       });
+      this.spinner.hide();
   }
 
   navigateBack() {

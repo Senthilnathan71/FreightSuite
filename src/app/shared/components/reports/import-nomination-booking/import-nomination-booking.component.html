@@ -1,0 +1,75 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <app-print-header></app-print-header>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Import Nomination Booking Report
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">Booking From Date </strong>
+                    <p class="ms-1 my-0">: {{ params?.BookingFromDate | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">Booking To Date </strong>
+                    <p class="ms-1 my-0">: {{ params?.BookingToDate | formatDate }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info" style="white-space:nowrap"> 
+                        <th class="bg-transparent text-light text-center">Booking Date </th>
+                        <th class="bg-transparent text-light text-center">Booking No </th>
+                        <th class="bg-transparent text-light text-center">Job Type</th>
+                        <th class="bg-transparent text-light text-center">No of Pkgs</th>
+                        <th class="bg-transparent text-light text-center">Gross Weight</th>
+                        <th class="bg-transparent text-light text-center">Volume</th>
+                        <th class="bg-transparent text-light text-center">Customer</th>
+                        <th class="bg-transparent text-light text-center">Dept</th>
+                        <th class="bg-transparent text-light text-center">Shipment Mode</th>
+                        <th class="bg-transparent text-light text-center">POL</th>
+                        <th class="bg-transparent text-light text-center">Final Destination</th>
+                        <th class="bg-transparent text-light text-center">Inco Terms</th>
+                        <th class="bg-transparent text-light text-center">Origin Agent</th>
+                        <th class="bg-transparent text-light text-center">Salesperson</th>
+                    </tr>
+                </thead>
+                <tbody> 
+                    <tr *ngFor="let item of fullData?.data; let i=index" style="white-space:nowrap">
+                        <td>{{ item.bookingDate | formatDate }}</td>
+                        <td>{{ item.bookingNumber}}</td>
+                        <td>{{ item.jobType}}</td>
+                        <td class="text-end">{{ item.NoofPkg  }}</td>
+                        <td class="text-end">{{ item.GrossWt | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.Volume | number:'1.3-3'}}</td>
+                        <td>{{ item.customerName }}</td>
+                        <td>{{ item.Dept }}</td>
+                        <td>{{ item.nominatedBy}}</td>
+                        <td>{{ item.POL }}</td>
+                        <td>{{ item.FDC }}</td>
+                        <td>{{ item.incoterms}}</td>
+                        <td>{{ item.originAgent }}</td>
+                        <td>{{ item.salesperson }}</td> 
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-end fw-bolder">Total</td>
+                        <td class="text-end fw-bolder">{{totalNoofPkgs()}}</td>
+                        <td class="text-end fw-bolder">{{totalGrossWt() | number:'1.3-3'}}</td>
+                        <td class="text-end fw-bolder">{{totalVolume() | number:'1.3-3'}}</td>
+                    </tr>
+                    <tr *ngIf="!fullData?.data || fullData.data?.length === 0">
+                        <td colspan="14" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <app-print-footer></app-print-footer>
+</div>

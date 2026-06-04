@@ -417,6 +417,7 @@ export class VendorCreditNoteEntryComponent {
   }
 
   async sendManualMail(): Promise<void> {
+    this.spinner.show();
     const menuMasterSid = this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
     const customerBranchSid =
       this.vendorCreditNoteData?.CustomerBranchSid ||
@@ -459,6 +460,7 @@ export class VendorCreditNoteEntryComponent {
         userName: this.userData?.userName
       }
     });
+    this.spinner.hide();
   }
 
   ngOnInit(): void {
