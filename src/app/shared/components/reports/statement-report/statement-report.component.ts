@@ -377,7 +377,13 @@ export class StatementReportComponent {
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
           { label: 'Branch', value: this.fullData?.BranchInvolved || '' },
           { label: 'Ledger', value: this.fullData?.ledgerName || '' },
-          { label: 'Subledger', value: this.fullData?.subledgerName || '' }
+          { label: 'Subledger', value: this.fullData?.subledgerName || '' },
+          {
+          label: 'Address',
+          value: `${this.fullData?.customerAddress || ''}${
+            this.fullData?.customerAddress && this.fullData?.contactNo ? ', ' : ''
+          }${this.fullData?.contactNo || ''}`
+         }
         ]
       },
       tableHeaders,
