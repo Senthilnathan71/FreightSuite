@@ -168,6 +168,21 @@ getAmountInWords(): string {
   const currencySid = this.receiptPrintData?.CurrencyMasterSid; this.receiptPrintData?.CurrencyMasterSid;
   return this.numberToWords.convert(total, currencySid);
 }
+
+isDraftReceipt(): boolean {
+  const statusValues = [
+    this.receiptPrintData?.PostStatus,
+    this.receiptPrintData?.postStatus,
+    this.receiptPrintData?.Status,
+    this.receiptPrintData?.status
+  ].map((value) => String(value || '').trim().toUpperCase());
+
+  return statusValues.some((value) =>
+    value === 'U' ||
+    value === 'UNPOSTED' ||
+    value === 'UNPOST'
+  );
+}
   
 
 

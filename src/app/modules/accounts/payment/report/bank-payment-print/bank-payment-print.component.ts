@@ -395,6 +395,21 @@ getDrDetails() {
   return this.numberToWords.convert(total, currencySid);
 }
 
+isDraftPayment(): boolean {
+  const statusValues = [
+    this.paymentDataPrint?.PostStatus,
+    this.paymentDataPrint?.postStatus,
+    this.paymentDataPrint?.Status,
+    this.paymentDataPrint?.status
+  ].map((value) => String(value || '').trim().toUpperCase());
+
+  return statusValues.some((value) =>
+    value === 'U' ||
+    value === 'UNPOSTED' ||
+    value === 'UNPOST'
+  );
+}
+
 
 
 

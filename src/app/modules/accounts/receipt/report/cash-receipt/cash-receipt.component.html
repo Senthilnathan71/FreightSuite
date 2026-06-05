@@ -1,5 +1,5 @@
 <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Cash Receipt</h5>
+    <h5 class="modal-title text-white mb-0">Cash Receipt<span *ngIf="isDraftReceipt()"> (DRAFT)</span></h5>
     <div class="d-flex gap-2 align-items-center">
 
         <div class="spinner-overlay">
@@ -32,7 +32,7 @@
 
     <!-- Cash Receipt Section -->
     <section style="display:flex; flex-direction:column; flex:1 1 auto; border-top: 1px solid black;">
-        <h4 style="text-align:center; margin:5px auto 12px auto;font-weight: bolder; line-height:1.2;"><strong>Cash Receipt</strong></h4>
+        <h4 style="text-align:center; margin:5px auto 12px auto;font-weight: bolder; line-height:1.2;"><strong>Cash Receipt<span *ngIf="isDraftReceipt()"> (DRAFT)</span></strong></h4>
 
         <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;font-size: 15px;">
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;padding-top: 10px;">

@@ -114,8 +114,10 @@ function buildCompanyHeader(data: ReceiptPdfData): any {
 }
 
 function buildTitle(data: ReceiptPdfData): any {
+  const baseTitle = data.receiptType === 'bank' ? 'Bank Receipt' : 'Cash Receipt';
+
   return {
-    text: data.receiptType === 'bank' ? 'Bank Receipt' : 'Cash Receipt',
+    text: `${baseTitle}${data.receipt?.isDraft ? ' (DRAFT)' : ''}`,
     alignment: 'center',
     bold: true,
     fontSize: 12,
@@ -398,6 +400,17 @@ export function transformReceiptApiData(
   const coaList = options?.coaList || [];
   const bankTypedLedgers = options?.bankTypedLedgers || [];
   const ledgerList = options?.ledgerList || [];
+  const statusValues = [
+    apiData?.PostStatus,
+    apiData?.postStatus,
+    apiData?.Status,
+    apiData?.status
+  ].map((value) => String(value || '').trim().toUpperCase());
+  const isDraft = statusValues.some((value) =>
+    value === 'U' ||
+    value === 'UNPOSTED' ||
+    value === 'UNPOST'
+  );
 
   const detailRows = (apiData?.VoucherDetail || [])
     .filter(
@@ -485,7 +498,8 @@ export function transformReceiptApiData(
       headerLedgerDisplay,
       instrumentMode: apiData?.InstrumentMode || '',
       instrumentNumber: apiData?.InstrumentNumber || '',
-      instrumentDate: apiData?.InstrumentDate || ''
+      instrumentDate: apiData?.InstrumentDate || '',
+      isDraft
     },
     details: detailRows,
     voucherMatchings,

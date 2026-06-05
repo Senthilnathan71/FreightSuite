@@ -190,8 +190,8 @@ export const PDF_TABLE_LAYOUTS = {
 
   // Light bordered table (softer lines)
   lightBordered: {
-    hLineWidth: () => 0.6,
-    vLineWidth: () => 0.6,
+    hLineWidth: () => 0.5,
+    vLineWidth: () => 0.5,
     hLineColor: () => '#4d4d4d',
     vLineColor: () => '#4d4d4d',
     paddingLeft: () => 4,

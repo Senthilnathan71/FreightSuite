@@ -287,9 +287,9 @@ export function buildCargoTable(
 
     const widths = columns.map(col => col.width || '*');
     const layout = {
-      hLineWidth: () => 1,
+      hLineWidth: () => 0.5,
       vLineWidth: (i: number, node: any) =>
-        (i === 0 || i === node.table.widths.length) ? 0 : 1,
+        (i === 0 || i === node.table.widths.length) ? 0 : 0.5,
       hLineColor: () => '#000000',
       vLineColor: () => '#000000',
       paddingLeft: () => 4,
@@ -371,9 +371,9 @@ export function buildCargoTable(
 
     const widths = columns.map(col => col.width || '*');
     const layout = {
-      hLineWidth: () => 1,
+      hLineWidth: () => 0.5,
       vLineWidth: (i: number, node: any) =>
-        (i === 0 || i === node.table.widths.length) ? 0 : 1,
+        (i === 0 || i === node.table.widths.length) ? 0 : 0.5,
       hLineColor: () => '#000000',
       vLineColor: () => '#000000',
       paddingLeft: () => 4,
@@ -457,9 +457,9 @@ export function buildCargoTable(
 
   const widths = columns.map(col => col.width || '*');
   const layout = {
-    hLineWidth: () => 1,
+    hLineWidth: () => 0.5,
     vLineWidth: (i: number, node: any) =>
-      (i === 0 || i === node.table.widths.length) ? 0 : 1,
+      (i === 0 || i === node.table.widths.length) ? 0 : 0.5,
     hLineColor: () => '#000000',
     vLineColor: () => '#000000',
     paddingLeft: () => 4,

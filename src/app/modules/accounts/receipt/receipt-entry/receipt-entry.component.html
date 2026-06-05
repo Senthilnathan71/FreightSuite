@@ -128,7 +128,7 @@
             class="btn btn-info btn-sm receipt-action-btn"
             *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'B' && mps.canPrint('Receipt', 'Print')"
             (click)="reportBank()"
-            [disabled]="!receiptPrintData || !canPrintReceipt"
+            [disabled]="!receiptPrintData"
           >
             <i class="fas fa-print me-1"></i> Print
           </button>
@@ -138,7 +138,7 @@
             class="btn btn-info btn-sm receipt-action-btn"
             *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'C' && mps.canPrint('Receipt', 'Print')"
             (click)="reportCash()"
-            [disabled]="!receiptPrintData || !canPrintReceipt"
+            [disabled]="!receiptPrintData"
           >
             <i class="fas fa-print me-1"></i> Print
           </button>

@@ -28,6 +28,23 @@ const DEFAULT_OPTIONS: HeaderOptions = {
   compact: false
 };
 
+function buildPdfLogoColumn(logo: string | null | undefined, width: number, height: number): any {
+  if (!logo || logo === 'none') {
+    return { text: '', width };
+  }
+
+  const fit: [number, number] = [width, height];
+
+  if (logo.startsWith('data:image/svg+xml')) {
+    const svgPayload = logo.split(',')[1] || '';
+    const isBase64 = logo.includes(';base64,');
+    const svg = isBase64 ? atob(svgPayload) : decodeURIComponent(svgPayload);
+    return { svg, fit, alignment: 'left' as const };
+  }
+
+  return { image: logo, fit, alignment: 'left' as const };
+}
+
 /**
  * Build company header for PDF document
  */
@@ -41,13 +58,8 @@ export function buildHeader(
   const content: any[] = [];
 
   // Build logo column
-  const logoColumn = opts.showLogo && logo
-    ? {
-        image: logo,
-        width: opts.logoWidth,
-        height: opts.logoHeight,
-        alignment: 'left' as const
-      }
+  const logoColumn = opts.showLogo
+    ? buildPdfLogoColumn(logo, opts.logoWidth, opts.logoHeight)
     : { text: '', width: opts.logoWidth };
 
   // Build company info stack

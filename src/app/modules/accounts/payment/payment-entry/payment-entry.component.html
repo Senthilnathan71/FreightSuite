@@ -140,7 +140,7 @@
             class="btn btn-info btn-sm payment-action-btn"
             *ngIf="isEditMode && paymentForm.get('CashOrBank')?.value === 'B' && mps.canPrint('Payment', 'Print')"
             (click)="reportBankPayment()"
-            [disabled]="!paymentDataPrint || !isPosted"
+            [disabled]="!paymentDataPrint "
           >
             <i class="fas fa-print me-1"></i> Print
           </button>
@@ -150,7 +150,7 @@
             class="btn btn-info btn-sm payment-action-btn"
             *ngIf="isEditMode && paymentForm.get('CashOrBank')?.value === 'C' && mps.canPrint('Payment', 'Print')"
             (click)="reportPayment()"
-            [disabled]="!paymentDataPrint || !isPosted"
+            [disabled]="!paymentDataPrint "
           >
             <i class="fas fa-print me-1"></i> Print
           </button>

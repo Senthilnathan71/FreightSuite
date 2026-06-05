@@ -76,8 +76,10 @@ function buildCompanyHeader(data: PaymentPdfData): any {
 }
 
 function buildTitle(data: PaymentPdfData): any {
+  const baseTitle = data.paymentType === 'bank' ? 'Bank Payment' : 'Cash Payment';
+
   return {
-    text: data.paymentType === 'bank' ? 'Bank Payment' : 'Cash Payment',
+    text: `${baseTitle}${data.payment?.isDraft ? ' (DRAFT)' : ''}`,
     alignment: 'center',
     bold: true,
     fontSize: 12,
@@ -383,6 +385,17 @@ export function transformPaymentApiData(
   const ledgerList = options?.ledgerList || [];
   const bankTypedLedgers = options?.bankTypedLedgers || [];
   const voucherDetails = apiData?.VoucherDetail || [];
+  const statusValues = [
+    apiData?.PostStatus,
+    apiData?.postStatus,
+    apiData?.Status,
+    apiData?.status
+  ].map((value) => String(value || '').trim().toUpperCase());
+  const isDraft = statusValues.some((value) =>
+    value === 'U' ||
+    value === 'UNPOSTED' ||
+    value === 'UNPOST'
+  );
 
   const detailRows = voucherDetails
     .filter(
@@ -459,7 +472,8 @@ export function transformPaymentApiData(
       bankName: bank?.LedgerName || '',
       instrumentMode: apiData?.InstrumentMode || '',
       instrumentNumber: apiData?.InstrumentNumber || '',
-      instrumentDate: apiData?.InstrumentDate || ''
+      instrumentDate: apiData?.InstrumentDate || '',
+      isDraft
     },
     details: detailRows,
     voucherMatchings,

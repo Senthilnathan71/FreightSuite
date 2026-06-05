@@ -14,7 +14,7 @@ import {
   buildRemarks,
   buildTermsSection
 } from '../builders/pdf-section.builder';
-import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
+import { getPdfStyles, PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
 import { formatDate } from '../helpers/pdf-formatters';
 
 /**
@@ -39,20 +39,24 @@ export function generateBookingDocument(
       return {
         canvas: [
           // LEFT BORDER
-          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.5 },
           // RIGHT BORDER
-          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.5 },
           // TOP BORDER
-          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.5 },
           // BOTTOM BORDER
-          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.5 }
         ]
       };
     },
 
     content: [
       // Header
-      buildHeader(data.company, data.branch, data.logo),
+      buildHeader(data.company, data.branch, data.logo, {
+        showLogo: true,
+        logoWidth: 70,
+        logoHeight: 70
+      }),
 
       // Title
       buildBookingTitle(`Booking Confirmation${departmentLabel}`),
@@ -61,7 +65,7 @@ export function generateBookingDocument(
       buildBookingInfo(data),
 
       // Divider
-      buildDivider({ width: 555, margin: [0, 6, 0, 8], thickness: 1 }),
+      buildDivider({ width: 555, margin: [0, 6, 0, 8], thickness: 0.5 }),
 
       // Confirmation message
       {
@@ -98,7 +102,7 @@ function buildBookingTitle(title: string): any {
     stack: [
       {
         canvas: [
-          { type: 'line', x1: 0, y1: 0, x2: fullWidth, y2: 0, lineWidth: 1, lineColor: '#000000' }
+          { type: 'line', x1: 0, y1: 0, x2: fullWidth, y2: 0, lineWidth: 0.5, lineColor: '#000000' }
         ],
         margin: [0, 0, 0, 6]
       },
@@ -111,7 +115,7 @@ function buildBookingTitle(title: string): any {
       },
       {
         canvas: [
-          { type: 'line', x1: 0, y1: 0, x2: fullWidth, y2: 0, lineWidth: 1, lineColor: '#000000' }
+          { type: 'line', x1: 0, y1: 0, x2: fullWidth, y2: 0, lineWidth: 0.5, lineColor: '#000000' }
         ],
         margin: [0, 0, 0, 8]
       }
@@ -201,7 +205,7 @@ function buildShipmentDetails(data: BookingPdfData): any {
         { stack: buildDetailRows(rightDetails, 95), margin: [4, 3, 2, 3] }
       ]]
     },
-    layout: 'bordered',
+    layout: PDF_TABLE_LAYOUTS.bordered,
     margin: [0, 0, 0, 5]
   };
 }
@@ -308,7 +312,7 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
           widths: new Array(headerRow.length).fill('*'),
           body: [headerRow, ...valueRows]
         },
-        layout: 'bordered',
+        layout: PDF_TABLE_LAYOUTS.bordered,
         margin: [0, 0, 0, 6]
       }
     ]

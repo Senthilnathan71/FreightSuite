@@ -1640,11 +1640,16 @@
                 {{ invoicePrintData?.BillingAddress }}<br />
               </div>
                <div
-                  style="display: flex"
+                  style="display: flex; align-items: flex-start; margin-bottom: 2px;"
                   *ngIf="currentCompanyCountryCode === 'in'"
                 >
-                  <strong style="font-weight: 600">{{ invoicePrintData?.CustomerCountryCode === 'ae' ? 'VAT' : invoicePrintData?.CustomerCountryCode === 'in' ? 'PAN' : 'Tax No' }} :</strong>
-                  {{ invoicePrintData?.PAN }}
+                  <div style="width: 160px; font-weight: 600; white-space: nowrap;">
+                    <strong>{{ invoicePrintData?.CustomerCountryCode === 'ae' ? 'VAT' : invoicePrintData?.CustomerCountryCode === 'in' ? 'PAN' : 'Tax No' }}</strong>
+                  </div>
+                  <div style="width: 15px; text-align: center;">:</div>
+                  <div style="flex: 1; line-height: 1.4;">
+                    {{ invoicePrintData?.PAN }}
+                  </div>
                 </div>
             </div>
             <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
@@ -1695,6 +1700,7 @@
           </div>
 
           <!-- Shipment Details -->
+          @if(this.currentCompany?.CompanyMasterSid === '24'){
           <div
             style="
               display: flex;
@@ -2049,6 +2055,7 @@
 
             </div>
           </div>
+          }
 
           <!-- Table with Dynamic Tax Columns -->
           <div style="width: 100%; overflow-x: auto; margin-top: 8px">

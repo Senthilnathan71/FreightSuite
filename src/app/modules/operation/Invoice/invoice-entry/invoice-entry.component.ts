@@ -289,7 +289,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   isBankFetched : boolean = false;
   bankDetails: any;
   emailForm!: FormGroup;
-
+  ogranzationcountry : any;
   // Unsaved changes related varaible declarations
   isDirty : boolean = false;
   isSaving : boolean = false;
