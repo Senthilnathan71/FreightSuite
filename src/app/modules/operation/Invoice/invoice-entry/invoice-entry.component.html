@@ -1643,7 +1643,7 @@
                   style="display: flex"
                   *ngIf="currentCompanyCountryCode === 'in'"
                 >
-                  <strong style="font-weight: 600">PAN :</strong>
+                  <strong style="font-weight: 600">{{ invoicePrintData?.CustomerCountryCode === 'ae' ? 'VAT' : invoicePrintData?.CustomerCountryCode === 'in' ? 'PAN' : 'Tax No' }} :</strong>
                   {{ invoicePrintData?.PAN }}
                 </div>
             </div>

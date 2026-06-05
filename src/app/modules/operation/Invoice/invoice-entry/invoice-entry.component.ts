@@ -1555,7 +1555,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       GSTCode: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
       BilledTo: this.invoiceData?.PartyName || this.invoiceData?.subledgerMaster?.SubledgerName || '',
       BillingAddress: this.invoiceData?.PartyAddress || this.invoiceData?.subledgerMaster?.Address || '',
-      PAN: this.currentCompany?.Pan || this.currentCompany?.PAN || '',
+      PAN: this.invoiceData?.customerBranch?.customerMaster?.PanType || '',
+      CustomerCountryCode: (this.invoiceData?.customerBranch?.customerMaster?.countryMaster?.countryCode || '').toLowerCase(),
       InvoiceNo: this.currentCompany?.CompanyMasterSid === 13
         ? `${this.invoiceData?.VoucherNumber || ''} ${this.invoiceData?.PostStatus === 'P' ? '' : '( CREATED )'}`
         : `${this.invoiceData?.VoucherNumber || ''} ${this.invoiceData?.PostStatus === 'P' ? '' : '( DRAFT )'}`,
