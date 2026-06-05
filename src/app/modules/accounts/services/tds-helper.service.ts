@@ -29,12 +29,16 @@ export class TdsHelperService {
   private allRatesForSet: any[] = [];      // raw, unfiltered (for re-filter when type changes)
   supplierTdsMapping: any | null = null;
   customerCompanyType: string | null = null;
+  customerCountryName: string = '';        // vendor country — drives isLocal in the matrix
+  customerHasPAN: boolean = false;         // vendor PAN presence — drives hasPAN in the matrix
   cumulativeTaxableAmount = 0;             // FY cumulative for this vendor
   certificateCumulativeDeducted = 0;       // SM-9: FY-to-date TDS withheld for this vendor
   certificateExhausted = false;            // SM-9: certificate amount cap reached
   isTDSEnabled = false;
   limitNote: string | null = null;
   autoReason: string | null = null;
+  resolvedApplicableRate: any | null = null;  // rate row selected during populateFromMapping
+  tdsRateAutoValue: number | null = null;     // matrix-computed rate — compare to detect manual edits
 
   constructor(private accountsService: AccountsService) {}
 
@@ -46,6 +50,7 @@ export class TdsHelperService {
       ITSectionCode: [''],
       CertificateNo: [''],
       CertificateAmt: [''],
+      NotificationNo: [''],
       TaxableAmount: [0],
       TDSRate: [0],
       TDSAmount: [0],
@@ -54,7 +59,7 @@ export class TdsHelperService {
     });
   }
 
-  loadTDSSets(_CompanyMasterSid?: number): Observable<void> {
+  loadTDSSets(): Observable<void> {
     // TDS Set Header is a global master — no CompanyMasterSid filter.
     return this.accountsService.getAllTDSSet().pipe(
       tap((res: any) => {
@@ -74,6 +79,11 @@ export class TdsHelperService {
     voucherDate: Date;
     excludeVoucherHeaderSid?: number;
     tdsForm: FormGroup;
+    vendorCountryName?: string;
+    vendorHasPAN?: boolean;
+    /** When true, loads mapping + cumulative context but does NOT overwrite the tdsForm values.
+     *  Use in edit mode after patchFromSavedTDS so limit recalcs have the correct thresholds. */
+    contextOnly?: boolean;
   }): Observable<void> {
     return this.accountsService
       .getSupplierTdsByBranch({
@@ -90,21 +100,25 @@ export class TdsHelperService {
           const data = res?.data ?? {};
           this.supplierTdsMapping = data.mapping ?? null;
           this.customerCompanyType = data.customerCompanyType ?? null;
+          this.customerCountryName = args.vendorCountryName ?? '';
+          this.customerHasPAN = args.vendorHasPAN ?? false;
           this.cumulativeTaxableAmount = Number(data.cumulativeTaxableAmount ?? 0);
           this.certificateCumulativeDeducted = Number(data.certificateCumulativeDeducted ?? 0);
           this.certificateExhausted = !!data.certificateExhausted;
           if (this.supplierTdsMapping) {
             this.isTDSEnabled = true;
-            this.populateFromMapping(this.supplierTdsMapping, args.voucherDate, args.tdsForm);
+            this.populateFromMapping(this.supplierTdsMapping, args.voucherDate, args.tdsForm, args.contextOnly ?? false);
           } else {
             this.allRatesForSet = [];
             this.tdsRateList = [];
-            args.tdsForm.reset({
-              TaxableAmount: 0,
-              TDSAmount: 0,
-              TDSPartyAmount: 0,
-              TDSRate: 0,
-            });
+            if (!args.contextOnly) {
+              args.tdsForm.reset({
+                TaxableAmount: 0,
+                TDSAmount: 0,
+                TDSPartyAmount: 0,
+                TDSRate: 0,
+              });
+            }
           }
         }),
         map(() => void 0),
@@ -112,7 +126,7 @@ export class TdsHelperService {
       );
   }
 
-  populateFromMapping(mapping: any, voucherDate: Date, tdsForm: FormGroup): void {
+  populateFromMapping(mapping: any, voucherDate: Date, tdsForm: FormGroup, skipFormPatch = false): void {
     const rates: any[] = this.decorateRates(mapping.tdsSetHeader?.tdsSetRate || []);
     this.allRatesForSet = rates;
     this.tdsRateList = this.filterRatesByCompanyType(rates);
@@ -136,19 +150,34 @@ export class TdsHelperService {
       this.autoReason = reason;
     }
 
-    tdsForm.patchValue(
-      {
-        TDSSetHeaderSid: mapping.TDSSetHeaderSid,
-        TDSSetRateSid: applicable?.TDSSetRateSid ?? null,
-        CompanyType: this.customerCompanyType ?? mapping.CompanyType ?? applicable?.CompanyType ?? '',
-        ITSectionCode: isExempt ? (mapping.ITSecCode ?? '') : (applicable?.ITSectionCode ?? ''),
-        CertificateNo: mapping.CertificateNo ?? '',
-        CertificateAmt: mapping.CertificateAmt ?? '',
-        TDSRate: isExempt ? Number(mapping.CertificatePercentage ?? 0) : masterRate,
-        ...(reason ? { Reason: reason } : {}),
-      },
-      { emitEvent: false },
-    );
+    // Apply TDS matrix (Sec 206AA / 206AB rules) to derive the regulatory rate.
+    const isLocal = (this.customerCountryName || '').trim().toLowerCase() === 'india';
+    const isSpecified = !!this.customerCompanyType;
+    const hasPAN = this.customerHasPAN;
+    const certPct = Number(mapping.CertificatePercentage ?? 0);
+    const baseRate = applicable ? Number(applicable.TDSRate ?? 0) : null;
+
+    const matrixRate = this.computeApplicableRate({ isLocal, isSpecified, hasPAN, isExempt, certPct, baseRate });
+    const tdsRate = matrixRate ?? masterRate;
+
+    this.resolvedApplicableRate = applicable ?? null;
+    this.tdsRateAutoValue = tdsRate;
+
+    if (!skipFormPatch) {
+      tdsForm.patchValue(
+        {
+          TDSSetHeaderSid: mapping.TDSSetHeaderSid,
+          TDSSetRateSid: applicable?.TDSSetRateSid ?? null,
+          CompanyType: this.customerCompanyType ?? mapping.CompanyType ?? applicable?.CompanyType ?? '',
+          ITSectionCode: isExempt ? (mapping.ITSecCode ?? '') : (applicable?.ITSectionCode ?? ''),
+          CertificateNo: mapping.CertificateNo ?? '',
+          CertificateAmt: mapping.CertificateAmt ?? '',
+          TDSRate: tdsRate,
+          ...(reason ? { Reason: reason } : {}),
+        },
+        { emitEvent: false },
+      );
+    }
   }
 
   loadRatesForSet(TDSSetHeaderSid: number): Observable<void> {
@@ -253,39 +282,60 @@ export class TdsHelperService {
     const rate = Number(tdsForm.get('TDSRate')?.value || 0);
     const tdsAmt = (tdsBase * rate) / 100;
     this.applyAmounts(tdsForm, fullTaxableAmount, tdsAmt, headerExchangeRate, fmtAmt);
-    if (this.autoReason) {
-      tdsForm.patchValue({ Reason: this.autoReason }, { emitEvent: false });
-    }
+    tdsForm.patchValue({ Reason: this.autoReason ?? '' }, { emitEvent: false });
   }
 
-  patchFromSavedTDS(vtds: any, tdsForm: FormGroup): void {
+  patchFromSavedTDS(
+    vtds: any,
+    tdsForm: FormGroup,
+    formatAmount?: (n: number) => number | string,
+    formatCompanyAmount?: (n: number) => number | string,
+  ): void {
     const rateInfo = vtds.TDSSetRate || vtds.tdsSetRate || {};
+    const fmt = formatAmount ?? ((n: number) => n);
+    // TDSAmount is always in company (local) currency — use a separate formatter so
+    // its decimal precision matches INR rather than the payment header's currency.
+    const fmtTds = formatCompanyAmount ?? fmt;
+
+    // Non-display fields: suppress events — no directive depends on these.
     tdsForm.patchValue(
       {
         TDSSetHeaderSid: rateInfo.TDSSetHeaderSid ?? null,
         TDSSetRateSid: vtds.TDSSetRateSid,
         CompanyType: rateInfo.CompanyType ?? this.customerCompanyType ?? '',
         ITSectionCode: vtds.ITSectionCode,
-        TDSRate: Number(vtds.TDSRate ?? 0),
-        TaxableAmount: Number(vtds.TaxableAmount ?? 0),
-        TDSAmount: Number(vtds.TDSAmount ?? 0),
-        TDSPartyAmount: Number(vtds.TDSPartyAmount ?? 0),
         Reason: vtds.Reason ?? '',
+        CertificateNo: vtds.CertificateNo ?? '',
+        NotificationNo: vtds.NotificationNo ?? '',
       },
       { emitEvent: false },
     );
+
+    // Numeric display fields: emit events so the DecimalPrecision directive's
+    // valueChanges subscription fires and reformats the inputs immediately.
+    // TDSRate uses fixed 2-decimal precision; amounts use currency-dependent precision.
+    tdsForm.patchValue({
+      TaxableAmount: fmt(Number(vtds.TaxableAmount ?? 0)),
+      TDSAmount: fmtTds(Number(vtds.TDSAmount ?? 0)),
+      TDSPartyAmount: fmt(Number(vtds.TDSPartyAmount ?? 0)),
+      TDSRate: Number(Number(vtds.TDSRate ?? 0).toFixed(2)),
+    });
   }
 
   buildPayload(tdsForm: FormGroup): any | null {
     if (!this.isTDSEnabled) return null;
-    const v = tdsForm.getRawValue();
-    if (!v.TDSAmount || Number(v.TDSAmount) <= 0) return null;
-    return { ...v };
+    // Always persist TDS record even when TDSAmount = 0 (e.g. below threshold).
+    // The backend aggregates TaxableAmount across all VoucherTDS rows to compute
+    // the cumulative base; skipping zero-TDS payments would under-count the base
+    // and delay threshold triggers in subsequent payments.
+    return { ...tdsForm.getRawValue() };
   }
 
   reset(): void {
     this.supplierTdsMapping = null;
     this.customerCompanyType = null;
+    this.customerCountryName = '';
+    this.customerHasPAN = false;
     this.cumulativeTaxableAmount = 0;
     this.certificateCumulativeDeducted = 0;
     this.certificateExhausted = false;
@@ -294,6 +344,8 @@ export class TdsHelperService {
     this.autoReason = null;
     this.allRatesForSet = [];
     this.tdsRateList = [];
+    this.resolvedApplicableRate = null;
+    this.tdsRateAutoValue = null;
   }
 
   // ─── TDS Matrix ───────────────────────────────────────────────────────────
@@ -405,5 +457,93 @@ export class TdsHelperService {
 
   private fmt(n: number): string {
     return Number(n || 0).toLocaleString('en-IN');
+  }
+
+  /**
+   * Builds the TDS Rate tooltip for voucher entry screens.
+   * - If the current form rate differs from the auto-computed matrix rate → "manually changed" message.
+   * - Otherwise → structured derivation (same format as vendor-tds-entry Applicable Rate tooltip).
+   */
+  getTDSRateTooltip(tdsForm: FormGroup, tdsSetList: any[]): string {
+    const mapping = this.supplierTdsMapping;
+    if (!mapping) return '';
+
+    const currentRate = Number(tdsForm.get('TDSRate')?.value ?? 0);
+
+    if (this.tdsRateAutoValue != null && currentRate !== this.tdsRateAutoValue) {
+      return `Rate manually changed (auto-computed: ${this.tdsRateAutoValue}%)`;
+    }
+
+    const isExempt = mapping.TaxExempt === 'Y' && !this.certificateExhausted;
+    const certPct = Number(mapping.CertificatePercentage ?? 0);
+    if (isExempt && !(certPct > 0)) return 'Certificate % not configured.';
+
+    const isLocal = (this.customerCountryName || '').trim().toLowerCase() === 'india';
+    const isSpecified = !!this.customerCompanyType;
+    const hasPAN = this.customerHasPAN;
+    const baseRate = this.resolvedApplicableRate ? Number(this.resolvedApplicableRate.TDSRate ?? 0) : null;
+
+    // Line 1 — classification
+    const parts: string[] = [isLocal ? 'Local' : 'Foreign'];
+    if (isLocal) {
+      parts.push(isSpecified ? 'Specified' : 'Non-Specified');
+      parts.push(hasPAN ? 'PAN available' : 'No PAN');
+    }
+    parts.push(isExempt ? 'Certificate available' : 'No Certificate');
+    const line1 = parts.join(' - ');
+
+    // Line 2 — master rate source
+    const headerSid = mapping.TDSSetHeaderSid;
+    const tdsSet = (tdsSetList || []).find((t: any) => Number(t.TDSSetHeaderSid) === Number(headerSid));
+    const tdsSetName = tdsSet?.TDSSetName ?? 'Unknown TDS Set';
+    const companyTypePart = this.customerCompanyType ? ` = ${this.customerCompanyType}` : '';
+    const line2 = `Master Rate = ${tdsSetName}${companyTypePart} = ${baseRate != null ? baseRate + '%' : 'N/A'}`;
+
+    // Lines 3-5 — formula
+    const cap = (r: number) => this.capRate(r);
+    let formulaTemplate = '', formulaValues = '', resultLine = '';
+
+    if (!isLocal) {
+      if (isExempt) { formulaTemplate = '= Certificate Rate'; resultLine = `= ${cap(certPct)}%`; }
+      else { formulaTemplate = '= Master Rate'; resultLine = baseRate != null ? `= ${baseRate}%` : '= N/A'; }
+    } else if (isSpecified) {
+      if (hasPAN) {
+        if (isExempt) {
+          const d = cap(certPct * 2), final = Math.max(5, d);
+          formulaTemplate = '= max(Certificate × 2, 5%)'; formulaValues = `= max(${d}%, 5%)`; resultLine = `= ${final}%`;
+        } else if (baseRate != null) {
+          const d = cap(baseRate * 2), final = Math.max(5, d);
+          formulaTemplate = '= max(Master Rate × 2, 5%)'; formulaValues = `= max(${d}%, 5%)`; resultLine = `= ${final}%`;
+        }
+      } else {
+        if (isExempt) {
+          const d = cap(certPct * 2), final = Math.max(d, 20);
+          formulaTemplate = '= max(Certificate × 2, 20%)'; formulaValues = `= max(${d}%, 20%)`; resultLine = `= ${final}%`;
+        } else if (baseRate != null) {
+          const d = cap(baseRate * 2), final = Math.max(d, 20);
+          formulaTemplate = '= max(Master Rate × 2, 20%)'; formulaValues = `= max(${d}%, 20%)`; resultLine = `= ${final}%`;
+        }
+      }
+    } else {
+      if (hasPAN) {
+        if (isExempt) { formulaTemplate = '= Certificate Rate'; resultLine = `= ${cap(certPct)}%`; }
+        else { formulaTemplate = '= Master Rate'; resultLine = baseRate != null ? `= ${baseRate}%` : '= N/A'; }
+      } else {
+        if (isExempt) {
+          const c = cap(certPct), final = Math.max(c, 20);
+          formulaTemplate = '= max(Certificate Rate, 20%)'; formulaValues = `= max(${c}%, 20%)`; resultLine = `= ${final}%`;
+        } else if (baseRate == null) {
+          formulaTemplate = '= 20% (Sec 206AA floor — no PAN)'; resultLine = '= 20%';
+        } else {
+          const final = Math.max(baseRate, 20);
+          formulaTemplate = '= max(Master Rate, 20%)'; formulaValues = `= max(${baseRate}%, 20%)`; resultLine = `= ${final}%`;
+        }
+      }
+    }
+
+    const lines = [line1, line2, formulaTemplate];
+    if (formulaValues) lines.push(formulaValues);
+    lines.push(resultLine);
+    return lines.join('\n');
   }
 }

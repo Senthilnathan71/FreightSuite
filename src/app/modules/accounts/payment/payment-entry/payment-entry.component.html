@@ -48,7 +48,7 @@
       <!-- Search Section -->
 
       <div [ngClass]="isEditMode ? 'col-md-4' : 'col-md-5'">
-        <form [formGroup]="searchOutstandingForm" *ngIf="!isPosted">
+        <form [formGroup]="searchOutstandingForm" *ngIf="!isPosted && !isFromPaymentRequest">
           <div
             class="d-flex pb-1 align-items-center ps-5 gap-2"
           >
@@ -69,14 +69,14 @@
             @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
             <div class="col-md-5">
               <dofi-searchable-dropdown
-                formControlName="LedgerMasterSid"
+                formControlName="CustomerBranchSid"
                 [items]="partyList"
                 placeholder="Select Party"
                 [displayFields]="CustomerLookupConfig.displayFields"
                 [displayLabels]="CustomerLookupConfig.displayLabels"
                 [labelFields]="CustomerLookupConfig.labelFields"
                 bindLabel="CustomerName"
-                bindValue="SubledgerMasterSid"
+                bindValue="CustomerBranchSid"
                 (itemSelected)="onPartySearchSelect($event)"
               >
               </dofi-searchable-dropdown>
@@ -98,7 +98,7 @@
                 [disabled]="
                   !searchOutstandingForm.get('SearchType')?.value ||
                   !(
-                    searchOutstandingForm.get('LedgerMasterSid')?.value ||
+                    searchOutstandingForm.get('CustomerBranchSid')?.value ||
                     searchOutstandingForm.get('FilterText')?.value
                   )
                 "
@@ -978,14 +978,15 @@
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Narration
               </th>
+              <th class="bg-transparent text-light" style="font-size: 14px">Department</th>
+              <th class="bg-transparent text-light" style="font-size: 14px">Master Job</th>
+              <th class="bg-transparent text-light" style="font-size: 14px">House Job</th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Cost Center
               </th>
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Profit Center
               </th>
-              <th class="bg-transparent text-light" style="font-size: 14px">Master Job</th>
-              <th class="bg-transparent text-light" style="font-size: 14px">House Job</th>
               <!-- <th class="bg-transparent text-light" style="font-size: 14px">
                 Charge
               </th> -->
@@ -1179,20 +1180,11 @@
                 <td class="dofi-min-w-100">
                   <ng-select
                     class="ng-select"
-                    [items]="costCenterList"
-                    bindLabel="CostCenterName"
-                    bindValue="CostCenterMasterSid"
-                    formControlName="CostCenter"
-                    appendTo="body"
-                  ></ng-select>
-                </td>
-                <td class="dofi-min-w-100">
-                  <ng-select
-                    class="ng-select"
-                    [items]="profitCenterList"
-                    bindLabel="ProfitCenterName"
-                    bindValue="ProfitCenterMasterSid"
-                    formControlName="ProfitCenter"
+                    [items]="deptList"
+                    bindLabel="departmentName"
+                    bindValue="DepartmentMasterSid"
+                    formControlName="DepartmentMasterSid"
+                    (change)="filterDetailsWithDept($event, i)"
                     appendTo="body"
                   ></ng-select>
                 </td>
@@ -1237,6 +1229,26 @@
                     >{{ d.get('houseJob')?.value?.HBLNo || d.get('HouseJobSid')?.value }}</a>
                   }
                 </td>
+                <td class="dofi-min-w-100">
+                  <ng-select
+                    class="ng-select"
+                    [items]="costCenterList"
+                    bindLabel="CostCenterName"
+                    bindValue="CostCenterMasterSid"
+                    formControlName="CostCenter"
+                    appendTo="body"
+                  ></ng-select>
+                </td>
+                <td class="dofi-min-w-100">
+                  <ng-select
+                    class="ng-select"
+                    [items]="profitCenterList"
+                    bindLabel="ProfitCenterName"
+                    bindValue="ProfitCenterMasterSid"
+                    formControlName="ProfitCenter"
+                    appendTo="body"
+                  ></ng-select>
+                </td>
                 <!-- <td class="dofi-min-w-100">
                   <ng-select
                     class="ng-select"
@@ -1272,158 +1284,194 @@
 
       <!-- TDS Deduction (India only) -->
       <ng-container *ngIf="currentCompanyCountryCode === 'in'">
-        <div class="card mt-2">
-          <div class="card-header d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2">
-              <h6 class="card-title mb-0">
-                <i class="fas fa-percentage"></i> TDS Deduction
-              </h6>
-              <span *ngIf="tdsHelper.supplierTdsMapping"
-                    class="badge bg-success ms-1"
-                    style="font-size: 10px">
-                <i class="fas fa-check-circle"></i> Mapping Found
-              </span>
+        <div style="margin-top:10px; border:1px solid #cdd8e1; border-top:2px solid #05608d; border-radius:6px; background:#fff; overflow:hidden;">
+
+          <!-- TDS Header -->
+          <div style="display:flex; align-items:center; gap:10px; padding:6px 12px; background:#f1f6f9; border-bottom:1px solid #d3d9e4;">
+
+            <!-- Title -->
+            <div style="display:flex; align-items:center; gap:7px; color:#05608d; font-weight:700; font-size:13px;">
+              <span style="width:18px; height:18px; border-radius:4px; background:#05608d; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">%</span>
+              TDS Deduction
             </div>
-            <div class="d-flex align-items-center gap-3">
+
+            <!-- Mapping Found badge -->
+            <span *ngIf="tdsHelper.supplierTdsMapping"
+                  style="display:inline-flex; align-items:center; gap:4px; background:#e7f8ee; color:#15803d; border:1px solid #b7e7c9; border-radius:20px; padding:1px 8px; font-size:11px; font-weight:600;">
+              <span style="width:11px; height:11px; border-radius:50%; background:#16a34a; color:#fff; font-size:8px; display:inline-flex; align-items:center; justify-content:center;">&#10003;</span>
+              Mapping Found
+            </span>
+
+            <!-- Right side: limit warning + toggle -->
+            <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
+
+              <!-- Limit / warning chip -->
               <span *ngIf="tdsHelper.limitNote && tdsHelper.isTDSEnabled"
-                    class="small"
-                    style="color: #ffe08a;">
-                <i class="fas fa-info-circle"></i> {{ tdsHelper.limitNote }}
+                    style="display:inline-flex; align-items:center; gap:5px; background:#fef4e2; border:1px solid #f5d99a; color:#9a6a12; border-radius:20px; padding:2px 10px; font-size:11.5px; font-weight:600;">
+                <span style="width:13px; height:13px; border-radius:50%; background:#e89c1c; color:#fff; font-size:9px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">!</span>
+                {{ tdsHelper.limitNote }}
               </span>
-              <div class="form-check form-switch mb-0">
-                <input class="form-check-input sm"
-                       type="checkbox"
+
+              <!-- Toggle -->
+              <label style="display:inline-flex; align-items:center; gap:6px; color:#5a6b78; font-size:12px; font-weight:600; cursor:pointer; margin-bottom:0;" for="tdsToggle">
+                <span style="width:32px; height:18px; border-radius:20px; position:relative; flex-shrink:0; display:inline-block;"
+                      [style.background]="tdsHelper.isTDSEnabled ? '#16a34a' : '#adb5bd'">
+                  <span style="position:absolute; width:13px; height:13px; border-radius:50%; background:#fff; top:2.5px; box-shadow:0 1px 2px rgba(0,0,0,.25); transition:right .15s;"
+                        [style.right]="tdsHelper.isTDSEnabled ? '2px' : '17px'"></span>
+                </span>
+                <input type="checkbox"
                        id="tdsToggle"
                        [(ngModel)]="tdsHelper.isTDSEnabled"
                        [ngModelOptions]="{ standalone: true }"
                        (change)="onTDSToggle()"
-                       [disabled]="isReadOnly || isPosted" />
-                <label class="form-check-label text-light small" for="tdsToggle">
-                  {{ tdsHelper.isTDSEnabled ? 'Enabled' : 'Disabled' }}
-                </label>
-              </div>
+                       [disabled]="isReadOnly || isPosted"
+                       style="position:absolute; opacity:0; width:0; height:0;" />
+                {{ tdsHelper.isTDSEnabled ? 'Enabled' : 'Disabled' }}
+              </label>
             </div>
           </div>
 
-          <div class="card-body p-0" *ngIf="tdsHelper.isTDSEnabled" [formGroup]="tdsForm">
-            <div class="table-responsive table-borderless">
-              <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                <thead>
-                  <tr class="bg-info text-center">
-                    <th class="bg-transparent text-light" style="font-size: 14px">
-                      TDS Set <span class="text-danger" style="color: #ffb3b3 !important;">*</span>
-                    </th>
-                    <th class="bg-transparent text-light" style="font-size: 14px">
-                      Rate / Person Type <span class="text-danger" style="color: #ffb3b3 !important;">*</span>
-                    </th>
-                    <th class="bg-transparent text-light" style="font-size: 14px">
-                      IT Section
-                    </th>
-                    <th class="bg-transparent text-light" style="font-size: 14px">
-                      Certificate No
-                    </th>
-                    <th class="bg-transparent text-light text-end" style="font-size: 14px">
-                      Taxable Amt
-                    </th>
-                    <th class="bg-transparent text-light text-end" style="font-size: 14px">
-                      TDS % <span class="text-danger" style="color: #ffb3b3 !important;">*</span>
-                    </th>
-                    <th class="bg-transparent text-light text-end" style="font-size: 14px">
-                      TDS Amount
-                    </th>
-                    <th class="bg-transparent text-light" style="font-size: 14px">
-                      Reason
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="dofi-min-w-150">
-                      <ng-select
-                        [items]="tdsHelper.tdsSetList"
-                        bindLabel="TDSSetName"
-                        bindValue="TDSSetHeaderSid"
-                        formControlName="TDSSetHeaderSid"
-                        appendTo="body"
-                        (change)="onTDSSetChange($event)"
-                        [readonly]="isReadOnly || isPosted"
-                      ></ng-select>
-                    </td>
-                    <td class="dofi-min-w-150">
-                      <ng-select
-                        [items]="tdsHelper.tdsRateList"
-                        bindLabel="displayLabel"
-                        bindValue="TDSSetRateSid"
-                        formControlName="TDSSetRateSid"
-                        appendTo="body"
-                        (change)="onTDSRateChange($event)"
-                        [readonly]="isReadOnly || isPosted"
-                      ></ng-select>
-                    </td>
-                    <td class="dofi-min-w-100">
-                      <input
-                        type="text"
-                        formControlName="ITSectionCode"
-                        class="custom-input-field sm"
-                        readonly
-                      />
-                    </td>
-                    <td class="dofi-min-w-125">
-                      <input
-                        type="text"
-                        formControlName="CertificateNo"
-                        class="custom-input-field sm"
-                        maxlength="20"
-                        [readOnly]="isReadOnly || isPosted"
-                      />
-                    </td>
-                    <td class="dofi-min-w-125">
-                      <input
-                        type="text"
-                        formControlName="TaxableAmount"
-                        class="custom-input-field sm text-end"
-                        DecimalPrecision
-                        [DecimalPrecisionBefore]="13"
-                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(paymentForm.get('CurrencyMasterSid')?.value)"
-                        readonly
-                      />
-                    </td>
-                    <td class="dofi-min-w-70">
-                      <input
-                        type="text"
-                        formControlName="TDSRate"
-                        class="custom-input-field sm text-end"
-                        DecimalPrecision
-                        [DecimalPrecisionBefore]="3"
-                        [DecimalPrecisionAfter]="2"
-                        (blur)="onTDSRateBlur()"
-                        [readOnly]="isReadOnly || isPosted"
-                      />
-                    </td>
-                    <td class="dofi-min-w-125">
-                      <input
-                        type="text"
-                        formControlName="TDSAmount"
-                        class="custom-input-field sm text-end fw-bold"
-                        DecimalPrecision
-                        [DecimalPrecisionBefore]="13"
-                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(paymentForm.get('CurrencyMasterSid')?.value)"
-                        readonly
-                      />
-                    </td>
-                    <td style="min-width: 240px">
-                      <input
-                        type="text"
-                        formControlName="Reason"
-                        class="custom-input-field sm"
-                        maxlength="100"
-                        [readOnly]="isReadOnly || isPosted"
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <!-- TDS Table -->
+          <div *ngIf="tdsHelper.isTDSEnabled" [formGroup]="tdsForm" class="table-responsive">
+            <table class="table align-middle mb-0" style="min-width:900px; border-collapse:collapse;">
+              <thead>
+                <tr style="background:#f7fafc; border-bottom:1px solid #d3d9e4;">
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; min-width:150px;">
+                    TDS Set <span style="color:#e2483b;">*</span>
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; min-width:160px;">
+                    Rate / Person Type <span style="color:#e2483b;">*</span>
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; min-width:90px;">
+                    IT Section
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; min-width:120px;">
+                    Certificate No
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; min-width:120px;">
+                    Notification No
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; text-align:right; min-width:120px;">
+                    Taxable Amt
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; text-align:right; min-width:70px;"
+                      [title]="tdsHelper.getTDSRateTooltip(tdsForm, tdsHelper.tdsSetList)"
+                      [style.cursor]="'help'">
+                    TDS % <span style="color:#e2483b;">*</span>
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; text-align:right; min-width:120px;">
+                    TDS Amount
+                  </th>
+                  <th style="color:#05608d; font-weight:700; font-size:12px; padding:6px 10px; white-space:nowrap; min-width:220px;">
+                    Reason
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #f0f3f6;">
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:150px;">
+                    <ng-select
+                      [items]="tdsHelper.tdsSetList"
+                      bindLabel="TDSSetName"
+                      bindValue="TDSSetHeaderSid"
+                      formControlName="TDSSetHeaderSid"
+                      appendTo="body"
+                      (change)="onTDSSetChange($event)"
+                      [readonly]="isReadOnly || isPosted"
+                    ></ng-select>
+                  </td>
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:160px;">
+                    <ng-select
+                      [items]="tdsHelper.tdsRateList"
+                      bindLabel="displayLabel"
+                      bindValue="TDSSetRateSid"
+                      formControlName="TDSSetRateSid"
+                      appendTo="body"
+                      (change)="onTDSRateChange($event)"
+                      [readonly]="isReadOnly || isPosted"
+                    ></ng-select>
+                  </td>
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:90px;">
+                    <input
+                      type="text"
+                      formControlName="ITSectionCode"
+                      class="form-control form-control-sm"
+                      style="border:none; border-bottom:1px solid #cfd6e0; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#26333d;"
+                      readonly
+                    />
+                  </td>
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:120px;">
+                    <input
+                      type="text"
+                      formControlName="CertificateNo"
+                      class="form-control form-control-sm"
+                      style="border:none; border-bottom:1px solid #cfd6e0; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#26333d;"
+                      maxlength="50"
+                      [readOnly]="isReadOnly || isPosted"
+                    />
+                  </td>
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:120px;">
+                    <input
+                      type="text"
+                      formControlName="NotificationNo"
+                      class="form-control form-control-sm"
+                      style="border:none; border-bottom:1px solid #cfd6e0; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#26333d;"
+                      maxlength="50"
+                      [readOnly]="isReadOnly || isPosted"
+                    />
+                  </td>
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:120px;">
+                    <input
+                      type="text"
+                      formControlName="TaxableAmount"
+                      class="form-control form-control-sm text-end"
+                      style="border:none; border-bottom:1px solid #16c34a; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#1d2a33;"
+                      DecimalPrecision
+                      [DecimalPrecisionBefore]="13"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(paymentForm.get('CurrencyMasterSid')?.value)"
+                      readonly
+                    />
+                  </td>
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:70px; cursor:help;"
+                      [title]="tdsHelper.getTDSRateTooltip(tdsForm, tdsHelper.tdsSetList)">
+                    <input
+                      type="text"
+                      formControlName="TDSRate"
+                      class="form-control form-control-sm text-end"
+                      style="border:none; border-bottom:1px solid #16c34a; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#1d2a33;"
+                      DecimalPrecision
+                      [DecimalPrecisionBefore]="3"
+                      [DecimalPrecisionAfter]="2"
+                      (focus)="onTDSRateFocus()"
+                      (blur)="onTDSRateBlur()"
+                      [readOnly]="isReadOnly || isPosted"
+                    />
+                  </td>
+                  <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:120px;">
+                    <input
+                      type="text"
+                      formControlName="TDSAmount"
+                      class="form-control form-control-sm text-end fw-bold"
+                      style="border:none; border-bottom:1px solid #16c34a; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#1d2a33;"
+                      DecimalPrecision
+                      [DecimalPrecisionBefore]="13"
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(paymentForm.get('CurrencyMasterSid')?.value)"
+                      readonly
+                    />
+                  </td>
+                  <td style="padding:5px 10px; min-width:220px;">
+                    <input
+                      type="text"
+                      formControlName="Reason"
+                      class="form-control form-control-sm"
+                      style="border:none; border-bottom:1px solid #cfd6e0; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#445;"
+                      maxlength="100"
+                      [readOnly]="isReadOnly || isPosted"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </ng-container>

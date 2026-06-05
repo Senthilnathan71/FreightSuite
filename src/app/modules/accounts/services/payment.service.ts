@@ -59,6 +59,7 @@ export class PaymentService {
       { value: InstrumentMode.DD, label: 'DD' },
       { value: InstrumentMode.IMPS, label: 'IMPS' },
       { value: InstrumentMode.NEFT, label: 'NEFT' },
+      { value: InstrumentMode.TT, label: 'TT' },
       { value: InstrumentMode.RTGS, label: 'RTGS' },
       { value: InstrumentMode.Others, label: 'Others' },
     ];

@@ -678,7 +678,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       ],
       SearchType: ['Party', Validators.required],
 
-      LedgerMasterSid: [null],
+      CustomerBranchSid: [null],
       CustomerName: [''],
       VendorInvoiceNumber: [''],
       HouseNumber: [''],
@@ -729,13 +729,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       ClearanceDate: [null],
 
       InvoiceType: ['REG'],
-      PlaceOfSupply: [''],
+      PlaceOfSupply: [this.appSettingService.getCurrentBranchState()?.stateName || ''],
       ReversalVoucher: [null],
 
       // Form arrays
       detailItems: this.fb.array([]), // charge detail formArray
       voucherMatchings: this.fb.array([]), // voucherMatching formArray
       interBranches: this.fb.array([]), // interBranch formArray
+
+      // TDS toggle state — separate from tdsDetail so it can be tracked independently
+      TDSEnabled: [false],
     });
     [
       'CashOrBank',
@@ -754,14 +757,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       });
     });
 
-    // TDS form
+    // TDS form — nested inside paymentForm so all TDS field changes flow through
+    // paymentForm.valueChanges and are captured by the deepEqual dirty detection.
     this.tdsForm = this.tdsHelper.buildTdsForm(this.fb);
+    this.paymentForm.addControl('tdsDetail', this.tdsForm);
 
     // Recalculate TDS amounts whenever detail rows change
     this.paymentForm.get('detailItems')?.valueChanges
       .pipe(takeUntil(this.destroy$), debounceTime(150))
       .subscribe(() => {
-        if (this.isPatching || !this.tdsHelper.isTDSEnabled) return;
+        if (this.isPatching || !this.tdsHelper.isTDSEnabled || this.isPosted) return;
         this.runTDSRecalc();
         this.validateAmount();
       });
@@ -825,8 +830,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
     };
 
-    // Parties and ledgers load in the background — do not block payment loading.
-    forkJoin({
+    // All requests run in parallel. The returned observable resolves only when
+    // every lookup completes so callers (payment-load, PR prefill) can safely
+    // read partyList / currencyList without a race condition.
+    return forkJoin({
       parties: this.accountService
         .getAllCreditorWithCOAMapped(filterOption)
         .pipe(catchError(() => of([]))),
@@ -844,23 +851,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           filterNonJob: true,
         })
         .pipe(catchError(() => of([]))),
-    }).subscribe(({ parties, bankTypedLedgers, cashTypeLedgers }) => {
-      this.partyList = parties.data;
-      this.bankTypedLedgers = bankTypedLedgers.data;
-      this.cashTypeLedgers = cashTypeLedgers.data;
+      currencies: this.dropdownStore.loadCurrencies().pipe(catchError(() => of([]))),
+    }).pipe(
+      tap(({ parties, bankTypedLedgers, cashTypeLedgers, currencies }) => {
+        this.partyList = parties.data;
+        this.bankTypedLedgers = bankTypedLedgers.data;
+        this.cashTypeLedgers = cashTypeLedgers.data;
 
-      const cusMap = new Map<number, any>();
-      this.partyList.forEach((customer) => {
-        cusMap.set(customer.CustomerMasterSid, customer);
-      });
-      this.onlyCustomerList = Array.from(cusMap.values());
-    });
+        const cusMap = new Map<number, any>();
+        this.partyList.forEach((customer) => {
+          cusMap.set(customer.CustomerMasterSid, customer);
+        });
+        this.onlyCustomerList = Array.from(cusMap.values());
 
-    // Only currencies block the returned observable so that payment
-    // loading is always deferred until currencyList is populated.
-    return this.dropdownStore.loadCurrencies().pipe(
-      catchError(() => of([])),
-      tap((currencies) => {
         this.currencyList = (currencies || []).map((c) => ({
           ...c,
           countryName: c?.countryMaster?.countryName,
@@ -870,8 +873,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.setCurrencyCode(companyCurrency);
 
         if (!this.isEditMode) {
-          // Snapshot after currencies are loaded (create mode only).
-          // Parties/ledgers are dropdown options only and do not affect form values.
           setTimeout(() => {
             this.initialFormValue = this.paymentForm.getRawValue();
             this.isDirty = false;
@@ -893,7 +894,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     // TDS sets — India only
     if (this.currentCompanyCountryCode === 'in' && CompanyMasterSid) {
-      this.tdsHelper.loadTDSSets(CompanyMasterSid).subscribe();
+      this.tdsHelper.loadTDSSets().subscribe();
     }
     forkJoin({
       coaWithLedgerCategoryAsLedger: this.accountService
@@ -954,6 +955,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         // coaList + hssacList are now available — refresh labels for rows already patched
         // (handles the race where forkJoin arrives after the 1000ms patchValues timer)
         this.refreshTaxLabelCache();
+        // Re-enforce PlaceOfSupply guard in case forkJoin won the race (arrived after the timeout)
+        if (!this.isPosted && !this.isReadOnly) {
+          this.recalcAllPaymentTaxRows();
+        }
       }
     );
   }
@@ -971,7 +976,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   onPartySearchSelect(item: any): void {
     this.selectedPartyItemForSearch = item ?? null;
-    this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(item?.SubledgerMasterSid ?? null);
+    // ControlValueAccessor writes CustomerBranchSid automatically via bindValue
   }
 
   async searchOutstanding() {
@@ -985,9 +990,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     };
 
     switch (form.SearchType) {
-      case 'Party':
-        payload.LedgerMasterSid = form.LedgerMasterSid;
+      case 'Party': {
+        const selectedParty = this.partyList.find(p => p.CustomerBranchSid === form.CustomerBranchSid);
+        payload.LedgerMasterSid = selectedParty?.SubledgerMasterSid ?? null;
         break;
+      }
 
       case 'Invoice':
         payload.VendorInvoiceNumber = form.FilterText;
@@ -1002,18 +1009,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         payload.VendorInvoiceNumber = form.FilterText;
       }
 
-      if(this.isEditMode && !this.isPosted && form.SearchType === 'Party' && form.LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue() && this.hasMatchingDetails) {
+      if(this.isEditMode && !this.isPosted && form.SearchType === 'Party' && form.CustomerBranchSid !== this.r['CustomerBranchSid']?.getRawValue() && this.hasMatchingDetails) {
         this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this payment. \nCannot select a different one.`);
         return;
       }
 
     // In create mode, if matchings already exist for a different party, confirm before proceeding
     if (!this.isEditMode && this.voucherMatchings?.length > 0) {
-      const currentPartyInHeader = this.r['PartyMasterSid']?.getRawValue();
-      const newPartyInSearch = form.SearchType === 'Party' ? form.LedgerMasterSid : null;
+      const currentPartyBranchInHeader = this.r['CustomerBranchSid']?.getRawValue();
+      const newPartyInSearch = form.SearchType === 'Party' ? form.CustomerBranchSid : null;
 
       // Different party (or invoice search which may resolve to a different party)
-      if (newPartyInSearch !== currentPartyInHeader || form.SearchType !== 'Party') {
+      if (newPartyInSearch !== currentPartyBranchInHeader || form.SearchType !== 'Party') {
         const confirmed = await this.confirmService.confirm(
           'Changing the party will clear all voucher matchings. Do you want to proceed?',
           'Change Party',
@@ -1059,9 +1066,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         } else {
           if (this.matchingSkip === 0) {
             const searchType = this.searchOutstandingForm.get('SearchType')?.value;
-            this.appSettingService.showError(
+            this.appSettingService.showWarning(
               `No outstanding found for this ${searchType}.`
             );
+            // For Party search: still apply the party to the header so the user
+            // can proceed with a manual entry without a matching record.
+            if (searchType === 'Party') {
+              const branchSid = this.searchOutstandingForm.get('CustomerBranchSid')?.getRawValue();
+              const party = this.partyList.find((p: any) => p.CustomerBranchSid === branchSid)
+                ?? this.selectedPartyItemForSearch;
+              if (party) {
+                this.onPartyChange(party, true);
+              }
+            }
           }
           this.hasMoreMatchingData = false;
         }
@@ -1203,14 +1220,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         return;
       }
       this.onPartyChange(party, true);
-      this.searchOutstandingForm.get('LedgerMasterSid')?.disable();
+      this.searchOutstandingForm.get('CustomerBranchSid')?.disable();
       this.paymentForm.get('PartyMasterSid')?.disable();
     } else if (
       res.length > 0 &&
       this.searchOutstandingForm.get('SearchType')?.value === 'Party' &&
-      this.searchOutstandingForm.get('LedgerMasterSid')?.value
+      this.searchOutstandingForm.get('CustomerBranchSid')?.value
     ) {
-      this.onPartyChange(this.selectedPartyItemForSearch, true);
+      const branchSid = this.searchOutstandingForm.get('CustomerBranchSid')?.getRawValue();
+      const party = this.partyList.find(p => p.CustomerBranchSid === branchSid)
+        ?? this.selectedPartyItemForSearch;
+      this.onPartyChange(party, true);
       this.paymentForm.get('PartyMasterSid')?.disable();
     }
   }
@@ -1413,7 +1433,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     )?.StateMasterSid;
     let interOrIntra = 'Inter';
     if (this.currentCompanyCountryCode === 'in') {
-      if (currentCompanyState === customerState) {
+      if (!formValue.CustomerBranchSid) {
+        // No counterparty (expense payment, PR conversion, etc.) — company's own state → CGST+SGST
+        interOrIntra = 'Intra';
+      } else if (currentCompanyState === customerState) {
         interOrIntra = 'Intra';
       } else {
         interOrIntra = 'Inter';
@@ -1451,6 +1474,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       VoucherDate: formValue.VoucherDate,
       YearMasterSid: this.currentYearId,
       Narration: formValue.Narration,
+      // PR-converted payments must not carry party FK fields — the payment settles
+      // operational charges, not a vendor-ledger balance.  PartyMasterSid / CustomerBranchSid
+      // / COAMasterSid are kept null so outstanding and sub-ledger logic is not mis-triggered.
       PartyMasterSid: this.isFromPaymentRequest ? null : formValue.PartyMasterSid,
       PartyName: this.isFromPaymentRequest ? '' : formValue.PartyName,
       PartyAddress: this.isFromPaymentRequest ? '' : formValue.PartyAddress,
@@ -1489,7 +1515,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         };
       }),
       voucherMatching: voucherMatching,
-      tdsDetail: this.tdsHelper.buildPayload(this.tdsForm),
+      // TDS applies only when a party (vendor sub-ledger) row is part of the payment.
+      // PR-converted payments settle operational charges/expenses — no TDS deduction.
+      // For direct payments, require a party row in detailItems as the source of deduction.
+      tdsDetail: this.buildTdsDetailForPayload(detailItems, formValue),
       PaymentRequestSid: this.paymentRequestSid,
       MasterJobSid: this.prMasterJobSid ?? null,
       HouseJobSid: this.prHouseJobSid ?? null,
@@ -1605,7 +1634,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       let interOrIntra = 'Inter';
       // india
       if (this.currentCompanyCountryCode === 'in') {
-        if (currentCompanyState === customerState) {
+        if (!this.r['CustomerBranchSid']?.value) {
+          // No counterparty (expense payment, PR conversion, etc.) — company's own state → CGST+SGST
+          interOrIntra = 'Intra';
+        } else if (currentCompanyState === customerState) {
           interOrIntra = 'Intra';
         } else {
           interOrIntra = 'Inter';
@@ -1741,10 +1773,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           BankPartyName: request.PayableTo || '',
         }, { emitEvent: false });
 
-        this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(null, { emitEvent: false });
-        this.searchOutstandingForm.get('LedgerMasterSid')?.disable({ emitEvent: false });
-        this.paymentForm.get('PartyMasterSid')?.disable({ emitEvent: false });
-
         const currencySid = firstDetail?.CostCurrencyMasterSid || this.r['CurrencyMasterSid']?.value;
         const exchangeRate = firstDetail?.CostExchangeRate || 1;
 
@@ -1859,6 +1887,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           prLockedFields.forEach(field => (ctrl as FormGroup).get(field)?.disable({ emitEvent: false }));
         });
 
+        // PlaceOfSupply defaults to branch state (from initializeForm) and taxCalculationService
+        // defaults to company's own state (from initPaymentTaxService), so CGST+SGST / VAT
+        // will calculate correctly for these no-party rows without any extra steps here.
+        this.recalcAllPaymentTaxRows();
+
       },
     });
   }
@@ -1902,6 +1935,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         ClearanceDate: headerInfo.ClearanceDate,
         InvoiceType: headerInfo.InvoiceType || '',
         ReversalVoucher: headerInfo.ReversalVoucher ?? null,
+        // Restore PlaceOfSupply from saved data; fall back to branch state for no-party payments
+        // whose PlaceOfSupply was saved as empty (pre-fix data).
+        PlaceOfSupply: headerInfo.PlaceOfSupply ||
+          (!headerInfo.CustomerBranchSid
+            ? (this.appSettingService.getCurrentBranchState()?.stateName || '')
+            : ''),
       },
       { emitEvent: false }
     );
@@ -1951,7 +1990,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     this.previousPartyBranchSid = headerInfo.CustomerBranchSid;
-    this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(headerInfo.PartyMasterSid);
+    this.searchOutstandingForm.get('CustomerBranchSid')?.setValue(headerInfo.CustomerBranchSid ?? null);
 
     this.paymentForm.get('CashOrBank')?.disable({ emitEvent: false });
 
@@ -2064,7 +2103,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.detailItems.controls.forEach((ctrl) => {
         prLockedFields.forEach(f => (ctrl as FormGroup).get(f)?.disable({ emitEvent: false }));
       });
-      this.searchOutstandingForm.get('LedgerMasterSid')?.disable({ emitEvent: false });
+      this.searchOutstandingForm.get('CustomerBranchSid')?.disable({ emitEvent: false });
 
       // Load charge-specific HSSAC lists for PR rows in edit mode
       this.detailItems.controls.forEach((ctrl, i) => {
@@ -2081,10 +2120,31 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const savedTDS = response.VoucherTDS?.[0];
     if (savedTDS && this.currentCompanyCountryCode === 'in') {
       this.tdsHelper.isTDSEnabled = true;
-      this.tdsHelper.patchFromSavedTDS(savedTDS, this.tdsForm);
+      this.paymentForm.get('TDSEnabled')?.setValue(true, { emitEvent: false });
+      this.tdsHelper.patchFromSavedTDS(
+        savedTDS,
+        this.tdsForm,
+        (n) => this.getFormattedAndPaddedAmount(n, headerInfo.CurrencyMasterSid),
+        (n) => this.getFormattedAndPaddedAmount(n, this.currentCompany?.CurrencyMasterSid),
+      );
       const headerSidForRates = savedTDS.TDSSetRate?.TDSSetHeaderSid ?? this.tdsForm.get('TDSSetHeaderSid')?.value;
       if (headerSidForRates) {
         this.tdsHelper.loadRatesForSet(headerSidForRates).subscribe();
+      }
+      // For unposted edit mode: fetch mapping context (limits + FY cumulative) so
+      // subsequent recalcTDSAmounts calls use the correct thresholds.
+      // Skipped for posted payments — CertificateNo/NotificationNo are now stored
+      // directly in VoucherTDS and restored by patchFromSavedTDS above; no recalc needed.
+      if (!this.isPosted) {
+        let tdsContextBranchSid: number | null = headerInfo.CustomerBranchSid ?? null;
+        if (!tdsContextBranchSid) {
+          const vendorDetail = (response.VoucherDetail || []).find((d: any) => d.LedgerMasterSid);
+          if (vendorDetail) {
+            const match = this.partyList.find((p: any) => p.SubledgerMasterSid === vendorDetail.LedgerMasterSid);
+            tdsContextBranchSid = match?.CustomerBranchSid ?? null;
+          }
+        }
+        this.refreshSupplierTDSContext(tdsContextBranchSid);
       }
     }
 
@@ -2102,6 +2162,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.isLoading = true;
     setTimeout(() => {
       this.refreshTaxLabelCache();
+      // Re-enforce PlaceOfSupply guard after edit data is fully patched — zero out tax
+      // amounts on rows where no party/Place of Supply was saved (e.g. PR-converted payments).
+      this.recalcAllPaymentTaxRows();
       this.applyZeroRatedDisableOnLoad();
       this.initialFormValue = this.paymentForm.getRawValue();
       this.isPatching = false;
@@ -3746,6 +3809,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       .toLowerCase();
     if (!party) {
       this.previousPartyBranchSid = null;
+      const clearedBranchState = this.appSettingService.getCurrentBranchState();
       this.paymentForm.patchValue({
         PartyMasterSid: null,
         PartyName: '',
@@ -3754,7 +3818,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         COAMasterSid: null,
         LedgerMasterSid: null,
         GST_VAT: '',
+        PlaceOfSupply: clearedBranchState?.stateName || '',
       });
+      this.taxCalculationService.updateParty({
+        countryCode: this.currentCompanyCountryCode,
+        stateName: clearedBranchState?.stateName || '',
+        stateMasterSid: clearedBranchState?.StateMasterSid,
+        gstNumber: '',
+        customerGstType: 'Regular',
+        isUnionTerritory: false,
+      });
+      this.recalcAllPaymentTaxRows();
       return;
     }
     this.previousPartyBranchSid = party.CustomerBranchSid;
@@ -4045,7 +4119,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   clearSearchFields(type: string) {
     this.searchOutstandingForm.patchValue({
-      LedgerMasterSid: null,
+      CustomerBranchSid: null,
       CustomerName: '',
       VendorInvoiceNumber: '',
       HouseNumber: '',
@@ -4190,13 +4264,28 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   private initPaymentTaxService(): void {
     const company = this.currentCompany;
     if (!company) return;
+    const branchState = this.appSettingService.getCurrentBranchState();
     this.taxCalculationService.init({
       documentSide: 'PURCHASE',
       companyCountryCode: this.currentCompanyCountryCode,
       companyCountryMasterSid: Number(company.CountryMasterSid),
       branchStateName: this.currentBranch?.stateMaster?.StateName || this.currentBranch?.StateName || '',
       branchStateMasterSid: this.currentBranch?.StateMasterSid,
-    }).then(() => this.taxCalculationService.fetchTaxMasters('PURCHASE'));
+    }).then(async () => {
+      await this.taxCalculationService.fetchTaxMasters('PURCHASE');
+      // Default party context to company's own state so expense payments (no party)
+      // get CGST+SGST (India) / VAT (UAE) without requiring a party selection.
+      if (branchState?.stateName) {
+        this.taxCalculationService.updateParty({
+          countryCode: this.currentCompanyCountryCode,
+          stateName: branchState.stateName,
+          stateMasterSid: branchState.StateMasterSid,
+          gstNumber: '',
+          customerGstType: 'Regular',
+          isUnionTerritory: false,
+        });
+      }
+    });
   }
 
   onPaymentInvoiceTypeChange(invoiceType: string): void {
@@ -4323,6 +4412,24 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+    // PlaceOfSupply should always be set (from party, branch state, or DB). This guard
+    // covers edge cases where neither party nor branch state is available.
+    if (!this.paymentForm.get('PlaceOfSupply')?.value) {
+      const currSid = row.get('CurrencyMasterSid')?.getRawValue();
+      const localAmount = toNumber(row.get('LocalAmount')?.value);
+      row.patchValue({
+        TaxableAmount: this.getFormattedAmount(localAmount, currSid),
+        TaxPercentage1: 0,
+        TaxAmount1: this.getFormattedAmount(0, currSid),
+        TaxPercentage2: 0,
+        TaxAmount2: this.getFormattedAmount(0, currSid),
+      }, { emitEvent: false });
+      this.taxLabelCache[index] = '';
+      this.recalcPartyAmtForDetail(index);
+      this.updateInvoiceTypeRequired();
+      return;
+    }
+
     if (!this.isHSSACEnabledForRow(index)) {
       this.taxLabelCache[index] = '';
       this.recalcPartyAmtForDetail(index);
@@ -4395,7 +4502,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   refreshTaxLabelCache(): void {
+    const hasPlaceOfSupply = !!(this.paymentForm?.get('PlaceOfSupply')?.value);
     this.detailItems.controls.forEach((_, i) => {
+      if (!hasPlaceOfSupply) { this.taxLabelCache[i] = ''; return; }
       const row = this.detailItems.at(i);
       const hssacSid = row.get('HSSACMasterSid')?.getRawValue();
       if (!hssacSid) { this.taxLabelCache[i] = ''; return; }
@@ -4566,12 +4675,23 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   /**
    * Fetch supplier TDS mapping + FY cumulative when CustomerBranchSid changes.
    * India-only. Auto-populates form and re-validates totals.
+   *
+   * Intentionally skipped for PR-converted payments: those settle operational
+   * charges / expenses and are not subject to TDS deduction at source.
+   * TDS is applicable only when a vendor party ledger is the primary debit.
    */
   private refreshSupplierTDS(customerBranchSid: number | null): void {
     if (this.currentCompanyCountryCode !== 'in') return;
+    if (this.isFromPaymentRequest) {
+      this.tdsHelper.reset();
+      this.tdsForm?.reset({ TaxableAmount: 0, TDSAmount: 0, TDSPartyAmount: 0, TDSRate: 0 });
+      this.paymentForm?.get('TDSEnabled')?.setValue(false, { emitEvent: false });
+      return;
+    }
     if (!customerBranchSid) {
       this.tdsHelper.reset();
       this.tdsForm?.reset({ TaxableAmount: 0, TDSAmount: 0, TDSPartyAmount: 0, TDSRate: 0 });
+      this.paymentForm?.get('TDSEnabled')?.setValue(false, { emitEvent: false });
       this.validateAmount();
       return;
     }
@@ -4596,6 +4716,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       excludeVoucherHeaderSid: this.headerId,
       voucherDate,
       tdsForm: this.tdsForm,
+      vendorCountryName: party?.countryMaster?.countryName ?? '',
+      vendorHasPAN: !!party?.PanType,
     }).subscribe(() => {
       if (this.tdsHelper.isTDSEnabled) {
         this.runTDSRecalc();
@@ -4604,15 +4726,89 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     });
   }
 
+  /** Fetches supplier TDS context (mapping limits + FY cumulative) in edit mode without
+   *  overwriting the already-patched saved form values.  Called once after patchFromSavedTDS
+   *  so that subsequent recalcTDSAmounts calls use the correct thresholds. */
+  private refreshSupplierTDSContext(customerBranchSid: number | null): void {
+    if (this.currentCompanyCountryCode !== 'in') return;
+    if (!customerBranchSid) return;
+    const party = this.partyList.find(p => p.CustomerBranchSid === customerBranchSid);
+    const ledgerMasterSid = party?.SubledgerMasterSid;
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!ledgerMasterSid || !companyMasterSid) return;
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (!fy) return;
+    const fyStart = new Date(fy.StartDate);
+    const fyEnd = new Date(fy.EndDate);
+    const voucherDateRaw = this.paymentForm.get('VoucherDate')?.value;
+    const voucherDate = voucherDateRaw ? new Date(voucherDateRaw) : new Date();
+
+    this.tdsHelper.fetchAndPopulate({
+      CustomerBranchSid: customerBranchSid,
+      LedgerMasterSid: ledgerMasterSid,
+      CompanyMasterSid: companyMasterSid,
+      fyStartDate: fyStart,
+      fyEndDate: fyEnd,
+      excludeVoucherHeaderSid: this.headerId,
+      voucherDate,
+      tdsForm: this.tdsForm,
+      vendorCountryName: party?.countryMaster?.countryName ?? '',
+      vendorHasPAN: !!party?.PanType,
+      contextOnly: true,
+    }).subscribe(() => {
+      if (this.tdsHelper.isTDSEnabled) {
+        this.runTDSRecalc();
+      }
+      this.validateAmount();
+    });
+  }
+
+  /**
+   * Decides whether to include a VoucherTDS record in the save payload.
+   *
+   * Rules:
+   *  1. PR-converted payments — never include TDS.  These payments settle
+   *     operational charges / expenses; TDS deduction does not apply.
+   *  2. Direct payments — include TDS only when a vendor sub-ledger row
+   *     (party row) is present in detailItems.  A payment with no party
+   *     row has no deductee, so TDS would be meaningless.
+   *  3. In all other cases delegate to tdsHelper.buildPayload which checks
+   *     isTDSEnabled and returns null if TDS is not configured.
+   */
+  private buildTdsDetailForPayload(detailItems: any[], formValue: any): any | null {
+    if (this.isFromPaymentRequest) return null;
+    const partyLedger = formValue.PartyMasterSid;
+    const hasPartyRow = partyLedger
+      && detailItems.some((d: any) => Number(d.LedgerMasterSid) === Number(partyLedger));
+    if (!hasPartyRow) return null;
+    return this.tdsHelper.buildPayload(this.tdsForm);
+  }
+
   onTDSToggle(): void {
+    const hasParty = !!(this.paymentForm.get('PartyMasterSid')?.value);
+    if (this.tdsHelper.isTDSEnabled && !hasParty) {
+      this.appSettingService.showWarning(
+        'TDS deduction requires a vendor party. ' +
+        'Select a party first, then enable TDS deduction.'
+      );
+      // Defer the reset so Angular's current change-detection cycle (which committed
+      // isTDSEnabled = true via [(ngModel)]) completes before we flip it back.
+      setTimeout(() => {
+        this.tdsHelper.isTDSEnabled = false;
+        this.paymentForm.get('TDSEnabled')?.setValue(false, { emitEvent: true });
+      }, 0);
+      return;
+    }
     if (!this.tdsHelper.isTDSEnabled) {
       this.tdsForm.reset({ TaxableAmount: 0, TDSAmount: 0, TDSPartyAmount: 0, TDSRate: 0 });
       this.tdsHelper.limitNote = null;
       this.tdsHelper.autoReason = null;
     } else {
-      // User manually toggled ON — recalc using current detail rows
       this.runTDSRecalc();
     }
+    // Mirror the toggle state into paymentForm so valueChanges fires and
+    // deepEqual dirty detection picks up the TDS enable/disable change.
+    this.paymentForm.get('TDSEnabled')?.setValue(this.tdsHelper.isTDSEnabled, { emitEvent: true });
     this.validateAmount();
   }
 
@@ -4638,13 +4834,27 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.validateAmount();
   }
 
+  private tdsRateOnFocus: number | null = null;
+
+  onTDSRateFocus(): void {
+    this.tdsRateOnFocus = Number(this.tdsForm.get('TDSRate')?.value ?? 0);
+  }
+
   onTDSRateBlur(): void {
-    this.runTDSRecalc();
+    const current = Number(this.tdsForm.get('TDSRate')?.value ?? 0);
+    // Only recalculate when the user actually changed the rate. Without this guard,
+    // edit mode re-runs recalc with the *current* FY cumulative (which may differ
+    // from creation time), incorrectly inflating the TDS amount.
+    if (this.tdsRateOnFocus !== null && current !== this.tdsRateOnFocus) {
+      this.runTDSRecalc();
+    }
+    this.tdsRateOnFocus = null;
     this.validateAmount();
   }
 
   /** Single entry-point for TDS recalculation — passes party SID + currency formatter */
   private runTDSRecalc(): void {
+    if (this.isPosted) return;
     const currencySid = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
     this.tdsHelper.recalcTDSAmounts(
       this.detailItems.getRawValue(),
