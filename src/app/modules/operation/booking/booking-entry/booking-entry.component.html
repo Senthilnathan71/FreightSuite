@@ -645,20 +645,9 @@
                   </aside>
 
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6" *ngIf="selectedDepartment?.ExportImport === 'Export' || !selectedDepartment">
                     <div class="custom-form-group custom-form-group-select"
                       [class.filled]="!!bookingForm.get('DestinationAgent')?.value">
-                      <!-- <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                        class="ng-select" formControlName="DestinationAgent" placeholder=""
-                        (change)="setAddress('AgentAddress',$event)" appendTo="body">
-
-                        <ng-template ng-option-tmp let-item="item">
-                          <div>
-                            <strong>{{ item.CustomerName }} - {{ item.agentCountry }}</strong><br>
-                            <small>{{ item.CustomerAddress1 }}</small>
-                          </div>
-                        </ng-template>
-                      </ng-select> -->
                       <dofi-searchable-dropdown [items]="agentList" formControlName="DestinationAgent" placeholder=""
                         [displayFields]="customerLookupConfig.displayFields"
                         [displayLabels]="customerLookupConfig.displayLabels"
@@ -674,11 +663,37 @@
 
 
 
-                  <aside class="col-md-6">
+                  <aside class="col-md-6" *ngIf="selectedDepartment?.ExportImport === 'Export' || !selectedDepartment">
                     <div class="custom-form-group">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="AgentAddress">
                       <label for="text-input" class="input-label">Agent Address<span class="text-danger"></span></label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-6" [formGroup]="otherForm" *ngIf="selectedDepartment?.ExportImport === 'Import'">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!otherForm.get('OriginAgent')?.value">
+                      <dofi-searchable-dropdown [items]="agentList" formControlName="OriginAgent" placeholder=""
+                        [displayFields]="customerLookupConfig.displayFields"
+                        [displayLabels]="customerLookupConfig.displayLabels"
+                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                        bindValue="CustomerName" (itemSelected)="setAddressOthers('OriginAgentAddress',$event)"
+                        style="width : 100%;">
+                      </dofi-searchable-dropdown>
+
+                      <label for="text-input" class="input-label">Origin Agent </label>
+                      
+                    </div>
+                  </aside>
+
+
+
+                  <aside class="col-md-6" [formGroup]="otherForm" *ngIf="selectedDepartment?.ExportImport === 'Import'"> 
+                    <div class="custom-form-group">
+                      <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                        formControlName="OriginAgentAddress">
+                      <label for="text-input" class="input-label">Origin Agent Address<span class="text-danger"></span></label>
                     </div>
                   </aside>
 

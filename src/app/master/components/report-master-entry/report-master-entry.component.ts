@@ -16,6 +16,7 @@ import { finalize } from 'rxjs/operators';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-report-master-entry',
@@ -538,4 +539,18 @@ private parseExcludedCompanyIds(raw: any): number[] {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  openAuditLogs() {
+              if (!this.reportData?.ReportMasterSid) return;
+              const modalRef = this.modalService.open(AuditLogComponent, {
+                centered: true,
+                scrollable: true,
+                size: 'xl',
+                windowClass: 'audit-log-modal'
+              });
+              modalRef.componentInstance.title = 'Report Logs';
+              modalRef.componentInstance.tableName = 'ReportMaster';
+              modalRef.componentInstance.recordId = this.reportData?.ReportMasterSid.toString();
+              modalRef.componentInstance.screenName = 'ReportMaster';
+            }
 }

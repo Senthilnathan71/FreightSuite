@@ -16,9 +16,10 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
-import { TableConfig, TableAction } from 'src/app/shared/interfaces/table.interface';
+import { TableConfig, TableEventData, TableSortConfig, TableFilter, TableColumn } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DropdownMenuItem } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 
 @Component({
   selector: 'app-report-master-list',
@@ -40,31 +41,14 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 export class ReportMasterListComponent extends BaseListComponent implements OnInit {
   allReports: any[] = [];
   tableLoading: boolean = false;
+  tableConfig: TableConfig;
+  headerActions: HeaderAction[] = [];
+  modalDropdownItems: DropdownMenuItem[] = [];
 
   userData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   currentCompany: any;
-
-  // Table configuration
-  tableConfig: TableConfig = {
-    showPagination: true,
-    columns: [
-      { key: 'ReportName', label: 'Report Name', sortable: true, filterable: true },
-      { key: 'ReportDisplayName', label: 'Display Report Name', sortable: true, filterable: true },
-      { key: 'ReportFormat', label: 'Report Format', sortable: true, filterable: true }
-    ],
-    actions: [
-      {
-        icon: 'fas fa-eye',
-        label: 'View',
-        action: 'view',
-        tooltip: 'View',
-      },
-    ],
-    trackByKey: 'ReportMasterSid',
-    emptyMessage: 'No Reports found'
-  };
 
   // Component configuration
   protected config: ListComponentConfig = {
@@ -75,26 +59,6 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
   };
-
-  // Header actions
-  headerActions: HeaderAction[] = [
-    {
-      label: 'Create',
-      icon: 'fas fa-plus',
-      action: 'create',
-    },
-    {
-      label: 'Report',
-      icon: 'fas fa-file-alt',
-      action: 'report',
-      disabled: this.totalLengthOfCollection === 0
-    },
-    {
-      label: 'Reset',
-      icon: 'fas fa-sync-alt',
-      action: 'reset'
-    }
-  ];
 
   constructor(
     private router: Router,
@@ -110,18 +74,112 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
   }
 
   override ngOnInit(): void {
-    this.mps.init().subscribe();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
-      
     }
-
-    this.paginationService.clearState(this.config.storageKey);
+    this.initializeTableConfig();
+    this.initializeHeaderActions();
+    this.mps.init().subscribe(()=>{
+      this.initializeHeaderActions();
+      this.initializeTableConfig();
+    });
+    this.initializeModalDropdownItems();
 
     // Call parent ngOnInit which will handle state restoration and initial load
     super.ngOnInit();
+  }
+
+  private initializeTableConfig(): void {
+    this.tableConfig = {
+      columns: [
+        { 
+          key: 'ReportName', 
+          label: 'Report Name', 
+          sortable: true, 
+          filterable: true 
+        },
+        { key: 'ReportDisplayName',
+          label: 'Display Report Name', 
+          sortable: true, 
+          filterable: true 
+        },
+        { key: 'ReportFormat', 
+          label: 'Report Format', 
+          sortable: true, 
+          filterable: true 
+        }
+      ],
+      actions: [
+        {
+         icon: 'fas fa-eye',
+         label: 'View',
+         action: 'view',
+         tooltip: 'View Charge',
+         state : !this.mps.can('view')
+        }
+      ],
+      selectable: false,
+      multiSelect: false,
+      showColumnToggle: true,
+      showFilters: true,
+      showPagination: true,
+      trackByKey: 'ReportMasterSid',
+      emptyMessage: 'No Reports found',
+      dragAndDrop: false
+    }
+  }
+
+  initializeHeaderActions(): void {
+    this.headerActions = [
+      {
+        label: 'Create',
+        icon: 'fas fa-plus',
+        action: 'create',
+        disabled : !this.mps.can('insert')
+      },
+      {
+        label: 'Report',
+        icon: 'fas fa-file-alt',
+        action: 'report',
+        disabled: this.totalLengthOfCollection === 0
+      },
+      {
+        label: 'Reset',
+        icon: 'fas fa-sync-alt',
+        action: 'reset'
+      }
+    ];
+  }
+
+  initializeModalDropdownItems(): void {
+    this.modalDropdownItems = [
+      {
+        label: 'Edoc',
+        icon: 'fas fa-file-alt',
+        action: 'edoc',
+        
+      },
+      {
+        label: 'Terms & Condition',
+        icon: 'fas fa-clipboard',
+        action: 'terms',
+        
+      },
+      {
+        label: 'Authorize',
+        icon: 'fas fa-shield-alt',
+        action: 'authority',
+        
+      },
+      {
+        label: 'Email',
+        icon: 'fas fa-envelope',
+        action: 'email',
+        
+      }
+    ];
   }
 
   private getErrorMessage(error: any, fallback: string): string {

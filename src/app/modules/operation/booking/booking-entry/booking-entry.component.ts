@@ -1254,6 +1254,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ForwarderAddress: [''],
       NotifyParty: [null],
       NotifyPartyAddress: [''],
+      OriginAgent:[null],
+      OriginAgentAddress: [''],
       Notify2: [null],
       NotifyAddress2: [''],
       Coloader: [null],
@@ -2002,6 +2004,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       ForwarderAddress: otherData?.ForwarderAddress,
       NotifyParty: otherData?.NotifyParty || null,
       NotifyPartyAddress: otherData?.NotifyPartyAddress,
+      OriginAgent: otherData?.OriginAgent || null,
+      OriginAgentAddress: otherData?.OriginAgentAddress,
       Notify2: otherData?.Notify2 || null,
       NotifyAddress2: otherData?.NotifyAddress2,
       Coloader: otherData?.Coloader || null,
@@ -2672,6 +2676,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         ForwarderAddress: otherFormValue.ForwarderAddress || '',
         NotifyParty: otherFormValue.NotifyParty || null,
         NotifyPartyAddress: otherFormValue.NotifyPartyAddress || '',
+        OriginAgent: otherFormValue.OriginAgent || null,
+        OriginAgentAddress: otherFormValue.OriginAgentAddress || '',
         Notify2: otherFormValue?.Notify2,
         NotifyAddress2: otherFormValue?.NotifyAddress2,
         Coloader: otherFormValue?.Coloader,
@@ -3131,6 +3137,15 @@ onCarrierChangeForAir(carrier: any): void {
     if (this.selectedDepartmentType === 'AIR' && this.selectedTab === 'CRO') {
     this.selectedTab = 'Shipment';
   }
+if (this.normalizePortText(department?.ExportImport) === 'IMPORT') {
+  // Clear destination agent fields
+  this.b['DestinationAgent']?.setValue(null);
+  this.b['AgentAddress']?.setValue('');
+} else if (this.normalizePortText(department?.ExportImport) === 'EXPORT') {
+  // Clear origin agent fields
+  this.o['OriginAgent']?.setValue(null);
+  this.o['OriginAgentAddress']?.setValue('');
+}
     this.selectedDepartmentType = this.normalizePortText(department?.departmentType);
     this.selectedFCLLCL = this.resolveSelectedSegment(department);
     this.selectedCargoMode = this.resolveCargoMode(department);
