@@ -4063,7 +4063,11 @@ createRateFormGroup(data?: any): FormGroup {
     const companyCurrency = this.companySettings.getCurrencySettings();
 
     const details = this.details.getRawValue();
-    const narration = this.autoGenerateNarration();
+    const baseNarration = this.autoGenerateNarration();
+    const docNarrParts: string[] = [baseNarration];
+    if (rawValue.DocumentNumber?.toString().trim()) docNarrParts.push(`BillNo-${rawValue.DocumentNumber.toString().trim()}`);
+    if (rawValue.DocumentDate) docNarrParts.push(`Dt.${this.datePipe.transform(rawValue.DocumentDate)}`);
+    const narration = docNarrParts.filter(p => !!p).join(' ');
     const vendorInvoiceRemarks = String(rawValue.Remarks ?? '').trim();
     const headerRemarks = isInvoice ? narration : (vendorInvoiceRemarks || narration);
     let interOrIntra = 'Intra';
@@ -4531,13 +4535,18 @@ createRateFormGroup(data?: any): FormGroup {
     } else if (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
       // Master Job + House Job
       const hblNo = this.parentFormValue?.HBLNo;
+      const mblNo = this.parentFormValue?.MBLNo;
       const masterJobNo = this.parentFormValue?.MasterJobNumber;
       const segment = this.parentFormValue?.Segment || '';
       const hblPrefix = segment === 'AIR' ? 'HAWB' : 'HBL';
+      const mblPrefix = segment === 'AIR' ? 'MAWBNo' : 'MBLNo';
 
       let parts = [];
       if (hblNo) {
         parts.push(`${hblPrefix}-${hblNo}`);
+      }
+      if (mblNo) {
+        parts.push(`${mblPrefix}-${mblNo}`);
       }
       if (masterJobNo) {
         parts.push(`Job No-${masterJobNo}`);

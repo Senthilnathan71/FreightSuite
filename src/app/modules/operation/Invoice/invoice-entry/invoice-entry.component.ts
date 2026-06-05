@@ -1261,6 +1261,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.customerBranchList = [];
     }
 
+    const mblNo = data.MBLNo || '';
+    const autoNarration = mblNo
+      ? `${this.isAirDepartment(data) ? 'MAWB No' : 'MBL No'}: ${mblNo}`
+      : '';
+
     this.invoiceForm.patchValue(
       {
         VoucherNumber: data.VoucherNumber,
@@ -1282,7 +1287,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         InvoiceType: data.InvoiceType || null,
         GSTType: data.GSTType || null,
         TaxType : data.TaxType || null,
-        Narration: data.Narration || '',
+        Narration: data.Narration || autoNarration,
         Remarks: data.Remarks || '',
         MBLNo: data.MBLNo || '',
         status: data.Status || 'A',
@@ -2295,6 +2300,10 @@ isSeaDepartment(): boolean {
       this.invoiceForm
         .get('MasterJobSid')
         ?.setValue(Number(masterJob.MasterJobSid));
+      if (masterJob.MBLNo && !this.invoiceForm.get('Narration')?.value) {
+        const isAir = String(masterJob.departmentMaster?.departmentType ?? masterJob.DepartmentType ?? '').trim().toUpperCase() === 'AIR';
+        this.invoiceForm.get('Narration')?.setValue(`${isAir ? 'MAWB No' : 'MBL No'}: ${masterJob.MBLNo}`);
+      }
       // optional: apply to all detail rows
       // this.applyMasterJobToAllDetails(Number(masterJob.MasterJobSid));
     }
