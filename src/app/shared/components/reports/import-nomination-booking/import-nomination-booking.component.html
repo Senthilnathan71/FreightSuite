@@ -24,6 +24,7 @@
                     <tr class="bg-info" style="white-space:nowrap"> 
                         <th class="bg-transparent text-light text-center">Booking Date </th>
                         <th class="bg-transparent text-light text-center">Booking No </th>
+                        <th class="bg-transparent text-light text-center">HBL No</th>
                         <th class="bg-transparent text-light text-center">Job Type</th>
                         <th class="bg-transparent text-light text-center">No of Pkgs</th>
                         <th class="bg-transparent text-light text-center">Gross Weight</th>
@@ -42,6 +43,7 @@
                     <tr *ngFor="let item of fullData?.data; let i=index" style="white-space:nowrap">
                         <td>{{ item.bookingDate | formatDate }}</td>
                         <td>{{ item.bookingNumber}}</td>
+                        <td>{{ item.HBLNo}}</td>
                         <td>{{ item.jobType}}</td>
                         <td class="text-end">{{ item.NoofPkg  }}</td>
                         <td class="text-end">{{ item.GrossWt | number:'1.3-3' }}</td>
@@ -56,7 +58,7 @@
                         <td>{{ item.salesperson }}</td> 
                     </tr>
                     <tr>
-                        <td colspan="3" class="text-end fw-bolder">Total</td>
+                        <td colspan="4" class="text-end fw-bolder">Total</td>
                         <td class="text-end fw-bolder">{{totalNoofPkgs()}}</td>
                         <td class="text-end fw-bolder">{{totalGrossWt() | number:'1.3-3'}}</td>
                         <td class="text-end fw-bolder">{{totalVolume() | number:'1.3-3'}}</td>

@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import {
@@ -71,6 +70,7 @@ export class ImportNominationBookingComponent {
       const tableHeaders: ExcelHeader[] = [
         { key: 'bookingDate', label: 'Booking Date' },
         { key: 'bookingNumber', label: 'Booking No.' },
+        { key: 'HBLNo', label: 'HBL No' },
         { key: 'jobType', label: 'Job Type' },
         { key: 'NoofPkg', label: 'No of Pkgs' },
         { key: 'GrossWt', label: 'Gross Weight' },
@@ -89,6 +89,7 @@ export class ImportNominationBookingComponent {
         const cells: ExcelCell[] = [
           { value: this.formatDate(item.bookingDate || '') || '' },
           { value: item.bookingNumber || '' },
+          { value: item.HBLNo || '' },
           { value: item.jobType || '' },
           { value: item.NoofPkg || 0 },
           { value: this.formatNumber(item.GrossWt) || 0 },
@@ -108,7 +109,7 @@ export class ImportNominationBookingComponent {
 
       rows.push({
         cells: [
-          { value: 'Total' , colspan:3 , alignment: { horizontal: 'right' } },
+          { value: 'Total' , colspan: 4 , alignment: { horizontal: 'right' } },
           { value: this.totalNoofPkgs() },
           { value: this.formatNumber(this.totalGrossWt()) },
           { value: this.formatNumber(this.totalVolume()) },
@@ -120,6 +121,7 @@ export class ImportNominationBookingComponent {
           { value: '' },
           { value: '' },
           { value: '' },
+           { value: '' },
         ],
         style: 'total',
       });
@@ -141,7 +143,7 @@ export class ImportNominationBookingComponent {
         tableHeaders,
         rows,
         columnWidths: [
-          14, 28, 6, 6, 8, 8, 15, 4, 15, 15, 15, 15, 15, 15, 15, 15, 25,
+          14, 28, 6, 6, 6, 8, 8, 15, 4, 15, 15, 15, 15, 15, 15, 15, 15, 25,
         ],
       };
     }
