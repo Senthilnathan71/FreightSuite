@@ -15,6 +15,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { finalize } from 'rxjs/operators';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-report-master-entry',
@@ -81,6 +82,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
     private router: Router,
     private modalService: NgbModal,
     private appSettingService: AppSettingsService,
+    public mps: MenuPermissionService,
   ) { }
 
   ngOnInit(): void {
@@ -224,11 +226,20 @@ private parseExcludedCompanyIds(raw: any): number[] {
 
   // Create a new parameter FormGroup
   createParameterGroup(data: any = {}): FormGroup {
+    let dropDownValue = data.DropDownValue || '';
+    if (dropDownValue && typeof dropDownValue === 'object') {
+    dropDownValue = JSON.stringify(dropDownValue);
+  }
+  let validationRules = data.ValidationRules || '';
+    if (validationRules && typeof validationRules === 'object') {
+    validationRules = JSON.stringify(validationRules);
+  }
     return this.fb.group({
       ReportMasterDetailSid: [data.ReportMasterDetailSid || null],
       ParameterName: [data.ParameterName || '', Validators.required],
       ParameterFieldType: [data.ParameterFieldType || '', Validators.required],
-      DropDownValue: [data.DropDownValue || ''],
+      DropDownValue: [dropDownValue],
+      ValidationRules: [validationRules],
       ParameterQuery: [data.ParameterQuery || ''],
       Status: [data.Status || 'A']
     });
@@ -335,14 +346,43 @@ private parseExcludedCompanyIds(raw: any): number[] {
     }
 
     const currentUser = this.appSettingsService.userSettingSource.value?.userEmail;
-    const reportDetails = (raw.parameters || []).map((detail: any) => ({
-      ReportMasterDetailSid: detail.ReportMasterDetailSid || null,
-      ParameterName: (detail.ParameterName || '').trim(),
-      ParameterFieldType: detail.ParameterFieldType || null,
-      DropDownValue: detail.DropDownValue || null,
-      ParameterQuery: detail.ParameterQuery || null,
-      Status: detail.Status || 'A'
-    }));
+    const reportDetails = (raw.parameters || []).map((detail: any) => {
+  let dropDownValue = detail.DropDownValue || null;
+
+  // Parse JSON string back to object before sending to backend
+  if (dropDownValue && typeof dropDownValue === 'string') {
+    const trimmed = dropDownValue.trim();
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+      try {
+        dropDownValue = JSON.parse(trimmed);
+      } catch {
+      }
+    }
+  }
+
+  let validationRules = detail.ValidationRules || null;
+
+  // Parse JSON string back to object before sending to backend
+  if (validationRules && typeof validationRules === 'string') {
+    const trimmed = validationRules.trim();
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+      try {
+        validationRules = JSON.parse(trimmed);
+      } catch {
+      }
+    }
+  }
+
+  return {
+    ReportMasterDetailSid: detail.ReportMasterDetailSid || null,
+    ParameterName: (detail.ParameterName || '').trim(),
+    ParameterFieldType: detail.ParameterFieldType || null,
+    DropDownValue: dropDownValue,
+    ValidationRules: validationRules,
+    ParameterQuery: detail.ParameterQuery || null,
+    Status: detail.Status || 'A'
+  };
+});
 
     const payload = {
       ReportName: raw.reportName,
