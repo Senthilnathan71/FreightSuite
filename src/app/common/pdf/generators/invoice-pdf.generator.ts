@@ -127,8 +127,6 @@
             buildInvoiceHeader(data),
             buildInvoiceTitle(data),
             buildInvoiceInfo(data),
-
-            
           ],
           margin: [20, 10, 20, 0] // Add margin to header content
         };
@@ -136,8 +134,7 @@
 
       content: [
         // { text: '', margin: [0, 10, 0, 0] },   // Spacer to push content below header
-        ...(!isCompanyMasterSid(data, 24) ? [buildShipmentDetails(data)] : []),
-        ...(isCompanyMasterSid(data, 24) ? [buildContentDivider()] : []),
+         buildShipmentDetails(data),
         buildChargesTable(data),
         buildTotalsSection(data),
         buildAmountInWords(data),

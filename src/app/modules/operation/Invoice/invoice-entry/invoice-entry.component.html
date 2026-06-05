@@ -1672,10 +1672,10 @@
                 </div>
                 <div style="display: flex">
                   <div style="width: 180px; font-weight: bolder">
-                    <strong *ngIf="currentCompanyCountryCode === 'in'"
+                    <strong *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'"
                       >GST No.</strong
                     >
-                    <strong *ngIf="currentCompanyCountryCode !== 'in'"
+                    <strong *ngIf=" invoicePrintData?.CustomerCountryCode !== 'in'"
                       >VAT No.</strong
                     >
                   </div>
@@ -1683,7 +1683,7 @@
                 </div>
                 <div
                   style="display: flex"
-                  *ngIf="currentCompanyCountryCode === 'in'"
+                  *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'"
                 >
                   <div style="width: 180px; font-weight: bolder">
                     <strong>IRN No.</strong>
@@ -1700,7 +1700,7 @@
           </div>
 
           <!-- Shipment Details -->
-          @if(this.currentCompany?.CompanyMasterSid === '24'){
+          
           <div
             style="
               display: flex;
@@ -2055,7 +2055,7 @@
 
             </div>
           </div>
-          }
+          
 
           <!-- Table with Dynamic Tax Columns -->
           <div style="width: 100%; overflow-x: auto; margin-top: 8px">
