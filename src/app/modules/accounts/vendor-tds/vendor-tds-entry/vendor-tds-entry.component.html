@@ -43,7 +43,7 @@
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
           [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
           (click)="onSubmit()"  
-          [disabled]="(!mps.can('update') && isEditMode) || supplierTDSForm.invalid" >
+          [disabled]="!mps.can('update') && isEditMode" >
     <i class="fas fa-save me-1"></i>
     <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
     <span *ngIf="hasUnsavedChanges()"
@@ -185,7 +185,6 @@
           (click)="preventTableTouch($event)">
           <thead>
             <tr class="bg-info">
-              <th class="bg-transparent text-light" scope="col" *ngIf="tdsDetailArray.length > 1"></th>
               <th class="bg-transparent text-light" scope="col">Branch Name</th>
               <th class="bg-transparent text-light" scope="col">TDS Set Name</th>
               <th class="bg-transparent text-light" scope="col">IT Sec Code</th>
@@ -196,19 +195,15 @@
               <th class="bg-transparent text-light" scope="col">Certificate Amt</th>
               <th class="bg-transparent text-light" scope="col">Effective From</th>
               <th class="bg-transparent text-light" scope="col">Effective To</th>
+              <th class="bg-transparent text-light" scope="col">Applicable Rate</th>
             </tr>
           </thead>
 
           <tbody formArrayName="TDSDetail" class="compact-form">
             @for (tds of tdsDetailArray.controls; track tds; let i = $index) {
             <tr [formGroupName]="i">
-              <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" *ngIf="tdsDetailArray.length > 1">
-                <a class="text-danger mx-2" title="Delete" (click)="removeTDSDetail(i)">
-                  <i class="fas fa-trash text-danger cursor-pointer" name="trash-2"></i>
-                </a>
-              </td>
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5; color: black; font-weight: 600;">
-               {{ cusBranchList.length > 0 ? cusBranchList[0].BranchName : '' }}
+               {{ getBranchName(tds.get('CustomerBranchSid')?.value) }}
               </td>
 
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
@@ -285,14 +280,14 @@
 
               <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                 <input type="text" class="custom-input-field sm text-end" formControlName="CertificateAmt"
-                  [textWithNumbers]="500">
+                  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="2">
                 @if((tds.get('CertificateAmt')?.touched || tds.get('CertificateAmt')?.dirty) &&
                 tds.get('CertificateAmt')?.invalid){
                 <div class="text-danger small">
                   @if(tds.get('CertificateAmt')?.hasError('required')){
                   <span>Required</span>
-                  } @else if(tds.get('CertificateAmt')?.hasError('maxlength')){
-                  <span>Max 500 Characters allowed</span>
+                  } @else if(tds.get('CertificateAmt')?.hasError('decimalPrecision')){
+                  <small>Allowed: 10 digits before and 2 digits after decimal point</small>
                   }
                 </div>
                 }
@@ -340,6 +335,13 @@
                 }
               </td>
 
+              <td class="text-end"
+                  [title]="getApplicableRateExplanation(i)"
+                  [class.fw-bold]="!tds.get('TaxExempt')?.value"
+                  style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5; color: #0d6efd; cursor: help;">
+                {{ computeApplicableRate(i) }}
+              </td>
+
               <!-- <ng-template #footerTemplate1>
                 <hr class="my-1" />
                 <div class="d-flex justify-content-between px-2 pb-2">
@@ -354,6 +356,19 @@
         </table>
       </div>
 
+      <div *ngIf="tdsDetailArray.controls.length > 0"
+           class="d-flex align-items-start gap-2 mt-2 px-1 py-2 rounded"
+           style="background: #fffbeb; border: 1px solid #fde68a;">
+        <i class="fas fa-info-circle mt-1 flex-shrink-0" style="color: #b45309; font-size: 0.8rem;"></i>
+        <div class="small" style="color: #78350f; line-height: 1.5;">
+          <strong>Note</strong>
+          <ul class="mb-0 mt-1 ps-3">
+            <li>The <em>Applicable Rate</em> is indicative, derived from this vendor's classification (origin, company type, PAN).</li>
+            <li>The actual rate during voucher creation may differ if the Job's <strong>Vessel Operator</strong> or <strong>Transporter</strong> carries a TDS exemption in the TDS Set Master.</li>
+            <li>Hover over the <strong>Applicable Rate</strong> value to see why that rate is applied.</li>
+          </ul>
+        </div>
+      </div>
 
     </div>
   </div>

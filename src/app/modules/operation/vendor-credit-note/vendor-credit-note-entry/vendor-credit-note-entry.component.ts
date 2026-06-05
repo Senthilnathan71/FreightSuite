@@ -1031,9 +1031,7 @@ export class VendorCreditNoteEntryComponent {
     const vendorCreditNote =
       header.VoucherHeaderSid || header.voucherHeaderSid || null;
     this.originalInvoiceRates = new Map();
-    const autoNarration = this.autoGenerateNarration(
-      this.vendorCreditNoteForm.get('ReversalVoucher')?.value,
-    );
+    const autoNarration = this.autoGenerateNarration(data);
 
 
     this.getVendorBranchByVendor(header.CustomerMasterSid);
@@ -2655,6 +2653,7 @@ export class VendorCreditNoteEntryComponent {
       MasterJobSid: formValue.MasterJobSid,
       HouseJobSid: formValue.HouseJobSid,
       Narration: formValue.Narration,
+      Remarks: formValue.Remarks || '',
       Status: String(formValue.Status).charAt(0),
       YearMasterSid: YearMasterSid,
       CashOrBank: this.isNonJob ? 'Y' : 'N',
@@ -2696,7 +2695,6 @@ export class VendorCreditNoteEntryComponent {
     // Add others
     payload.VoucherOthers = {
       ...formValue.voucherOthers,
-      Remarks: formValue.Remarks || '',
     };
 
     return payload;

@@ -98,6 +98,11 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['userName', 'userEmail'],
     displayLabels: ['Name', 'Email'],
     labelFields: ['userName']
+  },
+  VENDOR_SUPPLIER: {
+    displayFields: ['CustomerName', 'PanType', 'CompanyType', 'CountryName'],
+    displayLabels: ['Name', 'PAN', 'Company Type', 'Country'],
+    labelFields: ['CustomerName']
   }
 } satisfies Record<string, {
   displayFields: string[];

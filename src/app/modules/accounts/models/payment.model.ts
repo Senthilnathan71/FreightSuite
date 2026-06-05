@@ -32,6 +32,7 @@ export enum InstrumentMode {
   IMPS = 'IMPS',
   NEFT = 'NEFT',
   RTGS = 'RTGS',
+  TT = 'TT',
   Others = 'Others'
 }
 

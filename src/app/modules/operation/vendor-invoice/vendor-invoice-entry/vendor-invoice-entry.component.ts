@@ -267,6 +267,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   private _originalHSSACValues: (number | null)[] = [];
   private _previousInvoiceType: string = 'REG';
   private _isInitialLoad = false;
+  private _prevNarrationSuffix: string = '';
   
   /** OTHERS */
   // Declaration for Get OS
@@ -689,6 +690,41 @@ export class VendorInvoiceEntryComponent implements OnInit {
         });
     });
 
+    ['BillNo', 'BillDate'].forEach((field) => {
+      this.vendorInvoiceForm.get(field)?.valueChanges
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          if (this.isPosted) return;
+          this.autoUpdateHeaderNarration();
+        });
+    });
+
+  }
+
+  private autoUpdateHeaderNarration(): void {
+    const billNo = this.vendorInvoiceForm.get('BillNo')?.value?.toString().trim() || '';
+    const billDate = this.vendorInvoiceForm.get('BillDate')?.value;
+    const newSuffix = [
+      billNo ? `BillNo-${billNo}` : '',
+      billDate ? `Dt.${this.datePipe.transform(billDate)}` : '',
+    ].filter(Boolean).join(' ');
+
+    const currentNarration = (this.vendorInvoiceForm.get('Narration')?.value || '').toString();
+    let updatedNarration: string;
+
+    if (this._prevNarrationSuffix && currentNarration.endsWith(this._prevNarrationSuffix)) {
+      // Suffix is at the end — replace only that part, keep the job-context prefix intact
+      const prefix = currentNarration
+        .slice(0, currentNarration.length - this._prevNarrationSuffix.length)
+        .trimEnd();
+      updatedNarration = [prefix, newSuffix].filter(Boolean).join(' ');
+    } else {
+      // No prior suffix tracked yet (new record or first edit) — append to existing narration
+      updatedNarration = [currentNarration.trimEnd(), newSuffix].filter(Boolean).join(' ');
+    }
+
+    this._prevNarrationSuffix = newSuffix;
+    this.vendorInvoiceForm.get('Narration')?.setValue(updatedNarration.trim(), { emitEvent: false });
   }
 
   private loadTermsAndConditionsConfig(): void {
@@ -1266,6 +1302,17 @@ export class VendorInvoiceEntryComponent implements OnInit {
     } else {
       this.vendorInvoiceForm.get('ExchangeRate')?.enable();
     }
+
+    // Seed the suffix tracker so that subsequent BillNo/BillDate edits replace only the
+    // suffix portion and leave the job-context prefix (HBL/MBL/Job No) untouched.
+    const savedBillNo = (data.DocumentNumber || '').toString().trim();
+    const savedBillDateStr = data.DocumentDate
+      ? this.datePipe.transform(new Date(data.DocumentDate))
+      : '';
+    this._prevNarrationSuffix = [
+      savedBillNo ? `BillNo-${savedBillNo}` : '',
+      savedBillDateStr ? `Dt.${savedBillDateStr}` : '',
+    ].filter(Boolean).join(' ');
 
     const detailsFromResp = data.VoucherDetail || [];
     this.details.clear();
@@ -2317,7 +2364,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const patchCostData: any[] = []; // Store cost data to update
     const YearMasterSid = Number(localStorage.getItem('current-year-id'));
 
-   const derivedNarration = `${formValue.BillNo} ${this.datePipe.transform(formValue.BillDate)}  ${formValue.Narration}`; 
+    const narrParts: string[] = [];
+    if (formValue.BillNo?.toString().trim()) narrParts.push(formValue.BillNo.toString().trim());
+    if (formValue.BillDate) narrParts.push(this.datePipe.transform(formValue.BillDate));
+    if (formValue.Narration?.toString().trim()) narrParts.push(formValue.Narration.toString().trim());
+    const derivedNarration = narrParts.join(' ');
     // Add details with CostRevenueChargesSid and job IDs
     const voucherDetailArray = (formValue.voucherDetails || []).map((detail: any, index: number) => {
       const costRevenueChargesSid = detail.CostRevenueChargesSid;

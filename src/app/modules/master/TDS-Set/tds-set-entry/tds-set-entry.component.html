@@ -151,6 +151,11 @@
                                 }
                             </div>
                             }
+                            @if(tdsForm.hasError('txGtAnnual') && (tdsForm.get('AnnualLimit')?.touched || tdsForm.get('TransactionLimit')?.touched)) {
+                            <div class="error-message">
+                                <small>Transaction Limit ({{ tdsForm.getError('txGtAnnual')?.tx }}) cannot exceed Annual Limit ({{ tdsForm.getError('txGtAnnual')?.an }})</small>
+                            </div>
+                            }
                         </div>
                     </aside>
                     <aside class="col-md-3">
