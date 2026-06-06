@@ -3095,7 +3095,7 @@ isSeaDepartment(): boolean {
     await this.preparePrintData();
     console.log("PRINT DATA", this.invoicePrintData);
     
-    const modalToOpen = this.currentCompany?.CompanyMasterSid === 7
+    const modalToOpen = this.currentCompany?.CompanyMasterSid === 55
       ? this.nonJobPrintModalRef 
       : this.printModalRef;
     

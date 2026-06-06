@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
@@ -70,6 +70,8 @@ import { toNumber } from 'src/app/common/helper';
   ],
 })
 export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
+  @ViewChild('nonJobprintModal') override nonJobPrintModalRef: any;
+
   coaList: any[] = [];
   subledgerListDetail: any[][] = [];
   hssacListForNonJob: any[] = [];
@@ -80,12 +82,12 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     private nonJobRouter: Router,
     route: ActivatedRoute,
     private nonJobFb: FormBuilder,
-    modalService: NgbModal,
+    private nonJobModalService: NgbModal,
     private nonJobInvoiceService: InvoiceNonJobService,
     private nonJobOperationService: OperationService,
     masterService: MasterService,
     private nonJobAppSettings: AppSettingsService,
-    spinner: NgxSpinnerService,
+    private nonJobSpinner: NgxSpinnerService,
     companySettings: CompanySettingsManagerService,
     mps: MenuPermissionService,
     commonService: CommonService,
@@ -106,12 +108,12 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       nonJobRouter,
       route,
       nonJobFb,
-      modalService,
+      nonJobModalService,
       nonJobInvoiceService,
       nonJobOperationService,
       masterService,
       nonJobAppSettings,
-      spinner,
+      nonJobSpinner,
       companySettings,
       mps,
       commonService,
@@ -147,6 +149,79 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     this.installNonJobNavigationInterceptor();
     super.ngOnInit();
     this.loadNonJobLedgers();
+  }
+
+  override async openPrintModal(): Promise<void> {
+    if (!this.headerId || !this.invoiceData) {
+      this.nonJobAppSettings.showWarning('Please save the invoice before printing.');
+      return;
+    }
+
+    const status = this.invoiceData?.Status || this.invoiceForm.get('Status')?.value || this.invoiceForm.get('status')?.value;
+    if (status !== 'A') {
+      this.nonJobAppSettings.showWarning('Only active invoices can be printed.');
+      return;
+    }
+
+    this.nonJobSpinner.show();
+    try {
+      await this.preparePrintData();
+      this.nonJobModalService.open(this.nonJobPrintModalRef, {
+        size: 'xl',
+        scrollable: true,
+      });
+    } finally {
+      this.nonJobSpinner.hide();
+    }
+  }
+
+  override async preparePrintData(): Promise<void> {
+    await super.preparePrintData();
+
+    const billNo = this.invoiceData?.BillNo || this.invoiceData?.DocumentNumber || this.invoiceForm.get('BillNo')?.value || '';
+    const billDate = this.invoiceData?.BillDate || this.invoiceData?.DocumentDate || this.invoiceForm.get('BillDate')?.value || '';
+    const narration = this.invoiceData?.Narration || this.invoiceData?.Remarks || this.invoiceForm.get('Narration')?.value || '';
+    const invoiceDueDate = this.getNonJobInvoiceDueDate();
+    const customerTaxNo = this.getNonJobCustomerTaxNo();
+    const irnNumber = this.getNonJobIRNNumber();
+
+    this.invoicePrintData = {
+      ...this.invoicePrintData,
+      IsNonJobInvoice: true,
+      DocumentNumber: billNo,
+      BillNo: billNo,
+      BillDate: billDate,
+      ShipperName: '',
+      ConsigneeName: '',
+      Vessel: '',
+      VoyageNo: '',
+      POL: '',
+      FPD: '',
+      ETD: '',
+      ETA: '',
+      BOENo: '',
+      DeclarationNo: '',
+      HBLNo: '',
+      MBLNo: '',
+      MasterJobNumber: '',
+      MasterJobDate: '',
+      FreightTerms: '',
+      BookingNumber: '',
+      JobType: '',
+      IsServiceJob: 'Y',
+      ContainerType: '',
+      ContainerNumber: '',
+      GST_VAT: customerTaxNo,
+      customerGstVat: customerTaxNo,
+      IRNNumber: irnNumber,
+      InvoiceDueDate: invoiceDueDate,
+      Remarks: narration,
+      voucherDetails: (this.invoicePrintData?.voucherDetails || []).map((detail: any, index: number) => ({
+        ...detail,
+        ChargeDescription: this.getNonJobPrintParticular(detail, index),
+        NumberOfUnit: detail?.NumberOfUnit || '1.000',
+      })),
+    };
   }
 
   override createDetailGroup(data?: any): FormGroup {
@@ -268,10 +343,12 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
 
   override patchValues(data: any): void {
     super.patchValues(data);
+    const voucherOthers = this.getVoucherOthersSource(data);
     this.invoiceForm.patchValue({
       BillNo: data?.BillNo || data?.DocumentNumber || '',
       BillDate: data?.BillDate || data?.DocumentDate ? new Date(data?.BillDate || data?.DocumentDate) : null,
       DocumentNumber: data?.BillNo || data?.DocumentNumber || '',
+      IRNNumber: data?.IRNNumber || voucherOthers?.IRNNumber || voucherOthers?.IRNNo || '',
       Narration: data?.Narration || data?.Remarks || '',
       Remarks: data?.Narration || data?.Remarks || '',
       CustomsDuty: 'N',
@@ -344,6 +421,8 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
   private buildNonJobPayload(payload: any): any {
     const billNo = this.invoiceForm.get('BillNo')?.value || payload?.BillNo || payload?.DocumentNumber || '';
     const billDate = this.invoiceForm.get('BillDate')?.value || payload?.BillDate || payload?.DocumentDate || null;
+    const payloadVoucherOthers = this.getVoucherOthersSource(payload);
+    const irnNumber = this.invoiceForm.get('IRNNumber')?.value || payload?.IRNNumber || payloadVoucherOthers?.IRNNumber || payloadVoucherOthers?.IRNNo || '';
 
     return {
       ...payload,
@@ -351,6 +430,11 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       BillDate: billDate,
       DocumentNumber: billNo,
       DocumentDate: billDate,
+      IRNNumber: irnNumber,
+      VoucherOthers: {
+        ...(payloadVoucherOthers || {}),
+        IRNNumber: irnNumber,
+      },
       TaxType: payload?.TaxType || this.invoiceForm.get('TaxType')?.value || (this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT'),
       CustomsDuty: 'N',
       MasterJobSid: null,
@@ -366,6 +450,14 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
         DepartmentMasterSid: null,
       })),
     };
+  }
+
+  private getVoucherOthersSource(source: any): any {
+    if (!source) return null;
+    if (Array.isArray(source.VoucherOthers)) return source.VoucherOthers[0] || null;
+    if (source.VoucherOthers) return source.VoucherOthers;
+    if (Array.isArray(source.voucherOthers)) return source.voucherOthers[0] || null;
+    return source.voucherOthers || null;
   }
 
   private installNonJobNavigationInterceptor(): void {
@@ -411,5 +503,93 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       this.details.getRawValue().reduce((sum: number, row: any) => sum + toNumber(row.TaxAmount1) + toNumber(row.TaxAmount2), 0),
       this.currentCompany?.CurrencyMasterSid
     );
+  }
+
+  canPrintInvoiceNonJob(action: string): boolean {
+    return this.mps.canPrint('Invoice Non Job', action) || this.mps.canPrint('Invoice', action);
+  }
+
+  private getNonJobPrintParticular(detail: any, index: number): string {
+    const rawDetail = this.invoiceData?.VoucherDetail?.filter((row: any) => row?.IsAutoGenerated !== 'Y')?.[index];
+    return rawDetail?.ChargeDescription ||
+      rawDetail?.coaMaster?.LedgerName ||
+      rawDetail?.COAMaster?.LedgerName ||
+      rawDetail?.ledgerMaster?.SubledgerName ||
+      detail?.ChargeDescription ||
+      this.invoicePrintData?.Remarks ||
+      this.invoiceData?.Narration ||
+      this.invoiceData?.Remarks ||
+      '';
+  }
+
+  private getNonJobInvoiceDueDate(): any {
+    if (this.invoiceData?.CustomsDuty === 'Y') {
+      return 'Cash Invoice';
+    }
+
+    const voucherOthers = Array.isArray(this.invoiceData?.VoucherOthers)
+      ? this.invoiceData.VoucherOthers[0]
+      : Array.isArray(this.invoiceData?.voucherOthers)
+        ? this.invoiceData.voucherOthers[0]
+        : this.invoiceData?.VoucherOthers || this.invoiceData?.voucherOthers;
+
+    const candidates = [
+      this.invoiceData?.InvoiceDueDate,
+      this.invoiceData?.DueDate,
+      voucherOthers?.DueDate,
+      this.invoiceForm.get('voucherOthers.DueDate')?.value,
+      this.invoiceForm.get('DueDate')?.value,
+      this.dueDate,
+    ];
+
+    const dueDate = candidates.find((value) => value !== null && value !== undefined && value !== '');
+    if (!dueDate) {
+      return '';
+    }
+
+    if (typeof dueDate === 'object' && 'year' in dueDate && 'month' in dueDate && 'day' in dueDate) {
+      return new Date(dueDate.year, dueDate.month - 1, dueDate.day);
+    }
+
+    return dueDate;
+  }
+
+  private getNonJobCustomerTaxNo(): string {
+    const branchSid = Number(
+      this.invoiceData?.CustomerBranchSid ||
+      this.invoiceData?.customerBranch?.CustomerBranchSid ||
+      this.invoiceForm.get('CustomerBranchSid')?.value ||
+      0
+    );
+    const selectedBranch = branchSid
+      ? this.customerBranchList?.find((branch: any) => Number(branch?.CustomerBranchSid) === branchSid)
+      : null;
+
+    const candidates = [
+      this.invoicePrintData?.GST_VAT,
+      this.invoicePrintData?.customerGstVat,
+      this.invoiceData?.GST_VAT,
+      this.invoiceData?.customerGstVat,
+      this.invoiceData?.customerBranch?.GSTNo,
+      this.invoiceData?.customerBranch?.GST_VAT,
+      this.invoiceData?.customerBranch?.customerMaster?.PanType,
+      selectedBranch?.GSTNo,
+      selectedBranch?.GST_VAT,
+      selectedBranch?.customerMaster?.PanType,
+      this.invoiceForm.get('GST_VAT')?.value,
+    ];
+
+    return String(candidates.find((value) => value !== null && value !== undefined && String(value).trim() !== '') || '').trim();
+  }
+
+  private getNonJobIRNNumber(): string {
+    const voucherOthers = this.getVoucherOthersSource(this.invoiceData);
+    return String(
+      this.invoiceData?.IRNNumber ||
+      voucherOthers?.IRNNumber ||
+      voucherOthers?.IRNNo ||
+      this.invoiceForm.get('IRNNumber')?.value ||
+      ''
+    ).trim();
   }
 }
