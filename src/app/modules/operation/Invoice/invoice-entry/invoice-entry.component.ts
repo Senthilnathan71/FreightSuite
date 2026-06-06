@@ -170,6 +170,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   // ViewChild references for modals
   @ViewChild('printModal') printModalRef: any;
   @ViewChild('emailModal') emailModalRef: any;
+  @ViewChild('nonJobprintModal') nonJobPrintModalRef: any;
   
   // lookups
   customerList: any[] = [];
@@ -1560,7 +1561,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       GSTCode: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
       BilledTo: this.invoiceData?.PartyName || this.invoiceData?.subledgerMaster?.SubledgerName || '',
       BillingAddress: this.invoiceData?.PartyAddress || this.invoiceData?.subledgerMaster?.Address || '',
-      PAN: this.invoiceData?.customerBranch?.customerMaster?.PanType || '',
+      PAN: this.invoiceData?.customerBranch?.customerMaster?.PanType.toUpperCase() || '',
       CustomerCountryCode: (this.invoiceData?.customerBranch?.customerMaster?.countryMaster?.countryCode || '').toLowerCase(),
       InvoiceNo: this.currentCompany?.CompanyMasterSid === 13
         ? `${this.invoiceData?.VoucherNumber || ''} ${this.invoiceData?.PostStatus === 'P' ? '' : '( CREATED )'}`
@@ -3086,22 +3087,27 @@ isSeaDepartment(): boolean {
 
   // Print Modal Methods
   async openPrintModal() {
-    if (this.showBlockedAction(this.getPrintBlockedReason())) return;
+  if (this.showBlockedAction(this.getPrintBlockedReason())) return;
 
-    this.spinner.show();
+  this.spinner.show();
 
-    try {
-      await this.preparePrintData();
-      console.log("PRINT DATA", this.invoicePrintData);
-      this.modalService.open(this.printModalRef, {
-        size: 'xl',
-        scrollable: true
-      });
+  try {
+    await this.preparePrintData();
+    console.log("PRINT DATA", this.invoicePrintData);
+    
+    const modalToOpen = this.currentCompany?.CompanyMasterSid === 7
+      ? this.nonJobPrintModalRef 
+      : this.printModalRef;
+    
+    this.modalService.open(modalToOpen, {
+      size: 'xl',
+      scrollable: true
+    });
 
-    } finally {
-      this.spinner.hide();
-    }
+  } finally {
+    this.spinner.hide();
   }
+}
 
 
   async openEmailModal(): Promise<void> {
