@@ -1,0 +1,732 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
+        <h4 class="page-title mb-0">
+          {{ isViewMode ? 'Invoice' : (isEditMode ? ' Invoice' : ' Invoice') }}
+          <span class="fw-bold text-info">[Non Job]</span>
+        </h4>
+        @if(isEditMode){
+          <a class="text-info ps-2 d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
+            <i class="fas fs-6 fa-info-circle"></i>
+          </a>
+        }
+      </div>
+
+      <div class="col-md-8 pb-1">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button
+            type="button"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="openPrintModal()"
+             *ngIf="isEditMode && canPrintInvoiceNonJob('Print')"
+            [disabled]="!headerId || ((invoiceData?.Status || invoiceForm.get('Status')?.value) !== 'A')">
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+
+          <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openAuditLogs()" *ngIf="isEditMode">
+            <i class="fas fa-history me-1"></i>
+            <span>Logs</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()" [disabled]="isReadOnly">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+
+          <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode" (click)="sendManualMail()" [disabled]="invoiceData?.Status !== 'A'">
+            <i class="fas fa-envelope me-1"></i> Send Mail
+          </button>
+
+          @if(isAutoPosting){
+            <button
+              type="button"
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
+              (click)="onSubmit(undefined, true)"
+              [disabled]="isReadOnly || (!mps.can('update') && isEditMode) || isSaving">
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span *ngIf="isDirty" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" title="You have unsaved changes">
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
+            <button *ngIf="isEditMode" type="button" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled="true">
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          } @else {
+            <button
+              type="button"
+              appPreventMultiClick
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
+              (click)="onSubmit()"
+              [disabled]="isReadOnly || (!mps.can('update') && isEditMode) || isSaving">
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span *ngIf="isDirty" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" title="You have unsaved changes">
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="postVoucher(true)"
+              [disabled]="isPosted || invoiceForm.invalid || isReadOnly || !mps.can('post') || isDirty || isSaving"
+              [title]="isDirty ? 'Please save the draft first before posting' : ''">
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          }
+
+          <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block lead-actions-menu">
+            <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
+              <button *ngIf="mps.has('edoc')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openEDoc()">
+                <span class="lead-action-icon"><i class="fas fa-file-alt"></i></span>
+                <span class="lead-action-text">Edoc</span>
+              </button>
+              <button *ngIf="mps.has('terms_and_condition')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openTandC()">
+                <span class="lead-action-icon"><i class="fas fa-clipboard"></i></span>
+                <span class="lead-action-text">Terms & Condition</span>
+              </button>
+              <button *ngIf="mps.has('authority')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openAuthority()">
+                <span class="lead-action-icon"><i class="fas fa-shield-alt"></i></span>
+                <span class="lead-action-text">Authorize</span>
+              </button>
+              <button *ngIf="mps.has('email')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openEmail()">
+                <span class="lead-action-icon"><i class="fas fa-envelope"></i></span>
+                <span class="lead-action-text">Email</span>
+              </button>
+              <button *ngIf="mps.has('follow_up')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openFollowup()">
+                <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+                <span class="lead-action-text">Followup</span>
+              </button>
+              <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openDocRef()">
+                <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+                <span class="lead-action-text">Document reference</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-12 px-0">
+    <div class="card mb-1">
+      <div class="card-body">
+        <form [formGroup]="invoiceForm" novalidate>
+          <div class="row">
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="VoucherNumber" readonly style="cursor: not-allowed" />
+                <label class="input-label">Invoice No.
+                  <i *ngIf="invoiceForm?.get('VoucherNumber')?.value" class="fas fa-copy ms-1" style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;" title="Copy Invoice No." (click)="copyInvoiceNumber($event)"></i>
+                </label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker #d1="ngbDatepicker" formControlName="VoucherDate" (click)="d1.toggle()" [minDate]="fyMinDate" [maxDate]="fyMaxDate" (dateSelect)="onVoucherDateChange()" />
+                  <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Invoice Date <span class="text-danger">*</span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="Narration" placeholder="" />
+                <label class="input-label">Narration
+                  <i *ngIf="invoiceForm?.get('Narration')?.value" class="fas fa-copy ms-1" style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;" title="Copy Narration" (click)="copyDocumentValue('Narration', 'Narration', $event)"></i>
+                </label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!invoiceForm.get('PartyName')?.value">
+                <dofi-searchable-dropdown
+                  [items]="customerList"
+                  formControlName="PartyName"
+                  placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields"
+                  [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields"
+                  bindLabel="CustomerName"
+                  bindValue="CustomerName"
+                  (itemSelected)="onCustomerChange($event)">
+                </dofi-searchable-dropdown>
+                <label class="input-label">Customer
+                  <i *ngIf="invoiceForm?.get('PartyName')?.value" class="fas fa-copy ms-1" style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;" title="Copy Customer" (click)="copyDocumentValue('PartyName', 'Customer', $event)"></i>
+                  <span class="text-danger">*</span>
+                </label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              @if(!isEditMode){
+                <div class="custom-form-group custom-form-group-select" [class.filled]="!!invoiceForm.get('CustomerBranchSid')?.value">
+                  <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="CustomerBranchSid" placeholder="" formControlName="CustomerBranchSid" (change)="onCustomerBranchChange($event)" appendTo="body">
+                    <ng-template ng-option-tmp let-item="item">
+                      <div>
+                        <strong>{{ item.CustomerName }}</strong><br />
+                        <small>{{ item.Address }}</small>
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                  <label class="input-label">Customer Address <span class="text-danger">*</span></label>
+                </div>
+              } @else {
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="PartyAddress" readonly />
+                  <label class="input-label">Customer Address <span class="text-danger">*</span></label>
+                </div>
+              }
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="GST_VAT" readonly style="cursor: not-allowed" />
+                @if(currentCompanyCountryCode === 'in'){
+                  <label class="input-label">GST No</label>
+                } @else if(currentCompanyCountryCode !== 'ae'){
+                  <label class="input-label">VAT No</label>
+                } @else {
+                  <label class="input-label">Tax No</label>
+                }
+              </div>
+            </aside>
+
+            <aside class="col-md-2" *ngIf="currentCompanyCountryCode === 'in'">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="IRNNumber" placeholder="" />
+                <label class="input-label">IRN No.
+                  <i *ngIf="invoiceForm?.get('IRNNumber')?.value" class="fas fa-copy ms-1" style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;" title="Copy IRN No." (click)="copyDocumentValue('IRNNumber', 'IRN No.', $event)"></i>
+                </label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm" formControlName="PlaceOfSupply" readonly />
+                <label class="input-label">Place of Supply</label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!invoiceForm.get('InvoiceType')?.value">
+                <ng-select [items]="activeInvoiceTypes" bindLabel="name" bindValue="id" formControlName="InvoiceType">
+                  <ng-template ng-label-tmp let-item="item">
+                    <span class="text-danger">{{ item.name }}</span>
+                  </ng-template>
+                </ng-select>
+                <label class="input-label">Invoice Type</label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!invoiceForm.get('CurrencyCode')?.value">
+                <dofi-searchable-dropdown
+                  [items]="currencyList"
+                  formControlName="CurrencyCode"
+                  [placeholder]="''"
+                  [displayFields]="CurrencyLookupConfig.displayFields"
+                  [displayLabels]="CurrencyLookupConfig.displayLabels"
+                  [labelFields]="CurrencyLookupConfig.labelFields"
+                  [bindValue]="'currencyCode'"
+                  (itemSelected)="onHeaderCurrencyChange($event)">
+                </dofi-searchable-dropdown>
+                <label class="input-label">Currency <span class="text-danger">*</span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm text-end" formControlName="ExchangeRate" (input)="recalculateAllRows()" DecimalPrecision [DecimalPrecisionBefore]="3" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(invoiceForm.get('CurrencyMasterSid')?.value)" />
+                <label class="input-label">Ex. Rate <span class="text-danger">*</span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm text-end" formControlName="BillAmt" readonly />
+                <label class="input-label">Bill Amt</label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group">
+                <input type="text" class="custom-input-field sm text-end" formControlName="BillNo" placeholder="" />
+                <label class="input-label">Bill No.</label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" name="billDate" ngbDatepicker #bd="ngbDatepicker" formControlName="BillDate" (click)="bd.toggle()" />
+                  <button class="btn bi bi-calendar3" (click)="bd.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Bill Date</label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select" [class.filled]="!!invoiceForm.get('status')?.value">
+                <ng-select [items]="ModeofStatus" bindLabel="name" bindValue="id" formControlName="status"></ng-select>
+                <label class="input-label">Status</label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2 ms-auto mt-md-1 mb-md-1 mb-1">
+              <div class="d-flex justify-content-end align-items-center" *ngIf="!isPosted">
+                <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button" [disabled]="isReadOnly">
+                  <i class="fas fa-plus me-1"></i>Add 
+                </button>
+              </div>
+            </aside>
+          </div>
+
+          <div class="row bg-white rounded shadow-sm mx-auto">
+            <div class="col-12 px-0">
+              <div class="table-responsive table-borderless">
+                <table class="table table-hover table-sm mb-0 text-center">
+                  <thead class="table-header-booking">
+                    <tr class="align-middle bg-info">
+                      <th rowspan="2" *ngIf="!isEditMode" class="text-center bg-transparent text-light" style="min-width: 30px"></th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px">Sno</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 160px">Ledger</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 160px">Subledger</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px">SAC Code</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px">Dr/Cr</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px">Curr</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px">Ex Rate</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px">Rate</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px">Taxable Amt</th>
+                      <ng-container *ngIf="getTaxDisplayConfig() as taxCfg">
+                        <th *ngIf="taxCfg.showCGST" colspan="2" class="text-center bg-transparent text-light">CGST</th>
+                        <th *ngIf="taxCfg.showSGST" colspan="2" class="text-center bg-transparent text-light">SGST</th>
+                        <th *ngIf="taxCfg.showUGST" colspan="2" class="text-center bg-transparent text-light">UGST</th>
+                        <th *ngIf="taxCfg.showIGST" colspan="2" class="text-center bg-transparent text-light">IGST</th>
+                        <th *ngIf="taxCfg.showVAT" colspan="2" class="text-center bg-transparent text-light">VAT</th>
+                      </ng-container>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px">Local Amount</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px">Party Amount</th>
+                    </tr>
+                    <tr class="align-middle bg-info">
+                      <ng-container *ngIf="getTaxDisplayConfig() as taxCfg">
+                        <ng-container *ngFor="let tax of [taxCfg.showCGST, taxCfg.showSGST, taxCfg.showUGST, taxCfg.showIGST, taxCfg.showVAT]">
+                          <th *ngIf="tax" class="text-center bg-transparent text-light" style="min-width: 80px">Rate</th>
+                          <th *ngIf="tax" class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
+                        </ng-container>
+                      </ng-container>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="voucherDetails">
+                    <ng-container *ngFor="let row of details.controls; let i = index">
+                      <tr [formGroupName]="i">
+                        <td *ngIf="!isEditMode">
+                          <button type="button" class="btn border-0 btn-sm pt-1" (click)="removeDetailRow(i)">
+                            <i class="fas fa-trash text-danger"></i>
+                          </button>
+                        </td>
+                        <td class="text-center pt-1"><span style="font-weight: 600; color: black">{{ i + 1 }}</span></td>
+                        <td>
+                          <ng-select formControlName="COAMasterSid" [items]="coaList" bindLabel="LedgerName" bindValue="COAMasterSid" appendTo="body" placeholder="" (change)="onCOAChange($event, i)"></ng-select>
+                        </td>
+                        <td>
+                          <ng-select formControlName="LedgerMasterSid" [items]="subledgerListDetail[i] || []" bindLabel="SubledgerName" bindValue="SubledgerMasterSid" appendTo="body" placeholder="" (change)="onDetailSubledgerChange($event, i)"></ng-select>
+                        </td>
+                        <td>
+                          <dofi-searchable-dropdown
+                            [items]="hssacList[i] || hssacListForNonJob"
+                            formControlName="HSSACMasterSid"
+                            [placeholder]="''"
+                            [displayFields]="HSSACLookupConfig.displayFields"
+                            [displayLabels]="HSSACLookupConfig.displayLabels"
+                            [labelFields]="HSSACLookupConfig.labelFields"
+                            [bindValue]="'HSSACMasterSid'"
+                            appendTo="body"
+                            (itemSelected)="onDetailChange(i, 'HSSACMasterSid')">
+                          </dofi-searchable-dropdown>
+                        </td>
+                        <td>
+                          <ng-select [items]="[{id:'D', name:'D'}, {id:'C', name:'C'}]" bindLabel="name" bindValue="id" formControlName="DrCr" appendTo="body"></ng-select>
+                        </td>
+                        <td>
+                          <dofi-searchable-dropdown
+                            [items]="currencyList"
+                            formControlName="CurrencyCode"
+                            placeholder=""
+                            [displayFields]="CurrencyLookupConfig.displayFields"
+                            [displayLabels]="CurrencyLookupConfig.displayLabels"
+                            [labelFields]="CurrencyLookupConfig.labelFields"
+                            [bindValue]="'currencyCode'"
+                            (itemSelected)="onDetailChange(i, 'CurrencyCode')">
+                          </dofi-searchable-dropdown>
+                        </td>
+                        <td class="text-end">
+                          <input type="text" class="custom-input-field sm text-end" formControlName="ExchangeRate" (input)="onDetailChange(i, 'ExchangeRate')" DecimalPrecision [DecimalPrecisionBefore]="3" [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CurrencyMasterSid')?.value)" />
+                        </td>
+                        <td class="text-end">
+                          <input type="text" class="custom-input-field sm text-end" formControlName="Rate" (input)="onDetailChange(i, 'Rate')" DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CurrencyMasterSid')?.value)" />
+                        </td>
+                        <td class="pt-1 text-end"><span style="font-weight: 600; color: black">{{ getFormattedAmount(row.get("Amount")?.value, row.get('CurrencyMasterSid')?.value) }}</span></td>
+                        <td class="pt-1 text-end"><span style="font-weight: 600; color: black">{{ getFormattedAmount(row.get("TaxableAmount")?.value, currentCompany.CurrencyMasterSid) }}</span></td>
+
+                        <ng-container *ngIf="getTaxDisplayConfig() as taxCfg">
+                          <ng-container *ngIf="taxCfg.showCGST">
+                            <td><div class="d-flex"><input type="number" class="custom-input-field sm" formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')" readonly /><span class="pt-1" style="font-weight: 600; color: black">%</span></div></td>
+                            <td class="text-end"><span class="pt-1" style="font-weight: 600; color: black">{{ getFormattedAmount(row.get("TaxAmount1")?.value, currentCompany.CurrencyMasterSid) }}</span></td>
+                          </ng-container>
+                          <ng-container *ngIf="taxCfg.showSGST || taxCfg.showUGST">
+                            <td><div class="d-flex gap-1"><input type="number" class="custom-input-field sm" formControlName="TaxPercentage2" (input)="onDetailChange(i, 'TaxPercentage2')" readonly /><span class="pt-1" style="font-weight: 600; color: black">%</span></div></td>
+                            <td class="text-end"><span class="pt-1" style="font-weight: 600; color: black">{{ getFormattedAmount(row.get("TaxAmount2")?.value, currentCompany.CurrencyMasterSid) }}</span></td>
+                          </ng-container>
+                          <ng-container *ngIf="taxCfg.showIGST || taxCfg.showVAT">
+                            <td><div class="d-flex gap-1"><input type="number" class="custom-input-field sm" formControlName="TaxPercentage1" (input)="onDetailChange(i, 'TaxPercentage1')" readonly /><span class="pt-1" style="font-weight: 600; color: black">%</span></div></td>
+                            <td class="text-end"><span class="pt-1" style="font-weight: 600; color: black">{{ getFormattedAmount(row.get("TaxAmount1")?.value, currentCompany.CurrencyMasterSid) }}</span></td>
+                          </ng-container>
+                        </ng-container>
+
+                        <td class="text-end"><span class="pt-1" style="font-weight: 600; color: black">{{ getFormattedAmount(row.get("LocalAmount")?.value, currentCompany.CurrencyMasterSid) }}</span></td>
+                        <td class="text-end"><span class="pt-1" style="font-weight: 600; color: black">{{ getFormattedAmount(row.get("PartyAmount")?.value, invoiceForm.get('CurrencyMasterSid')?.getRawValue()) }}</span></td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="row border border-bottom-0 pt-2 align-items-center text-nowrap">
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-black small fw-bold">Total Credit</span>
+              <span class="fw-semibold text-success">{{ getTotalLocalCredits() }}</span>
+            </div>
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-black small fw-bold">Total Debit</span>
+              <span class="fw-semibold text-danger">{{ getTotalLocalDebits() }}</span>
+            </div>
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-black small fw-bold">Net (Cr - Dr)</span>
+              <span class="fw-semibold text-primary">{{ getNetCrDr() }}</span>
+            </div>
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-black small fw-bold">Party Curr Credit</span>
+              <span class="fw-semibold">{{ getPartyCurrCreditAmt() }}</span>
+            </div>
+            <div class="col d-flex justify-content-between border-end px-2">
+              <span class="text-black small fw-bold">Party Curr Debit</span>
+              <span class="fw-semibold">{{ getPartyCurrDebitAmt() }}</span>
+            </div>
+            <div class="col d-flex justify-content-between px-2">
+              <span class="text-black fw-bold small">Tax Amount</span>
+              <span class="fw-semibold text-warning">{{ getTotalTaxAmount() }}</span>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #nonJobprintModal let-modal>
+  <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center">
+    <h5 class="modal-title">Invoice Non Job</h5>
+    <div class="d-flex gap-1 align-items-center">
+      <button
+        type="button"
+        class="btn btn-sm btn-danger rounded-5 py-0"
+        (click)="downloadPDF()"
+        *ngIf="canPrintInvoiceNonJob('Download')">
+        <i class="fas fa-download me-1"></i> Download PDF
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-success rounded-5 py-0"
+        (click)="openEmailModal(); modal.dismiss()"
+        *ngIf="canPrintInvoiceNonJob('Send Mail')">
+        <i class="fas fa-envelope me-1"></i> Send Email
+      </button>
+      <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
+    </div>
+  </div>
+
+  <div class="modal-body">
+    <div id="printContent">
+      <div style="width: 280mm; min-height: 350mm; margin: 10px; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; font-size: 16px;">
+        <div style="display: flex; flex-direction: column; margin-bottom: 0; width: 100%; padding-top: 5px; padding-left: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; flex-direction: column;">
+              <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid" style="width: auto; height: 110px" />
+            </div>
+            <div style="flex: 1; text-align: right; font-size: 17px; padding-right: 3%;">
+              <h3 style="margin: 0; font-weight: 900">{{ currentCompany?.companyName || "Company Name" }}</h3>
+              <p style="margin: 0; font-size: 16px">{{ currentBranch?.addressLine1 || "" }}</p>
+              <p style="margin: 0; font-size: 16px">
+                <ng-container *ngIf="currentBranch?.addressLine2 as addr">{{ addr }}, </ng-container>
+                {{ currentBranch?.branchName || "Company Branch" }}
+                <ng-container *ngIf="currentBranch?.branchCode as code"> - {{ code }}</ng-container>
+              </p>
+              <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode" style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
+                <span>Postal Code</span>
+                <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
+              </div>
+              <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone" style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
+                <span>Phone No</span>
+                <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
+              </div>
+              <div style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
+                <span *ngIf="currentCompanyCountryCode === 'in'">GST No</span>
+                <span *ngIf="currentCompanyCountryCode !== 'in'">VAT No</span>
+                <span>: {{ currentCompany?.Pan || currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; border-top: 1px solid black; padding-top: 4px; padding-left: 40px;">
+          <h3 style="margin: 2px 0; font-weight: bolder; font-size: 20px">
+            <strong>{{ invoicePrintData?.invoiceTitle }}</strong>
+          </h3>
+          <p style="font-size: 12px; margin: 2px 0" *ngIf="currentCompanyCountryCode === 'in'">
+            <strong>GST Code :</strong> {{ invoicePrintData?.GSTCode }}
+          </p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid black; margin-top: 8px; padding: 0 20px 8px;">
+          <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+            <strong style="font-weight: bolder">BILLED TO</strong><br />
+            <div style="padding-left: 30px">
+              <span>{{ invoicePrintData?.BilledTo }}</span><br />
+              {{ invoicePrintData?.BillingAddress }}<br />
+            </div>
+            <div style="display: flex; align-items: flex-start; margin-bottom: 2px;" *ngIf="currentCompanyCountryCode === 'in'">
+              <div style="width: 160px; font-weight: 600; white-space: nowrap;">
+                <strong>{{ invoicePrintData?.CustomerCountryCode === 'ae' ? 'VAT' : invoicePrintData?.CustomerCountryCode === 'in' ? 'PAN No' : 'Tax No' }}</strong>
+              </div>
+              <div style="width: 15px; text-align: center;">:</div>
+              <div style="flex: 1; line-height: 1.4;">{{ invoicePrintData?.PAN }}</div>
+            </div>
+          </div>
+          <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+            <div style="display: flex">
+              <div style="width: 180px; font-weight: bolder"><strong>Invoice No.</strong></div>
+              <div>: {{ invoicePrintData?.InvoiceNo }}</div>
+            </div>
+            <div style="display: flex">
+              <div style="width: 180px; font-weight: bolder"><strong>Invoice Date</strong></div>
+              <div>: {{ invoicePrintData?.InvoiceDate | formatDate }}</div>
+            </div>
+            <div style="display: flex" *ngIf="invoicePrintData?.InvoiceDueDate">
+              <div style="width: 180px; font-weight: bolder"><strong>Invoice Due Date</strong></div>
+              <div>
+                :
+                @if (invoicePrintData?.InvoiceDueDate === 'Cash Invoice') {
+                  {{ invoicePrintData?.InvoiceDueDate }}
+                } @else {
+                  {{ invoicePrintData?.InvoiceDueDate | formatDate }}
+                }
+              </div>
+            </div>
+            <div style="display: flex">
+              <div style="width: 180px; font-weight: bolder"><strong>Currency / Ex-Rate</strong></div>
+              <div>: {{ invoicePrintData?.CurrExRate }}</div>
+            </div>
+            <div style="display: flex">
+              <div style="width: 180px; font-weight: bolder">
+                <strong *ngIf="invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
+                <strong *ngIf="invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
+              </div>
+              <div>: {{ invoicePrintData?.GST_VAT }}</div>
+            </div>
+            <div style="display: flex" *ngIf="invoicePrintData?.CustomerCountryCode === 'in'">
+              <div style="width: 180px; font-weight: bolder"><strong>IRN No.</strong></div>
+              <div>: {{ invoicePrintData?.IRNNumber }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width: 100%; overflow-x: auto; margin-top: 8px">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px">
+            <thead>
+              <tr>
+                <th style="border: 1px solid black; padding: 2px 8px; font-weight: bolder; text-align: center; width: 20px; border-left: none;"><strong>S.No.</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; font-weight: bolder; text-align: center;"><strong>Particulars</strong></th>
+                <th *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>HSN/SAC</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: left; font-weight: bolder;"><strong>Curr.</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>No. of Unit</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>Rate</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>ROE</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>Taxable Amt</strong></th>
+                <ng-container *ngIf="printTaxDisplayConfig.showCGST">
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>CGST %</strong></th>
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>CGST Amt.</strong></th>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showSGST">
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>SGST %</strong></th>
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>SGST Amt.</strong></th>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showUGST">
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>UGST %</strong></th>
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>UGST Amt.</strong></th>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showIGST">
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>IGST %</strong></th>
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>IGST Amt.</strong></th>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showVAT">
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>VAT %</strong></th>
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>VAT Amt.</strong></th>
+                </ng-container>
+                <th [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="border: 1px solid black; padding: 2px 8px; text-align: center;"><strong>Amt In {{ currentCompanyCurrency?.code }}</strong></th>
+                <th *ngIf="shouldShowForeignCurrencyColumn()" style="border: 1px solid black; padding: 2px 8px; text-align: center; border-right: none;"><strong>Amt In {{ invoiceData?.CurrencyCode }}</strong></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detail of invoicePrintData?.voucherDetails">
+                <td style="border: 1px solid black; padding: 2px 8px; border-left: none; text-align: center;">{{ detail.Sno }}</td>
+                <td style="border: 1px solid black; padding: 2px 8px">{{ detail.ChargeDescription }}</td>
+                <td *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 8px">{{ detail.HSSACCode }}</td>
+                <td style="border: 1px solid black; padding: 2px 8px">{{ detail.CurrencyCode }}</td>
+                <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.NumberOfUnit }}</td>
+                <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.Rate }}</td>
+                <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.ExchangeRate }}</td>
+                <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.TaxableAmount }}</td>
+                <ng-container *ngIf="printTaxDisplayConfig.showCGST">
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.cgstRate }}</td>
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.cgstAmt }}</td>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showSGST">
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.sgstRate }}</td>
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.sgstAmt }}</td>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showUGST">
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.ugstRate }}</td>
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.ugstAmt }}</td>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showIGST">
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.igstRate }}</td>
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.igstAmt }}</td>
+                </ng-container>
+                <ng-container *ngIf="printTaxDisplayConfig.showVAT">
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.vatRate }}</td>
+                  <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.vatAmt }}</td>
+                </ng-container>
+                <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.LocalAmount }}</td>
+                <td *ngIf="shouldShowForeignCurrencyColumn()" style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">{{ detail.PartyAmount }}</td>
+              </tr>
+              <tr style="font-weight: bolder">
+                <td [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig) + (shouldShowForeignCurrencyColumn() ? 1 : 0)" style="border: 1px solid black; padding: 2px 8px; text-align: right; border-left: none;">
+                  <strong>Total</strong>
+                </td>
+                <td style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">
+                  <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; margin-top: 8px; font-size: 16px; padding: 0 20px;">
+          <p style="font-weight: bolder; width: 165px; margin: 0;"><strong>Amount In Words</strong></p>
+          <p style="margin: 0">: {{ invoicePrintData?.AmountInWords }}</p>
+        </div>
+
+        <div style="display: flex; margin-top: 8px; padding: 0 20px; font-size: 13px">
+          <p style="font-weight: bolder; width: 165px; margin: 0"><strong>Remarks</strong></p>
+          <p style="margin: 0">: {{ invoicePrintData?.Remarks }}</p>
+        </div>
+
+        <div *ngIf="bankDetails && bankDetails.length > 0" class="px-3" style="font-size: 16px">
+          <h5 class="fw-bold my-1"><strong>Bank Details</strong></h5>
+          <div class="table-responsive">
+            <table class="table align-middle mb-0" style="border-collapse: collapse; color: #000; font-size: 13px; border: 0.5px solid #000;" [ngStyle]="{ width: bankDetails.length === 1 ? 'auto' : '100%', 'table-layout': bankDetails.length === 1 ? 'auto' : 'fixed' }">
+              <thead>
+                <tr>
+                  <th style="width: 180px; padding: 0; color: #000; border-color: #000; text-align: center; border: 0.5px solid #000;"><strong>Details</strong></th>
+                  <th *ngFor="let bankDetail of bankDetails" style="padding: 0 6px; color: #000; border-color: #000; text-align: start; border: 0.5px solid #000;"><strong>Bank ({{ getBankCurrencyCode(bankDetail) }})</strong></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th style="padding: 0 6px; color: #000; border-color: #000; border: 0.5px solid #000;"><strong>Beneficiary Name</strong></th>
+                  <td *ngFor="let bankDetail of bankDetails" style="padding: 2px; color: #000; border-color: #000; white-space: normal; word-break: break-word; border: 0.5px solid #000;">{{ bankDetail.BeneficiaryName }}</td>
+                </tr>
+                <tr>
+                  <th style="padding: 0 6px; color: #000; border-color: #000; border: 0.5px solid #000;"><strong>Account No.</strong></th>
+                  <td *ngFor="let bankDetail of bankDetails" style="padding: 2px; color: #000; border-color: #000; word-break: break-word; white-space: normal; border: 0.5px solid #000;">{{ bankDetail.BankAccountNo }}</td>
+                </tr>
+                <tr>
+                  <th style="padding: 0 6px; color: #000; border-color: #000; border: 0.5px solid #000;"><strong>{{ isVATMode ? 'IBAN' : 'IFSC' }}</strong></th>
+                  <td *ngFor="let bankDetail of bankDetails" style="padding: 2px; color: #000; border-color: #000; word-break: break-word; white-space: normal; border: 0.5px solid #000;">{{ bankDetail.IFSCCode }}</td>
+                </tr>
+                <tr>
+                  <th style="padding: 0 6px; color: #000; border-color: #000; border: 0.5px solid #000;"><strong>Swift Code</strong></th>
+                  <td *ngFor="let bankDetail of bankDetails" style="padding: 2px; color: #000; border-color: #000; word-break: break-word; white-space: normal; border: 0.5px solid #000;">{{ bankDetail.BankCode }}</td>
+                </tr>
+                <tr>
+                  <th style="padding: 0 6px; color: #000; border-color: #000; border: 0.5px solid #000;"><strong>Bank Name</strong></th>
+                  <td *ngFor="let bankDetail of bankDetails" style="padding: 2px; color: #000; border-color: #000; white-space: normal; word-break: break-word; border: 0.5px solid #000;">{{ bankDetail.BankName }}</td>
+                </tr>
+                <tr>
+                  <th style="padding: 0 6px; color: #000; border-color: #000; border: 0.5px solid #000;"><strong>Branch</strong></th>
+                  <td *ngFor="let bankDetail of bankDetails" style="padding: 2px; color: #000; border-color: #000; white-space: normal; word-break: break-word; border: 0.5px solid #000;">{{ bankDetail.BankAddress }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        @if (currentCompany?.CompanyMasterSid === 13 || (effectiveTermsAndConditions?.length || 0) > 0) {
+          <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
+            <h5 style="margin-bottom: 0.5rem; font-weight: bolder"><strong>Terms and Conditions</strong></h5>
+            @if (currentCompany?.CompanyMasterSid === 13) {
+              <ul style="margin-top: 0; padding-left: 1.5rem; font-size: 12px;">
+                <li>If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise <br> the above amount will be considered as correct.</li>
+                <li>Please mention our invoice number(s) on your remittance instructions.</li>
+              </ul>
+            } @else {
+              <ul style="margin-top: 0; padding-left: 1.2rem">
+                @for (term of effectiveTermsAndConditions; track term) {
+                  <li>{{ term.TandC || term.Terms }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+
+        <div style="min-height: 150vh; display: flex; flex-direction: column;">
+          <main style="flex: 1;"></main>
+          <footer style="width: 100%; font-size: 10pt; padding: 10px; box-sizing: border-box; margin-top: auto;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <div>Printed By : {{ userData.userName }}</div>
+              <span>This document is computer-generated and does not require a signature.</span>
+              <div>Printed On : {{ currentDate | formatDate }}</div>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
