@@ -1,5 +1,5 @@
 <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
-    <h5 class="modal-title text-white mb-0">Cash Payment</h5>
+    <h5 class="modal-title text-white mb-0">Cash Payment<span *ngIf="isDraftPayment()"> (DRAFT)</span></h5>
     <div class="d-flex gap-2 align-items-center">
 
         <div class="spinner-overlay">
@@ -133,9 +133,9 @@
 
 
         <!-- Remittance Details -->
-        <h4 *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="font-weight:bolder; padding:2px 20px;text-align:start;"><strong>Remittance Details</strong></h4>
+        <h4 *ngIf="paymentDataPrint?.voucherMatchings?.length > 0 && paymentDataPrint?.PostStatus === 'P'" style="font-weight:bolder; padding:2px 20px;text-align:start;"><strong>Remittance Details</strong></h4>
 
-        <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px;">
+        <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0 && paymentDataPrint?.PostStatus === 'P'" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px;">
             <tbody>
                 <tr>
                     <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Voucher No.</strong></th>

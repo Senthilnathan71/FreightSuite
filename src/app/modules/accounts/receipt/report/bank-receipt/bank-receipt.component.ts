@@ -290,6 +290,7 @@ isDraftReceipt(): boolean {
     bankTypedLedgers: any[];
     amountInWords: string;
     currentUserCountry: string;
+    allowPrintBeforePosting: boolean;
     printSettings: {
       logoPosition: 'left' | 'center' | 'right';
       companyPosition: 'left' | 'center' | 'right';
@@ -303,6 +304,7 @@ isDraftReceipt(): boolean {
       bankTypedLedgers: this.bankTypedLedgers || [],
       amountInWords: String(this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || ''),
       currentUserCountry: this.currentUserCountry || '',
+      allowPrintBeforePosting: this.receiptAllowToPrintBeforePosting,
       printSettings: this.companySettings.getPrintSettings()
     };
   }

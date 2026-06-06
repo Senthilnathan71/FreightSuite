@@ -1082,6 +1082,7 @@ export interface ReceiptPdfData extends PdfDocumentBase {
     instrumentMode?: string;
     instrumentNumber?: string;
     instrumentDate?: Date | string;
+    postStatus?: string;
     isDraft?: boolean;
   };
   details: ReceiptLineData[];
@@ -1136,6 +1137,7 @@ export interface PaymentPdfData extends PdfDocumentBase {
     instrumentMode?: string;
     instrumentNumber?: string;
     instrumentDate?: Date | string;
+    postStatus?: string;
     isDraft?: boolean;
   };
   details: PaymentLineData[];
