@@ -197,7 +197,7 @@
 
 
                 <!-- Remittance section -->
-                <div *ngIf="receiptPrintData?.voucherMatchings?.length > 0" style="font-size: 17px;">
+                <div *ngIf="receiptPrintData?.voucherMatchings?.length > 0 && receiptPrintData?.PostStatus === 'P'" style="font-size: 17px;">
 
                     <h3
                         style="padding-top: 20px;padding-left: 20px; margin:0;text-align:start;font-weight: bolder;font-size: 16px;">

@@ -64,22 +64,22 @@
         <!-- Right -->
         <div style="width:50%;">
             <div style="display:flex; ">
-                <div style="font-weight:bolder; white-space:nowrap;"><strong>Bank</strong></div>
+                <div style="font-weight:bolder; white-space:nowrap; width:90px;"><strong>Bank</strong></div>
                 <div style="width:12px; text-align:center;">:</div>
                 <div style="flex:1;">{{getBankName(paymentDataPrint?.BankCOA)}}</div>
             </div>
             <div style="display:flex; ">
-                <div style="font-weight:bolder; white-space:nowrap;"><strong>Bank Ref.</strong></div>
+                <div style="font-weight:bolder; white-space:nowrap;width:90px;"><strong>Bank Ref.</strong></div>
                 <div style="width:12px; text-align:center;">:</div>
                 <div style="flex:1;">{{paymentDataPrint?.InstrumentMode}} / {{paymentDataPrint?.InstrumentNumber}} / {{paymentDataPrint?.InstrumentDate | formatDate}}</div>
             </div>
             <div style="display:flex; ">
-                <div style="font-weight:bolder; white-space:nowrap;"><strong>Currency</strong></div>
+                <div style="font-weight:bolder; white-space:nowrap; width:90px;"><strong>Currency</strong></div>
                 <div style="width:12px; text-align:center;">:</div>
                 <div style="flex:1;">{{paymentDataPrint?.CurrencyCode}}</div>
             </div>
             <div style="display:flex; ">
-                <div style="font-weight:bolder; white-space:nowrap;"><strong>Ex. Rate</strong></div>
+                <div style="font-weight:bolder; white-space:nowrap; width:90px;"><strong>Ex. Rate</strong></div>
                 <div style="width:12px; text-align:center;">:</div>
                 <div style="flex:1;">{{paymentDataPrint?.ExchangeRate| number:'1.3-3'}}</div>
             </div>
@@ -159,7 +159,7 @@
 
    <!-- Remittance Details Header -->
 <div
-  *ngIf="paymentDataPrint?.voucherMatchings?.length > 0"
+  *ngIf="paymentDataPrint?.voucherMatchings?.length > 0 && paymentDataPrint?.PostStatus === 'P'"
   style="
     height:40px;
     display:flex;
@@ -179,7 +179,7 @@
 </div>
 
     <!-- Matching Table -->
-    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse;font-size: 14px; page-break-before: avoid; break-before: avoid-page; page-break-inside:auto; break-inside:auto;" >
+    <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0 && paymentDataPrint?.PostStatus === 'P'" style="width:100%; border-collapse:collapse;font-size: 14px; page-break-before: avoid; break-before: avoid-page; page-break-inside:auto; break-inside:auto;" >
         <tr>
             <th style="border:1px solid black;  text-align:center;font-weight:bolder;border-left: none;padding:2px;"><strong>Voucher No.</strong></th>
              <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Bill No.</strong></th>

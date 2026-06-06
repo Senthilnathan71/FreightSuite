@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
@@ -41,6 +41,7 @@ export class CashReceiptComponent {
   @Input() selectedFCLLCL: any;
   @Input() agentList: any;
   @Input() currencyList: any;
+  receiptAllowToPrintBeforePosting: boolean = false;
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() bankTypedLedgers: any;
@@ -59,12 +60,42 @@ export class CashReceiptComponent {
     this.currentUserCountryCode = this.currentCompany?.countryMaster?.countryCode || 'IN';
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    this.loadReceiptPrintBeforePostingConfig();
     this.loadCityName()
     this.loadCurrencyList()
     // console.log("Current Country Code", this.currentUserCountryCode);
     // console.log("Current Country", this.currentUserCountry);
     // console.log("CURRENT COMPANY", this.currentCompany);
     // console.log("CURRENT BRANCH", this.currentBranch);
+  }
+
+   private loadReceiptPrintBeforePostingConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.receiptAllowToPrintBeforePosting = false;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'ReceiptAllowtoprintbeforePosting').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.receiptAllowToPrintBeforePosting = this.parseConfigBoolean(rawValue, false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.receiptAllowToPrintBeforePosting = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   constructor(
@@ -80,7 +111,8 @@ export class CashReceiptComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+      private cdr: ChangeDetectorRef,
   ) { }
 
   getBankName(COAMasterSid: number) {
@@ -158,18 +190,7 @@ getAmountInWords(): string {
 }
 
 isDraftReceipt(): boolean {
-  const statusValues = [
-    this.receiptPrintData?.PostStatus,
-    this.receiptPrintData?.postStatus,
-    this.receiptPrintData?.Status,
-    this.receiptPrintData?.status
-  ].map((value) => String(value || '').trim().toUpperCase());
-
-  return statusValues.some((value) =>
-    value === 'U' ||
-    value === 'UNPOSTED' ||
-    value === 'UNPOST'
-  );
+  return this.receiptPrintData?.PostStatus === 'U' && !this.receiptAllowToPrintBeforePosting;
 }
   
 
@@ -341,6 +362,7 @@ getDrDetails() {
     bankTypedLedgers: any[];
     amountInWords: string;
     currentUserCountry: string;
+    allowPrintBeforePosting: boolean;
     printSettings: {
       logoPosition: 'left' | 'center' | 'right';
       companyPosition: 'left' | 'center' | 'right';
@@ -354,6 +376,7 @@ getDrDetails() {
       bankTypedLedgers: this.bankTypedLedgers || [],
       amountInWords: String(this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || ''),
       currentUserCountry: this.currentUserCountry || '',
+      allowPrintBeforePosting: this.receiptAllowToPrintBeforePosting,
       printSettings: this.companySettings.getPrintSettings()
     };
   }
