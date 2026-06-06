@@ -1557,6 +1557,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     
 
     this.invoicePrintData = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      IsNonJobInvoice: this.shouldUseNonJobInvoicePrintFormat(),
       invoiceTitle: this.getInvoiceTitle(),
       GSTCode: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
       BilledTo: this.invoiceData?.PartyName || this.invoiceData?.subledgerMaster?.SubledgerName || '',
@@ -1714,6 +1716,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
    
     
   } 
+
+  protected shouldUseNonJobInvoicePrintFormat(): boolean {
+    return Number(this.currentCompany?.CompanyMasterSid || 0) === 24;
+  }
 
   private getInvoiceDeclarationNoDisplay(): string {
     const declarationList = this.invoiceData?.houseJob?.houseJobBOE;
@@ -3095,7 +3101,7 @@ isSeaDepartment(): boolean {
     await this.preparePrintData();
     console.log("PRINT DATA", this.invoicePrintData);
     
-    const modalToOpen = this.currentCompany?.CompanyMasterSid === 55
+    const modalToOpen = this.shouldUseNonJobInvoicePrintFormat()
       ? this.nonJobPrintModalRef 
       : this.printModalRef;
     
@@ -4369,7 +4375,11 @@ isSeaDepartment(): boolean {
         chargeableWeight: this.invoicePrintData?.ChargeableWeight,
         cbm: this.invoicePrintData?.cbm
       },
-      invoicePrintData: this.invoicePrintData
+      invoicePrintData: {
+        ...this.invoicePrintData,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        IsNonJobInvoice: this.invoicePrintData?.IsNonJobInvoice || this.shouldUseNonJobInvoicePrintFormat(),
+      }
     };
 
     return { logo, lookups, options };
