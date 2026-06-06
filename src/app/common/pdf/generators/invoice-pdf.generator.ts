@@ -86,8 +86,7 @@
     const extraTopMarginForIRNLine = isIndiaInvoice ? 14 : 0;
     const extraTopMarginForIndiaFields =
       isIndiaInvoice
-        ? (printData?.GSTCode ? 12 : 0) +
-          ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
+        ? ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
         : 0;
     const extraTopMarginForVATLine = !isIndiaInvoice ? 8 : 0;
     const extraTopMarginForNonJobFields = isNonJobInvoice
@@ -306,9 +305,6 @@
     const title = data.invoiceTitle ||
       (data.invoice?.postStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT');
     const printData = (data as any).invoicePrintData;
-    const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
-    const gstCode = printData?.GSTCode || data.companyGstCode || '';
-
     return {
       stack: [
         {
@@ -319,17 +315,6 @@
           fontSize: 12,
           margin: [0, 2, 0, 2]
         },
-        ...(isIndiaInvoice && gstCode
-          ? [{
-              text: [
-                { text: 'GST Code : ', bold: true },
-                { text: gstCode }
-              ],
-              alignment: 'center',
-              fontSize: 9,
-              margin: [0, 0, 0, 5]
-            }]
-          : [])
       ],
       margin: [0, 0, 0, 2]
     };
