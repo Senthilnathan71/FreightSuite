@@ -92,6 +92,7 @@ currentBranch: any;
 		{ id : 8 , code : 'JV'},
 		{ id : 9 , code : 'RJV'},
 		{ id : 10 , code : 'VM'},
+		{ id : 11 , code : "NIN"},
 	]
 
 	typeOptions = ['Cash', 'Bank', 'Others'];
