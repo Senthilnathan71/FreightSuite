@@ -1,0 +1,95 @@
+<div class="generic-report">
+  <!-- Company letterhead (logo + company/branch block), shared with classic reports -->
+  <app-print-header></app-print-header>
+
+  <!-- Report title (exact heading from the Classic report when available) -->
+  <h4 class="generic-report__title text-center fw-bold">{{ displayTitle }}</h4>
+
+  <!-- Filter / parameter summary -->
+  <div class="generic-report__params" *ngIf="paramSummary.length">
+    <div class="generic-report__param" *ngFor="let p of paramSummary">
+      <strong>{{ p.label }}</strong>&nbsp;: {{ p.value }}
+    </div>
+  </div>
+
+  <!-- Control bar (screen only — not part of the printed/exported report) -->
+  <div class="generic-report__bar d-print-none">
+    <div class="generic-report__meta">
+      <span class="gr-chip"><i class="fas fa-list-ul me-1"></i>{{ recordCount }} records</span>
+      <span class="gr-chip"><i class="fas fa-table-columns me-1"></i>{{ visibleColumnCount }} of {{ totalColumnCount }} columns</span>
+    </div>
+
+    <div class="generic-report__cols">
+      <button type="button" class="btn btn-sm gr-cols-btn" [class.active]="panelOpen" (click)="togglePanel()">
+        <i class="fas fa-sliders me-1"></i> Customize columns
+        <i class="fas fa-chevron-down ms-1 gr-cols-caret"></i>
+      </button>
+
+      <!-- Columns panel -->
+      <div class="gr-panel" *ngIf="panelOpen">
+        <div class="gr-panel__head">
+          <div>
+            <div class="gr-panel__title">Customize columns</div>
+            <div class="gr-panel__sub">Tick to show / hide &middot; drag <i class="fas fa-grip-vertical"></i> to reorder</div>
+          </div>
+          <button type="button" class="gr-panel__close" (click)="closePanel()" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="gr-panel__search" *ngIf="totalColumnCount > 8">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="columnSearch" placeholder="Search columns…" />
+        </div>
+
+        <div class="gr-panel__list" cdkDropList (cdkDropListDropped)="onPanelDrop($event)">
+          <div
+            class="gr-col"
+            *ngFor="let col of filteredPanelColumns; trackBy: trackPanelCol"
+            cdkDrag
+            [cdkDragDisabled]="isSearching"
+          >
+            <span class="gr-col__grip" [class.disabled]="isSearching" cdkDragHandle>
+              <i class="fas fa-grip-vertical"></i>
+            </span>
+            <label class="gr-col__label">
+              <input type="checkbox" [checked]="col.visible" (change)="onPanelVisibilityToggle(col.key)" />
+              <span [class.text-muted]="!col.visible">{{ col.label }}</span>
+            </label>
+            <i class="fas" [ngClass]="col.visible ? 'fa-eye gr-col__eye' : 'fa-eye-slash gr-col__eye off'"></i>
+          </div>
+
+          <div class="gr-panel__empty" *ngIf="filteredPanelColumns.length === 0">
+            No columns match “{{ columnSearch }}”.
+          </div>
+        </div>
+
+        <div class="gr-panel__foot">
+          <button type="button" class="gr-link" (click)="showAllColumns()">
+            <i class="fas fa-eye me-1"></i> Show all
+          </button>
+          <button type="button" class="gr-link gr-link--danger" (click)="resetColumns()">
+            <i class="fas fa-rotate-left me-1"></i> Reset to default
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customizable data table -->
+  <div class="generic-report__table">
+    <app-reusable-table
+      [config]="tableConfig"
+      [data]="rows"
+      [allowScroll]="false"
+      (columnOrderChange)="onColumnOrderChange($event)"
+      (columnVisibilityChange)="onColumnVisibilityChange($event)"
+    >
+    </app-reusable-table>
+  </div>
+
+  <app-print-footer [position]="'static'"></app-print-footer>
+</div>
+
+<!-- Click-away backdrop for the columns panel -->
+<div class="gr-backdrop d-print-none" *ngIf="panelOpen" (click)="closePanel()"></div>

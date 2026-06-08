@@ -18,6 +18,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AgeingReportComponent } from 'src/app/shared/components/reports/ageing-report/ageing-report.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { ReportViewModeService } from '../../../shared/services/report-view-mode.service';
+import { ReportViewMode, isColumnCustomizableReport } from '../../../shared/components/reports/generic-table-report/report-column-config';
 
 @Component({
   selector: 'app-accounts-reports',
@@ -55,6 +57,9 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
   private customsDutyLabel = 'Customs Duty Invoice';
   filteredParameters: any[] = [];
 
+  /** Effective report view mode (New column-customizable view vs Classic). */
+  viewMode: ReportViewMode = 'CLASSIC';
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -63,7 +68,8 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
     private modalService: NgbModal,
     private appSettingService: AppSettingsService,
     private mps: MenuPermissionService,
-    private masterService: MasterService
+    private masterService: MasterService,
+    private reportViewModeService: ReportViewModeService
   ) {}
 
   ngOnInit(): void {
@@ -82,7 +88,31 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
       .subscribe(([, perms]) => {
         this.allowedReportSids = new Set(perms.map(p => p.ReportMasterSid));
       });
+    // Apply any saved user override immediately; otherwise fall back to the company
+    // default once it resolves — but never let that async value clobber a choice the
+    // user makes during the request window (root cause of "first open is always Classic").
+    const override = this.reportViewModeService.getUserOverride();
+    if (override) {
+      this.viewMode = override;
+    } else {
+      this.reportViewModeService.getCompanyDefault(this.companyId)
+        .pipe(take(1), takeUntil(this.destroy$))
+        .subscribe((mode) => {
+          if (!this.reportViewModeService.getUserOverride()) this.viewMode = mode;
+        });
+    }
     this.loadAvailableReports();
+  }
+
+  /** True when the selected report supports the customizable (New) view. */
+  get canCustomizeColumns(): boolean {
+    return isColumnCustomizableReport(this.selectedReport?.ReportName);
+  }
+
+  /** Switch the report view between New and Classic (per-user override, remembered in this browser). */
+  setViewMode(mode: ReportViewMode): void {
+    this.viewMode = mode;
+    this.reportViewModeService.setUserOverride(mode);
   }
 
   ngOnDestroy(): void {
@@ -215,10 +245,12 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
     console.log('Opening report with payload:', this.reportParameters);
 
     if (this.selectedReport.ReportName) {
+      const columnView = this.viewMode === 'NEW' && isColumnCustomizableReport(this.selectedReport.ReportName);
       this.reportService.openReportModal(
         this.selectedReport,
         undefined,
         this.reportParameters,
+        { columnView },
       );
     } else {
       this.appSettingService.showError('Invalid Report Name.');
