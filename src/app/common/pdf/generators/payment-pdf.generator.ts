@@ -87,10 +87,10 @@ function buildTitle(data: PaymentPdfData): any {
   };
 }
 
-function infoRow(label: string, value: any): any {
+function infoRow(label: string, value: any, labelWidth = 70): any {
   return {
     columns: [
-      { text: label, width: 70, style: 'labelBold' },
+      { text: label, width: labelWidth, style: 'labelBold' },
       { text: ':', width: 8, style: 'labelBold' },
       { text: value ?? '', width: '*' }
     ],
@@ -123,10 +123,10 @@ function buildInfoSection(data: PaymentPdfData): any {
       leftStack.push(valueOnlyRow(p.partyAddress));
     }
 
-    rightStack.push(infoRow('Bank', p.bankName || ''));
-    rightStack.push(infoRow('Bank Ref.', joinNonEmpty([p.instrumentMode, p.instrumentNumber, p.instrumentDate ? formatDate(p.instrumentDate) : ''], ' / ')));
-    rightStack.push(infoRow('Currency', p.currencyCode || ''));
-    rightStack.push(infoRow('Ex. Rate', formatNumberWithCommas(toNumber(p.exchangeRate), 3)));
+    rightStack.push(infoRow('Bank', p.bankName || '', 50));
+    rightStack.push(infoRow('Bank Ref.', joinNonEmpty([p.instrumentMode, p.instrumentNumber, p.instrumentDate ? formatDate(p.instrumentDate) : ''], ' / '), 50));
+    rightStack.push(infoRow('Currency', p.currencyCode || '', 50));
+    rightStack.push(infoRow('Ex. Rate', formatNumberWithCommas(toNumber(p.exchangeRate), 3), 50));
   } else {
     leftStack.push(infoRow('Paid From', p.paidFrom || ''));
     leftStack.push(infoRow('Paid To', p.paidTo || ''));
@@ -195,13 +195,15 @@ function buildDetailsTable(data: PaymentPdfData): any {
 }
 
 function buildAmountInWords(data: PaymentPdfData): any {
+  const labelWidth = data.paymentType === 'bank' ? 110 : 100;
+
   return {
     columns: [
-      { text: 'Amount in Words', style: 'labelBold', width: 90 },
+      { text: 'Amount in Words', style: 'labelBold', width: labelWidth },
       { text: ':', width: 8 },
       { text: data.amountInWords || '', width: '*' }
     ],
-    margin: [10, 0, 10, 8]
+    margin: data.paymentType === 'bank' ? [15, 0, 10, 8] : [25, 0, 10, 8]
   };
 }
 

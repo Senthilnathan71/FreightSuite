@@ -37,17 +37,19 @@
         <div style="display:flex; flex-wrap:wrap; padding:0 150px; margin-bottom:8px;font-size: 15px;">
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;padding-top: 10px;">
                 <div style="display:flex; font-size: 17px;">
-                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Receipt No.</strong></div>
-                    <div>: {{receiptPrintData?.VoucherNumber}}</div>
+                    <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>Receipt No.</strong></div>
+                    <div style="width:8px;">:</div>
+                    <div style="flex:1;">{{receiptPrintData?.VoucherNumber}}</div>
                 </div>
                 <div style="display:flex; font-size: 17px;">
-                    <div style="width:120px;"></div>
-                    <div style="width:12px;">&nbsp;</div>
+                    <div style="width:130px;"></div>
+                    <div style="width:8px;">&nbsp;</div>
                     <div style="flex:1;">{{ receiptPrintData?.PartyAddress }}</div>
                 </div>
                 <div style="display:flex; font-size: 17px;">
-                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Received From</strong></div>
-                    <div>: {{receiptPrintData?.PartyName}}</div>
+                    <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>Received From</strong></div>
+                    <div style="width:8px;">:</div>
+                    <div style="flex:1;">{{receiptPrintData?.PartyName}}</div>
                 </div>
                
             </div>
@@ -55,11 +57,13 @@
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;padding-top:10px;">
                 <div style="display:flex; font-size: 17px;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Receipt Date</strong></div>
-                    <div>: {{receiptPrintData?.VoucherDate | formatDate}}</div>
+                    <div style="width:8px;">:</div>
+                    <div style="flex:1;">{{receiptPrintData?.VoucherDate | formatDate}}</div>
                 </div>
                 <div style="display:flex; font-size: 17px;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Currency</strong></div>
-                    <div>: {{receiptPrintData?.CurrencyCode}}</div>
+                    <div style="width:8px;">:</div>
+                    <div style="flex:1;">{{receiptPrintData?.CurrencyCode}}</div>
                 </div>
             </div>
             
@@ -120,14 +124,13 @@
     display:flex;
     align-items:center;
     margin-top:10px;
-    padding-left:20px;
+    padding-left:120px;
     font-size:17px;
     white-space:nowrap;
 ">
-    <strong style="margin-right:6px;font-weight: bolder;">Amount in Words :</strong>
-    <span style="flex:1;">
-        <span>  {{ getAmountInWords() }}</span>
-    </span>
+    <strong style="width:160px;font-weight: bolder;">Amount in Words</strong>
+    <span style="width:8px;">:</span>
+    <span style="flex:1;">{{ getAmountInWords() }}</span>
 </div>
 
         <h3 *ngIf="receiptPrintData?.voucherMatchings?.length > 0 && receiptPrintData?.PostStatus === 'P'" style="text-align:start;margin-top:15px;margin-bottom:0px;padding-left:17px;font-weight: bolder;font-size: 16px;"><strong>Remittance Details</strong></h3>

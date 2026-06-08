@@ -58,6 +58,7 @@
                 </div>
                 <div style="display:flex; align-items:flex-start;" *ngIf="getHeaderAddressDisplay()">
                     <!-- <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Address</strong></div> -->
+                    <div style="width:120px;"></div>
                     <div style="width:12px;"></div>
                     <div style="flex:1; max-width:500px; line-height:1.35; overflow-wrap:break-word;">{{ getHeaderAddressDisplay() }}</div>
                 </div>
@@ -122,11 +123,12 @@
         </table>
 
 
-          <div  style="padding-bottom:10px;padding-left: 20px;">
-            <div style="display:flex; gap:4px;">
-                <strong style="font-weight: bolder;">Amount in Words :</strong>
-                <div>
-                <span>   {{ getAmountInWords() }}</span>
+          <div style="padding-bottom:10px;padding-left: 95px;">
+            <div style="display:flex; white-space:nowrap;">
+                <strong style="font-weight: bolder; width:140px;">Amount in Words</strong>
+                <div style="width:12px;">:</div>
+                <div style="flex:1;">
+                <span>{{ getAmountInWords() }}</span>
                 </div>
             </div>
         </div>

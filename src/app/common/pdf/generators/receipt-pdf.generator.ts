@@ -283,20 +283,22 @@ return {
 }
 
 function buildAmountInWords(data: ReceiptPdfData): any {
+  const labelWidth = data.receiptType === 'bank' ? 110 : 95;
+
   return {
     columns: [
-      { text: 'Amount in Words', style: 'labelBold', width: data.receiptType === 'bank' ? 110 : 120 },
+      { text: 'Amount in Words', style: 'labelBold', width: labelWidth },
       { text: ':', width: 8 },
       { text: data.amountInWords || '', width: '*' }
     ],
-    margin: data.receiptType === 'bank' ? [10, 0, 10, 8] : [20, 2, 10, 8]
+    margin: data.receiptType === 'bank' ? [10, 0, 10, 8] : [30, 2, 10, 8]
   };
 }
 
 function buildRemittanceSection(data: ReceiptPdfData): any[] {
   const isIndia = normalizeCountry(data.currentUserCountry) === 'india';
   const rows = data.voucherMatchings || [];
-  if (!rows.length) return [];
+  if (!rows.length || String(data.receipt?.postStatus || '').toUpperCase() !== 'P') return [];
 
   const header = [
     { text: 'Voucher No.', style: 'tableHeaderSmall', alignment: 'center' },
@@ -307,11 +309,14 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
     { text: 'Local Amount', style: 'tableHeaderSmall', alignment: 'center' }
   ];
   const widths: any[] = data.receiptType === 'bank'
-    ? ['27%', '11%', '16%', '8%', '19%', '19%']
-    : ['22%', '13%', '15%', '7%', '15%', '15%'];
+    ? (isIndia
+        ? ['24%', '10%', '14%', '7%', '17%', '18%', '10%']
+        : ['27%', '11%', '16%', '8%', '19%', '19%'])
+    : (isIndia
+        ? ['22%', '13%', '15%', '7%', '15%', '15%', '13%']
+        : ['22%', '13%', '15%', '7%', '21.5%', '21.5%']);
   if (isIndia) {
     header.push({ text: 'TDS Amount', style: 'tableHeaderSmall', alignment: 'center' });
-    widths.push(data.receiptType === 'bank' ? '10%' : '13%');
   }
 
   const bodyRows = rows.map((r) => {
@@ -328,17 +333,17 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
   });
 
   const totalRow: any[] = [
-    { text: '', style: 'tableCellSmall' },
-    { text: '', style: 'tableCellSmall' },
-    { text: '', style: 'tableCellSmall' },
-    { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' },
+    { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', colSpan: 4, margin: [0, 0, 2, 0] },
+    {},
+    {},
+    {},
     { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingAmount), 2), style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] },
     { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingLocalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] }
   ];
-  if (isIndia) totalRow.push({ text: '', style: 'tableCellSmall' });
+  if (isIndia) totalRow.push({ text: '', style: 'tableCellBoldSmall', alignment: 'right', margin: [0, 0, 2, 0] });
 
   return [
-    { text: 'Remittance Details', style: 'sectionTitle', margin: [0, 4, 0, 4] },
+    { text: 'Remittance Details', style: 'sectionTitle', margin: [-3, 7, 0, 2] },
     {
       table: {
         headerRows: 1,
@@ -350,8 +355,8 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
 
     paddingLeft: () => 0,
     paddingRight: () => 0,
-    paddingTop: () => 4,
-    paddingBottom: () => 4,
+    paddingTop: () => 2,
+    paddingBottom: () => 2,
     vLineWidth: (i: number, node: any) => {
       if (i === 0 || i === node.table.widths.length) {
         return 0; 
@@ -382,9 +387,9 @@ export function generateReceiptDocument(data: ReceiptPdfData): any {
         configuredMargins[0] ?? 20,
         Math.max(configuredMargins[1] ?? 82, 82),
         configuredMargins[2] ?? 20,
-        configuredMargins[3] ?? 55
+        configuredMargins[3] ?? 28
       ]
-    : [20, 82, 20, 55];
+    : [20, 82, 20, 28];
 
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -410,7 +415,10 @@ export function generateReceiptDocument(data: ReceiptPdfData): any {
       ...buildRemittanceSection(data),
       buildSignatureSection(data)
     ],
-    footer: createFooterFunction(data.userData, { showPageNumbers: true }),
+    footer: createFooterFunction(data.userData, {
+      showPageNumbers: true,
+      pageMargins: [20, 0, 20, 0]
+    }),
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
   };
@@ -529,6 +537,7 @@ export function transformReceiptApiData(
       instrumentMode: apiData?.InstrumentMode || '',
       instrumentNumber: apiData?.InstrumentNumber || '',
       instrumentDate: apiData?.InstrumentDate || '',
+      postStatus: String(apiData?.PostStatus || ''),
       isDraft
     },
     details: detailRows,
