@@ -1693,6 +1693,36 @@ export class ReportRegistryService {
       console.warn('Daily Job Register component not yet created:', error);
     }
 
+     try {
+      const { DestuffingReportComponent } = await import(
+        '../components/reports/destuffing-report/destuffing-report.component'
+      );
+
+      this.registerReport({
+        id: 'destuffing',
+        title: 'Destuffing Report',
+        component: DestuffingReportComponent,
+        filenameTemplate: 'destuffing_report',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Destuffing Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Destuffing Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Destuffing Report component not yet created:', error);
+    }
+
   }
 
   /**
