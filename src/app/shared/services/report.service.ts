@@ -339,7 +339,12 @@ export class ReportService {
    * @param entityId Entity ID (e.g., MasterJobSid)
    * @returns Modal reference
    */
-  async openReportModal(reportDetails: ReportCard, entityId?: number,payload?:any): Promise<NgbModalRef> {
+  async openReportModal(
+    reportDetails: ReportCard,
+    entityId?: number,
+    payload?: any,
+    options?: { columnView?: boolean }
+  ): Promise<NgbModalRef> {
     const config = this.reportRegistry.getReportConfig(reportDetails.ReportName);
 
     // Import GenericReportModalComponent dynamically to avoid circular dependencies
@@ -363,6 +368,16 @@ export class ReportService {
     modalRef.componentInstance.entityId = entityId;
     modalRef.componentInstance.payload = payload;
     modalRef.componentInstance.reportHeader = reportDetails;
+
+    // New ("column customizable") view: render the data through the generic column-managed
+    // table instead of the report's hardcoded component. Data fetching is unchanged.
+    if (options?.columnView) {
+      const { GenericTableReportComponent } = await import(
+        '../components/reports/generic-table-report/generic-table-report.component'
+      );
+      modalRef.componentInstance.componentOverride = GenericTableReportComponent;
+      modalRef.componentInstance.useColumnView = true;
+    }
 
     return modalRef;
   }

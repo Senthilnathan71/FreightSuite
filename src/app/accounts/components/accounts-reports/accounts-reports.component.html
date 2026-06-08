@@ -38,17 +38,28 @@
   <!-- Selected Report Section -->
   <div class="report-details-section" *ngIf="selectedReport">
     <!-- Report Header -->
-    <div class=" ">
-      <div class="mb-1">
-        <div class="d-flex align-items-center gap-3">
-          <div>
-            <h5 class="mb-0">
-              <i class="mdi mdi-file-chart"></i> {{ selectedReport.ReportDisplayName }}
-            </h5>
-          </div>
-          <div>
-            <span class="badge bg-secondary">{{ selectedReport.ReportFormat  === "BOTH" ? "PDF / XL" :  selectedReport.ReportFormat }}</span>
-          </div>
+    <div class="mb-1 d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <h5 class="mb-0">
+          <i class="mdi mdi-file-chart"></i> {{ selectedReport.ReportDisplayName }}
+        </h5>
+        <span class="badge bg-secondary">{{ selectedReport.ReportFormat === "BOTH" ? "PDF / XL" : selectedReport.ReportFormat }}</span>
+      </div>
+
+      <!-- View mode: only for reports that support the customizable (New) view -->
+      <div class="view-mode-switch" *ngIf="canCustomizeColumns">
+        <span class="view-mode-switch__label">Report view</span>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Report view mode">
+          <button type="button" class="btn"
+            [class.btn-primary]="viewMode === 'NEW'" [class.btn-outline-primary]="viewMode !== 'NEW'"
+            (click)="setViewMode('NEW')" title="Customizable columns — show/hide & reorder">
+            <i class="mdi mdi-table-cog"></i> New
+          </button>
+          <button type="button" class="btn"
+            [class.btn-primary]="viewMode === 'CLASSIC'" [class.btn-outline-primary]="viewMode !== 'CLASSIC'"
+            (click)="setViewMode('CLASSIC')" title="Standard fixed-layout report">
+            Classic
+          </button>
         </div>
       </div>
     </div>

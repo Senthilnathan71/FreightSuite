@@ -66,6 +66,16 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
   @Input() reportHeader : ReportCard;
 
   /**
+   * Optional component to render instead of the registry's default (used by the New column view).
+   */
+  @Input() componentOverride?: Type<any>;
+
+  /**
+   * When true, render via the generic column-customizable table and inject report meta into it.
+   */
+  @Input() useColumnView = false;
+
+  /**
    * View container for dynamic component loading
    */
   @ViewChild('reportContainer', { read: ViewContainerRef })
@@ -145,7 +155,8 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
 
       // Get report configuration
       this.reportConfig = this.reportService.getReportConfig(this.reportId);
-      this.reportComponent = this.reportConfig.component;
+      // Use the override component (New column view) when provided, else the registry default.
+      this.reportComponent = this.componentOverride || this.reportConfig.component;
 
       const requestType = this.reportConfig.request || 'GET';
 
@@ -227,13 +238,49 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
       parent: this.injector
     });
 
-    // Create component instance
+    // For the New (column-customizable) view, first build the report's CLASSIC
+    // component to obtain its authoritative presentation via getExcelData()
+    // (exact heading, header parameter lines, curated column labels, formatted values,
+    // and any totals row). Then render the customizable table from that, so the data
+    // and details match the Classic view exactly.
+    if (this.useColumnView && this.componentOverride) {
+      let sourceConfig: any = null;
+      try {
+        const classicRef = this.reportContainer.createComponent(
+          this.reportConfig.component,
+          { injector: componentInjector }
+        );
+        classicRef.changeDetectorRef.detectChanges();
+        if (typeof classicRef.instance?.getExcelData === 'function') {
+          sourceConfig = classicRef.instance.getExcelData();
+        }
+        classicRef.destroy();
+        this.reportContainer.clear();
+      } catch (err) {
+        console.warn('New view: classic getExcelData probe failed; using raw-data fallback', err);
+        sourceConfig = null;
+        this.reportContainer.clear();
+      }
+
+      this.componentRef = this.reportContainer.createComponent(
+        this.componentOverride,
+        { injector: componentInjector }
+      );
+      const inst = this.componentRef.instance;
+      inst.reportMasterSid = this.reportHeader?.ReportMasterSid ?? 0;
+      inst.reportDisplayName =
+        this.reportHeader?.ReportDisplayName || this.reportConfig?.title || 'Report';
+      inst.reportName = this.reportId;
+      inst.sourceConfig = sourceConfig;
+      this.componentRef.changeDetectorRef.detectChanges();
+      return;
+    }
+
+    // Standard (Classic) path
     this.componentRef = this.reportContainer.createComponent(
       this.reportComponent,
       { injector: componentInjector }
     );
-
-    // Detect changes
     this.componentRef.changeDetectorRef.detectChanges();
   }
 
