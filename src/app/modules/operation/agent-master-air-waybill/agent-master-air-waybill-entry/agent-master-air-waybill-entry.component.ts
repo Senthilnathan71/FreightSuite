@@ -1912,20 +1912,28 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
         // Trigger reload for child components like BOE
         this.resetTriggerBOE = true;
         this.resetDirtyState();
+      } else {
+        this.appSettingService.showError(resp.message);
       }
     },
     (error) => {
       console.error('Error loading Agent Master Air Waybill:', error);
-      this.appSettingService.showError('Failed to load Agent Master Air Waybill data.');
+      this.appSettingService.showError(
+      error?.error?.message || 'Access denied.'
+    );
     }
   );
 }
 private loadMasterJobDetails(masterJobSid: number): void {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
   const payload = {
     screenName : 'Agent Master Air Waybill',
-    masterJobSid : masterJobSid
+    masterJobSid : masterJobSid,
+    CompanyMasterSid,
+    BranchMasterSid
   }
-  this.operationService.getMasterJobById(masterJobSid).subscribe({
+  this.operationService.getMasterJobById({masterJobSid,CompanyMasterSid,BranchMasterSid}).subscribe({
     next: (response: any) => {
       if (response.status && response.data) {
         const masterJobData = response.data;
@@ -2843,7 +2851,14 @@ updateAgentMasterAirWaybillById(HouseJobSid: number, payload: any) {
  * Get Agent Master Air Waybill by ID
  */
 getAgentMasterAirWaybillById(HouseJobSid: number) {
-  return this.operationService.getAgentMasterAirWaybillById(HouseJobSid).pipe(
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  const payload= {
+    HouseJobSid,
+    CompanyMasterSid,
+    BranchMasterSid
+  }
+  return this.operationService.getAgentMasterAirWaybillById(payload).pipe(
     map((resp) => {
       return resp;
     })

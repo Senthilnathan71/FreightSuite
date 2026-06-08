@@ -169,8 +169,21 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
 
 
   loadBooking(BookingHeaderSid: number) {
-    this.operationService.getLCLExportBookingById(BookingHeaderSid).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      BookingHeaderSid,
+      CompanyMasterSid,
+      BranchMasterSid
+    };
+    this.operationService.getLCLExportBookingById(payload).subscribe({
       next: (resp: any) => {
+        if (resp && resp.status === false) {
+    this.appSettingService.showError(
+      resp.message || 'Access denied.'
+    );
+    return;
+  }
         const booking = resp?.data || resp;
         if (!booking) {
           this.appSettingService.showError('No booking details found.');

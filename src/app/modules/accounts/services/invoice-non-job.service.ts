@@ -15,8 +15,8 @@ export class InvoiceNonJobService extends InvoiceService {
     return this.nonJobHttp.post<{ data: any }>('invoice-non-job/create', payload).pipe(map((resp) => resp));
   }
 
-  override getInvoiceById(VoucherHeaderSid: number) {
-    return this.nonJobHttp.get<{ data: any }>(`invoice-non-job/fetch/${VoucherHeaderSid}`).pipe(map((resp) => resp));
+  override getInvoiceById(payload: any) {
+    return this.nonJobHttp.post<{ data: any }>(`invoice-non-job/fetch`,payload).pipe(map((resp) => resp));
   }
 
   override updateInvoiceById(VoucherHeaderSid: number, payload: any) {

@@ -648,10 +648,10 @@ processProductUpload(payload: any): Observable<any> {
 }
   //cargo-receipt
 
-  getLCLExportBookingById(BookingHeaderSid: number) {
-    return this.http.get<{ data: any }>(`cargoreceipt/fetch/${BookingHeaderSid}`).pipe(
+  getLCLExportBookingById(payload: any) {
+    return this.http.post<{ data: any }>(`cargoreceipt/fetch`,payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -962,8 +962,8 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
-  getHouseJobById(HouseJobSid:number) {
-    return this.http.get<{ data: any }>(`house-job/fetch/${HouseJobSid}`).pipe(
+  getHouseJobById(payload: any) {
+    return this.http.post<{ data: any }>(`house-job/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -1033,8 +1033,8 @@ processProductUpload(payload: any): Observable<any> {
   }
 
 
-  getCreditNoteById(VoucherHeaderSid: number) {
-    return this.http.get<{ data: any }>(`credit-note/fetch/${VoucherHeaderSid}`).pipe(
+  getCreditNoteById(payload: any) {
+    return this.http.post<{ data: any }>(`credit-note/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -1352,8 +1352,8 @@ processProductUpload(payload: any): Observable<any> {
     )
   }
 
-  getCustomerById(CustomerMasterSid: number) {
-    return this.http.get<{ data: any }>(`credit-request/${CustomerMasterSid}`).pipe(
+  getCustomerById(payload: any) {
+    return this.http.post<{ data: any }>(`credit-request/fetch`,payload).pipe(
       map((resp) => {
         console.log('getCustomerById response:', resp);
         return resp;
@@ -1935,8 +1935,8 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
       })
     );
   }
-  getAgentMasterAirWaybillById(HouseJobSid: number) {
-    return this.http.get<{ data: any }>(`agent-master-air-waybill/fetch/${HouseJobSid}`).pipe(
+  getAgentMasterAirWaybillById(payload: any) {
+    return this.http.post<{ data: any }>(`agent-master-air-waybill/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
