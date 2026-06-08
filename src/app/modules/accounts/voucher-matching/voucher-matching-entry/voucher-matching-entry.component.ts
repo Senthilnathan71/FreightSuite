@@ -1307,6 +1307,23 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
+    const RESTRICTED_TYPE_LABELS: Record<string, string> = {
+      CRN: 'Credit Note', 'CREDIT NOTE': 'Credit Note',
+      VRN: 'Vendor Credit Note', 'VENDOR CREDIT NOTE': 'Vendor Credit Note',
+      RJV: 'Reversal Voucher', 'REVERSAL JOURNAL VOUCHER': 'Reversal Voucher',
+    };
+    const allItems = [...this.sourceItems.getRawValue(), ...this.objectItems.getRawValue()];
+    const restrictedItem = allItems.find((item: any) =>
+      (item.VoucherType ?? '').trim().toUpperCase() in RESTRICTED_TYPE_LABELS
+    );
+    if (restrictedItem) {
+      const label = RESTRICTED_TYPE_LABELS[(restrictedItem.VoucherType ?? '').trim().toUpperCase()];
+      this.appSettingService.showWarning(
+        `Cancellation is not allowed. This matching contains a ${label} (${restrictedItem.VoucherNumber}).`
+      );
+      return;
+    }
+
     this.confirmService.confirm(
       this.buildCancelVoucherMatchingMessage(),
       'Cancel Voucher Matching',
