@@ -32,8 +32,76 @@
   z-index: 1055;
 }
 
+:host ::ng-deep .authorization-status-select,
+:host ::ng-deep .authorization-status-select .ng-select-container {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+::ng-deep .authorization-status-dropdown.ng-dropdown-panel {
+  z-index: 20000 !important;
+  pointer-events: auto !important;
+}
+
+::ng-deep .authorization-status-dropdown .ng-dropdown-panel-items,
+::ng-deep .authorization-status-dropdown .ng-option,
+::ng-deep .authorization-status-dropdown .ng-option *,
+::ng-deep .authorization-status-dropdown .scroll-host {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
 :host .quotation-header-actions {
   flex-wrap: nowrap !important;
+}
+
+:host .authorization-status-note {
+  max-width: 60%;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  border: 1px solid transparent;
+  flex: 1 1 360px;
+  min-width: 220px;
+}
+
+:host .authorization-status-note i {
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+
+:host .custom-accordion-quotation [ngbAccordionButton] > .fw-semibold.text-warning {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  text-align: left;
+}
+
+:host .authorization-status-note-success {
+  color: #0f6b3e;
+  background-color: #e8f7ef;
+  border-color: #bfe8d1;
+}
+
+:host .authorization-status-note-warning {
+  color: #7a4b00;
+  background-color: #fff4d6;
+  border-color: #f2d486;
+}
+
+:host .authorization-status-note-info {
+  color: #075985;
+  background-color: #e8f4fb;
+  border-color: #b8def2;
 }
 
 :host .quotation-header-actions .btn,
@@ -240,5 +308,10 @@
 @media (max-width: 1399.98px) {
   :host .quotation-header-actions {
     flex-wrap: wrap !important;
+  }
+
+  :host .authorization-status-note {
+    max-width: 100%;
+    flex: 1 1 320px;
   }
 }

@@ -208,7 +208,9 @@
                 <h5 class="text-info mb-0">Authorization Details</h5>
                 <div class="ms-auto">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="addAuthDetail()">
+                        (click)="addAuthDetail()"
+                        [disabled]="!canAddAuthDetail()"
+                        [title]="!canAddAuthDetail() ? 'Maximum 3 authorizers are allowed' : 'Add authorizer'">
                         <i class="fas fa-plus me-1"></i>
                         Add
                     </button>

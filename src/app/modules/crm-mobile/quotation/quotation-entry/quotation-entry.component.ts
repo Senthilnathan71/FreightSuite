@@ -145,6 +145,8 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   MenuMasterSid:any
   actionsDisabled = false;
   approvalDropdownValue = ""
+  authorizationMessage = "";
+  authorizationMessageType: 'info' | 'warning' | 'success' = 'info';
   createdCustomerId : number;
   isLoading : boolean;
   selectedItem : any;
@@ -158,7 +160,9 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     canAuthorize: false,
     AuthorityLevel: null,
     AuthorityDetailSid: null,
-    ApprovedBy : ''
+    ApprovedBy : '',
+    totalNumberOfAuthorizers: 0,
+    FinalAuthority: false
   }
   rateLock: boolean = false;
   rateLockConfig: any;
@@ -283,6 +287,26 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     { value : "Counter" , name :"Counter"},
     { value : "Rejected" , name : "Rejected"}
   ]
+
+  private readonly nonFinalApprovalStatusValues = [
+    'WaitingForFinalApproval',
+    'Counter',
+    'Rejected'
+  ];
+
+  private readonly finalApprovalStatusValues = [
+    'Approved',
+    'Counter',
+    'Rejected'
+  ];
+
+  readonly nonFinalApprovalStatusOptions = this.allApprovalStatus.filter(status =>
+    this.nonFinalApprovalStatusValues.includes(status.value)
+  );
+
+  readonly finalApprovalStatusOptions = this.allApprovalStatus.filter(status =>
+    this.finalApprovalStatusValues.includes(status.value)
+  );
 
   approvalStatus = [
     { value : "Open" , name :"Open"},
@@ -695,6 +719,7 @@ dataFromEnqPage:any;
     this.isPatching = true;
     this.enquiryNumber = enqData?.EnquiryNumber;
     this.quoteRoutes.clear();
+    this.routePortFilterPayloadKeys = [];
 
     const parsedContact = this.parsePhone(enqData?.ContactNumber);
     const headerFields = [
@@ -1168,7 +1193,13 @@ private mapQuotationCargoForBooking(cargo: any): any {
   
   checkAuthorisedPerson(UserMasterSid, QuoteHeaderSid) {
     const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    if (!UserMasterSid || !currentMenuId) {
+    if (
+      !UserMasterSid ||
+      !QuoteHeaderSid ||
+      !currentMenuId ||
+      !this.currentCompany?.CompanyMasterSid ||
+      !this.currentBranch?.BranchMasterSid
+    ) {
       return;
     }
     const payload = {
@@ -1188,34 +1219,136 @@ private mapQuotationCargoForBooking(cargo: any): any {
 
     this.leadService.isUserAuthorizer(payload).subscribe(
       (resp: any) => {
-        const data = resp.data;
-        this.isAuthorizedUser = data?.canAuthorize;
-        const currentUserId = this.userData?.UserMasterSid || 'NA';
+        const data = resp.data || {};
+        const totalNumberOfAuthorizers = Number(data?.totalNumberOfAuthorizers || 0);
+        this.isAuthorizedUser = !!data?.canAuthorize;
+        const currentUserId = this.userData?.userName || this.userData?.UserMasterSid || 'NA';
+        const hasPendingRouteApproval = this.hasPendingCarrierApproval();
         this.authorizerDetails = {
-          isAuthorizer : data?.canAuthorize,
-          isAlreadyApproved : data?.alreadyApproved,
-          canAuthorize : data?.canAuthorize && !data?.alreadyApproved,
+          isAuthorizer : !!data?.canAuthorize,
+          isAlreadyApproved : !!data?.alreadyApproved,
+          canAuthorize : !!data?.canAuthorize && (!data?.alreadyApproved || hasPendingRouteApproval),
           AuthorityLevel : data?.AuthorityLevel,
           AuthorityDetailSid : data?.AuthorityDetailSid,
-          ApprovedBy : currentUserId
+          ApprovedBy : currentUserId,
+          totalNumberOfAuthorizers,
+          FinalAuthority: data?.FinalAuthority === 'Y' || data?.FinalAuthority === true || data?.isFinalAuthorizer === true
         }
-        if(!this.isAuthorizedUser){
-          this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
-            const carrierArr = this.quoteCarriers(routeIndex);
-            carrierArr.controls.forEach((carrier: FormGroup) => {
-              carrier.get('authorizerStatus')?.enable();
-            })
-          })
+
+        const hasAuthorizationSetup =
+          totalNumberOfAuthorizers > 0 ||
+          !!data?.canAuthorize ||
+          !!data?.AuthorityDetailSid ||
+          !!data?.AuthorityLevel;
+
+        if (!hasAuthorizationSetup) {
+          this.authorizationMessage = 'No authorization setup found for Quotation. Please configure Authorization Master.';
+          this.authorizationMessageType = 'warning';
+        } else if (!this.isAuthorizedUser) {
+          this.authorizationMessage = 'You are not authorized to approve this quotation.';
+          this.authorizationMessageType = 'warning';
+        } else if (data?.alreadyApproved && hasPendingRouteApproval) {
+          this.authorizationMessage = 'You have already approved another route. Pending routes can still be approved.';
+          this.authorizationMessageType = 'info';
+        } else if (data?.alreadyApproved) {
+          this.authorizationMessage = 'You have already approved this quotation.';
+          this.authorizationMessageType = 'info';
         } else {
-          this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
-            const carrierArr = this.quoteCarriers(routeIndex);
-            carrierArr.controls.forEach((carrier: FormGroup) => {
-              carrier.get('authorizerStatus')?.disable();
-            })
-          })
+          this.authorizationMessage = 'You can approve this quotation.';
+          this.authorizationMessageType = 'success';
         }
+
+        this.applyAuthorizationControlState();
       }
     )
+  }
+
+  isFinalAuthorizer(): boolean {
+    const level = Number(this.authorizerDetails?.AuthorityLevel || 0);
+    const total = Number(this.authorizerDetails?.totalNumberOfAuthorizers || 0);
+    return !!this.authorizerDetails?.FinalAuthority || (level > 0 && total > 0 && level === total);
+  }
+
+  getCurrentAuthorizerLevelText(): string {
+    const level = Number(this.authorizerDetails?.AuthorityLevel || 0);
+    const total = Number(this.authorizerDetails?.totalNumberOfAuthorizers || 0);
+
+    if (!this.authorizerDetails?.isAuthorizer || !level) {
+      return '';
+    }
+
+    return this.isFinalAuthorizer()
+      ? `Final approver - Level ${level}${total ? ' of ' + total : ''}`
+      : `Approver Level ${level}${total ? ' of ' + total : ''}`;
+  }
+
+  getApprovalStatusOptions(): any[] {
+    return this.isFinalAuthorizer()
+      ? this.finalApprovalStatusOptions
+      : this.nonFinalApprovalStatusOptions;
+  }
+
+  trackApprovalStatusByValue(itemOrIndex: any, maybeItem?: any): string {
+    const item = maybeItem || itemOrIndex;
+    return item?.value;
+  }
+
+  private getSavedCarrierApprovalStatus(routeIndex: number, carrierIndex: number): string {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const routeSid = routeForm?.get('QuoteRouteSid')?.value;
+    const carrierSid = carrierForm?.get('QuoteCarrierSid')?.value;
+    const savedRoute = this.getSavedRouteBySid(routeSid) || this.quotationData?.quoteRoute?.[routeIndex];
+    const savedCarrier = carrierSid
+      ? savedRoute?.quoteCarrier?.find((carrier: any) => Number(carrier?.QuoteCarrierSid) === Number(carrierSid))
+      : savedRoute?.quoteCarrier?.[carrierIndex];
+
+    return savedCarrier?.ApprovalStatus || 'Pending';
+  }
+
+  private normalizeApprovalStatus(status: any): string {
+    return typeof status === 'string' ? status : status?.value;
+  }
+
+  private hasPendingCarrierApproval(): boolean {
+    return this.quoteRoutes.controls.some((route: FormGroup, routeIndex: number) => {
+      if (this.routeHasApprovedCarrier(routeIndex) || this.isBookingLockedForRoute(routeIndex)) {
+        return false;
+      }
+
+      const carrierArr = this.quoteCarriers(routeIndex);
+      return carrierArr.controls.some((carrier: FormGroup, carrierIndex: number) => {
+        if (this.isCarrierApprovalLocked(routeIndex, carrierIndex)) {
+          return false;
+        }
+
+        const status = carrier.get('authorizerStatus')?.value || 'Pending';
+        return !['Approved', 'Rejected'].includes(status);
+      });
+    });
+  }
+
+  private applyAuthorizationControlState(): void {
+    this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+      const routeLocked = this.routeHasApprovedCarrier(routeIndex) || this.isBookingLockedForRoute(routeIndex);
+      const carrierArr = this.quoteCarriers(routeIndex);
+
+      carrierArr.controls.forEach((carrier: FormGroup, carrierIndex: number) => {
+        const statusCtrl = carrier.get('authorizerStatus');
+        if (!statusCtrl) return;
+
+        const canEditApproval =
+          this.authorizerDetails.canAuthorize &&
+          !routeLocked &&
+          !this.isCarrierApprovalLocked(routeIndex, carrierIndex);
+
+        if (canEditApproval) {
+          statusCtrl.enable({ emitEvent: false });
+        } else {
+          statusCtrl.disable({ emitEvent: false });
+        }
+      });
+    });
   }
 
   // SECTION4 - FORM AND FORM ARRAY RELATION
@@ -1371,6 +1504,18 @@ private mapQuotationCargoForBooking(cargo: any): any {
     return this.quotationForm.controls;
   }
 
+  private toNumberOrNull(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const rawValue = typeof value === 'object'
+      ? value.PortMasterSid
+      : value;
+    const numericValue = Number(rawValue);
+    return Number.isNaN(numericValue) ? null : numericValue;
+  }
+
   // Quote Route
   get quoteRoutes(): FormArray {
     return this.quotationForm.get('quoteRoutes') as FormArray;
@@ -1384,12 +1529,12 @@ private mapQuotationCargoForBooking(cargo: any): any {
       DepartmentMasterSid: [data?.DepartmentMasterSid || null, [Validators.required]],
       POLFreeDays: [data?.POLFreeDays || 0],
       PODFreeDays: [data?.PODFreeDays || 0],
-      PORSid: [data?.PORSid ?? null],
-      POLSid: [data?.POLSid ?? null, [Validators.required]],
-      PODSid: [data?.PODSid ?? null, [Validators.required]],
-      FPODSid: [data?.FPODSid ?? data?.FDPSid ?? null],
+      PORSid: [this.toNumberOrNull(data?.PORSid ?? data?.POOSid)],
+      POLSid: [this.toNumberOrNull(data?.POLSid), [Validators.required]],
+      PODSid: [this.toNumberOrNull(data?.PODSid), [Validators.required]],
+      FPODSid: [this.toNumberOrNull(data?.FPODSid ?? data?.FDPSid)],
       effDate: [data?.effDate ? data?.effDate : null, [Validators.required]],
-      expDate: [data?.expdate ? data?.expdate : null, [Validators.required]],
+      expDate: [data?.expDate ?? data?.expdate ?? data?.ExpDate ?? null, [Validators.required]],
       TransitDays: [data?.TransitDays || ''],
       segmentType: [data?.segmentType || 'LCL', [Validators.required]],
       ServiceLevel: [data?.ServiceLevel || null], // Inco terms
@@ -1572,8 +1717,12 @@ private mapQuotationCargoForBooking(cargo: any): any {
   
   if (status === 'Approved' || status === 'Rejected') {
     approvedByControl?.setValidators([Validators.required]);
-    approvedByControl?.enable({ emitEvent: false });
+    if (!approvedByControl?.value && this.authorizerDetails?.ApprovedBy) {
+      approvedByControl?.setValue(this.authorizerDetails.ApprovedBy, { emitEvent: false });
+    }
+    approvedByControl?.disable({ emitEvent: false });
   } else {
+    approvedByControl?.setValue('', { emitEvent: false });
     approvedByControl?.disable({ emitEvent: false });
   }
   
@@ -2111,7 +2260,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
         NetWeight: isLCL || isFCL || isRoad,
         Volume: isLCL || isFCL,
         ExternalQty: isLCL || isFCL,
-        ExternalPkg: isLCL || isFCL,
+        ExternalPkg: false,
         Length: isAir,
         Width: isAir,
         Height: isAir,
@@ -2433,6 +2582,7 @@ isRateLockDisabled(): boolean {
     });
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
+    this.routePortFilterPayloadKeys = [];
      if (response.BookingHeaderSid) {
     this.quotationForm.get('status')?.disable();
   }
@@ -2721,6 +2871,7 @@ isRateLockDisabled(): boolean {
     this.quotationForm.get('EnquirySid')?.disable({ emitEvent: false });
     this.quotationForm.get('status')?.disable({ emitEvent: false });
     this.quoteRoutes.clear();
+    this.routePortFilterPayloadKeys = [];
 
     (response.quoteRoute || []).forEach((route: any, routeIndex: number) => {
       const cargoGroups = Array.isArray(route?.quoteCargo) ? route.quoteCargo : [];
@@ -2840,6 +2991,44 @@ isRateLockDisabled(): boolean {
       });
     });
   }
+  private getCarrierApprovalChanges(): any[] {
+    if (!this.isEditMode || !this.authorizerDetails?.canAuthorize) {
+      return [];
+    }
+
+    return this.quoteRoutes.controls.flatMap((routeCtrl: FormGroup, routeIndex: number) => {
+      const routeValue = routeCtrl.getRawValue();
+      const savedRoute = this.getSavedRouteBySid(routeValue?.QuoteRouteSid) || this.quotationData?.quoteRoute?.[routeIndex];
+      const savedCarriers = savedRoute?.quoteCarrier || [];
+      const carrierArr = this.quoteCarriers(routeIndex);
+
+      return carrierArr.controls
+        .map((carrierCtrl: FormGroup, carrierIndex: number) => {
+          const carrierValue = carrierCtrl.getRawValue();
+          const savedCarrier = carrierValue?.QuoteCarrierSid
+            ? savedCarriers.find((carrier: any) => Number(carrier?.QuoteCarrierSid) === Number(carrierValue.QuoteCarrierSid))
+            : savedCarriers[carrierIndex];
+          const currentStatus = carrierValue?.authorizerStatus || 'Pending';
+          const savedStatus = savedCarrier?.ApprovalStatus || 'Pending';
+
+          if (
+            currentStatus === savedStatus ||
+            !['Approved', 'Rejected', 'Counter', 'WaitingForFinalApproval', 'WaitingForCustomerApproval'].includes(currentStatus)
+          ) {
+            return null;
+          }
+
+          return {
+            QuoteRouteSid: routeValue?.QuoteRouteSid || null,
+            QuoteCarrierSid: carrierValue?.QuoteCarrierSid || null,
+            ApprovalStatus: currentStatus,
+            ApprovedBy: carrierValue?.ApprovedBy || this.authorizerDetails?.ApprovedBy,
+            Remarks: carrierValue?.authorizerRemarks || '',
+          };
+        })
+        .filter(Boolean);
+    });
+  }
 
 
   onSubmit(resolve?: (saved: boolean) => void) {
@@ -2849,7 +3038,8 @@ isRateLockDisabled(): boolean {
   }
 
   const canLoginUserAuthorize = this.authorizerDetails.canAuthorize;
-  const hasApprovalAction = canLoginUserAuthorize && !!this.approvalDropdownValue;
+  const approvalChanges = this.getCarrierApprovalChanges();
+  const hasApprovalAction = canLoginUserAuthorize && approvalChanges.length > 0;
   if (this.isEditMode && !this.hasUnsavedChanges() && !hasApprovalAction) {
     this.appSettingService.showWarning("No changes to save");
     if (resolve) resolve(false);
@@ -2857,13 +3047,6 @@ isRateLockDisabled(): boolean {
   }
 
   this.isSaving = true;
-
-    if(canLoginUserAuthorize && !this.approvalDropdownValue){
-      this.appSettingService.showWarning("Please select approval status");
-      this.isSaving = false;
-      if (resolve) resolve(false);
-      return;
-    }
     let hasCarrierValidationErrors = false;
       this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
     const carrierArr = this.quoteCarriers(routeIndex);
@@ -2896,7 +3079,14 @@ isRateLockDisabled(): boolean {
     return;
   }
     if (this.hasInvalidRouteDetails()) {
-      this.appSettingService.showWarning("Please fill all the Route details correctly");
+      const invalidRouteFields = this.getInvalidControlDetails(this.quoteRoutes, 'quoteRoutes');
+      this.logInvalidControlDetails(invalidRouteFields, 'routeDetails');
+      const firstInvalidRouteField = this.getFirstInvalidFieldMessage(invalidRouteFields);
+      this.appSettingService.showWarning(
+        firstInvalidRouteField
+          ? `Please fill Route Details: ${firstInvalidRouteField}`
+          : "Please fill all the Route details correctly"
+      );
       this.quoteRoutes.markAllAsTouched();
       this.quoteRoutes.updateValueAndValidity();
       this.selectedTab1 = 'Route Details';
@@ -2914,11 +3104,17 @@ isRateLockDisabled(): boolean {
     })
 
     if (this.quotationForm.invalid) {
-      this.logInvalidControls(this.quotationForm, 'quotationForm');
-      this.appSettingService.showWarning("Please fill all the required fields correctly");
+      const invalidFields = this.getInvalidControlDetails(this.quotationForm, 'quotationForm');
+      this.logInvalidControlDetails(invalidFields, 'quotationForm');
+      const firstInvalidField = this.getFirstInvalidFieldMessage(invalidFields);
+      this.appSettingService.showWarning(
+        firstInvalidField
+          ? `Please fill required field: ${firstInvalidField}`
+          : "Please fill all the required fields correctly"
+      );
       this.quotationForm.markAllAsTouched();
       this.quotationForm.updateValueAndValidity();
-      this.selectedTab1 = 'Quotation';
+      this.selectedTab1 = firstInvalidField?.includes('Route') ? 'Route Details' : 'Quotation';
       this.isSaving = false;
       if (resolve) resolve(false);
       return;
@@ -2976,10 +3172,11 @@ isRateLockDisabled(): boolean {
       FreightPPCC: formValue.FreightPPCC,
       status: formValue.status === "Active" ? 'A' : 'S',
       authDetails : {
-          canAuthorize : this.authorizerDetails?.canAuthorize,
+          canAuthorize : hasApprovalAction,
           AuthorityDetailSid :  this.authorizerDetails?.AuthorityDetailSid || null,
-          ApprovalStatus : this.approvalDropdownValue,
-          ApprovedBy : this.authorizerDetails?.ApprovedBy
+          ApprovalStatus : approvalChanges[0]?.ApprovalStatus || null,
+          ApprovedBy : this.authorizerDetails?.ApprovedBy,
+          approvalTargets: approvalChanges
       },
 
       quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => {
@@ -3047,16 +3244,23 @@ isRateLockDisabled(): boolean {
               quoteProducts: mapProducts(cargo.quoteProducts || cargo.quoteProduct || cargo.products || [])
             }))];
 
+        const porSid = this.toNumberOrNull(route.PORSid ?? route.POOSid);
+        const polSid = this.toNumberOrNull(route.POLSid);
+        const podSid = this.toNumberOrNull(route.PODSid);
+        const fpodSid = this.toNumberOrNull(route.FPODSid ?? route.FDPSid);
+
         return {
         // Route Part
         QuoteRouteSid: route.QuoteRouteSid,
         DepartmentMasterSid: route.DepartmentMasterSid,
         POLFreeDays: route.POLFreeDays ? route.POLFreeDays : 0,
         PODFreeDays: route.PODFreeDays ? route.PODFreeDays : 0,
-        PORSid: route.PORSid,
-        POLSid: route.POLSid,
-        PODSid: route.PODSid,
-        FPODSid: route.FPODSid,
+        PORSid: porSid,
+        POOSid: porSid,
+        POLSid: polSid,
+        PODSid: podSid,
+        FPODSid: fpodSid,
+        FDPSid: fpodSid,
         effDate: route.effDate,
         expDate: route.expDate,
         TransitDays: route.TransitDays,
@@ -3084,27 +3288,22 @@ isRateLockDisabled(): boolean {
 
         // Route - Carrier
         quoteCarriers : (route.quoteCarriers || []).map((carrier) => {
-          const canLoginUserAuthorize = this.authorizerDetails?.canAuthorize;
-          let approvalLevel = this.authorizerDetails?.AuthorityLevel;
-
-          let finalValue;
-          if(this.approvalDropdownValue === "Approved"){
-            finalValue = this.statusMapBasedOnAuthLevel.get(String(approvalLevel));
-          } else {
-            finalValue = "Rejected";
-          }
-          
+          const approvalStatus = carrier.authorizerStatus || carrier.ApprovalStatus || 'Pending';
           const allCharges = (carrier.quoteCharges || []).map(charge => ({
             ...charge,
           }))
           return {
             ...carrier,
+            ApprovalStatus: approvalStatus,
+            ApprovedBy:
+              (approvalStatus === 'Approved' || approvalStatus === 'Rejected')
+                ? (carrier.ApprovedBy || this.authorizerDetails?.ApprovedBy)
+                : carrier.ApprovedBy,
             ...(shouldAutoApproveQuote ? {
               ApprovalStatus: 'Approved',
               authorizerStatus: 'Approved',
               ApprovedBy: quoteCreatedByUserName
             } : {}),
-            ...(canLoginUserAuthorize ? {ApprovalStatus : finalValue} : {}),
             quoteCharges : allCharges
           }
         })
@@ -3160,6 +3359,8 @@ isRateLockDisabled(): boolean {
               }
             });
              this.loadQuotation(this.QuoteHeaderSid);
+             this.checkAuthorisedPerson(this.userData?.UserMasterSid, this.QuoteHeaderSid);
+             this.approvalDropdownValue = '';
             const customerId = resp.data?.createdCustomer?.CustomerMasterSid;
             if(customerId){
               this.createdCustomerId = customerId;
@@ -3218,6 +3419,8 @@ isRateLockDisabled(): boolean {
             });
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;
             if(id){
+              this.QuoteHeaderSid = id;
+              this.checkAuthorisedPerson(this.userData?.UserMasterSid, id);
               this.router.navigate(['crm/quotation/entry',id])
             }
             if (resolve) resolve(true);
@@ -3263,28 +3466,110 @@ isRateLockDisabled(): boolean {
     });
   }
 
-  private logInvalidControls(control: AbstractControl | null, path: string): void {
+  private getInvalidControlDetails(
+    control: AbstractControl | null,
+    path: string
+  ): Array<{ path: string; label: string; errors: ValidationErrors | null; value: any }> {
     if (!control) {
-      return;
+      return [];
     }
 
     if (control instanceof FormGroup) {
-      Object.keys(control.controls).forEach(key => {
-        this.logInvalidControls(control.get(key), `${path}.${key}`);
-      });
-      return;
+      return Object.keys(control.controls).flatMap(key =>
+        this.getInvalidControlDetails(control.get(key), `${path}.${key}`)
+      );
     }
 
     if (control instanceof FormArray) {
-      control.controls.forEach((childControl, index) => {
-        this.logInvalidControls(childControl, `${path}[${index}]`);
-      });
-      return;
+      return control.controls.flatMap((childControl, index) =>
+        this.getInvalidControlDetails(childControl, `${path}[${index}]`)
+      );
     }
 
     if (control.invalid) {
-    
+      return [{
+        path,
+        label: this.getFriendlyInvalidFieldLabel(path),
+        errors: control.errors,
+        value: control.value
+      }];
     }
+
+    return [];
+  }
+
+  private logInvalidControlDetails(
+    invalidControls: Array<{ path: string; label: string; errors: ValidationErrors | null; value: any }>,
+    context: string
+  ): void {
+    if (!invalidControls.length) {
+      console.log(`[${context}] No invalid controls found`);
+      return;
+    }
+
+    console.table(invalidControls.map(control => ({
+      field: control.label,
+      path: control.path,
+      errors: JSON.stringify(control.errors || {}),
+      value: control.value
+    })));
+  }
+
+  private getFirstInvalidFieldMessage(
+    invalidControls: Array<{ path: string; label: string; errors: ValidationErrors | null; value: any }>
+  ): string {
+    return invalidControls[0]?.label || '';
+  }
+
+  private getFriendlyInvalidFieldLabel(path: string): string {
+    const routeMatch = path.match(/quoteRoutes(?:\.quoteRoutes)?\[(\d+)\]/);
+    const carrierMatch = path.match(/quoteCarriers\[(\d+)\]/);
+    const chargeMatch = path.match(/quoteCharges\[(\d+)\]/);
+    const cargoMatch = path.match(/quoteCargo\[(\d+)\]/);
+    const productMatch = path.match(/quoteProducts\[(\d+)\]/);
+    const controlName = path.split('.').pop() || path;
+
+    const fieldLabels: Record<string, string> = {
+      LeadOrCustomer: 'Customer / Lead',
+      PreCustomerMasterSid: 'Lead',
+      CustomerMasterSid: 'Customer',
+      CustomerBranchSid: 'Customer',
+      CustomerName: 'Customer Name',
+      CustomerAddress: 'Customer Address',
+      SalesmanSid: 'Salesman',
+      status: 'Status',
+      DepartmentMasterSid: 'Department',
+      POLSid: 'POL',
+      PODSid: 'POD',
+      effDate: 'Effective Date',
+      expDate: 'Expiry Date',
+      segmentType: 'Segment Type',
+      CargoType: 'Cargo Type',
+      ChargeUomSid: 'Charge',
+      ChargeDisplayName: 'Charge Name',
+      RevenueChargeUomSid: 'Revenue Unit',
+      RevenueCurrencyMasterSid: 'Revenue Currency',
+      CostChargeUomSid: 'Cost Unit',
+      CostCurrencyMasterSid: 'Cost Currency',
+      ApprovedBy: 'Authorized By',
+      authorizerRemarks: 'Authorizer Remarks',
+      GrossWeight: 'Gross Weight',
+      NetWeight: 'Net Weight',
+      Volume: 'Volume',
+      ChargeableWeight: 'Chargeable Weight',
+      ImcoClass: 'IMCO Class',
+      PkgGroup: 'Package Group'
+    };
+
+    const sections: string[] = [];
+    if (routeMatch) sections.push(`Route ${Number(routeMatch[1]) + 1}`);
+    if (carrierMatch) sections.push(`Carrier ${Number(carrierMatch[1]) + 1}`);
+    if (chargeMatch) sections.push(`Charge ${Number(chargeMatch[1]) + 1}`);
+    if (cargoMatch) sections.push(`Cargo ${Number(cargoMatch[1]) + 1}`);
+    if (productMatch) sections.push(`Product ${Number(productMatch[1]) + 1}`);
+
+    const fieldLabel = fieldLabels[controlName] || controlName;
+    return sections.length ? `${sections.join(' > ')} > ${fieldLabel}` : fieldLabel;
   }
 
   handleValidationOnDept(index: number, type: string | null) {
@@ -3685,11 +3970,37 @@ isRateLockDisabled(): boolean {
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const selectedPOO = routeForm?.get('PORSid')?.value;
+    const selectedPOL = routeForm?.get('POLSid')?.value;
+    const selectedPOD = routeForm?.get('PODSid')?.value;
+    const selectedFPOD = routeForm?.get('FPODSid')?.value;
+
     this.filteredPorts = filteredLists.filteredPorts;
-    this.filteredPORPorts[routeIndex] = filteredLists.filteredPORPorts;
-    this.filteredPOLPorts[routeIndex] = filteredLists.filteredPOLPorts;
-    this.filteredPODPorts[routeIndex] = filteredLists.filteredPODPorts;
-    this.filteredFPODPorts[routeIndex] = filteredLists.filteredFPODPorts;
+    this.filteredPORPorts[routeIndex] = this.ensureSelectedPortInList(filteredLists.filteredPORPorts, selectedPOO);
+    this.filteredPOLPorts[routeIndex] = this.ensureSelectedPortInList(filteredLists.filteredPOLPorts, selectedPOL);
+    this.filteredPODPorts[routeIndex] = this.ensureSelectedPortInList(filteredLists.filteredPODPorts, selectedPOD);
+    this.filteredFPODPorts[routeIndex] = this.ensureSelectedPortInList(filteredLists.filteredFPODPorts, selectedFPOD);
+  }
+
+  private ensureSelectedPortInList(portList: any[] = [], selectedPortSid: any): any[] {
+    if (!selectedPortSid) {
+      return portList || [];
+    }
+
+    const hasSelectedPort = (portList || []).some(
+      port => Number(port?.PortMasterSid) === Number(selectedPortSid)
+    );
+
+    if (hasSelectedPort) {
+      return portList || [];
+    }
+
+    const selectedPort = this.ports.find(
+      port => Number(port?.PortMasterSid) === Number(selectedPortSid)
+    );
+
+    return selectedPort ? [...(portList || []), selectedPort] : (portList || []);
   }
 
   private syncRouteValidation(routeForm: FormGroup): void {
@@ -5651,15 +5962,18 @@ ${this.userData.userName}`;
   }
 
   openAuthority() {
-    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
-    if (!MenuMasterSid) return;
+    const MenuMasterSid = Number(sessionStorage.getItem('currentMenuId') || this.MenuMasterSid);
+    const DocumentSid = this.QuoteHeaderSid || this.quotationData?.QuoteHeaderSid;
+    if (!MenuMasterSid || !DocumentSid) return;
     const modalRef = this.ngbModal.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-    modalRef.componentInstance.documentSid = this.QuoteHeaderSid;
+    modalRef.componentInstance.documentSid = DocumentSid;
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
   }
 
   openEDoc() {
@@ -5837,6 +6151,7 @@ ${this.userData.userName}`;
 
   // Clear any cached or derived UI state related to routes/charges
   this.quoteRoutes.clear();
+  this.routePortFilterPayloadKeys = [];
   this.filteredUnits = [];
   this.filteredPORPorts = [];
   this.filteredPOLPorts = [];
@@ -6115,8 +6430,15 @@ ${this.userData.userName}`;
   //   })
   // }
 onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status: any) {
+  if (!this.authorizerDetails.canAuthorize) {
+    this.appSettingService.showWarning(this.authorizationMessage || 'You are not authorized to approve this quotation.');
+    this.applyAuthorizationControlState();
+    return;
+  }
+
   const carriersFA = this.quoteCarriers(routeIndex);
   const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  const selectedStatus = this.normalizeApprovalStatus(status) || 'Pending';
   
   // Get the current carrier form
   const currentCarrier = carriersFA.at(carrierIndex) as FormGroup;
@@ -6124,21 +6446,21 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
   // ADD THIS CHECK - If already approved, prevent changes
   if (this.isCarrierApproved(routeIndex, carrierIndex)) {
     this.appSettingService.showWarning("Approved carriers cannot be modified");
+    this.applyAuthorizationControlState();
+    return;
+  }
+
+  if (selectedStatus === 'Approved' && !this.isFinalAuthorizer()) {
+    const statusCtrl = currentCarrier.get('authorizerStatus');
+    const savedStatus = this.getSavedCarrierApprovalStatus(routeIndex, carrierIndex);
+    statusCtrl?.setValue(savedStatus === 'Approved' ? 'Pending' : savedStatus, { emitEvent: false });
+    this.appSettingService.showWarning('Only the final authorizer can approve the quotation');
+    this.applyAuthorizationControlState();
     return;
   }
 
   // Only when Approved is selected
-  if (status?.value === 'Approved') {
-    
-    // First, disable all carriers' status controls temporarily
-    carriersFA.controls.forEach((carrierCtrl, index) => {
-      const carrierForm = carrierCtrl as FormGroup;
-      const statusCtrl = carrierForm.get('authorizerStatus');
-      if (statusCtrl) {
-        statusCtrl.disable({ emitEvent: false });
-      }
-    });
-
+  if (selectedStatus === 'Approved') {
     carriersFA.controls.forEach((carrierCtrl, index) => {
       const carrierForm = carrierCtrl as FormGroup;
       const statusCtrl = carrierForm.get('authorizerStatus');
@@ -6148,14 +6470,12 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
       if (index === carrierIndex) {
         // Selected carrier - set to Approved
         statusCtrl.setValue('Approved', { emitEvent: false });
-        // DISABLE the status dropdown for approved carrier
-        statusCtrl.disable({ emitEvent: false });
+        carrierForm.get('ApprovedBy')?.setValue(this.authorizerDetails.ApprovedBy, { emitEvent: false });
         this.updateCarrierValidationBasedOnStatus(carrierForm);
         this.syncCarrierSelectionState(routeIndex, index);
       } else {
         // Force change other carriers to "Pending"
         statusCtrl.setValue('Pending', { emitEvent: false });
-        statusCtrl.enable({ emitEvent: false });
         
         // Clear ApprovedBy for other carriers
         const approvedByCtrl = carrierForm.get('ApprovedBy');
@@ -6172,14 +6492,17 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
 
     routeForm.get('isRouteApproved')?.setValue(true);
     this.applyBookingLockForRoute(routeIndex);
+    this.applyAuthorizationControlState();
     return;
   }
 
   // For other statuses (Rejected, Counter, etc.) - only if not already approved
   const statusCtrl = currentCarrier.get('authorizerStatus');
   if (statusCtrl && !this.isCarrierApproved(routeIndex, carrierIndex)) {
-    statusCtrl.enable({ emitEvent: false });
-    statusCtrl.setValue(status?.value, { emitEvent: false });
+    statusCtrl.setValue(selectedStatus, { emitEvent: false });
+  }
+  if (selectedStatus === 'Rejected') {
+    currentCarrier.get('ApprovedBy')?.setValue(this.authorizerDetails.ApprovedBy, { emitEvent: false });
   }
 
   routeForm.get('isRouteApproved')?.setValue(false);
@@ -6187,6 +6510,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
   this.updateCarrierValidationBasedOnStatus(currentCarrier);
   this.syncCarrierSelectionState(routeIndex, carrierIndex);
   this.applyBookingLockForRoute(routeIndex);
+  this.applyAuthorizationControlState();
 }
 
 
@@ -6352,7 +6676,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
 }
 
   getStatusName(statusValue) {
-    const statusObject = this.approvalStatus.find(status => status.value === statusValue);
+    const statusObject = this.allApprovalStatus.find(status => status.value === statusValue);
     return statusObject ? statusObject.name : null;
   }
 
@@ -6384,7 +6708,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     if (!PortMasterSid || PortMasterSid === undefined || this.ports.length === 0) {
       return '';
     }
-    const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
+    const ourPort = this.ports.find(p => Number(p.PortMasterSid) === Number(PortMasterSid));
     return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
   }
 

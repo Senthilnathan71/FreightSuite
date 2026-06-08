@@ -634,37 +634,39 @@
             </ng-template>
 
 
-            <!-- MBL No -->
-            <aside class="col-md-2">
-              <div class="custom-form-group">
-                <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm text-end" />
-                <label for="MBLNo" class="input-label">MBL No.
-                  <i
-                    *ngIf="vendorInvoiceForm?.get('MBLNo')?.value"
-                    class="fas fa-copy ms-1"
-                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
-                    title="Copy MBL No"
-                    (click)="copyDocumentNumber('MBLNo', 'MBL No', $event)"
-                  ></i>
-                </label>
-              </div>
-            </aside>
+            @if(!isNonJob) {
+              <!-- MBL No -->
+              <aside class="col-md-2">
+                <div class="custom-form-group">
+                  <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm text-end" />
+                  <label for="MBLNo" class="input-label">MBL No.
+                    <i
+                      *ngIf="vendorInvoiceForm?.get('MBLNo')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy MBL No"
+                      (click)="copyDocumentNumber('MBLNo', 'MBL No', $event)"
+                    ></i>
+                  </label>
+                </div>
+              </aside>
 
-            <!-- HBL No -->
-            <aside class="col-md-2">
-              <div class="custom-form-group">
-                <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm text-end" />
-                <label for="HBLNo" class="input-label">HBL No.
-                  <i
-                    *ngIf="vendorInvoiceForm?.get('HBLNo')?.value"
-                    class="fas fa-copy ms-1"
-                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
-                    title="Copy HBL No"
-                    (click)="copyDocumentNumber('HBLNo', 'HBL No', $event)"
-                  ></i>
-                </label>
-              </div>
-            </aside>
+              <!-- HBL No -->
+              <aside class="col-md-2">
+                <div class="custom-form-group">
+                  <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm text-end" />
+                  <label for="HBLNo" class="input-label">HBL No.
+                    <i
+                      *ngIf="vendorInvoiceForm?.get('HBLNo')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy HBL No"
+                      (click)="copyDocumentNumber('HBLNo', 'HBL No', $event)"
+                    ></i>
+                  </label>
+                </div>
+              </aside>
+            }
 
 
 
@@ -699,27 +701,18 @@
                 <label for="Status" class="input-label">Status</label>
               </div>
             </aside>
-             @if (currentCompanyCountryCode === 'ae') {
-            <aside class="col-md-2 d-md-block d-none"></aside>
-           }
-             <aside class="col-md-2 d-md-block d-none"></aside>
-             <aside class="col-md-2 d-md-block d-none"></aside>
-               <aside class="col-md-2 d-md-block d-none"></aside>
-                <aside class="col-md-2 d-md-block d-none"></aside>
-             <aside class="col-md-2 mt-md-1 mb-md-1 mb-1">
-              
-               <div class="d-flex justify-content-between align-items-center"  *ngIf="!isPosted">
-            <h5 class="mb-0"></h5>
-            <button 
-              class="btn btn-info btn-sm" 
-              (click)="addDetailRow()" 
-              type="button"
-              [disabled]="isReadOnly"
-           >
-              <i class="fas fa-plus me-1"></i>Add Charge
-            </button>
-          </div>
-             </aside>
+            <aside class="col-12 mt-md-1 mb-md-1 mb-1">
+              <div class="d-flex justify-content-end align-items-center" *ngIf="!isPosted">
+                <button 
+                  class="btn btn-info btn-sm" 
+                  (click)="addDetailRow()" 
+                  type="button"
+                  [disabled]="isReadOnly"
+                >
+                  <i class="fas fa-plus me-1"></i>Add Charge
+                </button>
+              </div>
+            </aside>
           </div>
 
           <!-- Detail Grid -->

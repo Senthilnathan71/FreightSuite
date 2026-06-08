@@ -1251,6 +1251,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   patchValues(data: any) {
     this.gatherHyperLinkInfo(data);
+    this.isNonJob = data.CashOrBank === 'Y';
 
     if(data.departmentMaster){
       this.filterChargeBasedOnDept(data.departmentMaster);
@@ -1273,8 +1274,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       COAMasterSid : data.COAMasterSid || null,
       PlaceOfSupply: data.PlaceOfSupply,
       PostStatus: data.PostStatus,
-      MasterJobSid: data.MasterJobSid,
-      HBLNo: data.HouseNumber,
+      MasterJobSid: this.isNonJob ? null : data.MasterJobSid,
+      HBLNo: this.isNonJob ? '' : data.HouseNumber,
       CurrencyMasterSid: data.CurrencyMasterSid || null,
       CurrencyCode: data.CurrencyCode || '',
       ExchangeRate: toNumber(data.ExchangeRate),
@@ -1283,7 +1284,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       GSTType: data.GSTType || null,
       Narration: data.Narration || '',
       Remarks: data.Remarks || '',
-      MBLNo: data.MasterNumber,
+      MBLNo: this.isNonJob ? '' : data.MasterNumber,
       Status: data.Status,
       JobOrNonJob : data.CashOrBank === 'Y' ? true : false,
       
@@ -1294,7 +1295,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         data.Amount || 0,
         data.CurrencyMasterSid || this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue()
       ),
-      HouseJobSid: data.HouseJobSid,
+      HouseJobSid: this.isNonJob ? null : data.HouseJobSid,
     }, { emitEvent: false });
 
     if (data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid || this.isPosted) {
@@ -1358,7 +1359,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           .get('ExchangeRate')
           ?.disable();
       }
-      if (det.MasterJobSid) {
+      if (!this.isNonJob && det.MasterJobSid) {
         this.onDetailMasterJobSelected(
           { MasterJobSid: det.MasterJobSid , DepartmentMasterSid : det.DepartmentMasterSid || null},
           index
@@ -2406,12 +2407,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
         TaxAmount2: toNumber(detail.TaxAmount2),
         LocalAmount: toNumber(detail.LocalAmount),
         PartyAmount : toNumber(detail.PartyAmount),
-        MasterJobSid: detail.MasterJobSid ?? null,
-        HouseJobSid: detail.HouseJobSid ?? null,
+        MasterJobSid: this.isNonJob ? null : (detail.MasterJobSid ?? null),
+        HouseJobSid: this.isNonJob ? null : (detail.HouseJobSid ?? null),
         YearMasterSid: YearMasterSid,
         Narration : derivedNarration,
-        CostRevenueChargesSid: costRevenueChargesSid || null,
-        BookingRatesSid: detail.BookingRatesSid || null,
+        CostRevenueChargesSid: this.isNonJob ? null : (costRevenueChargesSid || null),
+        BookingRatesSid: this.isNonJob ? null : (detail.BookingRatesSid || null),
       };
     });
 
@@ -2461,8 +2462,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       ExchangeRate: formValue.ExchangeRate ? toNumber(formValue.ExchangeRate) : 0,
       Amount: headerAmount,
       LocalAmount: headerLocalAmount,
-      MasterJobSid: formValue.MasterJobSid,
-      HouseJobSid: formValue.HouseJobSid,
+      MasterJobSid: this.isNonJob ? null : formValue.MasterJobSid,
+      HouseJobSid: this.isNonJob ? null : formValue.HouseJobSid,
       Narration: formValue.Narration,
       Status: String(formValue.Status).charAt(0),
       YearMasterSid: YearMasterSid,
@@ -2471,8 +2472,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       BillNo: formValue.BillNo,
       BillDate: formValue.BillDate ? new Date(formValue.BillDate) : null,
       // BillAmt: headerAmount,
-      MBLNo: formValue.MBLNo,
-      HBLNo: formValue.HBLNo,
+      MBLNo: this.isNonJob ? null : formValue.MBLNo,
+      HBLNo: this.isNonJob ? null : formValue.HBLNo,
 
       VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
 

@@ -64,6 +64,7 @@ export class AuthorityEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   authorityDetailsList: any[] = [];
   authorityData: any;
   detailData: any;
+  readonly maxAuthorityDetails = 3;
 
   companyResults: any[] = [];
   branchResults: any[] = [];
@@ -211,6 +212,11 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   addAuthDetail(){
+    if (!this.canAddAuthDetail()) {
+      this.appSettingService.showWarning(`Maximum ${this.maxAuthorityDetails} authorizers are allowed`);
+      return;
+    }
+
     const formGroup = this.createNewAuthDetail();
     this.authDetails.push(formGroup);
     this.updateFilteredAuthorisers();
@@ -218,6 +224,10 @@ auditLogs: any[] = []; // Stores audit logs
 
   get authDetails() : FormArray{
     return this.authorityForm.get('authDetails') as FormArray
+  }
+
+  canAddAuthDetail(): boolean {
+    return this.authDetails.length < this.maxAuthorityDetails;
   }
 
   removeAuthDetail(detailIndex: number,AuthorityDetailSid : number) {
@@ -311,6 +321,23 @@ auditLogs: any[] = []; // Stores audit logs
       this.authorityForm.markAllAsTouched();
       this.authorityForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly');
+      resolve?.(false);
+      return;
+    }
+
+    if (this.authDetails.length > this.maxAuthorityDetails) {
+      this.appSettingService.showWarning(`Only ${this.maxAuthorityDetails} authorization levels are allowed`);
+      resolve?.(false);
+      return;
+    }
+
+    const selectedAuthorizers = this.authDetails.value
+      .map((detail: any) => detail.UserMasterSid)
+      .filter((sid: any) => sid !== null && sid !== undefined && sid !== '');
+    const hasDuplicateAuthorizers = new Set(selectedAuthorizers).size !== selectedAuthorizers.length;
+
+    if (hasDuplicateAuthorizers) {
+      this.appSettingService.showWarning('Duplicate authorizers are not allowed');
       resolve?.(false);
       return;
     }

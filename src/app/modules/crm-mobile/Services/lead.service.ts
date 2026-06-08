@@ -817,8 +817,21 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     );
   }
 
-  getApprovalStatusByMenuAndDocument(menuMasterSid: number, documentSid: number) {
-    return this.http.get<{ data: any }>(`authority/approval-status/${menuMasterSid}/${documentSid}`).pipe(
+  getApprovalStatusByMenuAndDocument(
+    menuMasterSid: number,
+    documentSid: number,
+    companyMasterSid?: number,
+    branchMasterSid?: number
+  ) {
+    const params: any = {};
+    if (companyMasterSid) {
+      params.CompanyMasterSid = companyMasterSid;
+    }
+    if (branchMasterSid) {
+      params.BranchMasterSid = branchMasterSid;
+    }
+
+    return this.http.get<{ data: any }>(`authority/approval-status/${menuMasterSid}/${documentSid}`, { params }).pipe(
       map((resp) => {
         return resp;
       })

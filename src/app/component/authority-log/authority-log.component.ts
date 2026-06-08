@@ -14,6 +14,8 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 export class AuthorityLogComponent implements OnInit {
   @Input() documentSid: number;
   @Input() menuMasterSid: number;
+  @Input() CompanyMasterSid: number;
+  @Input() BranchMasterSid: number;
 
   isApproved = false;
   approvalLogs: any[] = [];
@@ -26,7 +28,12 @@ export class AuthorityLogComponent implements OnInit {
   }
 
   fetchApprovalStatus() {
-    this.leadService.getApprovalStatusByMenuAndDocument(this.menuMasterSid, this.documentSid)
+    this.leadService.getApprovalStatusByMenuAndDocument(
+      this.menuMasterSid,
+      this.documentSid,
+      this.CompanyMasterSid,
+      this.BranchMasterSid
+    )
       .subscribe((resp : any) => {
         if (resp.status) {
           this.approvalLogs = resp.data.logData || [];

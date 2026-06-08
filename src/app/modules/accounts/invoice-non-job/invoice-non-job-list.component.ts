@@ -23,6 +23,7 @@ import { OperationService } from '../../operation/operation.service';
 import { InvoiceNonJobService } from '../services/invoice-non-job.service';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-invoice-non-job-list',
@@ -37,6 +38,7 @@ import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from
     PageHeaderComponent,
     ReusableTableComponent,
     CustomDatePipe,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './invoice-non-job-list.component.html',

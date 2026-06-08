@@ -4,7 +4,7 @@
 
 <div class="col-12">
   <div class="row  bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-    <div class="col-md-2 pb-1">
+    <div class="col-md-auto pb-1">
       <div class="d-flex align-items-center gap-2">
         <h5 class="page-title mb-0 text-info">Quotation</h5>
         @if(isEditMode){
@@ -25,33 +25,9 @@
       </div>
 
     </div>
-    <div class="col-md-10 pb-1">
+    <div class="col-md pb-1">
       <div class="quotation-header-actions d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
 
-
-          @if(authorizerDetails.canAuthorize && authorizerDetails.AuthorityLevel !== "C"){
-        <div ngbDropdown class="d-inline-block">
-          <button class="btn btn-sm btn-info" id="actionDropdown" ngbDropdownToggle aria-haspopup="true"
-            aria-expanded="false">
-            Select Approval status
-            <span class="caret"></span>
-          </button>
-
-          <div ngbDropdownMenu aria-labelledby="actionDropdown" class="py-1">
-            <button class="dropdown-item d-flex align-items-center text-success" type="button"
-              (click)="onInternalApprovalStatusChange('Approved')" [disabled]="actionsDisabled">
-              <i class="fas fa-check me-2" aria-hidden="true"></i>
-              Approve
-            </button>
-
-            <button class="dropdown-item d-flex align-items-center text-danger" type="button"
-              (click)="onInternalApprovalStatusChange('Rejected')" [disabled]="actionsDisabled">
-              <i class="fas fa-times me-2" aria-hidden="true"></i>
-              Reject
-            </button>
-          </div>
-        </div>
-        }
         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
           (click)="openAuditLogs()">
           <i class="fas fa-history me-1"></i>Logs
@@ -1380,7 +1356,7 @@
                                 class="d-flex justify-content-between align-items-center w-100 position-relative">
                                 <h6 class="fw-semibold my-1 text-light">{{carrier.value.CarrierName || 'Carrier
                                   Details'}}</h6>
-                                <span class="fw-semibold my-1 text-warning ps-2" *ngIf="isEditMode">
+                                <span class="fw-semibold my-1 text-warning ps-2 d-inline-flex align-items-center gap-2" *ngIf="isEditMode">
                                   @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex)){
                                   @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Approved"){
                                   <span class="badge bg-success">Approved</span>
@@ -1392,6 +1368,22 @@
                                   <span class="badge bg-warning">Waiting for Approval</span>
                                   }
                                   }
+                                  <span *ngIf="authorizationMessage"
+                                    class="authorization-status-note"
+                                    [ngClass]="{
+                                      'authorization-status-note-success': authorizationMessageType === 'success',
+                                      'authorization-status-note-warning': authorizationMessageType === 'warning',
+                                      'authorization-status-note-info': authorizationMessageType === 'info'
+                                    }">
+                                    <i class="fas"
+                                      [ngClass]="{
+                                        'fa-check-circle': authorizationMessageType === 'success',
+                                        'fa-exclamation-circle': authorizationMessageType === 'warning',
+                                        'fa-info-circle': authorizationMessageType === 'info'
+                                      }"></i>
+                                    <strong *ngIf="getCurrentAuthorizerLevelText()">{{ getCurrentAuthorizerLevelText() }}:</strong>
+                                    {{ authorizationMessage }}
+                                  </span>
                                 </span>
 
                                 @if(quoteCarriers(routeIndex).length > 1){
@@ -1442,71 +1434,68 @@
                                           </div>
                                         </aside>
                                         @if(isEditMode){
-                                        @if(authorizerDetails.isAuthorizer){
-                                        <aside class="col-md-3">
-                                          <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
-                                            <ng-select formControlName="authorizerStatus"  [items]="authorizerDetails.isAuthorizer ? allApprovalStatus : approvalStatus"
-                                              bindLabel="name" bindValue="value"
-                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
-                                              [disabled]="isCarrierApproved(routeIndex, carrierIndex) || isCarrierApprovalLocked(routeIndex, carrierIndex)"
-                                              appendTo="body">
-                                            </ng-select>
-                                            <label for="" class="input-label">Authorization Status <span
-                                                class="text-danger"></span></label>
-                                          </div>
-                                        </aside>
-                                        } @else if(!authorizerDetails.isAuthorizer){
-                                        <aside class="col-md-3">
-                                          <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
-                                            <ng-select formControlName="authorizerStatus" [items]="approvalStatus"
-                                              bindLabel="name" bindValue="value"
-                                              (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
-                                               [disabled]="isCarrierApprovalLocked(routeIndex, carrierIndex)"
-                                               appendTo="body">
-                                            </ng-select>
-                                            <label for="" class="input-label">Authorization Status <span
-                                                class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerStatus')
-                                                ? '*' : '' }}</span></label>
-                                          </div>
-                                        </aside>
-                                        <aside class="col-md-2">
-                                          <div class="custom-form-group">
-                                            <input type="text" id="text-input" formControlName="authorizerRemarks"
-                                              class="custom-input-field sm">
-                                            <label for="text-input" class="input-label">Authorizer Remarks <span
-                                                class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerRemarks')
-                                                ? '*' : '' }}</span></label>
-                                            @if(carrier.get("AuthorizerRemarks")?.touched &&
-                                            carrier.get("AuthorizerRemarks")?.invalid){
-                                            <div class="error-message">
-                                              @if(carrier.get("AuthorizerRemarks")?.hasError('required')){
-                                              <span>required</span>
-                                              }
+                                          <aside class="col-md-3">
+                                            @if(authorizerDetails.canAuthorize){
+                                            <div class="custom-form-group custom-form-group-select"
+                                              [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
+                                              <ng-select class="authorization-status-select"
+                                                formControlName="authorizerStatus"
+                                                [items]="getApprovalStatusOptions()"
+                                                bindLabel="name" bindValue="value"
+                                                [trackByFn]="trackApprovalStatusByValue"
+                                                (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
+                                                [disabled]="isCarrierApprovalLocked(routeIndex, carrierIndex)"
+                                                dropdownPanelClass="authorization-status-dropdown"
+                                                appendTo="body">
+                                              </ng-select>
+                                              <label for="" class="input-label">Authorization Status <span
+                                                  class="text-danger"></span></label>
+                                            </div>
+                                            } @else {
+                                            <div class="custom-form-group">
+                                              <input type="text" class="custom-input-field sm"
+                                                [value]="getAuthorityStatusForCarrier(routeIndex,carrierIndex) || 'Waiting for Approval'"
+                                                readonly>
+                                              <label class="input-label">Authorization Status</label>
                                             </div>
                                             }
-                                          </div>
-                                        </aside>
-                                        <aside class="col-md-2">
-                                          <div class="custom-form-group">
-                                              <input type="text" id="text-input" formControlName="ApprovedBy"
-                                               class="custom-input-field sm"
-                                               [disabled]="isCarrierApprovalLocked(routeIndex, carrierIndex)">
-                                            <label for="text-input" class="input-label">Authorized By <span
-                                                class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'ApprovedBy')
-                                                ? '*' : '' }}</span></label>
-                                            @if(carrier.get("ApprovedBy")?.touched &&
-                                            carrier.get("ApprovedBy")?.invalid){
-                                            <div class="error-message">
-                                              @if(carrier.get("ApprovedBy")?.hasError('required')){
-                                              <span>required</span>
+                                          </aside>
+                                          <aside class="col-md-2">
+                                            <div class="custom-form-group">
+                                              <input type="text" id="text-input" formControlName="authorizerRemarks"
+                                                class="custom-input-field sm"
+                                                [readonly]="!authorizerDetails.canAuthorize || isCarrierApprovalLocked(routeIndex, carrierIndex)">
+                                              <label for="text-input" class="input-label">Authorizer Remarks <span
+                                                  class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerRemarks')
+                                                  ? '*' : '' }}</span></label>
+                                              @if(carrier.get("authorizerRemarks")?.touched &&
+                                              carrier.get("authorizerRemarks")?.invalid){
+                                              <div class="error-message">
+                                                @if(carrier.get("authorizerRemarks")?.hasError('required')){
+                                                <span>required</span>
+                                                }
+                                              </div>
                                               }
                                             </div>
-                                            }
-                                          </div>
-                                        </aside>
-                                        }
+                                          </aside>
+                                          <aside class="col-md-2">
+                                            <div class="custom-form-group">
+                                                <input type="text" id="text-input" formControlName="ApprovedBy"
+                                                 class="custom-input-field sm"
+                                                 readonly>
+                                              <label for="text-input" class="input-label">Authorized By <span
+                                                  class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'ApprovedBy')
+                                                  ? '*' : '' }}</span></label>
+                                              @if(carrier.get("ApprovedBy")?.touched &&
+                                              carrier.get("ApprovedBy")?.invalid){
+                                              <div class="error-message">
+                                                @if(carrier.get("ApprovedBy")?.hasError('required')){
+                                                <span>required</span>
+                                                }
+                                              </div>
+                                              }
+                                            </div>
+                                          </aside>
                                         }
                                       </div>
 
@@ -2377,8 +2366,14 @@
                       <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('authorizerStatus')?.value">
-                          <ng-select formControlName="authorizerStatus" [items]="approvalStatus" bindLabel="name"
-                            bindValue="value">
+                          <ng-select class="authorization-status-select"
+                            formControlName="authorizerStatus"
+                            [items]="getApprovalStatusOptions()"
+                            bindLabel="name"
+                            bindValue="value"
+                            [trackByFn]="trackApprovalStatusByValue"
+                            dropdownPanelClass="authorization-status-dropdown"
+                            appendTo="body">
 
                           </ng-select>
                           <label for="" class="input-label">Authorization Status <span
@@ -3208,8 +3203,8 @@
                       </div>
                       <div>
                         <p class="mb-0  text-black col">{{getFormattedPort(route.POLSid)}} -
-                          {{getFormattedPort(route.PODSid)}} {{route.PODSid !== route.FDPSid ? '- ' +
-                          getFormattedPort(route.FDPSid) : ''}}.</p>
+                          {{getFormattedPort(route.PODSid)}} {{route.PODSid !== (route.FDPSid || route.FPODSid) ? '- ' +
+                          getFormattedPort(route.FDPSid || route.FPODSid) : ''}}.</p>
                       </div>
                     </aside>
                   </td>
@@ -3401,7 +3396,7 @@
                 <div style="padding-right: 60px;">
                   <p style="margin: 0;padding: 4px;border-right: none;font-weight: bolder;">
                   <strong>  {{ getFormattedPort(route.POLSid) }} - {{ getFormattedPort(route.PODSid) }}
-                    {{ route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : '' }}</strong>
+                    {{ route.PODSid !== (route.FDPSid || route.FPODSid) ? '- ' + getFormattedPort(route.FDPSid || route.FPODSid) : '' }}</strong>
                   </p>
                 </div>
               </div>
@@ -3737,7 +3732,7 @@
             <div style="padding-right: 60px;">
               <p style="margin: 0; padding: 4px; border-right: none; font-weight: bolder;">
                 <strong>{{ getFormattedPort(route.POLSid) }} - {{ getFormattedPort(route.PODSid) }}
-                  {{ route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : '' }}</strong>
+                  {{ route.PODSid !== (route.FDPSid || route.FPODSid) ? '- ' + getFormattedPort(route.FDPSid || route.FPODSid) : '' }}</strong>
               </p>
             </div>
           </div>
