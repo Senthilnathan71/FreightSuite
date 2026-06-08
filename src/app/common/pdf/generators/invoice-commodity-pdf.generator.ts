@@ -84,8 +84,7 @@
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIndiaFields =
       isIndiaInvoice
-        ? (printData?.GSTCode ? 12 : 0) +
-          ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0) +
+        ? ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0) +
           ((printData?.IRNNumber || data.invoice?.irnNumber) ? 14 : 0)
         : 0;
     // When UAE company has no VAT No the company info stack is ~7pt shorter, causing
@@ -293,9 +292,6 @@
     const title = data.invoiceTitle ||
       (data.invoice?.postStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT');
     const printData = (data as any).invoicePrintData;
-    const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
-    const gstCode = printData?.GSTCode || data.companyGstCode || '';
-
     return {
       stack: [
         {
@@ -306,17 +302,6 @@
           fontSize: 12,
           margin: [0, 2, 0, 2]
         },
-        ...(isIndiaInvoice && gstCode
-          ? [{
-              text: [
-                { text: 'GST Code : ', bold: true },
-                { text: gstCode }
-              ],
-              alignment: 'center',
-              fontSize: 9,
-              margin: [0, 0, 0, 5]
-            }]
-          : [])
       ]
     };
   }

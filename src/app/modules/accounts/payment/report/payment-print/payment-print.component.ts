@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
@@ -41,6 +41,7 @@ export class PaymentPrintComponent implements OnChanges {
   @Input() agentList: any;
   @Input() currencyList: any;
   @Input() uomList: any;
+    receiptAllowToPrintBeforePosting: boolean = false;
   @Input() containerTypeList: any;
   @Input() coaList : any[] = [];
   @Input() ledgerList : any[] = [];
@@ -62,7 +63,8 @@ export class PaymentPrintComponent implements OnChanges {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+     private cdr: ChangeDetectorRef,
   ) { }
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -76,6 +78,7 @@ export class PaymentPrintComponent implements OnChanges {
     this.loadCityName();
     this.loadCurrencyList();
     this.loadHeaderSubledgerAddress();
+     this.loadReceiptPrintBeforePostingConfig();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,7 +87,40 @@ export class PaymentPrintComponent implements OnChanges {
     }
   }
 
+   private loadReceiptPrintBeforePostingConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.receiptAllowToPrintBeforePosting = false;
+      return;
+    }
 
+    this.masterService.getConfigurationValue(companyId, 'ReceiptAllowtoprintbeforePosting').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.receiptAllowToPrintBeforePosting = this.parseConfigBoolean(rawValue, false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.receiptAllowToPrintBeforePosting = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
+  }
+
+  isDraftPayment(): boolean {
+  return this.paymentDataPrint?.PostStatus === 'U' && !this.receiptAllowToPrintBeforePosting;
+
+}
+  
     loadCurrencyList(): void {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {

@@ -31,6 +31,8 @@ import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.com
 import { VoucherMatchingListComponent } from './voucher-matching/voucher-matching-list/voucher-matching-list.component';
 import { UnsavedChangesGuard } from 'src/app/core/guards/unsaved-changes.guard';
 import { AccountsCloseListComponent } from './accounts-close/accounts-close-list/accounts-close-list.component';
+import { InvoiceNonJobListComponent } from './invoice-non-job/invoice-non-job-list.component';
+import { InvoiceNonJobEntryComponent } from './invoice-non-job/invoice-non-job-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -288,6 +290,43 @@ export const AccountRoutes: Routes = [
             { title: "Accounts", url: "/accounts" },
             { title: "Payment Voucher", url: "/accounts/payment/list" },
             { title: "Edit Payment" },
+          ],
+        },
+      },
+      {
+        path: "invoice-non-job/list",
+        component: InvoiceNonJobListComponent,
+        data: {
+          title: "Invoice Non Job",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Invoice Non Job" },
+          ],
+        },
+      },
+      {
+        path: "invoice-non-job/entry",
+        component: InvoiceNonJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
+        data: {
+          title: "Create Invoice Non Job",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Invoice Non Job", url: "/accounts/invoice-non-job/list" },
+            { title: "Create Invoice Non Job" },
+          ],
+        },
+      },
+      {
+        path: "invoice-non-job/entry/:id",
+        component: InvoiceNonJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
+        data: {
+          title: "Edit Invoice Non Job",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Invoice Non Job", url: "/accounts/invoice-non-job/list" },
+            { title: "Edit Invoice Non Job" },
           ],
         },
       },

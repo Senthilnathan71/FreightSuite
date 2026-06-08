@@ -100,8 +100,8 @@ export class OperationService {
     );
   }
 
-  getBookingById(BookingHeaderSid: number) {
-    return this.http.get<{ data: any }>(`ff-booking/fetch/${BookingHeaderSid}`).pipe(
+  getBookingById(payload:any) {
+    return this.http.post<{ data: any }>('ff-booking/fetch',payload).pipe(
       map((resp) => {
         return resp;
       })

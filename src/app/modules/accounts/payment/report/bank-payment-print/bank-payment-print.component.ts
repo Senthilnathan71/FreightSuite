@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
@@ -36,6 +36,7 @@ export class BankPaymentPrintComponent implements OnChanges {
   currentBranchCityName: string | null;
   currentBranchCityId: number;
   currency: any[] = [];
+   receiptAllowToPrintBeforePosting: boolean = false;
   @Input() paymentDataPrint: any;
   @Input() masterJobContainers: any[];
   @Input() selectedFCLLCL: any;
@@ -62,7 +63,8 @@ export class BankPaymentPrintComponent implements OnChanges {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+        private cdr: ChangeDetectorRef,
   ) { }
 
   
@@ -74,6 +76,7 @@ export class BankPaymentPrintComponent implements OnChanges {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+        this.loadReceiptPrintBeforePostingConfig();
     console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
@@ -87,6 +90,36 @@ export class BankPaymentPrintComponent implements OnChanges {
     if (changes['paymentDataPrint'] || changes['ledgerList']) {
       this.loadHeaderSubledgerAddress();
     }
+  }
+
+
+   private loadReceiptPrintBeforePostingConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.receiptAllowToPrintBeforePosting = false;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'ReceiptAllowtoprintbeforePosting').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.receiptAllowToPrintBeforePosting = this.parseConfigBoolean(rawValue, false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.receiptAllowToPrintBeforePosting = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   loadCurrencyList(): void {
@@ -396,18 +429,8 @@ getDrDetails() {
 }
 
 isDraftPayment(): boolean {
-  const statusValues = [
-    this.paymentDataPrint?.PostStatus,
-    this.paymentDataPrint?.postStatus,
-    this.paymentDataPrint?.Status,
-    this.paymentDataPrint?.status
-  ].map((value) => String(value || '').trim().toUpperCase());
+  return this.paymentDataPrint?.PostStatus === 'U' && !this.receiptAllowToPrintBeforePosting;
 
-  return statusValues.some((value) =>
-    value === 'U' ||
-    value === 'UNPOSTED' ||
-    value === 'UNPOST'
-  );
 }
 
 
@@ -500,6 +523,8 @@ printDiv(divId: string): void {
     ledgerList: any[];
     bankTypedLedgers: any[];
     amountInWords: string;
+    allowPrintBeforePosting: boolean;
+    headerSubledgerAddress: string;
     printSettings: {
       logoPosition: 'left' | 'center' | 'right';
       companyPosition: 'left' | 'center' | 'right';
@@ -512,6 +537,8 @@ printDiv(divId: string): void {
       ledgerList: this.ledgerList || [],
       bankTypedLedgers: this.bankTypedLedgers || [],
       amountInWords: String(this.getAmountInWords() || this.paymentDataPrint?.AmountInWords || this.paymentDataPrint?.amountInWords || ''),
+      allowPrintBeforePosting: this.receiptAllowToPrintBeforePosting,
+      headerSubledgerAddress: this.headerSubledgerAddress,
       printSettings: this.companySettings.getPrintSettings()
     };
   }

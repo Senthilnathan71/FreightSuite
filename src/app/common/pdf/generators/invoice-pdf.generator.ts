@@ -79,17 +79,20 @@
     const printData = (data as any).invoicePrintData;
     const taxConfig = (data.taxDisplayConfig as any) || {};
     const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
+    const isNonJobInvoice = isNonJobPdfInvoice(data);
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
     const baseTopMargin = 150;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIRNLine = isIndiaInvoice ? 14 : 0;
     const extraTopMarginForIndiaFields =
       isIndiaInvoice
-        ? (printData?.GSTCode ? 12 : 0) +
-          ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
+        ? ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
         : 0;
     const extraTopMarginForVATLine = !isIndiaInvoice ? 8 : 0;
-    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForIRNLine + extraTopMarginForVATLine;
+    const extraTopMarginForNonJobFields = isNonJobInvoice
+      ? 24 + (printData?.InvoiceDueDate ? 12 : 0)
+      : 0;
+    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForIRNLine + extraTopMarginForVATLine + extraTopMarginForNonJobFields;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
       ? [
@@ -127,8 +130,6 @@
             buildInvoiceHeader(data),
             buildInvoiceTitle(data),
             buildInvoiceInfo(data),
-
-            
           ],
           margin: [20, 10, 20, 0] // Add margin to header content
         };
@@ -136,13 +137,12 @@
 
       content: [
         // { text: '', margin: [0, 10, 0, 0] },   // Spacer to push content below header
-        ...(!isCompanyMasterSid(data, 24) ? [buildShipmentDetails(data)] : []),
-        ...(isCompanyMasterSid(data, 24) ? [buildContentDivider()] : []),
+        ...(isNonJobInvoice ? [] : [buildShipmentDetails(data)]),
         buildChargesTable(data),
         buildTotalsSection(data),
         buildAmountInWords(data),
         ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
-        ...(buildContainerDetails(data) ? [buildContainerDetails(data)] : []),
+        ...(!isNonJobInvoice && buildContainerDetails(data) ? [buildContainerDetails(data)] : []),
         ...buildBankDetailsSection(data),
         ...(resolvedTerms.length > 0
   ? [
@@ -305,9 +305,6 @@
     const title = data.invoiceTitle ||
       (data.invoice?.postStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT');
     const printData = (data as any).invoicePrintData;
-    const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
-    const gstCode = printData?.GSTCode || data.companyGstCode || '';
-
     return {
       stack: [
         {
@@ -318,17 +315,6 @@
           fontSize: 12,
           margin: [0, 2, 0, 2]
         },
-        ...(isIndiaInvoice && gstCode
-          ? [{
-              text: [
-                { text: 'GST Code : ', bold: true },
-                { text: gstCode }
-              ],
-              alignment: 'center',
-              fontSize: 9,
-              margin: [0, 0, 0, 5]
-            }]
-          : [])
       ],
       margin: [0, 0, 0, 2]
     };
@@ -337,16 +323,21 @@
   /**
    * Build invoice info section - using invoicePrintData
    */
-function buildInvoiceInfo(data: InvoicePdfData): any {
+  function buildInvoiceInfo(data: InvoicePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).invoicePrintData;
   const taxConfig = (data.taxDisplayConfig as any) || {};
   const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
+  const isNonJobInvoice = isNonJobPdfInvoice(data);
   const customerTaxLabel = isIndiaInvoice ? 'GST No.' : 'VAT No.';
+
+  if (isNonJobInvoice) {
+    return buildNonJobInvoiceInfo(data, isIndiaInvoice, customerTaxLabel);
+  }
 
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
-  const RIGHT_LABEL_WIDTH = 89;
+  const RIGHT_LABEL_WIDTH = isNonJobInvoice ? 112 : 89;
   const COLON_WIDTH = 6;
   const LEFT_LABEL_WIDTH = 88;
 
@@ -427,6 +418,35 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     margin: [0, 0, 0, 5]
   });
 
+  if (isNonJobInvoice) {
+    const dueDate = printData?.InvoiceDueDate || invoice?.invoiceDueDate || invoice?.dueDate;
+    if (dueDate) {
+      rightStack.push({
+        columns: [
+          { text: 'Invoice Due Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+          { text: ':', width: COLON_WIDTH },
+          { text: dueDate === 'Cash Invoice' ? 'Cash Invoice' : formatDate(dueDate), width: '*' }
+        ],
+        margin: [0, 0, 0, 5]
+      });
+    }
+
+    rightStack.push({
+      columns: [
+        { text: 'Currency / Ex-Rate', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
+        {
+          text: printData?.CurrExRate ||
+            (invoice?.currencyCode && invoice?.exchangeRate
+              ? `${invoice.currencyCode} / ${invoice.exchangeRate}`
+              : invoice?.currencyCode || ''),
+          width: '*'
+        }
+      ],
+      margin: [0, 0, 0, 5]
+    });
+  }
+
   if (isIndiaInvoice) {
      rightStack.push({
       columns: [
@@ -503,6 +523,103 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       // bottomLine
     ],
     margin: [0, 0, 0, 0]
+  };
+}
+
+function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, customerTaxLabel: string): any {
+  const invoice = data.invoice;
+  const printData = (data as any).invoicePrintData || {};
+  const billedTo = printData?.BilledTo || invoice?.customerName || '';
+  const billingAddress = printData?.BillingAddress || invoice?.customerAddress || '';
+  const dueDate = printData?.InvoiceDueDate || invoice?.invoiceDueDate || invoice?.dueDate || '';
+  const currExRate =
+    printData?.CurrExRate ||
+    (invoice?.currencyCode && invoice?.exchangeRate
+      ? `${invoice.currencyCode} / ${invoice.exchangeRate}`
+      : invoice?.currencyCode || '');
+  const customerTaxNo =
+    printData?.GST_VAT ||
+    printData?.customerGstVat ||
+    printData?.CustomerGSTVAT ||
+    printData?.CustomerTaxNo ||
+    invoice?.customerGstVat ||
+    (invoice as any)?.GST_VAT ||
+    '';
+
+  const leftStack: any[] = [
+    { text: 'Billed To', style: 'labelBold', margin: [0, 0, 0, 3] },
+    { text: billedTo, margin: [0, 0, 0, 3] }
+  ];
+
+  if (billingAddress) {
+    leftStack.push({ text: billingAddress, margin: [0, 0, 0, 3] });
+  }
+
+  if (isIndiaInvoice && (printData?.PAN || (data as any)?.companyPan)) {
+    const customerCountryCode = String(printData?.CustomerCountryCode || '').trim().toLowerCase();
+    leftStack.push({
+      table: {
+        widths: [88, 6, '*'],
+        body: [[
+          {
+            text: customerCountryCode === 'ae' ? 'VAT' : customerCountryCode === 'in' ? 'PAN No' : 'Tax No',
+            style: 'labelBold'
+          },
+          { text: ':' },
+          { text: printData?.PAN || (data as any)?.companyPan || '' }
+        ]]
+      },
+      layout: 'noBorders'
+    });
+  }
+
+  const rightRows: any[] = [
+    ['Invoice No.', printData?.InvoiceNo || invoice?.invoiceNo || ''],
+    ['Invoice Date', printData?.InvoiceDate ? formatDate(printData.InvoiceDate) : formatDate(invoice?.invoiceDate)]
+  ];
+
+  if (dueDate) {
+    rightRows.push([
+      'Invoice Due Date',
+      dueDate === 'Cash Invoice' ? 'Cash Invoice' : formatDate(dueDate)
+    ]);
+  }
+
+  rightRows.push(
+    ['Currency / Ex-Rate', currExRate],
+    [isIndiaInvoice ? 'GST No.' : customerTaxLabel, customerTaxNo]
+  );
+
+  if (isIndiaInvoice) {
+    rightRows.push(['IRN No.', printData?.IRNNumber || invoice?.irnNumber || '']);
+  }
+
+  const rightTable = {
+    table: {
+      widths: [116, 6, '*'],
+      body: rightRows.map(([label, value]) => [
+        { text: label, style: 'labelBold', noWrap: true },
+        { text: ':' },
+        { text: value || '', noWrap: false }
+      ])
+    },
+    layout: {
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 1,
+      paddingBottom: () => 2
+    }
+  };
+
+  return {
+    columns: [
+      { width: '48%', stack: leftStack },
+      { width: '52%', stack: [rightTable] }
+    ],
+    columnGap: 10,
+    margin: [15, 0, 0, 0]
   };
 }
 
@@ -967,6 +1084,14 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     }
 
     return !taxConfig.showVAT;
+  }
+
+  function isNonJobPdfInvoice(data: InvoicePdfData): boolean {
+    const printData = (data as any)?.invoicePrintData || {};
+    return printData?.IsNonJobInvoice === true ||
+      printData?.IsNonJobInvoice === 'Y' ||
+      printData?.CashOrBank === 'Y' ||
+      (data as any)?.invoiceData?.CashOrBank === 'Y';
   }
 
   function isCompanyMasterSid(data: InvoicePdfData, companyMasterSid: number): boolean {

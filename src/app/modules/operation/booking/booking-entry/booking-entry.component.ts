@@ -1796,7 +1796,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.destroy$.complete();
     this.destroy$ = new Subject<void>();
     this.hasSubscribedToFormChanges = false;
-    this.operationService.getBookingById(BookingHeaderSid).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      BookingHeaderSid,
+      CompanyMasterSid,
+      BranchMasterSid
+    };
+    this.operationService.getBookingById(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           // this.resetForm();
@@ -1817,12 +1824,15 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         } else {
           this.isSaving = false;
           this.spinner.hide();
+          this.appSettingService.showError(resp.message);
         }
       },
       (error) => {
         this.isSaving = false;
         this.spinner.hide();
-        this.appSettingService.showError('Failed to load booking.');
+        this.appSettingService.showError(
+      error?.error?.message || 'Access denied.'
+    );
       }
     )
   }
