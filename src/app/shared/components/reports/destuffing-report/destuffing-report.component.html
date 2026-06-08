@@ -1,0 +1,67 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <app-print-header></app-print-header>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Destuffing Report
+    </h4>
+    <div style="margin-top: 1rem;">
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">HBL From Date</strong>
+                    <p class="ms-1 my-0">: {{(params?.FromHblDate | formatDate) }}</p>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">HBL To Date</strong>
+                    <p class="ms-1 my-0">: {{(params?.ToHblDate | formatDate) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+            <thead>
+                <tr class="bg-info" style="white-space:nowrap">
+                    <th class="bg-transparent text-light text-center">Received Pre-Alert</th>
+                    <th class="bg-transparent text-light text-center">HBL No</th>
+                    <th class="bg-transparent text-light text-center">Origin Agent</th>
+                    <th class="bg-transparent text-light text-center">Container No</th>
+                    <th class="bg-transparent text-light text-center">ETA</th>
+                    <th class="bg-transparent text-light text-center">Container Size</th>
+                    <th class="bg-transparent text-light text-center">Vessel / Voyage</th>
+                    <th class="bg-transparent text-light text-center">Place of destuff</th>
+                    <th class="bg-transparent text-light text-center">Remarks</th>
+                    <th class="bg-transparent text-light text-center">Time of discharge for the vessel</th>
+                    <th class="bg-transparent text-light text-center">Time Pulled out the container</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
+                    <td>{{ item.HBLDate | formatDate}}</td>
+                    <td>{{ item.HBLNo || '' }}</td>
+                    <td>{{ item.OriginAgent || '' }}</td>
+                    <td>{{ item.containerNoList || '' }}</td>
+                    <td>{{ item.ETA | formatDate }}</td>
+                    <td>{{ item.containerTypeList || '' }}</td>
+                    <td>{{ item.VesselName || '' }}
+                        <span *ngIf="item.VoyageNo"> / </span> {{ item.VoyageNo }}
+                    </td>
+                    <td>{{ item.CFS || '' }}</td>
+                    <td>{{ item?.Remarks || ''}}</td>
+                    <td>{{ item.ATA | formatDate }}</td>
+                    <td>{{ item.ATD | formatDate }}</td>
+                </tr>
+
+                <tr *ngIf="!fullData?.data || fullData.data.length === 0">
+                    <td colspan="11" class="text-center fw-bold py-1">
+                        No Record Found
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <app-print-footer></app-print-footer>
+</div>
