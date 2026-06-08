@@ -2305,8 +2305,21 @@ get isSuspended() : boolean {
 
 
   loadHouseById(HouseJobSid: number) {
-    this.operationService.getHouseJobById(HouseJobSid).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      HouseJobSid,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.operationService.getHouseJobById(payload).subscribe(
       (resp: any) => {
+        if (resp && resp.status === false) {
+    this.appSettingService.showError(
+      resp.message || 'Access denied.'
+    );
+    return;
+  }
         if (resp.status) {
           // this.resetForm();
           this.patchValues(resp.data);
@@ -2342,11 +2355,15 @@ get isSuspended() : boolean {
     )
   }
 private loadMasterJobDetails(masterJobSid: number): void {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
   const payload = {
     screenName : 'Master Job',
-    masterJobSid : masterJobSid
+    masterJobSid : masterJobSid,
+    CompanyMasterSid,
+    BranchMasterSid
   }
-  this.operationService.getMasterJobById(masterJobSid).subscribe({
+  this.operationService.getMasterJobById({masterJobSid,CompanyMasterSid,BranchMasterSid}).subscribe({
     next: (response: any) => {
       if (response.status && response.data) {
         const masterJobData = response.data;

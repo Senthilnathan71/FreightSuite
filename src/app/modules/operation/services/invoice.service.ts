@@ -18,8 +18,8 @@ export class InvoiceService {
     }
 
 
-    getInvoiceById(VoucherHeaderSid: number) {
-        return this.http.get<{ data: any }>(`invoice/fetch/${VoucherHeaderSid}`).pipe(
+    getInvoiceById(payload: any) {
+        return this.http.post<{ data: any }>(`invoice/fetch`,payload).pipe(
             map((resp) => {
                 return resp;
             })

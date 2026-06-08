@@ -1197,7 +1197,14 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   loadInvoiceById(id: number) {
-    this.invoiceService.getInvoiceById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      VoucherHeaderSid: id,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.invoiceService.getInvoiceById(payload).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           this.destroy$.next();
@@ -1237,7 +1244,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           }, 0);
         } else {
           this.spinner.hide();
-          this.appSettingService.showError(resp.message);
+          this.appSettingService.showError(resp.message || 'Access denied.');
           // this.router.navigate(['operation/invoice/list']);
         }
       },

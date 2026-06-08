@@ -1537,9 +1537,13 @@ onETDDateSelect(): void {
   loadMasterJobData(masterJobSid: number): void {
     this.isLoading = true;
     this.spinner.show();
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const payload = {
       screenName: 'Master Job',
-      MasterJobSid: masterJobSid
+      MasterJobSid: masterJobSid,
+      CompanyMasterSid,
+      BranchMasterSid
     }
     forkJoin({
       masterJob: this.operationService.getMasterJobById(payload)
@@ -1570,6 +1574,9 @@ onETDDateSelect(): void {
           });
           this.loadLinkedMasterJobNumber(data?.others?.[0]?.ImportMasterJobSid || null);
         }
+        else {
+          this.appSettingsService.showError(responses.message || 'Access denied.');
+        }
 
         this.isLoading = false;
         this.spinner.hide();
@@ -1593,9 +1600,13 @@ onETDDateSelect(): void {
       return;
     }
 
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentCompany?.BranchMasterSid;
     this.operationService.getMasterJobById({
       MasterJobSid: importMasterJobSid,
-      screenName: 'Master Job'
+      screenName: 'Master Job',
+      CompanyMasterSid,
+      BranchMasterSid
     }).subscribe({
       next: (response: any) => {
         linkedControl?.setValue(response?.data?.MasterJobNumber || '', { emitEvent: false });
@@ -4079,11 +4090,22 @@ onETDDateSelect(): void {
   loadedHouses: any[] = [];
 
   loadAllHouses() {
+    const payload = {
+      HouseJobSid: this.transhipmentHouseJobSids,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid
+    }
     this.loadedHouses = [];
 
     this.transhipmentHouseJobSids.forEach(id => {
-      this.operationService.getHouseJobById(id).subscribe((resp: any) => {
+      this.operationService.getHouseJobById(payload).subscribe((resp: any) => {
         if (resp.status && resp.data) {
+          if (resp && resp.status === false) {
+    this.appSettingService.showError(
+      resp.message || 'Access denied.'
+    );
+    return;
+  }
           // Add deduplication check to prevent duplicate house jobs
           const alreadyExists = this.loadedHouses.some(
             house => house.HouseJobSid === resp.data.HouseJobSid

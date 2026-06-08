@@ -485,7 +485,12 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
   
 
   getCustomerById(CustomerMasterSid: number) {
-    this.operationService.getCustomerById(CustomerMasterSid).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CustomerMasterSid,
+      CompanyMasterSid
+    }
+    this.operationService.getCustomerById(payload).subscribe({
       next: (resp: any) => {
         if (resp.status && resp.data && resp.data.length > 0) {
           this.customerData = resp.data[0];
@@ -549,7 +554,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
           }
           this.scheduleDirtyTrackingSnapshot();
         } else {
-          console.warn('Empty customer response:', resp);
+          this.appSettingService.showError(resp.message);
         }
       },
       error: (err) => {

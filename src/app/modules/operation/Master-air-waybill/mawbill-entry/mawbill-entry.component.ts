@@ -1380,9 +1380,13 @@ loadMawbStock(data: any): void {
   loadMasterJobData(masterJobSid: number): void {
       this.isSaving = true;
       this.spinner.show();
+      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+      const BranchMasterSid = this.currentBranch?.BranchMasterSid;
       const payload = {
         screenName : 'Master Air Waybill',
-        MasterJobSid : masterJobSid
+        MasterJobSid : masterJobSid,
+        CompanyMasterSid,
+        BranchMasterSid
       }
     forkJoin({
       masterJob: this.operationService.getMasterJobById(payload)
@@ -1421,6 +1425,8 @@ loadMawbStock(data: any): void {
          setTimeout(() => {
           this.loadMawbStock(data);
         }, 1000);
+        } else {
+          this.appSettingsService.showError(response.message || 'Access denied.');
         }
           this.resetDirtyState();
           this.logMawbDebug('loadMasterJobData:afterReset', {
@@ -1448,10 +1454,13 @@ loadMawbStock(data: any): void {
       linkedControl?.setValue('');
       return;
     }
-
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentCompany?.BranchMasterSid;
     this.operationService.getMasterJobById({
       MasterJobSid: importMasterJobSid,
-      screenName: 'Master Air Waybill'
+      screenName: 'Master Air Waybill',
+      CompanyMasterSid,
+      BranchMasterSid
     }).subscribe({
       next: (response: any) => {
         linkedControl?.setValue(response?.data?.MasterJobNumber || '');

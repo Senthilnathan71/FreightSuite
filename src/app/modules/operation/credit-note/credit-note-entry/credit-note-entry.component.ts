@@ -1466,7 +1466,14 @@ export class CreditNoteEntryComponent {
   }
 
   loadCreditNoteById(id: number) {
-    this.operationService.getCreditNoteById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      VoucherHeaderSid: id,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.operationService.getCreditNoteById(payload).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           this.destroy$.next();
@@ -1510,7 +1517,7 @@ export class CreditNoteEntryComponent {
           }, 0);
         } else {
           this.spinner.hide();
-          this.appSettingService.showError('Error loading creditNoteData');
+          this.appSettingService.showError(resp.message);
         }
       },
       error: (err) => {

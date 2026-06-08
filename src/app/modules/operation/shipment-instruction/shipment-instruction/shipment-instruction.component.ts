@@ -338,10 +338,13 @@ export class ShipmentInstructionComponent {
       console.warn('MasterJobSid not found for NoofOriginal lookup', houseJobData);
       return;
     }
-
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     this.operationService.getMasterJobById({
       screenName: 'Master Job',
-      MasterJobSid: masterJobSid
+      MasterJobSid: masterJobSid,
+      CompanyMasterSid,
+      BranchMasterSid
     }).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp?.data) {
