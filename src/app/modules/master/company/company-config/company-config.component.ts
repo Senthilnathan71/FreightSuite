@@ -48,6 +48,7 @@ const CONFIG_TEMPLATES: ConfigTemplate[] = [
   { configurationName: 'ReceiptAllowtoprintbeforePosting', displayName: 'Receipt Allow to print before posting', configType: 'boolean' },
   { configurationName: 'QuoteApproval', displayName: 'Quote Approval', configType: 'boolean'},
   { configurationName: 'ShowCargowithContainer', displayName: 'Show Cargo with Container(Invoice Print)', configType: 'boolean'},
+  { configurationName: 'EnableReportColumnCustomization', displayName: 'Enable Report Column Customization (New report view)', configType: 'boolean'},
 ];
 
 @Component({
