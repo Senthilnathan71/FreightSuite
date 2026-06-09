@@ -482,8 +482,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         this.masterJobSid = idParam ? +idParam : null;
         if (this.masterJobSid) {
           this.isEditMode = true;
-            this.masterJobForm.get('POL')?.disable();
-            this.masterJobForm.get('POD')?.disable();
             this.masterJobForm.get('DepartmentMasterSid')?.disable();
           this.loadMasterJobData(this.masterJobSid);
         }
@@ -1971,8 +1969,6 @@ onETDDateSelect(): void {
     if (this.isEditMode) {
       this.masterJobForm.get('DepartmentMasterSid')?.disable({ emitEvent: false });
       this.masterJobForm.get('MasterJobDate')?.disable({ emitEvent: false });
-      this.masterJobForm.get('POL')?.disable({ emitEvent: false });
-      this.masterJobForm.get('POD')?.disable({ emitEvent: false });
     }
 
     if (this.masterJobForm.get('Coload')?.value !== true) {
@@ -4090,14 +4086,15 @@ onETDDateSelect(): void {
   loadedHouses: any[] = [];
 
   loadAllHouses() {
-    const payload = {
-      HouseJobSid: this.transhipmentHouseJobSids,
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid
-    }
     this.loadedHouses = [];
 
     this.transhipmentHouseJobSids.forEach(id => {
+      const payload = {
+        HouseJobSid: id,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid
+      };
+
       this.operationService.getHouseJobById(payload).subscribe((resp: any) => {
         if (resp.status && resp.data) {
           if (resp && resp.status === false) {

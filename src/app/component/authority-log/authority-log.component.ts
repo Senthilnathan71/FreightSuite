@@ -16,6 +16,8 @@ export class AuthorityLogComponent implements OnInit {
   @Input() menuMasterSid: number;
   @Input() CompanyMasterSid: number;
   @Input() BranchMasterSid: number;
+  @Input() DepartmentMasterSid: number;
+  @Input() DepartmentMaster: string;
 
   isApproved = false;
   approvalLogs: any[] = [];
@@ -32,7 +34,9 @@ export class AuthorityLogComponent implements OnInit {
       this.menuMasterSid,
       this.documentSid,
       this.CompanyMasterSid,
-      this.BranchMasterSid
+      this.BranchMasterSid,
+      this.DepartmentMasterSid,
+      this.DepartmentMaster
     )
       .subscribe((resp : any) => {
         if (resp.status) {

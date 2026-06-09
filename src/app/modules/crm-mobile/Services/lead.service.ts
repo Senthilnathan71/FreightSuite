@@ -821,7 +821,9 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     menuMasterSid: number,
     documentSid: number,
     companyMasterSid?: number,
-    branchMasterSid?: number
+    branchMasterSid?: number,
+    departmentMasterSid?: number,
+    departmentMaster?: string
   ) {
     const params: any = {};
     if (companyMasterSid) {
@@ -829,6 +831,12 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     }
     if (branchMasterSid) {
       params.BranchMasterSid = branchMasterSid;
+    }
+    if (departmentMasterSid) {
+      params.DepartmentMasterSid = departmentMasterSid;
+    }
+    if (departmentMaster) {
+      params.DepartmentMaster = departmentMaster;
     }
 
     return this.http.get<{ data: any }>(`authority/approval-status/${menuMasterSid}/${documentSid}`, { params }).pipe(

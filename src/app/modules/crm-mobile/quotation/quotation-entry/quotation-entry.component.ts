@@ -164,6 +164,11 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     totalNumberOfAuthorizers: 0,
     FinalAuthority: false
   }
+  authorizationRequired = false;
+  routeAuthorizationDetails: { [routeIndex: number]: any } = {};
+  routeAuthorizationRequired: { [routeIndex: number]: boolean } = {};
+  routeAuthorizationChecked: { [routeIndex: number]: boolean } = {};
+  routeAuthorizationMessages: { [routeIndex: number]: { message: string; type: 'info' | 'warning' | 'success' } } = {};
   rateLock: boolean = false;
   rateLockConfig: any;
   quoteAutoApprovalEnabled: boolean = false;
@@ -1190,27 +1195,104 @@ private mapQuotationCargoForBooking(cargo: any): any {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
   }
+
+  private getQuotationMenuMasterSid(): number {
+    const menuCandidates = [
+      Number(sessionStorage.getItem('currentMenuId') || 0),
+      Number(this.currentMenuId || 0),
+      Number(this.MenuMasterSid || 0),
+      Number(this.sideBarService.syncMenuIdBeforeSubmit('Quotation') || 0)
+    ];
+
+    return menuCandidates.find(menuSid => menuSid > 0) || 0;
+  }
   
   checkAuthorisedPerson(UserMasterSid, QuoteHeaderSid) {
-    const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    const currentMenuId = this.getQuotationMenuMasterSid();
+    this.currentMenuId = currentMenuId;
+    this.MenuMasterSid = currentMenuId || this.MenuMasterSid;
     if (
       !UserMasterSid ||
-      !QuoteHeaderSid ||
       !currentMenuId ||
       !this.currentCompany?.CompanyMasterSid ||
       !this.currentBranch?.BranchMasterSid
     ) {
+      this.authorizationRequired = false;
+      this.clearAuthorizationMessage();
       return;
     }
+
+    const routeIndexes = this.quoteRoutes?.length
+      ? this.quoteRoutes.controls.map((_, index) => index)
+      : [Number.isInteger(this.currentRouteIndex) ? this.currentRouteIndex : 0];
+
+    this.routeAuthorizationDetails = {};
+    this.routeAuthorizationRequired = {};
+    this.routeAuthorizationChecked = {};
+    this.routeAuthorizationMessages = {};
+    this.authorizationRequired = false;
+    this.clearAuthorizationMessage();
+
+    routeIndexes.forEach(routeIndex => {
+      this.checkAuthorisedPersonForRoute(UserMasterSid, QuoteHeaderSid, currentMenuId, routeIndex);
+    });
+  }
+
+  private refreshAuthorizationForRoute(routeIndex: number): void {
+    const currentMenuId = this.getQuotationMenuMasterSid();
+    this.currentMenuId = currentMenuId;
+    this.MenuMasterSid = currentMenuId || this.MenuMasterSid;
+    if (
+      !this.userData?.UserMasterSid ||
+      !currentMenuId ||
+      !this.currentCompany?.CompanyMasterSid ||
+      !this.currentBranch?.BranchMasterSid
+    ) {
+      this.routeAuthorizationDetails[routeIndex] = this.getDefaultAuthorizerDetails();
+      this.routeAuthorizationRequired[routeIndex] = false;
+      this.routeAuthorizationChecked[routeIndex] = true;
+      this.routeAuthorizationMessages[routeIndex] = { message: '', type: 'info' };
+      this.authorizationRequired = Object.values(this.routeAuthorizationRequired).some(Boolean);
+      this.applyAuthorizationControlState();
+      return;
+    }
+
+    this.checkAuthorisedPersonForRoute(
+      this.userData.UserMasterSid,
+      this.QuoteHeaderSid || null,
+      currentMenuId,
+      routeIndex
+    );
+  }
+
+  private checkAuthorisedPersonForRoute(UserMasterSid, QuoteHeaderSid, currentMenuId: number, routeIndex: number): void {
+    const authorizationDepartment = this.getAuthorizationDepartment(routeIndex);
+    if (!authorizationDepartment.DepartmentMasterSid) {
+      this.routeAuthorizationDetails[routeIndex] = this.getDefaultAuthorizerDetails();
+      this.routeAuthorizationRequired[routeIndex] = false;
+      this.routeAuthorizationChecked[routeIndex] = true;
+      this.routeAuthorizationMessages[routeIndex] = { message: '', type: 'info' };
+      this.authorizationRequired = Object.values(this.routeAuthorizationRequired).some(Boolean);
+      this.applyAuthorizationControlState();
+      return;
+    }
+
+    this.routeAuthorizationDetails[routeIndex] = this.getDefaultAuthorizerDetails();
+    this.routeAuthorizationRequired[routeIndex] = true;
+    this.routeAuthorizationChecked[routeIndex] = false;
+    this.routeAuthorizationMessages[routeIndex] = { message: '', type: 'info' };
+    this.authorizationRequired = Object.values(this.routeAuthorizationRequired).some(Boolean);
+    this.applyAuthorizationControlState();
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       MenuMasterSid: currentMenuId,
       UserMasterSid: UserMasterSid,
-      DocumentSid: QuoteHeaderSid
+      DocumentSid: QuoteHeaderSid || null,
+      DepartmentMasterSid: authorizationDepartment.DepartmentMasterSid,
+      DepartmentMaster: authorizationDepartment.departmentName
     }
-
-    
 
     // if(this.quotationApproved){
     //   return;
@@ -1223,8 +1305,8 @@ private mapQuotationCargoForBooking(cargo: any): any {
         const totalNumberOfAuthorizers = Number(data?.totalNumberOfAuthorizers || 0);
         this.isAuthorizedUser = !!data?.canAuthorize;
         const currentUserId = this.userData?.userName || this.userData?.UserMasterSid || 'NA';
-        const hasPendingRouteApproval = this.hasPendingCarrierApproval();
-        this.authorizerDetails = {
+        const hasPendingRouteApproval = this.hasPendingCarrierApproval(routeIndex);
+        const routeAuthorizerDetails = {
           isAuthorizer : !!data?.canAuthorize,
           isAlreadyApproved : !!data?.alreadyApproved,
           canAuthorize : !!data?.canAuthorize && (!data?.alreadyApproved || hasPendingRouteApproval),
@@ -1234,58 +1316,189 @@ private mapQuotationCargoForBooking(cargo: any): any {
           totalNumberOfAuthorizers,
           FinalAuthority: data?.FinalAuthority === 'Y' || data?.FinalAuthority === true || data?.isFinalAuthorizer === true
         }
+        this.routeAuthorizationDetails[routeIndex] = routeAuthorizerDetails;
+        if (routeIndex === 0) {
+          this.authorizerDetails = routeAuthorizerDetails;
+        }
 
         const hasAuthorizationSetup =
           totalNumberOfAuthorizers > 0 ||
           !!data?.canAuthorize ||
           !!data?.AuthorityDetailSid ||
           !!data?.AuthorityLevel;
+        this.routeAuthorizationRequired[routeIndex] = hasAuthorizationSetup;
+        this.routeAuthorizationChecked[routeIndex] = true;
+        this.authorizationRequired = Object.values(this.routeAuthorizationRequired).some(Boolean);
 
-        if (!hasAuthorizationSetup) {
-          this.authorizationMessage = 'No authorization setup found for Quotation. Please configure Authorization Master.';
-          this.authorizationMessageType = 'warning';
-        } else if (!this.isAuthorizedUser) {
-          this.authorizationMessage = 'You are not authorized to approve this quotation.';
-          this.authorizationMessageType = 'warning';
-        } else if (data?.alreadyApproved && hasPendingRouteApproval) {
-          this.authorizationMessage = 'You have already approved another route. Pending routes can still be approved.';
-          this.authorizationMessageType = 'info';
-        } else if (data?.alreadyApproved) {
-          this.authorizationMessage = 'You have already approved this quotation.';
-          this.authorizationMessageType = 'info';
-        } else {
-          this.authorizationMessage = 'You can approve this quotation.';
-          this.authorizationMessageType = 'success';
+        this.routeAuthorizationMessages[routeIndex] = { message: '', type: 'info' };
+        if (
+          hasAuthorizationSetup &&
+          !routeAuthorizerDetails.canAuthorize &&
+          !this.shouldHideAuthorizationWarningForApprovedQuote(routeIndex)
+        ) {
+          this.routeAuthorizationMessages[routeIndex] = {
+            message: 'You are not authorized to approve this quotation.',
+            type: 'warning'
+          };
         }
 
+        this.applyAuthorizationControlState();
+      },
+      () => {
+        this.routeAuthorizationDetails[routeIndex] = this.getDefaultAuthorizerDetails();
+        this.routeAuthorizationRequired[routeIndex] = false;
+        this.routeAuthorizationChecked[routeIndex] = true;
+        this.routeAuthorizationMessages[routeIndex] = { message: '', type: 'info' };
+        this.authorizationRequired = Object.values(this.routeAuthorizationRequired).some(Boolean);
         this.applyAuthorizationControlState();
       }
     )
   }
 
-  isFinalAuthorizer(): boolean {
-    const level = Number(this.authorizerDetails?.AuthorityLevel || 0);
-    const total = Number(this.authorizerDetails?.totalNumberOfAuthorizers || 0);
-    return !!this.authorizerDetails?.FinalAuthority || (level > 0 && total > 0 && level === total);
+  private getDefaultAuthorizerDetails(): any {
+    return {
+      isAuthorizer: false,
+      isAlreadyApproved: false,
+      canAuthorize: false,
+      AuthorityLevel: null,
+      AuthorityDetailSid: null,
+      ApprovedBy: this.getDefaultApprovedByText(),
+      totalNumberOfAuthorizers: 0,
+      FinalAuthority: false
+    };
   }
 
-  getCurrentAuthorizerLevelText(): string {
-    const level = Number(this.authorizerDetails?.AuthorityLevel || 0);
-    const total = Number(this.authorizerDetails?.totalNumberOfAuthorizers || 0);
+  private clearAuthorizationMessage(): void {
+    this.authorizationMessage = '';
+    this.authorizationMessageType = 'info';
+  }
 
-    if (!this.authorizerDetails?.isAuthorizer || !level) {
+  private getAuthorizationDepartment(routeIndex: number = Number.isInteger(this.currentRouteIndex) ? this.currentRouteIndex : 0): { DepartmentMasterSid: number | null; departmentName: string } {
+    const routeForm = this.quoteRoutes?.at(routeIndex) as FormGroup;
+    const formDepartmentSid = routeForm?.get('DepartmentMasterSid')?.value;
+    const savedDepartmentSid =
+      this.quotationData?.quoteRoute?.[routeIndex]?.DepartmentMasterSid ??
+      this.quotationData?.quoteRoute?.[0]?.DepartmentMasterSid ??
+      null;
+    const DepartmentMasterSid = Number(formDepartmentSid || savedDepartmentSid) || null;
+
+    return {
+      DepartmentMasterSid,
+      departmentName: this.getDepartmentName(DepartmentMasterSid) || ''
+    };
+  }
+
+  private shouldHideAuthorizationWarningForApprovedQuote(routeIndex?: number): boolean {
+    return Number.isInteger(routeIndex)
+      ? this.routeHasApprovedCarrier(routeIndex)
+      : this.hasAnyApprovedCarrier();
+  }
+
+  private hasAnyApprovedCarrier(): boolean {
+    const formHasApprovedCarrier = this.quoteRoutes?.controls?.some((_, routeIndex: number) =>
+      this.quoteCarriers(routeIndex)?.controls?.some((carrier: FormGroup) =>
+        carrier.get('authorizerStatus')?.value === 'Approved' ||
+        carrier.get('ApprovalStatus')?.value === 'Approved'
+      )
+    );
+
+    const savedHasApprovedCarrier = this.quotationData?.quoteRoute?.some((route: any) =>
+      (route?.quoteCarrier || []).some((carrier: any) => carrier?.ApprovalStatus === 'Approved')
+    );
+
+    return !!formHasApprovedCarrier || !!savedHasApprovedCarrier;
+  }
+
+  private getRouteAuthorizerDetails(routeIndex?: number): any {
+    return Number.isInteger(routeIndex) && this.routeAuthorizationDetails[routeIndex] !== undefined
+      ? this.routeAuthorizationDetails[routeIndex]
+      : this.authorizerDetails;
+  }
+
+  isFinalAuthorizer(routeIndex?: number): boolean {
+    const details = this.getRouteAuthorizerDetails(routeIndex);
+    const level = Number(details?.AuthorityLevel || 0);
+    const total = Number(details?.totalNumberOfAuthorizers || 0);
+    return !!details?.FinalAuthority || (level > 0 && total > 0 && level === total);
+  }
+
+  getCurrentAuthorizerLevelText(routeIndex?: number): string {
+    const details = this.getRouteAuthorizerDetails(routeIndex);
+    const level = Number(details?.AuthorityLevel || 0);
+    const total = Number(details?.totalNumberOfAuthorizers || 0);
+
+    if (!details?.isAuthorizer || !level) {
       return '';
     }
 
-    return this.isFinalAuthorizer()
+    return this.isFinalAuthorizer(routeIndex)
       ? `Final approver - Level ${level}${total ? ' of ' + total : ''}`
       : `Approver Level ${level}${total ? ' of ' + total : ''}`;
   }
 
-  getApprovalStatusOptions(): any[] {
-    return this.isFinalAuthorizer()
+  getApprovalStatusOptions(routeIndex?: number): any[] {
+    if (!this.isAuthorizationRequiredForRoute(routeIndex)) {
+      return this.approvalStatus;
+    }
+
+    return this.isFinalAuthorizer(routeIndex)
       ? this.finalApprovalStatusOptions
       : this.nonFinalApprovalStatusOptions;
+  }
+
+  private isAuthorizationRequiredForRoute(routeIndex?: number): boolean {
+    if (Number.isInteger(routeIndex)) {
+      if (this.routeAuthorizationRequired[routeIndex] !== undefined) {
+        return this.routeAuthorizationRequired[routeIndex];
+      }
+
+      return !!this.getAuthorizationDepartment(routeIndex).DepartmentMasterSid;
+    }
+
+    return this.authorizationRequired;
+  }
+
+  canEditAuthorizationStatus(routeIndex?: number): boolean {
+    const details = this.getRouteAuthorizerDetails(routeIndex);
+    return !!details?.canAuthorize || !this.isAuthorizationRequiredForRoute(routeIndex);
+  }
+
+  getAuthorizationMessage(routeIndex: number): string {
+    const configuredMessage = this.routeAuthorizationMessages[routeIndex]?.message || '';
+    if (configuredMessage) {
+      return configuredMessage;
+    }
+
+    const details = this.getRouteAuthorizerDetails(routeIndex);
+    if (
+      this.routeAuthorizationChecked[routeIndex] &&
+      this.isAuthorizationRequiredForRoute(routeIndex) &&
+      !details?.canAuthorize &&
+      !this.shouldHideAuthorizationWarningForApprovedQuote(routeIndex)
+    ) {
+      return 'You are not authorized to approve this quotation.';
+    }
+
+    return '';
+  }
+
+  getAuthorizationMessageType(routeIndex: number): 'info' | 'warning' | 'success' {
+    return this.routeAuthorizationMessages[routeIndex]?.type || 'info';
+  }
+
+  shouldShowAuthorizationMessage(routeIndex: number): boolean {
+    if (!this.routeAuthorizationChecked[routeIndex]) {
+      return false;
+    }
+
+    if (this.shouldHideAuthorizationWarningForApprovedQuote(routeIndex)) {
+      return false;
+    }
+
+    const details = this.getRouteAuthorizerDetails(routeIndex);
+    return this.isAuthorizationRequiredForRoute(routeIndex) &&
+      !details?.canAuthorize &&
+      !!this.getAuthorizationMessage(routeIndex);
   }
 
   trackApprovalStatusByValue(itemOrIndex: any, maybeItem?: any): string {
@@ -1310,15 +1523,20 @@ private mapQuotationCargoForBooking(cargo: any): any {
     return typeof status === 'string' ? status : status?.value;
   }
 
-  private hasPendingCarrierApproval(): boolean {
-    return this.quoteRoutes.controls.some((route: FormGroup, routeIndex: number) => {
-      if (this.routeHasApprovedCarrier(routeIndex) || this.isBookingLockedForRoute(routeIndex)) {
+  private hasPendingCarrierApproval(routeIndex?: number): boolean {
+    const routeControls = Number.isInteger(routeIndex)
+      ? [this.quoteRoutes.at(routeIndex)]
+      : this.quoteRoutes.controls;
+
+    return routeControls.some((route: FormGroup, localIndex: number) => {
+      const actualRouteIndex = Number.isInteger(routeIndex) ? routeIndex : localIndex;
+      if (this.routeHasApprovedCarrier(actualRouteIndex) || this.isBookingLockedForRoute(actualRouteIndex)) {
         return false;
       }
 
-      const carrierArr = this.quoteCarriers(routeIndex);
+      const carrierArr = this.quoteCarriers(actualRouteIndex);
       return carrierArr.controls.some((carrier: FormGroup, carrierIndex: number) => {
-        if (this.isCarrierApprovalLocked(routeIndex, carrierIndex)) {
+        if (this.isCarrierApprovalLocked(actualRouteIndex, carrierIndex)) {
           return false;
         }
 
@@ -1338,7 +1556,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
         if (!statusCtrl) return;
 
         const canEditApproval =
-          this.authorizerDetails.canAuthorize &&
+          this.canEditAuthorizationStatus(routeIndex) &&
           !routeLocked &&
           !this.isCarrierApprovalLocked(routeIndex, carrierIndex);
 
@@ -1349,6 +1567,8 @@ private mapQuotationCargoForBooking(cargo: any): any {
         }
       });
     });
+
+    this.syncApprovedByControlState();
   }
 
   // SECTION4 - FORM AND FORM ARRAY RELATION
@@ -1599,6 +1819,9 @@ private mapQuotationCargoForBooking(cargo: any): any {
       this.setOrResetWeightError(routeForm);
     });
     this.setupDynamicQtyUpdates(routeIndex);
+    routeForm.get('DepartmentMasterSid')?.valueChanges
+      .pipe(debounceTime(100), distinctUntilChanged())
+      .subscribe(() => this.refreshAuthorizationForRoute(routeIndex));
   }
 
   setOrResetWeightError(formGroup: FormGroup) {
@@ -1715,12 +1938,13 @@ private mapQuotationCargoForBooking(cargo: any): any {
   approvedByControl?.clearValidators();
   remarksControl?.clearValidators();
   
-  if (status === 'Approved' || status === 'Rejected') {
+  if (status === 'Approved') {
     approvedByControl?.setValidators([Validators.required]);
-    if (!approvedByControl?.value && this.authorizerDetails?.ApprovedBy) {
-      approvedByControl?.setValue(this.authorizerDetails.ApprovedBy, { emitEvent: false });
+    const approvedByText = this.getDefaultApprovedByText();
+    if (!approvedByControl?.value && approvedByText) {
+      approvedByControl?.setValue(approvedByText, { emitEvent: false });
     }
-    approvedByControl?.disable({ emitEvent: false });
+    approvedByControl?.enable({ emitEvent: false });
   } else {
     approvedByControl?.setValue('', { emitEvent: false });
     approvedByControl?.disable({ emitEvent: false });
@@ -1739,6 +1963,36 @@ private mapQuotationCargoForBooking(cargo: any): any {
   remarksControl?.updateValueAndValidity();
   form.updateValueAndValidity();
 };
+
+private getDefaultApprovedByText(): string {
+  return this.authorizerDetails?.ApprovedBy ||
+    this.userData?.userName ||
+    this.userData?.userEmail ||
+    '';
+}
+
+private syncApprovedByControlState(): void {
+  this.quoteRoutes?.controls?.forEach((_, routeIndex: number) => {
+    this.quoteCarriers(routeIndex)?.controls?.forEach((carrier: FormGroup) => {
+      const approvedByControl = carrier.get('ApprovedBy');
+      if (!approvedByControl) return;
+
+      const status = carrier.get('authorizerStatus')?.value;
+      if (status === 'Approved') {
+        approvedByControl.setValidators([Validators.required]);
+        if (!approvedByControl.value) {
+          approvedByControl.setValue(this.getDefaultApprovedByText(), { emitEvent: false });
+        }
+        approvedByControl.enable({ emitEvent: false });
+      } else {
+        approvedByControl.clearValidators();
+        approvedByControl.disable({ emitEvent: false });
+      }
+
+      approvedByControl.updateValueAndValidity({ emitEvent: false });
+    });
+  });
+}
 
   handleCarrierChange(carrier: any, routeIndex: number, carrierIndex: number) {
     const routeForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
@@ -2697,6 +2951,8 @@ isRateLockDisabled(): boolean {
       
       this.applyBookingLockForRoute(routeIndex, route);
     })
+
+    this.checkAuthorisedPerson(this.userData?.UserMasterSid, this.QuoteHeaderSid);
     
     this.disableNonEditFields();
     this.applyEditModeFieldLocks();
@@ -2992,11 +3248,16 @@ isRateLockDisabled(): boolean {
     });
   }
   private getCarrierApprovalChanges(): any[] {
-    if (!this.isEditMode || !this.authorizerDetails?.canAuthorize) {
+    if (!this.isEditMode) {
       return [];
     }
 
     return this.quoteRoutes.controls.flatMap((routeCtrl: FormGroup, routeIndex: number) => {
+      const routeAuthorizerDetails = this.getRouteAuthorizerDetails(routeIndex);
+      if (!routeAuthorizerDetails?.canAuthorize) {
+        return [];
+      }
+
       const routeValue = routeCtrl.getRawValue();
       const savedRoute = this.getSavedRouteBySid(routeValue?.QuoteRouteSid) || this.quotationData?.quoteRoute?.[routeIndex];
       const savedCarriers = savedRoute?.quoteCarrier || [];
@@ -3022,8 +3283,10 @@ isRateLockDisabled(): boolean {
             QuoteRouteSid: routeValue?.QuoteRouteSid || null,
             QuoteCarrierSid: carrierValue?.QuoteCarrierSid || null,
             ApprovalStatus: currentStatus,
-            ApprovedBy: carrierValue?.ApprovedBy || this.authorizerDetails?.ApprovedBy,
+            ApprovedBy: carrierValue?.ApprovedBy || routeAuthorizerDetails?.ApprovedBy,
             Remarks: carrierValue?.authorizerRemarks || '',
+            AuthorityDetailSid: routeAuthorizerDetails?.AuthorityDetailSid || null,
+            routeIndex,
           };
         })
         .filter(Boolean);
@@ -3037,9 +3300,11 @@ isRateLockDisabled(): boolean {
     return;
   }
 
-  const canLoginUserAuthorize = this.authorizerDetails.canAuthorize;
   const approvalChanges = this.getCarrierApprovalChanges();
-  const hasApprovalAction = canLoginUserAuthorize && approvalChanges.length > 0;
+  const approvalAuthorizerDetails = approvalChanges.length
+    ? this.getRouteAuthorizerDetails(approvalChanges[0]?.routeIndex)
+    : this.authorizerDetails;
+  const hasApprovalAction = approvalChanges.length > 0;
   if (this.isEditMode && !this.hasUnsavedChanges() && !hasApprovalAction) {
     this.appSettingService.showWarning("No changes to save");
     if (resolve) resolve(false);
@@ -3060,7 +3325,7 @@ isRateLockDisabled(): boolean {
       const remarks = carrier.get('authorizerRemarks')?.value;
       
       // Manual validation check
-      if ((status === 'Approved' || status === 'Rejected') && !approvedBy?.trim()) {
+      if (status === 'Approved' && !approvedBy?.trim()) {
         hasCarrierValidationErrors = true;
         this.appSettingService.showWarning(`Approved By is required`);
       }
@@ -3173,9 +3438,9 @@ isRateLockDisabled(): boolean {
       status: formValue.status === "Active" ? 'A' : 'S',
       authDetails : {
           canAuthorize : hasApprovalAction,
-          AuthorityDetailSid :  this.authorizerDetails?.AuthorityDetailSid || null,
+          AuthorityDetailSid : approvalAuthorizerDetails?.AuthorityDetailSid || null,
           ApprovalStatus : approvalChanges[0]?.ApprovalStatus || null,
-          ApprovedBy : this.authorizerDetails?.ApprovedBy,
+          ApprovedBy : approvalAuthorizerDetails?.ApprovedBy,
           approvalTargets: approvalChanges
       },
 
@@ -3663,6 +3928,7 @@ isRateLockDisabled(): boolean {
       this.handleValidationOnDept(routeIndex, 'LCL');
       this.quoteCargo(routeIndex).clear();
       this.refreshRoutePortFilters(routeIndex);
+      this.refreshAuthorizationForRoute(routeIndex);
       return;
     }
     const deptType = dept?.departmentType;
@@ -3681,6 +3947,7 @@ isRateLockDisabled(): boolean {
     })
 
     this.filterChargesBySegment(routeIndex, selectedFCLLCL);
+    this.refreshAuthorizationForRoute(routeIndex);
     if (selectedCargoMode === 'FCL') {
       const cargoArray = this.quoteCargo(routeIndex);
       if (cargoArray.length === 0) {
@@ -5974,6 +6241,9 @@ ${this.userData.userName}`;
     modalRef.componentInstance.documentSid = DocumentSid;
     modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const authorizationDepartment = this.getAuthorizationDepartment();
+    modalRef.componentInstance.DepartmentMasterSid = authorizationDepartment.DepartmentMasterSid;
+    modalRef.componentInstance.DepartmentMaster = authorizationDepartment.departmentName;
   }
 
   openEDoc() {
@@ -6430,8 +6700,8 @@ ${this.userData.userName}`;
   //   })
   // }
 onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status: any) {
-  if (!this.authorizerDetails.canAuthorize) {
-    this.appSettingService.showWarning(this.authorizationMessage || 'You are not authorized to approve this quotation.');
+  if (!this.canEditAuthorizationStatus(routeIndex)) {
+    this.appSettingService.showWarning(this.getAuthorizationMessage(routeIndex) || 'You are not authorized to approve this quotation.');
     this.applyAuthorizationControlState();
     return;
   }
@@ -6450,7 +6720,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
     return;
   }
 
-  if (selectedStatus === 'Approved' && !this.isFinalAuthorizer()) {
+  if (this.isAuthorizationRequiredForRoute(routeIndex) && selectedStatus === 'Approved' && !this.isFinalAuthorizer(routeIndex)) {
     const statusCtrl = currentCarrier.get('authorizerStatus');
     const savedStatus = this.getSavedCarrierApprovalStatus(routeIndex, carrierIndex);
     statusCtrl?.setValue(savedStatus === 'Approved' ? 'Pending' : savedStatus, { emitEvent: false });
@@ -6470,7 +6740,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
       if (index === carrierIndex) {
         // Selected carrier - set to Approved
         statusCtrl.setValue('Approved', { emitEvent: false });
-        carrierForm.get('ApprovedBy')?.setValue(this.authorizerDetails.ApprovedBy, { emitEvent: false });
+        carrierForm.get('ApprovedBy')?.setValue(this.getRouteAuthorizerDetails(routeIndex)?.ApprovedBy, { emitEvent: false });
         this.updateCarrierValidationBasedOnStatus(carrierForm);
         this.syncCarrierSelectionState(routeIndex, index);
       } else {
@@ -6502,7 +6772,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
     statusCtrl.setValue(selectedStatus, { emitEvent: false });
   }
   if (selectedStatus === 'Rejected') {
-    currentCarrier.get('ApprovedBy')?.setValue(this.authorizerDetails.ApprovedBy, { emitEvent: false });
+    currentCarrier.get('ApprovedBy')?.setValue(this.getRouteAuthorizerDetails(routeIndex)?.ApprovedBy, { emitEvent: false });
   }
 
   routeForm.get('isRouteApproved')?.setValue(false);
@@ -6588,6 +6858,7 @@ private applyBookingLockForRoute(routeIndex: number, routeData?: any): void {
 
   if (bookingLocked) {
     routeForm?.disable({ emitEvent: false });
+    this.syncApprovedByControlState();
     return;
   }
 
@@ -6615,6 +6886,8 @@ private applyBookingLockForRoute(routeIndex: number, routeData?: any): void {
       this.lockAllRateFields();
     }
   }
+
+  this.syncApprovedByControlState();
 }
 
 private setCarrierControlsDisabled(routeIndex: number, carrierIndex: number, disabled: boolean): void {
@@ -6687,10 +6960,46 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     return  currentStatusName || '';
   }
 
+  shouldShowAuthorityStatusForCarrier(routeIndex: number, carrierIndex: number): boolean {
+    const carrier = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const currentStatus = carrier?.get('authorizerStatus')?.value || 'Pending';
+
+    if (['Approved', 'Rejected', 'Counter'].includes(currentStatus)) {
+      return this.isEditMode;
+    }
+
+    return !this.quoteAutoApprovalEnabled &&
+      !this.shouldHideAuthorizationWarningForApprovedQuote(routeIndex) &&
+      this.routeAuthorizationChecked[routeIndex] &&
+      this.isAuthorizationRequiredForRoute(routeIndex);
+  }
+
   isRequiredInQuoteCarrier(routeIndex:number,carrierIndex:number,ctrl:string){
     const carrier = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
     const control = carrier.get(ctrl);
     return control ? control.hasValidator(Validators.required) : false;
+  }
+
+  canEditApprovedBy(routeIndex: number, carrierIndex: number): boolean {
+    const carrier = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const status = carrier.get('authorizerStatus')?.value;
+    return status === 'Approved' && !this.isCarrierApproved(routeIndex, carrierIndex);
+  }
+
+  getApprovedByValue(routeIndex: number, carrierIndex: number): string {
+    const carrier = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    return carrier.get('ApprovedBy')?.value || '';
+  }
+
+  onApprovedByInput(routeIndex: number, carrierIndex: number, event: Event): void {
+    const carrier = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const control = carrier.get('ApprovedBy');
+    if (!control) return;
+
+    control.setValue((event.target as HTMLInputElement).value, { emitEvent: false });
+    control.markAsDirty();
+    control.markAsTouched();
+    control.updateValueAndValidity({ emitEvent: false });
   }
 
   navigateToCustomers(){
