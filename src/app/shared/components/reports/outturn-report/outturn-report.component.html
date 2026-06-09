@@ -1,0 +1,193 @@
+<ng-container *ngIf="reportData.length > 0; else noRecords">
+    <ng-container *ngFor="let master of reportData; let masterIndex = index">
+        <ng-container *ngFor="let container of master.containers; let containerIndex = index">
+            <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'"
+                [style.page-break-after]="isLastContainer(masterIndex, containerIndex) ? 'auto' : 'always'">
+                <app-print-header></app-print-header>
+
+                <h4 class="text-center fw-bold py-2" style="margin: 0;">
+                    OutTurn Report
+                </h4>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">MBL No</strong>
+                                <p class="ms-1 my-0">: {{ master.mblNo || '' }}</p>
+                            </div>
+                        </aside>
+                        <!-- <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Date</strong>
+                                <p class="ms-1 my-0">: {{ master.masterDate | formatDate }}</p>
+                            </div>
+                        </aside> -->
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Job No</strong>
+                                <p class="ms-1 my-0">: {{ master.masterJobNo || '' }}</p>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Manifest Seal</strong>
+                                <p class="ms-1 my-0">: {{ container.lineSeal || '' }}</p>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Container Seal No</strong>
+                                <p class="ms-1 my-0">: {{ container.customsSeal || container.sealNo || '' }}</p>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Shift</strong>
+                                <p class="ms-1 my-0">: </p>
+                            </div>
+                        </aside>
+                         <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Size</strong>
+                                <p class="ms-1 my-0">: {{ container.containerType || '' }}</p>
+                            </div>
+                        </aside>
+                         <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Origin Agent</strong>
+                                <p class="ms-1 my-0">: {{ container.originAgent || '' }}</p>
+                            </div>
+                        </aside>
+                       
+                    </div>
+
+                    <div class="col-md-6">
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Job Date</strong>
+                                <p class="ms-1 my-0">: {{ master.masterDate | formatDate }}</p>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Container Owner</strong>
+                                <p class="ms-1 my-0">: </p>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Container No</strong>
+                                <p class="ms-1 my-0">: {{ container.containerNo || '' }}</p>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Vessel / Voyage</strong>
+                                <p class="ms-1 my-0">: {{ master.vesselName || container.vesselName || '' }}<span
+                                        *ngIf="master.voyageNo || container.voyageNo">
+                                        / {{ master.voyageNo || container.voyageNo }}
+                                    </span></p>
+                            </div>
+                        </aside>
+                        <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">De-Stuffing Location</strong>
+                                <p class="ms-1 my-0">: {{ container.hblRows?.[0]?.cfs || '' }}</p>
+                            </div>
+                        </aside>
+                         <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Port of Load</strong>
+                                <p class="ms-1 my-0">: {{ container.POL || '' }}</p>
+                            </div>
+                        </aside>
+                         <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">Vessel Arrival</strong>
+                                <p class="ms-1 my-0">: {{ (master.ata || container.ata) | formatDate }}</p>
+                            </div>
+                        </aside>
+                          <aside class="col-md-12">
+                            <div class="d-flex align-items-center my-1">
+                                <strong style="width: 145px;">De-Stuff Date</strong>
+                                <p class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</p>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                        <thead>
+                            <tr class="bg-info" style="white-space: nowrap;">
+                                <th class="bg-transparent text-light text-center">SNo</th>
+                                <th class="bg-transparent text-light text-center">HBL No</th>
+                                <th class="bg-transparent text-light text-center">Manifested Marks & No</th>
+                                <th class="bg-transparent text-light text-center">Actual Marks & Nos</th>
+                                <th class="bg-transparent text-light text-center">Qty Mnfst</th>
+                                <th class="bg-transparent text-light text-center">Qty Lnd</th>
+                                <th class="bg-transparent text-light text-center">Short</th>
+                                <th class="bg-transparent text-light text-center">Xcess</th>
+                                <th class="bg-transparent text-light text-center">Condition</th>
+                                <th class="bg-transparent text-light text-center">Pkg Type</th>
+                                <th class="bg-transparent text-light text-center">Gross Wt</th>
+                                <th class="bg-transparent text-light text-center">Vol (CBM)</th>
+                                <th class="bg-transparent text-light text-center">Job Type</th>
+                                <th class="bg-transparent text-light text-center">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let row of container.hblRows; let rowIndex = index" style="white-space: nowrap;">
+                                <td class="text-center">{{ rowIndex + 1 }}</td>
+                                <td>{{ row.hblNo || '-' }}</td>
+                                <td>{{ row.marksAndNos || '-' }}</td>
+                                <td>{{ row.landedMarksAndNos || '-' }}</td>
+                                <td class="text-end">{{ row.manifestedQty || 0 }}</td>
+                                <td class="text-end">{{ row.qtyLanded || 0 }}</td>
+                                <td class="text-end">{{ row.shortQty || 0 }}</td>
+                                <td class="text-end">{{ row.excessQty || 0 }}</td>
+                                <td class="text-end">{{ row.damageQty || 0 }}</td>
+                                <td>{{ row.packageType || '-' }}</td>
+                                <td class="text-end">{{ row.weight || 0 }}</td>
+                                <td class="text-end">{{ row.cbm || 0 }}</td>
+                                <td>{{ row.jobType || '-' }}</td>
+                                <td>{{ row.remarks || '-' }}</td>
+                            </tr>
+
+                            <tr *ngIf="!container.hblRows?.length">
+                                <td colspan="14" class="text-center fw-bold py-1">
+                                    No Record Found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <app-print-footer [showFooterNote]="true"></app-print-footer>
+            </div>
+        </ng-container>
+    </ng-container>
+</ng-container>
+
+<ng-template #noRecords>
+    <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+        <app-print-header></app-print-header>
+
+        <h4 class="text-center fw-bold py-2" style="margin: 0;">
+            OutTurn Report
+        </h4>
+
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <tbody>
+                    <tr>
+                        <td class="text-center fw-bold py-3">No Record Found</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <app-print-footer [showFooterNote]="true"></app-print-footer>
+    </div>
+</ng-template>
