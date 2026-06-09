@@ -1,28 +1,29 @@
 <div class="company-config-shell">
-  <div class="hero-bar">
+  <div class="hero-bar bg-info">
     <div class="hero-copy">
       <div class="hero-icon">
         <i class="fas fa-cogs"></i>
       </div>
       <div>
-        <div class="hero-kicker">Master Setup</div>
-        <h1>Company Configuration</h1>
+        <div class="hero-kicker text-white">Master Setup</div>
+        <h1 class="text-white fw-bold">Company Configuration</h1>
       </div>
     </div>
-
     <div class="hero-meta">
-      <div class="meta-chip">
-        <span class="meta-label">Company</span>
-        <span class="meta-value">{{ selectedCompanyLabel }}</span>
-      </div>
-     
       <button
         type="button"
-        class="btn btn-light-secondary btn-sm"
+        class="btn btn-outline-light btn-sm"
         (click)="goBackToCompany()">
         <i class="fas fa-chevron-left me-1"></i>
         Back
       </button>
+
+      <div class="hero-actions-panel">
+        <div class="meta-chip company-identity-pill">
+          <span class="meta-label">Company</span>
+          <span class="meta-value">{{ selectedCompanyLabel }}</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -33,13 +34,13 @@
 
   <div *ngIf="!isLoading" class="workspace-grid">
     <section class="surface-card">
-      <div class="surface-card__header">
+      <div class="surface-card__header create-config-header">
         <div>
           <h2>Create Configuration</h2>
         </div>
         <button
           type="button"
-          class="btn btn-outline-secondary btn-sm"
+        class="btn btn-secondary btn-sm"
           (click)="toggleManualConfigNameMode()">
           <i class="fas fa-exchange-alt me-1"></i>
           {{ manualConfigNameMode ? 'Use Dropdown' : 'Manual Name' }}
@@ -48,7 +49,8 @@
 
       <form [formGroup]="newConfigForm" class="builder-form">
         <div class="builder-grid">
-          <div class="field-block field-block--config-name">
+          <div class="field-block field-block--config-name"
+            [class.filled]="!!newConfigForm.get('ConfigurationName')?.value">
             <label class="field-label">Configuration Name</label>
             <div class="swap-field">
               <div class="swap-field__control" *ngIf="!manualConfigNameMode; else manualNameTpl">
@@ -88,7 +90,8 @@
             </ng-template>
           </div>
 
-          <div class="field-block field-block--display">
+          <div class="field-block field-block--display"
+            [class.filled]="!!newConfigForm.get('DisplayName')?.value">
             <label class="field-label">Display Name</label>
             <input
               type="text"
@@ -97,7 +100,8 @@
               placeholder="">
           </div>
 
-          <div class="field-block field-block--type">
+          <div class="field-block field-block--type"
+            [class.filled]="!!newConfigForm.get('ConfigType')?.value">
             <label class="field-label">Config Type</label>
             <ng-select
               class="modern-select"
@@ -111,7 +115,8 @@
             </ng-select>
           </div>
 
-          <div class="field-block field-block--value">
+          <div class="field-block field-block--value"
+            [class.filled]="newConfigForm.get('ConfigType')?.value === 'boolean' || !!newConfigForm.get('ConfigurationValue')?.value">
             <label class="field-label">Configuration Value</label>
 
             <div *ngIf="newConfigForm.get('ConfigType')?.value === 'boolean'" class="boolean-field">
@@ -149,7 +154,8 @@
               placeholder="Enter value">
           </div>
 
-          <div class="field-block field-block--company" *ngIf="!isTemporaryMode">
+          <div class="field-block field-block--company" *ngIf="!isTemporaryMode"
+            [class.filled]="(newConfigForm.get('CompanyMasterSids')?.value || []).length > 0">
             <label class="field-label">Company</label>
             <ng-select
               class="modern-select"
@@ -213,24 +219,28 @@
       </form>
     </section>
 
-    <section class="surface-card">
-      <div class="surface-card__header surface-card__header--tight">
-        <div>
-          <h2>Existing Configurations</h2>
-          <p>Review and update current values.</p>
+    <section class="surface-card existing-config-card">
+      <div class="surface-card__header surface-card__header--tight existing-config-header">
+        <div class="existing-title-wrap">
+          <span class="existing-title-icon">
+            <i class="fas fa-sliders-h"></i>
+          </span>
+          <div>
+            <h2>Existing Configurations</h2>
+            <p>Review and update current values.</p>
+          </div>
         </div>
         <div class="header-actions">
           <span class="count-pill">{{ configurations.length }} items</span>
-          <button type="button" class="btn btn-light-secondary btn-sm" (click)="resetConfiguration()">
+          <button type="button" class="btn btn-secondary btn-sm table-action-btn" (click)="resetConfiguration()">
             <i class="fas fa-rotate-right me-1"></i>
             Reload
           </button>
           <button
             type="button"
-            class="btn btn-info btn-sm"
+            class="btn btn-info bg-info btn-sm table-action-btn table-action text-white"
             (click)="saveConfiguration()"
             [disabled]="isSaving || configForm.invalid">
-            <i class="fas fa-save me-1"></i>
             Save All
           </button>
         </div>
@@ -262,7 +272,7 @@
 
                 <td>
                   <ng-select
-                    class="modern-select modern-select--sm"
+                    class="modern-select"
                     formControlName="ConfigType"
                     [items]="availableTypes"
                     bindLabel="label"

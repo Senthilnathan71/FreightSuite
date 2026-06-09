@@ -22,7 +22,7 @@
     <div id="printContent" class="py-2">
         <div>
             <div
-                style="width: 300mm; min-height: 205mm; margin: 10px; padding: 2mm 5mm; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; ">
+                style="width: 300mm; min-height: 205mm; margin: 10px; padding: 2mm 5mm 10mm; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; ">
 
                 <!-- Company Info -->
                 <app-print-header></app-print-header>
@@ -338,16 +338,16 @@
                 }
 
                 <!-- Footer -->
-               <app-print-footer></app-print-footer>
-               <div style="position:absolute; bottom:0mm; left:0; right:0; text-align:center; font-size:10pt; padding-top: 5px;">
-                   <div style="text-align:right; font-weight:bold; margin-top:0.5rem;padding-right: 6px;">Page 1 of 2</div>
+               <div style="position:absolute; bottom:2mm; left:5mm; right:5mm; font-size:10pt; display:grid; grid-template-columns:1fr auto; align-items:end; column-gap:8px;">
+                   <app-print-footer [position]="'static'" style="display:block;"></app-print-footer>
+                   <div style="text-align:right; font-weight:bold; line-height:1.2; white-space:nowrap; padding-bottom:0.5rem;">Page 1 of 2</div>
                </div>
             </div>
 
 
             <div class="py-2">
                 <div
-                    style="width: 300mm; min-height: 205mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always; ">
+                    style="width: 300mm; min-height: 205mm; margin:10px; padding:2mm 5mm 10mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always; ">
 
                     <!-- Company Info -->
                   <app-print-header></app-print-header>
@@ -596,9 +596,9 @@
                     </table>
 
                     <!-- Footer -->
-                    <app-print-footer></app-print-footer>
-                      <div style="position:absolute; bottom:0mm; left:0; right:0; text-align:center; font-size:10pt; padding-top: 5px;">
-                   <div style="text-align:right; font-weight:bold; margin-top:0.5rem;padding-right: 6px;">Page 2 of 2</div>
+                    <div style="position:absolute; bottom:2mm; left:5mm; right:5mm; font-size:10pt; display:grid; grid-template-columns:1fr auto; align-items:end; column-gap:8px;">
+                   <app-print-footer [position]="'static'" style="display:block;"></app-print-footer>
+                   <div style="text-align:right; font-weight:bold; line-height:1.2; white-space:nowrap; padding-bottom:0.5rem;">Page 2 of 2</div>
                </div>
                 </div>
             </div>
