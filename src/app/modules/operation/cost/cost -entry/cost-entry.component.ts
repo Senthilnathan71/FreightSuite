@@ -2888,9 +2888,16 @@ createRateFormGroup(data?: any): FormGroup {
       ) {
         return;
       }
+      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+      const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+      const payload = {
+        PaymentRequestSid: paymentRequestSid,
+        CompanyMasterSid,
+        BranchMasterSid
+      }
 
       this.resolvingPaymentRequestNumbers.add(paymentRequestSid);
-      this.operationService.getPaymentRequestById(paymentRequestSid).pipe(takeUntil(this.destroy$)).subscribe({
+      this.operationService.getPaymentRequestById(payload).pipe(takeUntil(this.destroy$)).subscribe({
         next: (resp: any) => {
           if (resp?.status && resp?.data) {
             const paymentRequestNumber = resp.data.PaymentRequestNumber || '';

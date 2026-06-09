@@ -3546,11 +3546,10 @@ getAllSubgroupsByGroup(payload: { Category: string; GroupName: string; CompanyMa
   );
 }
 
-  fetchCoaById(id: number) {
-    return this.http.get<{ data: any }>(`coa/fetch/${id}`).pipe(
+  fetchCoaById(payload:any) {
+    return this.http.post<{ status: boolean; data: any }>(`coa/fetch`,payload).pipe(
       map((resp) => {
-        let response = resp.data;
-        return response;
+        return resp;
       })
     );
   }

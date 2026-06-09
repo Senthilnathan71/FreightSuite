@@ -1244,7 +1244,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           }, 0);
         } else {
           this.spinner.hide();
-          this.appSettingService.showError(resp.message || 'Access denied.');
+          this.appSettingService.showError('Access denied.');
           // this.router.navigate(['operation/invoice/list']);
         }
       },

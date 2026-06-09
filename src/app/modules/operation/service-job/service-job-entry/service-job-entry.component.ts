@@ -564,9 +564,22 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
 
   loadServiceJobById(houseJobSid: number) {
     this.spinner.show();
-    this.operationService.getServiceJobById(houseJobSid).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      HouseJobSid: houseJobSid,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.operationService.getServiceJobById(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
+          if (resp && resp.status === false) {
+    this.appSettingService.showError(
+      resp.message || 'Access denied.'
+    );
+    return;
+  }
           this.patchValues(resp.data);
           this.serviceJobData = resp.data;
           this.minDate = undefined;

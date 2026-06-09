@@ -333,10 +333,19 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
   }
 
   loadChartAccount() {
-    this.masterServ.fetchCoaById(this.chartMasterSid).subscribe(
-      (data: any) => {
-        this.chartData = data;
-        this.isSubledgerRequired = data.IsSubledgerRequired;
+    const CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    const payload = {
+      COAMasterSid: this.chartMasterSid,
+      CompanyMasterSid: CompanyMasterSid,
+    }
+    this.masterServ.fetchCoaById(payload).subscribe(
+      (resp: any) => {
+        if (resp.status === false) {
+        this.appSettingService.showError('Access Denied');
+        return;
+      }
+        this.chartData = resp.data;
+        this.isSubledgerRequired = resp.data.IsSubledgerRequired;
 
         if (this.isSubledgerRequired) {
           this.chartForm.get('LedgerName')?.setValidators([Validators.required, Validators.maxLength(20)]);
@@ -344,40 +353,40 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
 
         // First set the category and ledger category to trigger the listeners
         this.chartForm.patchValue({
-          Category: data.Category,
-          LedgerCategory: data.LedgerCategory
+          Category: resp.data.Category,
+          LedgerCategory: resp.data.LedgerCategory
         });
 
         // Wait for the listeners to process and then patch the remaining values
         setTimeout(() => {
           this.chartForm.patchValue({
-            LedgerName: data.LedgerName,
-            LedgerCode: data.LedgerCode,
-            SubGroupName: data.SubGroupName,
-            LedgerCurrency: data.LedgerCurrency,
-            GroupName: data.GroupName,
-            LedgerType: data.LedgerType,
-            ReportType: data.ReportType,
-            Remarks: data.Remarks,
-            Status: data.Status === 'A' ? 'Active' : 'Suspended',
-            SubledgerName: data.SubledgerName === 'Y' ? 'Y' : 'N',
-            JobNoRequire: data.JobNoRequire === 'Y' ? 'Y' : 'N',
-            HSNRequire: data.HSNRequire === 'Y' ? 'Y' : 'N',
+            LedgerName: resp.data.LedgerName,
+            LedgerCode: resp.data.LedgerCode,
+            SubGroupName: resp.data.SubGroupName,
+            LedgerCurrency: resp.data.LedgerCurrency,
+            GroupName: resp.data.GroupName,
+            LedgerType: resp.data.LedgerType,
+            ReportType: resp.data.ReportType,
+            Remarks: resp.data.Remarks,
+            Status: resp.data.Status === 'A' ? 'Active' : 'Suspended',
+            SubledgerName: resp.data.SubledgerName === 'Y' ? 'Y' : 'N',
+            JobNoRequire: resp.data.JobNoRequire === 'Y' ? 'Y' : 'N',
+            HSNRequire: resp.data.HSNRequire === 'Y' ? 'Y' : 'N',
           });
 
           // Load groups and subgroups for existing record after form is patched
-          if (data.Category && data.GroupName) {
-            this.loadSubgroupsByGroup(data.Category, data.GroupName);
+          if (resp.data.Category && resp.data.GroupName) {
+            this.loadSubgroupsByGroup(resp.data.Category, resp.data.GroupName);
           }
 
           // Disable fields if needed
-          if (this.isEditMode && data.SubledgerName === 'Y') {
+          if (this.isEditMode && resp.data.SubledgerName === 'Y') {
             this.chartForm.get('SubledgerName')?.disable({ emitEvent: false });
           }
-          if (this.isEditMode && data.JobNoRequire === 'Y') {
+          if (this.isEditMode && resp.data.JobNoRequire === 'Y') {
             this.chartForm.get('JobNoRequire')?.disable({ emitEvent: false });
           }
-          if (this.isEditMode && data.HSNRequire === 'Y') {
+          if (this.isEditMode && resp.data.HSNRequire === 'Y') {
             this.chartForm.get('HSNRequire')?.disable({ emitEvent: false });
           }
 
@@ -387,7 +396,7 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
         }, 100);
       },
       (error) => {
-        this.appSettingService.showError('Error loading Chart Account', error);
+        this.appSettingService.showError('Accesss denied');
       }
     );
   }

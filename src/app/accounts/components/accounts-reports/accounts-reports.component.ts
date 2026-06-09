@@ -125,8 +125,12 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
    */
   loadAvailableReports(): void {
     this.loadingReports = true;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid
+    }
     console.log("Current Company ID:", this.companyId);
-    this.reportService.getAccountsReports(this.companyId)
+    this.reportService.getAccountsReports(payload)
       .pipe(finalize(() => this.loadingReports = false))
       .subscribe({
         next: (reports) => {
