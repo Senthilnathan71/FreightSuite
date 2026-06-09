@@ -112,7 +112,11 @@ export class OperationReportsComponent implements OnInit, OnDestroy {
    */
   loadAvailableReports(): void {
     this.loadingReports = true;
-    this.reportService.getOperationReports(this.companyId)
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid
+    }
+    this.reportService.getOperationReports(payload)
       .pipe(finalize(() => this.loadingReports = false))
       .subscribe({
         next: (reports) => {

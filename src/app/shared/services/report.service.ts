@@ -130,10 +130,9 @@ export class ReportService {
   /**
    * Get all Accounts reports available for a specific company
    */
-  getAccountsReports(companyId: number): Observable<ReportCard[]> {
-    return this.http.get<ApiResponse<ReportCard[]>>(
-      `${this.baseUrl}accounts/reports`,
-      { params: new HttpParams().set('companyId', companyId.toString()) }
+  getAccountsReports(payload: any): Observable<ReportCard[]> {
+    return this.http.post<ApiResponse<ReportCard[]>>(
+      `${this.baseUrl}accounts/reports/fetch`,payload
     ).pipe(
       map(response => response.data)
     );
@@ -142,10 +141,9 @@ export class ReportService {
   /**
    * Get all Operation reports available for a specific company
    */
-  getOperationReports(companyId: number): Observable<ReportCard[]> {
-    return this.http.get<ApiResponse<ReportCard[]>>(
-      `${this.baseUrl}operation/reports`,
-      { params: new HttpParams().set('companyId', companyId.toString()) }
+  getOperationReports(payload: any): Observable<ReportCard[]> {
+    return this.http.post<ApiResponse<ReportCard[]>>(
+      `${this.baseUrl}operation/reports/fetch`,payload
     ).pipe(
       map(response => response.data)
     );

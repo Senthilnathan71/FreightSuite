@@ -544,11 +544,18 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
 
   private loadRequest(id: number) {
     this.loading = true;
-    this.operationService.getPaymentRequestById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      PaymentRequestSid: id,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.operationService.getPaymentRequestById(payload).subscribe({
       next: (resp: any) => {
         this.loading = false;
         if (!resp.status) {
-          this.appSettingsService.showError(resp.message);
+          this.appSettingsService.showError('Access denied.');
           return;
         }
 

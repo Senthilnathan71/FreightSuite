@@ -1192,7 +1192,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   loadVendorInvoiceById(id: number) {
-    this.operationService.getVendorInvoiceById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      VoucherHeaderSid: id,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.operationService.getVendorInvoiceById(payload).subscribe({
       next: (resp:any) => {
         if (resp.status && resp.data) {
           this.destroy$.next();
@@ -1237,7 +1244,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           // unsaved changes related
         } else {
           this.spinner.hide();
-          this.appSettingService.showError(resp.message);
+          this.appSettingService.showError('Access denied.');
           // this.router.navigate(['/operation/vendor-invoice/list']);
         }
       },

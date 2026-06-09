@@ -1445,7 +1445,14 @@ export class VendorCreditNoteEntryComponent {
   }
 
   loadVendorCreditNoteById(id: number) {
-    this.operationService.getVendorCreditNoteById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid,
+      BranchMasterSid,
+      VoucherHeaderSid: id
+    }
+    this.operationService.getVendorCreditNoteById(payload).subscribe({
       next: (resp: any) => {
         if (resp.status && resp.data) {
           this.destroy$.next();
@@ -1491,7 +1498,7 @@ export class VendorCreditNoteEntryComponent {
           // this.setFormReadonly();
         } else {
           this.spinner.hide();
-          this.appSettingService.showError(resp.message);
+          this.appSettingService.showError('Access denied');
         }
       },
       error: (error) => {

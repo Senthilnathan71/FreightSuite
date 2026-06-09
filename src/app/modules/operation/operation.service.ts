@@ -1125,8 +1125,8 @@ processProductUpload(payload: any): Observable<any> {
   }
 
 
-  getVendorCreditNoteById(VoucherHeaderSid: number) {
-    return this.http.get<{ status: boolean; data: any }>(`vendor-credit-note/fetch/${VoucherHeaderSid}`).pipe(
+  getVendorCreditNoteById(payload: any) {
+    return this.http.post<{ status: boolean; data: any }>(`vendor-credit-note/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -1177,8 +1177,8 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
-  getVendorInvoiceById(VoucherHeaderSid: number) {
-    return this.http.get<{ status: boolean; data: any }>(`vendor-invoice/fetch/${VoucherHeaderSid}`).pipe(
+  getVendorInvoiceById(payload: any) {
+    return this.http.post<{ status: boolean; data: any }>(`vendor-invoice/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -1440,9 +1440,9 @@ processProductUpload(payload: any): Observable<any> {
     ).pipe(map((resp) => resp));
   }
 
-  getPaymentRequestById(paymentRequestSid: number) {
-    return this.http.get<{ status: boolean; message: string; data: any }>(
-      `payment-request/fetch/${paymentRequestSid}`
+  getPaymentRequestById(payload:any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>(
+      `payment-request/fetch`,payload
     ).pipe(map((resp) => resp));
   }
 
@@ -1467,8 +1467,8 @@ processProductUpload(payload: any): Observable<any> {
   }
 
   // Service Job related Operations
-  getServiceJobById(HouseJobSid: number) {
-    return this.http.get<{ data: any }>(`service-job/fetch/${HouseJobSid}`).pipe(
+  getServiceJobById(payload: any) {
+    return this.http.post<{ data: any }>(`service-job/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })

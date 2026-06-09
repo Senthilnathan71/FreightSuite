@@ -1733,10 +1733,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   private prefillFromPaymentRequest(paymentRequestSid: number) {
-    this.operationService.getPaymentRequestById(paymentRequestSid).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      PaymentRequestSid: paymentRequestSid,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.operationService.getPaymentRequestById(payload).subscribe({
       next: async (resp: any) => {
         if (!resp.status) {
-          this.appSettingService.showWarning(resp.message || 'Unable to load payment request');
+          this.appSettingService.showWarning( 'Access denied.');
           return;
         }
 
@@ -1946,9 +1953,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     );
     this.previousHeaderNarration = headerInfo.Narration || '';
     const prSid = headerInfo.ReversalVoucher || headerInfo.PaymentRequestSid;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      PaymentRequestSid: prSid,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
     if (prSid) {
       this.prPaymentRequestSid = prSid;
-      this.operationService.getPaymentRequestById(prSid)
+      this.operationService.getPaymentRequestById(payload)
         .pipe(takeUntil(this.destroy$))
         .subscribe({ next: (r: any) => {
           if (r?.data) this.prPaymentRequestNumber = r.data.PaymentRequestNumber || '';
