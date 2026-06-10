@@ -505,7 +505,7 @@ export class ReverseVoucherEntryComponent {
       firstValueFrom(this.accountService.getAllCostCenters()),
       firstValueFrom(this.accountService.getAllProfitCenters()),
       firstValueFrom(this.accountService.getAllCoaWithLedgerCategory({LedgerCategory: 'Ledger',CompanyMasterSid})),
-      firstValueFrom(this.masterService.getSubledgerMasterByType('Customer', CompanyMasterSid)),
+      firstValueFrom(this.masterService.getSubledgerMasterByType({subledgerType:'Customer', CompanyMasterSid})),
       firstValueFrom(this.operationService.getAllDepartments(CompanyMasterSid)),
       firstValueFrom(this.operationService.getAllMasterJobs(filterOption))
     ]).then(([vendors, currencies, charges, hssac, uom,  costCenters, profitCenters,coa, subledger,dept,job]) => {
@@ -1370,7 +1370,14 @@ export class ReverseVoucherEntryComponent {
     return job?.MasterJobNumber || job?.displayLabel || '-';
   }
   loadReverseVoucherById(id: number) {
-    this.operationService.getReverseVoucherById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      VoucherHeaderSid: id
+    }
+    this.operationService.getReverseVoucherById(payload).subscribe({
       next: (response) => {
         if (response.status && response.data) {
           this.destroy$.next();
@@ -1396,7 +1403,7 @@ export class ReverseVoucherEntryComponent {
           }
         } else {
           this.spinner.hide();
-          this.appSettingService.showError('Error loading creditNoteData');
+          this.appSettingService.showError('Access denied');
         }
       },
       error: (err) => {

@@ -219,7 +219,14 @@ changeTime(time: string) {
 
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
-    this.leadService.getLeadById(leadId).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      PreCustomerMasterSid: leadId
+    }
+    this.leadService.getLeadById(payload).subscribe(
       (leadData) => {
         console.log(leadData, 'leadData')
         this.lead = leadData

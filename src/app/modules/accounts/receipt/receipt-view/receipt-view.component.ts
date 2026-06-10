@@ -30,6 +30,8 @@ export class ReceiptViewComponent implements OnInit {
   receiptId!: number;
   receipt: any = null;
   loading = false;
+  currentCompany: any;
+  currentBranch: any;
 
   // Tabs
   selectedTab = 'details';
@@ -49,6 +51,8 @@ export class ReceiptViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.route.params.subscribe(params => {
       this.receiptId = +params['id'];
       if (this.receiptId) {
@@ -61,7 +65,14 @@ export class ReceiptViewComponent implements OnInit {
     this.spinner.show();
     this.loading = true;
 
-    this.receiptService.getReceiptById(this.receiptId).subscribe({
+    const CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid,
+      BranchMasterSid,
+      VoucherHeaderSid: this.receiptId
+    }
+    this.receiptService.getReceiptById(payload).subscribe({
       next: (response: any) => {
         this.receipt = this.processReceiptData(response);
         this.spinner.hide();
@@ -69,7 +80,7 @@ export class ReceiptViewComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading receipt:', error);
-        this.appSettingService.showError('Failed to load receipt');
+        this.appSettingService.showError('Access denied');
         this.spinner.hide();
         this.loading = false;
         this.goBack();

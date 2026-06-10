@@ -152,10 +152,9 @@ export class ReportService {
    /**
    * Get all Management reports available for a specific company
    */
-  getManagementReports(companyId: number): Observable<ReportCard[]> {
-    return this.http.get<ApiResponse<ReportCard[]>>(
-      `${this.baseUrl}management/reports`,
-      { params: new HttpParams().set('companyId', companyId.toString()) }
+  getManagementReports(payload: any): Observable<ReportCard[]> {
+    return this.http.post<ApiResponse<ReportCard[]>>(
+      `${this.baseUrl}management/reports/fetch`,payload
     ).pipe(
       map(response => response.data)
     );

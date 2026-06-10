@@ -38,6 +38,8 @@ export class PaymentViewComponent implements OnInit {
   paymentId!: number;
   payment: any = null;
   loading = false;
+  currentCompany: any;
+  currentBranch: any;
 
   // Tabs
   selectedTab = 'details';
@@ -58,6 +60,8 @@ export class PaymentViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.route.params.subscribe(params => {
       this.paymentId = +params['id'];
       if (this.paymentId) {
@@ -69,8 +73,14 @@ export class PaymentViewComponent implements OnInit {
   loadPayment(): void {
     this.spinner.show();
     this.loading = true;
-
-    this.paymentService.getPaymentById(this.paymentId).subscribe({
+    const CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid,
+      BranchMasterSid,
+      VoucherHeaderSid: this.paymentId
+    }
+    this.paymentService.getPaymentById(payload).subscribe({
       next: (response: any) => {
         this.payment = this.processPaymentData(response);
         this.spinner.hide();
@@ -78,7 +88,7 @@ export class PaymentViewComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading payment:', error);
-        this.appSettingService.showError('Failed to load payment');
+        this.appSettingService.showError('Access denied');
         this.spinner.hide();
         this.loading = false;
         this.goBack();

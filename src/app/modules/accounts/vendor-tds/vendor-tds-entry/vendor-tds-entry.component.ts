@@ -262,7 +262,12 @@ export class VendorTdsEntryComponent implements HasUnsavedChanges {
   }
 
   loadSupplierTDS() {
-    this.accountService.getSupplierTDSById(this.SupplierTdsMappingSid).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      SupplierTdsMappingSid: this.SupplierTdsMappingSid
+    }
+    this.accountService.getSupplierTDSById(payload).subscribe({
       next: (resp: any) => {
         if (resp.status) {
           const response = resp.data;
@@ -285,7 +290,7 @@ export class VendorTdsEntryComponent implements HasUnsavedChanges {
           this.reloadTdsByCompanyType(cm?.CompanyType, this.customerCountrySid ?? undefined);
           this.loadAllBranchMappingsForEdit(response.CustomerMasterSid);
         } else {
-          this.appSettingService.showError('Error loading supplier TDS');
+          this.appSettingService.showError('Access denied.');
         }
       },
       error: (error: any) => console.error(error),

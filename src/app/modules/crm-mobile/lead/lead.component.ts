@@ -535,10 +535,17 @@ languagePrefValidator(): ValidatorFn {
 
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
-  this.leadService.getLeadById(leadId).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      PreCustomerMasterSid: leadId
+    }
+  this.leadService.getLeadById(payload).subscribe(
     (resp: any) => {
       if (!resp.status) {
-        this.appSettingService.showError('Error Loading Lead Data');
+        this.appSettingService.showError('Access denied.');
         return;
       }
 

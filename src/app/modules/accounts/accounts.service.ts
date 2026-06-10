@@ -35,10 +35,10 @@ export class AccountsService {
     );
   }
 
-  getCurrencyExchangeById(id: number) {
-    return this.http.get<{ data: CurrencyExchange }>(`currency-exchange/fetch/${id}`).pipe(
+  getCurrencyExchangeById(payload: any) {
+    return this.http.post<{ status: boolean;data: CurrencyExchange }>(`currency-exchange/fetch`,payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );
@@ -111,8 +111,8 @@ export class AccountsService {
     );
   }
 
-  getSupplierTDSById(id: number) {
-    return this.http.get<{ data: any }>(`supplier-tds-mapping/fetch/${id}`).pipe(
+  getSupplierTDSById(payload: any) {
+    return this.http.post<{ status: boolean;data: any }>(`supplier-tds-mapping/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

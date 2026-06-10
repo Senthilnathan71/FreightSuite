@@ -217,33 +217,47 @@ export class CurrencyExchangeEntryComponent implements OnInit, OnDestroy, HasUns
   }
 
   loadCurrencyExchangeData(id: number) {
-    this.loading = true;
-    this.accountService.getCurrencyExchangeById(id).subscribe({
-      next: (data) => {
-        this.currencyExchangeData = data;
-        this.currencyExchangeForm.patchValue({
-          ...data,
-            CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
-            BranchMasterSid :this.currentBranch?.BranchMasterSid,
-          EffectiveFrom: new Date(data.EffectiveFrom),
-          status: data.status === 'A' ? 'Active' : 'Suspended',
-          RateFrom: data.RateFrom || ''
-        });
-        const fromCurrency = data.FromCurrency;
-        if (fromCurrency) {
-          this.filterToCurrencies(fromCurrency);
-        }
-        this.initialFormValue = this.currencyExchangeForm.getRawValue();
-        this.subscribeToFormChanges();
+  this.loading = true;
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+  const payload = { CompanyMasterSid, BranchMasterSid, CurrencyExchangeSid: id };
+
+  this.accountService.getCurrencyExchangeById(payload).subscribe({
+    next: (res: any) => {
+      if (res.status === false) {
+        this.appSettingService.showError('Access Denied');
         this.loading = false;
-      },
-      error: (err) => {
-        this.appSettingService.showError('Error loading currency exchange data.');
-        console.error(err);
-        this.loading = false;
+        return;
       }
-    });
-  }
+
+      const data = res.data;  // extract inner record
+
+      this.currencyExchangeData = data;
+      this.currencyExchangeForm.patchValue({
+        ...data,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        EffectiveFrom: new Date(data.EffectiveFrom),
+        status: data.status === 'A' ? 'Active' : 'Suspended',
+        RateFrom: data.RateFrom || ''
+      });
+
+      const fromCurrency = data.FromCurrency;
+      if (fromCurrency) {
+        this.filterToCurrencies(fromCurrency);
+      }
+
+      this.initialFormValue = this.currencyExchangeForm.getRawValue();
+      this.subscribeToFormChanges();
+      this.loading = false;
+    },
+    error: (err) => {
+      this.appSettingService.showError('Error loading currency exchange data.');
+      console.error(err);
+      this.loading = false;
+    }
+  });
+}
 
   onSubmit(resolve?: (saved: boolean) => void) {
     if (this.isSaving) {

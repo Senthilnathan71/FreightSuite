@@ -59,7 +59,11 @@ export class ManagementReportsComponent implements OnInit, OnDestroy {
 
   loadAvailableReports(): void {
     this.loadingReports = true;
-    this.reportService.getManagementReports(this.companyId)
+    const CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid,
+    }
+    this.reportService.getManagementReports(payload)
       .pipe(finalize(() => (this.loadingReports = false)))
       .subscribe({
         next: (reports) => {

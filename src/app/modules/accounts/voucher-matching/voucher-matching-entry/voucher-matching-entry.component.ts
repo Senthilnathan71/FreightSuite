@@ -423,7 +423,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
           this.cancellationWarnings = resp.data.cancellationWarnings ?? null;
           this.patchValues(resp.data);
         }
-        else this.appSettingService.showError('Error Loading Data');
+        else this.appSettingService.showError('Access denied.');
       },
       error: () => {
         this.spinner.hide();

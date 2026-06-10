@@ -120,8 +120,8 @@ export class JournalVoucherService {
   /**
    * Get journal voucher by ID
    */
-  getJournalVoucherById(VoucherHeaderSid: number) {
-  return this.http.get<{ status: boolean; data: any }>(`accounts/journal-voucher/fetch/${VoucherHeaderSid}`).pipe(
+  getJournalVoucherById(payload: any) {
+  return this.http.post<{ status: boolean; data: any }>(`accounts/journal-voucher/fetch`,payload).pipe(
     map((resp) => {
       return resp;
     })
