@@ -184,4 +184,13 @@ export class VoucherMatchingService {
       )
   }
 
+  enquireVoucher(payload: { VoucherNumber: string; CompanyMasterSid: number; BranchMasterSid: number; LocalCurrencyMasterSid: number }) {
+    return this.http.post<ResponseData>('voucher-matching/enquiry', payload)
+      .pipe(
+        catchError((error) => {
+          return handleError(error);
+        })
+      )
+  }
+
 }

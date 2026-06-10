@@ -29,6 +29,7 @@ import { ReverseVoucherListComponent } from './reverse-voucher/reverse-voucher-l
 import { PaymentListComponent } from './payment/payment-list/payment-list.component';
 import { PaymentEntryComponent } from './payment/payment-entry/payment-entry.component';
 import { VoucherMatchingListComponent } from './voucher-matching/voucher-matching-list/voucher-matching-list.component';
+import { VoucherMatchingEnquiryComponent } from './voucher-matching/voucher-matching-enquiry/voucher-matching-enquiry.component';
 import { UnsavedChangesGuard } from 'src/app/core/guards/unsaved-changes.guard';
 import { AccountsCloseListComponent } from './accounts-close/accounts-close-list/accounts-close-list.component';
 import { InvoiceNonJobListComponent } from './invoice-non-job/invoice-non-job-list.component';
@@ -467,6 +468,19 @@ export const AccountRoutes: Routes = [
             { title: "Accounts", url: "/accounts" },
             { title: "Voucher Matching", url: "/accounts/voucher-matching/list" },
             { title: "View Voucher Matching" },
+          ],
+        },
+      },
+
+      {
+        path: "voucher-matching/enquiry",
+        component: VoucherMatchingEnquiryComponent,
+        data: {
+          title: "Voucher Matching Enquiry",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Voucher Matching", url: "/accounts/voucher-matching/list" },
+            { title: "Enquiry" },
           ],
         },
       },

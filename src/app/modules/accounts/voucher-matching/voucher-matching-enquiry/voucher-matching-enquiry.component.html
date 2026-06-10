@@ -1,0 +1,466 @@
+<div class="row compact-form">
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center rounded shadow-sm mx-0" style="padding: 5px 8px;">
+      <div class="col-lg-5 col-md-6 px-0">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-search-dollar"></i>
+          </div>
+          <h5 class="page-title my-0 text-info">Voucher Matching Enquiry</h5>
+          <span
+            *ngIf="result"
+            class="badge rounded-pill"
+            [ngClass]="settlementBadgeClass"
+            style="font-size: 11px; font-weight: 600;">
+            {{ settlementStatusLabel }}
+          </span>
+        </div>
+      </div>
+      <div class="col-lg-7 col-md-6 px-0">
+        <div class="d-flex flex-wrap align-items-center justify-content-end gap-1">
+          <button
+            type="button"
+            class="btn btn-sm dofi-min-w-80 dofi-max-w-80"
+            style="height: 34px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1.5px solid #7c8a9c; color: #fff; background: #7c8a9c;"
+            (click)="back()">
+            <i class="fas fa-chevron-left me-1"></i>Back
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-1 shadow-sm" style="border: 1px solid #dbe4ee; border-left: 4px solid #1769d4; border-radius: 10px; overflow: hidden;">
+      <div class="card-body p-0">
+        <div class="d-flex align-items-stretch flex-wrap">
+          <div class="d-flex align-items-center gap-2 px-3 py-2" style="min-width: 260px; border-right: 1px solid #e2e8f0; background: #f8fbff;">
+            <div class="d-flex align-items-center justify-content-center rounded" style="width: 38px; height: 38px; background: #e7f1ff; color: #1769d4;">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-primary" style="font-size: 14px;">Search Voucher</div>
+              <div class="text-muted" style="font-size: 11px;">Voucher Number</div>
+            </div>
+          </div>
+
+          <div class="flex-grow-1 d-flex align-items-center gap-3 px-3 py-2" style="min-width: 420px;">
+            <label class="text-muted mb-0" style="font-size: 12px; white-space: nowrap;">Voucher No.</label>
+            <input
+              type="text"
+              class="form-control border-0 border-bottom rounded-0 px-0 text-uppercase fw-semibold shadow-none"
+              [(ngModel)]="voucherNumber"
+              (keydown)="onEnterKey($event)"
+              [disabled]="isLoading"
+              autocomplete="off"
+              placeholder="Enter voucher number..."
+              style="font-size: 16px; border-color: #cfd8e3 !important; background: transparent;"
+            />
+            <div class="d-flex gap-1">
+              <button
+                type="button"
+                class="btn btn-sm dofi-min-w-100"
+                style="height: 38px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; color: #fff; background: linear-gradient(135deg, #15395c, #1769d4); box-shadow: 0 3px 10px rgba(23,105,212,.28);"
+                (click)="search()"
+                [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                <i *ngIf="!isLoading" class="fas fa-search me-1"></i>Search
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm dofi-min-w-80"
+                style="height: 38px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1.5px solid #d7dde6; color: #64748b; background: #eef1f6;"
+                (click)="clear()"
+                [disabled]="isLoading">
+                <i class="fas fa-undo me-1"></i>Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger py-1 px-2 m-2" style="font-size: 12px;">
+          <i class="fas fa-exclamation-circle me-1"></i>{{ errorMessage }}
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!result && !isLoading" class="card mb-1" style="border: 1px dashed #cbd5e1;">
+      <div class="card-body text-center py-3 text-muted" style="font-size: 12px;">
+        <i class="fas fa-file-invoice-dollar me-1"></i>Enter a voucher number to view matching history.
+      </div>
+    </div>
+
+    <ng-container *ngIf="result as data">
+      <div class="card mb-1 shadow-sm" style="border: 1px solid #c8dcf2; border-radius: 10px; overflow: hidden;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-2 text-white" style="background: linear-gradient(120deg, #1565c8 0%, #2b8fed 62%, #36a3f5 100%);">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="fw-bold" style="font-size: 18px; letter-spacing: .01em;">{{ data.voucherDetails?.VoucherNumber }}</span>
+            <button
+              type="button"
+              class="btn btn-link btn-sm p-0 text-white"
+              style="line-height: 1; font-size: 12px; opacity: .85;"
+              title="Copy voucher number"
+              (click)="copyText(data.voucherDetails?.VoucherNumber)">
+              <i class="fas fa-copy"></i>
+            </button>
+            <span class="badge bg-light text-primary" style="font-size: 11px;">{{ data.voucherDetails?.VoucherType || '-' }}</span>
+            <span
+              class="badge rounded-pill"
+              [ngClass]="data.voucherDetails?.PostStatus === 'P' ? 'bg-success' : 'bg-warning text-dark'"
+              style="font-size: 11px;">
+              {{ data.voucherDetails?.PostStatus === 'P' ? 'Posted' : 'Unposted' }}
+            </span>
+            <span class="fw-semibold">{{ data.voucherDetails?.partyName || '-' }}</span>
+          </div>
+
+          <div class="d-flex align-items-center gap-2" style="min-width: 290px;">
+            <span style="font-size: 12px;">Matched</span>
+            <div class="progress flex-grow-1" style="height: 8px; min-width: 160px; background: rgba(255,255,255,.35);">
+              <div class="progress-bar bg-success" [style.width.%]="totalMatchedPercent"></div>
+            </div>
+            <span class="fw-bold" style="font-size: 14px; min-width: 42px; text-align: right;">{{ totalMatchedPercent }}%</span>
+          </div>
+        </div>
+
+        <div class="row g-0" style="font-size: 12px;">
+          <div class="col-lg-2 col-md-4 border-end border-bottom px-3 py-2">
+            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Voucher Date</div>
+            <div class="fw-semibold">{{ data.voucherDetails?.VoucherDate | formatDate }}</div>
+          </div>
+          <div class="col-lg-2 col-md-4 border-end border-bottom px-3 py-2">
+            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Exchange Rate</div>
+            <div class="fw-semibold text-primary">{{ formatExchangeRate(exchangeRate) }}</div>
+          </div>
+          <div class="col-lg-2 col-md-4 border-end border-bottom px-3 py-2">
+            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Latest VM</div>
+            <ng-container *ngIf="latestMatching as latestVm; else noLatestVm">
+              <span
+                class="fw-bold"
+                style="cursor: pointer; color: #103a5e; text-decoration: underline;"
+                (click)="navigateToVM(latestVm.VoucherMatchingHeaderSid)">
+                {{ latestVm.VoucherMatchingNo }}
+              </span>
+            </ng-container>
+            <ng-template #noLatestVm>-</ng-template>
+          </div>
+          <div class="col-lg-2 col-md-4 border-end border-bottom px-3 py-2">
+            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Active VM</div>
+            <div class="fw-semibold">{{ activeMatchings.length }}</div>
+          </div>
+          <div class="col-lg-2 col-md-4 border-end border-bottom px-3 py-2">
+            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Source / Object</div>
+            <div class="fw-semibold">{{ sourceMatchingCount }} / {{ objectMatchingCount }}</div>
+          </div>
+          <div class="col-lg-2 col-md-4 border-bottom px-3 py-2">
+            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Status</div>
+            <div class="fw-semibold" [class.text-success]="outstandingIsZero" [class.text-danger]="!outstandingIsZero">
+              {{ settlementStatusLabel }}
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-0 text-white" style="background: linear-gradient(90deg, #103a5e, #15486f); font-size: 11px; font-weight: 700; letter-spacing: .03em;">
+          <div class="col-3 px-3 py-2 text-uppercase border-end" style="border-color: rgba(255,255,255,.08) !important;">Currency</div>
+          <div class="col-3 px-3 py-2 text-uppercase text-end border-end" style="border-color: rgba(255,255,255,.08) !important;">Total Amount</div>
+          <div class="col-3 px-3 py-2 text-uppercase text-end border-end" style="border-color: rgba(255,255,255,.08) !important;">Matching Amount</div>
+          <div class="col-3 px-3 py-2 text-uppercase text-end">Outstanding Amount</div>
+        </div>
+
+        <div class="row g-0 align-items-center" style="font-size: 13px;">
+          <div class="col-3 px-3 py-2 border-end border-bottom d-flex align-items-center gap-2">
+            <span class="badge bg-primary" style="font-size: 11px;">{{ partyCurrencyCode }}</span>
+            <span class="fw-semibold text-dark">Party Currency - {{ partyCurrencyCode }}</span>
+          </div>
+          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold">{{ formatAmount(data.voucherDetails?.originalPartyAmount) }}</div>
+          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold text-primary">{{ formatAmount(totalMatchedPartyAmount) }}</div>
+          <div class="col-3 px-3 py-2 border-bottom text-end fw-semibold" [class.text-success]="outstandingPartyAmount === 0" [class.text-danger]="outstandingPartyAmount !== 0">
+            {{ formatAmount(outstandingPartyAmount) }}
+          </div>
+        </div>
+
+        <div *ngIf="!singleCurrencySummary" class="row g-0 align-items-center" style="font-size: 13px;">
+          <div class="col-3 px-3 py-2 border-end border-bottom d-flex align-items-center gap-2">
+            <span class="badge bg-secondary" style="font-size: 11px;">{{ localCurrencyCode }}</span>
+            <span class="fw-semibold text-dark">Local Currency - {{ localCurrencyCode }}</span>
+          </div>
+          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold">{{ formatAmount(data.stats?.originalLocalAmount) }}</div>
+          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold text-primary">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }}</div>
+          <div class="col-3 px-3 py-2 border-bottom text-end fw-semibold" [class.text-success]="outstandingIsZero" [class.text-danger]="!outstandingIsZero">
+            {{ formatAmount(data.stats?.outstandingLocalAmount) }}
+          </div>
+        </div>
+
+        <div *ngIf="data.voucherDetails?.Narration" class="px-3 py-2" style="font-size: 12px; background: #fff8e1; border-top: 1px solid #f1d98b;">
+          <i class="fas fa-circle-info text-warning me-1"></i>
+          <span class="text-muted fw-semibold me-1">Narration:</span>
+          <span>{{ data.voucherDetails?.Narration }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="showVisualization" class="card mb-1 shadow-sm" style="border: 1px solid #cfd8e3; border-radius: 10px; overflow: hidden;">
+        <div class="card-header text-light py-2 px-3 d-flex align-items-center justify-content-between" style="background: linear-gradient(90deg, #103a5e, #15486f);">
+          <span class="fw-semibold" style="font-size: 13px;"><i class="fas fa-chart-pie text-info me-1"></i>Graphical View</span>
+          <button
+            type="button"
+            class="btn btn-sm py-0 px-2 text-white"
+            style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,.12); font-size: 11px;"
+            (click)="toggleVisualization()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="card-body p-3">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <apx-chart
+                *ngIf="settlementDonutOptions?.series"
+                [series]="settlementDonutOptions.series"
+                [chart]="settlementDonutOptions.chart"
+                [labels]="settlementDonutOptions.labels"
+                [colors]="settlementDonutOptions.colors"
+                [legend]="settlementDonutOptions.legend"
+                [dataLabels]="settlementDonutOptions.dataLabels"
+                [stroke]="settlementDonutOptions.stroke"
+                [tooltip]="settlementDonutOptions.tooltip"
+                [plotOptions]="settlementDonutOptions.plotOptions">
+              </apx-chart>
+            </div>
+            <div class="col">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <div class="border rounded px-3 py-2 bg-light">
+                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Total {{ localCurrencyCode }}</div>
+                    <div class="fw-bold" style="font-size: 17px;">{{ formatAmount(data.stats?.originalLocalAmount) }}</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded px-3 py-2" style="background: #eefaf2;">
+                    <div class="text-success text-uppercase" style="font-size: 10px; font-weight: 700;">Matched {{ localCurrencyCode }}</div>
+                    <div class="fw-bold text-success" style="font-size: 17px;">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }}</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded px-3 py-2" style="background: #fff5f5;">
+                    <div class="text-danger text-uppercase" style="font-size: 10px; font-weight: 700;">Outstanding {{ localCurrencyCode }}</div>
+                    <div class="fw-bold text-danger" style="font-size: 17px;">{{ formatAmount(data.stats?.outstandingLocalAmount) }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap align-items-center gap-3 mt-3" style="font-size: 12px;">
+                <span class="d-inline-flex align-items-center gap-2">
+                  <span class="d-inline-block rounded-circle bg-success" style="width: 9px; height: 9px;"></span>
+                  Matched <strong>{{ totalMatchedPercent }}%</strong>
+                </span>
+                <span class="d-inline-flex align-items-center gap-2">
+                  <span class="d-inline-block rounded-circle bg-danger" style="width: 9px; height: 9px;"></span>
+                  Outstanding <strong>{{ outstandingPercent }}%</strong>
+                </span>
+              </div>
+
+              <div *ngIf="insightRows.length && contributionChartOptions?.series" class="mt-3">
+                <div class="text-muted text-uppercase mb-1" style="font-size: 10px; font-weight: 700;">Amount Contribution</div>
+                <apx-chart
+                  [series]="contributionChartOptions.series"
+                  [chart]="contributionChartOptions.chart"
+                  [colors]="contributionChartOptions.colors"
+                  [plotOptions]="contributionChartOptions.plotOptions"
+                  [dataLabels]="contributionChartOptions.dataLabels"
+                  [xaxis]="contributionChartOptions.xaxis"
+                  [yaxis]="contributionChartOptions.yaxis"
+                  [grid]="contributionChartOptions.grid"
+                  [tooltip]="contributionChartOptions.tooltip"
+                  [legend]="contributionChartOptions.legend">
+                </apx-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-1 shadow-sm" style="border: 1px solid #cfd8e3; border-radius: 10px; overflow: hidden;">
+        <div class="card-header text-light py-2 px-3 d-flex align-items-center justify-content-between" style="background: linear-gradient(90deg, #103a5e, #15486f);">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold" style="font-size: 13px;">Active Matchings</span>
+            <span class="badge bg-light text-dark" style="font-size: 11px;">{{ activeMatchings.length }}</span>
+          </div>
+          <div class="pe-2" style="font-size: 12px;">
+            Party <span class="fw-bold">{{ formatAmount(totalMatchedPartyAmount) }} {{ partyCurrencyCode }}</span>
+            <span class="mx-1">|</span>
+            Local <span class="fw-bold">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }} {{ localCurrencyCode }}</span>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="!activeMatchings.length" class="text-center text-muted py-3" style="font-size: 12px;">
+            <i class="fas fa-inbox me-1"></i>No active matchings found.
+          </div>
+
+          <div *ngIf="activeMatchings.length" class="table-responsive" style="max-height: 360px;">
+            <table class="table table-sm table-hover align-middle mb-0" style="font-size: 12px; min-width: 1180px;">
+              <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                  <th class="text-center" style="width: 36px;">#</th>
+                  <th style="width: 145px;">Matching No.</th>
+                  <th style="width: 88px;">Date</th>
+                  <th style="width: 92px;">This Voucher</th>
+                  <th style="min-width: 360px;">Source Vouchers</th>
+                  <th style="min-width: 360px;">Object Vouchers</th>
+                  <th class="text-end" style="width: 120px;">Matched Curr.</th>
+                  <th class="text-end pe-3" style="width: 130px;">Matched {{ localCurrencyCode }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of activeMatchings; let i = index">
+                  <td class="text-center text-muted">{{ i + 1 }}</td>
+                  <td>
+                    <span
+                      class="fw-bold"
+                      style="cursor: pointer; color: #103a5e; text-decoration: underline;"
+                      (click)="navigateToVM(m.VoucherMatchingHeaderSid)">
+                      {{ m.VoucherMatchingNo || '-' }}
+                    </span>
+                    <button
+                      *ngIf="m.VoucherMatchingNo"
+                      type="button"
+                      class="btn btn-link btn-sm p-0 ms-1"
+                      style="line-height: 1; font-size: 10px;"
+                      title="Copy matching number"
+                      (click)="copyText(m.VoucherMatchingNo)">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </td>
+                  <td>{{ m.VoucherMatchingDate | formatDate }}</td>
+                  <td>
+                    <span
+                      class="badge rounded-pill"
+                      [style.background-color]="m.MatchingType === 'Source' ? '#dbeafe' : '#d1fae5'"
+                      [style.color]="m.MatchingType === 'Source' ? '#1d4ed8' : '#065f46'"
+                      style="font-size: 11px;">
+                      {{ m.MatchingType || '-' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div *ngIf="getVoucherSummaries(m, 'Source').length; else noSourceVouchers" class="d-flex flex-wrap gap-1" [title]="voucherListTooltip(m, 'Source')">
+                      <span
+                        *ngFor="let voucher of visibleVoucherSummaries(m, 'Source')"
+                        class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded"
+                        style="max-width: 320px; border: 1px solid #b9d7ff; background: #eef6ff; color: #103a5e;"
+                        [title]="voucherSummaryTitle(voucher)">
+                        <span class="badge bg-primary" style="font-size: 10px;">{{ voucher.voucherTypeCode || voucher.voucherType || 'SRC' }}</span>
+                        <span class="fw-bold text-truncate" style="max-width: 225px; color: #103a5e; text-decoration: underline;">{{ voucher.voucherNumber }}</span>
+                        <button
+                          type="button"
+                          class="btn btn-link btn-sm p-0"
+                          style="line-height: 1; font-size: 10px; color: #103a5e;"
+                          title="Copy source voucher"
+                          (click)="copyText(voucher.voucherNumber)">
+                          <i class="fas fa-copy"></i>
+                        </button>
+                      </span>
+                      <span
+                        *ngIf="hiddenVoucherCount(m, 'Source')"
+                        class="badge rounded-pill bg-secondary"
+                        style="font-size: 10px; align-self: center;"
+                        [title]="voucherListTooltip(m, 'Source')">
+                        +{{ hiddenVoucherCount(m, 'Source') }}
+                      </span>
+                    </div>
+                    <ng-template #noSourceVouchers>
+                      <span class="text-muted">-</span>
+                    </ng-template>
+                  </td>
+                  <td>
+                    <div *ngIf="getVoucherSummaries(m, 'Object').length; else noObjectVouchers" class="d-flex flex-wrap gap-1" [title]="voucherListTooltip(m, 'Object')">
+                      <span
+                        *ngFor="let voucher of visibleVoucherSummaries(m, 'Object')"
+                        class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded"
+                        style="max-width: 320px; border: 1px solid #bbf0d0; background: #effcf4; color: #064e3b;"
+                        [title]="voucherSummaryTitle(voucher)">
+                        <span class="badge bg-success" style="font-size: 10px;">{{ voucher.voucherTypeCode || voucher.voucherType || 'OBJ' }}</span>
+                        <span class="fw-bold text-truncate" style="max-width: 225px; color: #103a5e; text-decoration: underline;">{{ voucher.voucherNumber }}</span>
+                        <button
+                          type="button"
+                          class="btn btn-link btn-sm p-0"
+                          style="line-height: 1; font-size: 10px; color: #103a5e;"
+                          title="Copy object voucher"
+                          (click)="copyText(voucher.voucherNumber)">
+                          <i class="fas fa-copy"></i>
+                        </button>
+                      </span>
+                      <span
+                        *ngIf="hiddenVoucherCount(m, 'Object')"
+                        class="badge rounded-pill bg-secondary"
+                        style="font-size: 10px; align-self: center;"
+                        [title]="voucherListTooltip(m, 'Object')">
+                        +{{ hiddenVoucherCount(m, 'Object') }}
+                      </span>
+                    </div>
+                    <ng-template #noObjectVouchers>
+                      <span class="text-muted">-</span>
+                    </ng-template>
+                  </td>
+                  <td class="text-end">
+                    {{ formatAmount(m.matchedPartyAmount) }}
+                    <span class="text-muted">{{ m.currencyCode }}</span>
+                  </td>
+                  <td class="text-end fw-semibold pe-3">{{ formatAmount(m.matchedLocalAmount) }}</td>
+                </tr>
+              </tbody>
+              <tfoot *ngIf="activeMatchings.length > 1" class="table-light">
+                <tr class="fw-bold">
+                  <td colspan="6" class="text-end text-muted">Total</td>
+                  <td class="text-end text-primary">{{ formatAmount(totalMatchedPartyAmount) }} {{ partyCurrencyCode }}</td>
+                  <td class="text-end text-primary pe-3">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }} {{ localCurrencyCode }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="cancelledMatchings.length" class="card mb-1" style="border: 1px solid #f1b9c0;">
+        <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between" style="background: #fff5f5;">
+          <span class="fw-semibold text-danger" style="font-size: 13px;"><i class="fas fa-ban me-1"></i>Cancelled Matchings</span>
+          <span class="badge bg-danger" style="font-size: 11px;">{{ cancelledMatchings.length }}</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0" style="font-size: 12px;">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 36px;">#</th>
+                <th>VM No.</th>
+                <th style="width: 130px;">Matching Date</th>
+                <th style="width: 130px;">Cancelled On</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of cancelledMatchings; let i = index">
+                <td class="text-muted">{{ i + 1 }}</td>
+                <td>
+                  <span class="text-danger fw-semibold" style="text-decoration: line-through;">{{ c.VoucherMatchingNo }}</span>
+                  <button
+                    type="button"
+                    class="btn btn-link btn-sm p-0 ms-1 text-muted"
+                    style="line-height: 1; font-size: 10px;"
+                    title="Copy cancelled matching"
+                    (click)="copyText(c.VoucherMatchingNo)">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </td>
+                <td>{{ c.VoucherMatchingDate | formatDate }}</td>
+                <td class="text-muted">{{ c.UpdatedOn | formatDate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="result" class="vm-visualize-action-wrap d-flex justify-content-end pe-3 pb-3 pt-2">
+      <button
+        type="button"
+        class="btn btn-sm shadow"
+        style="height: 42px; min-width: 128px; border-radius: 10px; font-size: 13px; font-weight: 700; border: 1.5px solid #1769d4; color: #1769d4; background: #fff;"
+        (click)="toggleVisualization()">
+        <i class="fas fa-chart-pie me-1"></i>{{ showVisualization ? 'Hide Chart' : 'Visualize' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -262,6 +262,11 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
         disabled : !this.mps.can('insert')
       },
       {
+        label: 'Enquiry',
+        icon: 'fas fa-search-dollar',
+        action: 'enquiry',
+      },
+      {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
@@ -365,6 +370,9 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
     switch (action) {
       case 'create':
         this.navigateToCreate();
+        break;
+      case 'enquiry':
+        this.router.navigate(['/accounts/voucher-matching/enquiry']);
         break;
       case 'report':
         this.report();
