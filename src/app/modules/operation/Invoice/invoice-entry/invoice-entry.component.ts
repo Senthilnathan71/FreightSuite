@@ -78,6 +78,7 @@ import { InvoiceService } from '../../services/invoice.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 import { InvoiceCommodityPrintComponent } from '../invoice-new/invoice-commodity-print.component';
 
 interface NgbDateStructLike {
@@ -323,6 +324,52 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     return this.invoiceForm.get('voucherOthers') as FormGroup;
   }
 
+  private readonly invoiceValidationConfig: ValidationMessageConfig = {
+    labels: {
+      VoucherDate: 'Voucher Date',
+      VoucherType: 'Voucher Type',
+      PartyName: 'Party',
+      PartyAddress: 'Party Address',
+      PlaceOfSupply: 'Place of Supply',
+      State: 'State',
+      GST_VAT: 'GST / VAT',
+      InvoiceType: 'Invoice Type',
+      GSTType: 'GST Type',
+      TaxType: 'Tax Type',
+      CurrencyMasterSid: 'Currency',
+      CurrencyCode: 'Currency',
+      ExchangeRate: 'Exchange Rate',
+      DocumentNumber: 'Document Number',
+      HouseNumber: 'House Number',
+      MasterNumber: 'Master Number',
+      Narration: 'Narration',
+      Remarks: 'Remarks',
+      CustomsDuty: 'Customs Duty',
+      Salesman: 'Salesman',
+      ChargeMasterSid: 'Charge',
+      ChargeDescription: 'Charge Description',
+      LedgerMasterSid: 'Ledger',
+      COAMasterSid: 'COA',
+      HSSACMasterSid: 'HS / SAC Code',
+      ChargeUOMSid: 'UOM',
+      NumberOfUnit: 'Number of Units',
+      DrCr: 'Debit / Credit',
+      Rate: 'Rate',
+      Amount: 'Amount',
+      LocalAmount: 'Local Amount',
+      PartyAmount: 'Party Amount',
+      CostRevenue: 'Cost / Revenue',
+    },
+    messages: {
+      required: (label: string) => `${label} is required`,
+      maxlength: (label: string, error: any) =>
+        `${label} must not exceed ${error.requiredLength} characters`,
+      min: (label: string, error: any) =>
+        `${label} must be greater than ${error.min}`,
+      default: (label: string) => `${label} is invalid`,
+    },
+  };
+
   // storing frequently used data in a map
   /**
    * Exchange rate map
@@ -523,32 +570,32 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       VoucherDate: [defaultVoucherDate, Validators.required],
       CustomerMasterSid: [null],
       PartyMasterSid: [null],
-      PartyName: [null, Validators.required],
-      PartyAddress: [{ value: '', disabled: true }, Validators.required],
+      PartyName: [null, [Validators.required, Validators.maxLength(100)]],
+      PartyAddress: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(300)]],
       COAMasterSid: [null],
       CustomerBranchSid: [null],
-      DocumentNumber: [''],
+      DocumentNumber: ['', [Validators.maxLength(30)]],
       IRNNumber: [''],
       MasterJobSid: [null],
       HBLNo: [''],
       CurrencyMasterSid: [companyCurrencyId, Validators.required],
-      CurrencyCode: [companyCurrencyCode || '', Validators.required],
+      CurrencyCode: [companyCurrencyCode || '', [Validators.required, Validators.maxLength(3)]],
       ExchangeRate: [
         { value: 1, disabled: true },
         [Validators.required, greaterThanZero()],
       ],
-      GST_VAT: [''],
-      PlaceOfSupply: [''],
+      GST_VAT: ['', [Validators.maxLength(20)]],
+      PlaceOfSupply: ['', [Validators.maxLength(50)]],
       PostStatus: [''],
-      GSTType: [''],
-      InvoiceType: [null],
+      GSTType: ['', [Validators.maxLength(10)]],
+      InvoiceType: [null, [Validators.maxLength(10)]],
       VoucherType: [null],
-      TaxType : [companyCurrencyCode === 'in' ? 'GST' : 'VAT'],
-      Narration: [''],
-      Remarks: [''],
+      TaxType : [companyCurrencyCode === 'in' ? 'GST' : 'VAT', [Validators.maxLength(3)]],
+      Narration: ['', [Validators.maxLength(300)]],
+      Remarks: ['', [Validators.maxLength(300)]],
       IRNStatus: [''],
       MBLNo: [{ value: '', disabled: true }],
-      CustomsDuty: ['N'],
+      CustomsDuty: ['N', [Validators.maxLength(1)]],
       status: ['A', Validators.required],
       voucherDetails: this.fb.array([]),
       voucherOthers: this.fb.group({
@@ -1890,14 +1937,14 @@ isSeaDepartment(): boolean {
     const group = this.fb.group({
       VoucherDetailSid: [data?.VoucherDetailSid || null],
       ChargeMasterSid: [data?.ChargeMasterSid || null, Validators.required],
-      ChargeDescription: [data?.ChargeDescription || ''],
+      ChargeDescription: [data?.ChargeDescription || '', [Validators.maxLength(100)]],
       HSSACMasterSid: [data?.HSSACMasterSid || null],
       ChargeUOMSid: [data?.ChargeUOMSid || null],
       NumberOfUnit: [
         data?.NumberOfUnit || 1,
         [Validators.required, Validators.min(0)],
       ],
-      DrCr: [data?.DrCr || 'C', Validators.required],
+      DrCr: [data?.DrCr || 'C', [Validators.required, Validators.maxLength(50)]],
       CurrencyMasterSid: [
         data?.CurrencyMasterSid ||
           this.invoiceForm.get('CurrencyMasterSid')?.value ||
@@ -1907,6 +1954,7 @@ isSeaDepartment(): boolean {
         data?.CurrencyCode ||
           this.invoiceForm.get('CurrencyCode')?.value ||
           null,
+        [Validators.maxLength(3)]
       ],
       Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
       ExchangeRate: [
@@ -2550,7 +2598,7 @@ isSeaDepartment(): boolean {
     if (this.invoiceForm.invalid) {
       this.invoiceForm.markAllAsTouched();
       this.invoiceForm.updateValueAndValidity();
-      this.appSettingService.showError('Please fill all the required fields.');
+      errorLoggerWithToastr(this.invoiceForm, this.toastr, this.invoiceValidationConfig);
       if(resolve) resolve(false);
       return;
     }

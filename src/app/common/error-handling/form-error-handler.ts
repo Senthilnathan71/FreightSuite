@@ -97,48 +97,48 @@ function buildErrorMessages(
       case 'minlength':
         messages.push(
           config?.messages?.minlength
-            ? config.messages.minlength(label, errorValue)
-            : `${label} must be at least ${errorValue.requiredLength} characters`
+            ? config.messages.minlength(finalLabel, errorValue)
+            : `${finalLabel} must be at least ${errorValue.requiredLength} characters`
         );
         break;
 
       case 'maxlength':
         messages.push(
           config?.messages?.maxlength
-            ? config.messages.maxlength(label, errorValue)
-            : `${label} must not exceed ${errorValue.requiredLength} characters`
+            ? config.messages.maxlength(finalLabel, errorValue)
+            : `${finalLabel} must not exceed ${errorValue.requiredLength} characters`
         );
         break;
 
       case 'min':
         messages.push(
           config?.messages?.min
-            ? config.messages.min(label, errorValue)
-            : `${label} must be greater than ${errorValue.min}`
+            ? config.messages.min(finalLabel, errorValue)
+            : `${finalLabel} must be greater than ${errorValue.min}`
         );
         break;
 
       case 'max':
         messages.push(
           config?.messages?.max
-            ? config.messages.max(label, errorValue)
-            : `${label} must be less than ${errorValue.max}`
+            ? config.messages.max(finalLabel, errorValue)
+            : `${finalLabel} must be less than ${errorValue.max}`
         );
         break;
 
       case 'pattern':
         messages.push(
           config?.messages?.pattern
-            ? config.messages.pattern(label)
-            : `${label} format is invalid`
+            ? config.messages.pattern(finalLabel)
+            : `${finalLabel} format is invalid`
         );
         break;
 
       default:
         messages.push(
           config?.messages?.default
-            ? config.messages.default(label)
-            : `${label} is invalid`
+            ? config.messages.default(finalLabel)
+            : `${finalLabel} is invalid`
         );
     }
   });
