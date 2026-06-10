@@ -26,6 +26,7 @@ import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { CommonService } from 'src/app/common/common.service';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
+import { generateNonJobInvoiceDocument } from 'src/app/common/pdf/generators/non-job-invoice-pdf.generator';
 import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { VoucherPeriodValidationService } from 'src/app/common/voucher-period-validation.service';
@@ -95,12 +96,12 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     currencyConfigService: CurrencyConfigurationService,
     currencyFormatter: CurrencyFormatService,
     pdfService: PdfDownloadService,
-    pdfMakeService: PdfMakeService,
+    private nonJobPdfMakeService: PdfMakeService,
     toastr: ToastrService,
     logoService: LogoService,
     numberToWords: NumberToWordsService,
     voucherPeriodService: VoucherPeriodValidationService,
-    pdfFileSaveService: PdfFileSaveService,
+    private nonJobPdfFileSaveService: PdfFileSaveService,
     emailTriggerService: EmailTriggerService,
     voucherActionGuard: VoucherActionGuardService,
   ) {
@@ -121,12 +122,12 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       currencyConfigService,
       currencyFormatter,
       pdfService,
-      pdfMakeService,
+      nonJobPdfMakeService,
       toastr,
       logoService,
       numberToWords,
       voucherPeriodService,
-      pdfFileSaveService,
+        nonJobPdfFileSaveService,
       emailTriggerService,
       voucherActionGuard,
     );
@@ -223,6 +224,119 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
         NumberOfUnit: detail?.NumberOfUnit || '1.000',
       })),
     };
+  }
+
+  override async generatePDFBlob(): Promise<Blob> {
+    await this.preparePrintData();
+
+    const logo = this.nonJobPdfMakeService.getReportLogo();
+    const invoiceNumber = this.invoicePrintData?.InvoiceNo || this.invoiceData?.VoucherNumber || this.invoiceForm.get('VoucherNumber')?.value || '';
+    const invoiceDate = this.invoicePrintData?.InvoiceDate || this.invoiceData?.VoucherDate || this.invoiceForm.get('VoucherDate')?.value;
+    const currencyCode = this.invoiceData?.CurrencyCode || this.invoiceForm.get('CurrencyCode')?.value || '';
+    const exchangeRate = this.invoiceData?.ExchangeRate || this.invoiceForm.get('ExchangeRate')?.value || 1;
+    const printDetails = this.invoicePrintData?.voucherDetails || [];
+
+    const pdfData: any = {
+      company: {
+        ...this.currentCompany,
+        companyName: this.currentCompany?.companyName || this.currentCompany?.CompanyName || '',
+        addressLine1: this.currentCompany?.addressLine1 || this.currentCompany?.Address || '',
+        addressLine2: this.currentCompany?.addressLine2 || '',
+        countryCode: this.currentCompanyCountryCode,
+        postalCode: this.currentCompany?.postal_code || this.currentCompany?.postalCode || this.currentCompany?.ZipCode || '',
+        phoneNumber: this.currentCompany?.phoneNumber || this.currentCompany?.Phone || '',
+      },
+      branch: {
+        ...this.currentBranch,
+        branchName: this.currentBranch?.branchName || this.currentBranch?.BranchName || '',
+        branchCode: this.currentBranch?.branchCode || this.currentBranch?.BranchCode || '',
+        addressLine1: this.currentBranch?.addressLine1 || this.currentBranch?.Address || '',
+        addressLine2: this.currentBranch?.addressLine2 || '',
+        countryCode: this.currentCompanyCountryCode,
+        postalCode: this.currentBranch?.postalCode || this.currentBranch?.ZipCode || '',
+        phoneNumber: this.currentBranch?.phoneNumber || this.currentBranch?.Phone || '',
+      },
+      userData: {
+        userName: this.userData?.userName || this.userData?.UserName || '',
+        email: this.userData?.email || this.userData?.userEmail || '',
+      },
+      logo,
+      invoiceTitle: this.invoicePrintData?.invoiceTitle,
+      companyGstCode: this.invoicePrintData?.GSTCode || this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+      companyCountryCode: this.currentCompanyCountryCode,
+      companyPan: this.currentCompany?.Pan || this.currentCompany?.PAN || '',
+      companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+      currentCompanyCurrency: this.currentCompanyCurrency,
+      invoice: {
+        invoiceNo: invoiceNumber,
+        invoiceDate,
+        invoiceDueDate: this.invoicePrintData?.InvoiceDueDate,
+        customerName: this.invoicePrintData?.BilledTo || this.invoiceData?.PartyName || '',
+        customerAddress: this.invoicePrintData?.BillingAddress || this.invoiceData?.PartyAddress || '',
+        customerGstVat: this.invoicePrintData?.GST_VAT || this.invoiceData?.GST_VAT || '',
+        currencyCode,
+        exchangeRate,
+        postStatus: this.invoiceData?.PostStatus || 'P',
+        remarks: this.invoicePrintData?.Remarks || this.invoiceData?.Narration || this.invoiceData?.Remarks || '',
+        irnNumber: this.invoicePrintData?.IRNNumber || this.invoiceData?.IRNNumber || '',
+      },
+      charges: printDetails.map((detail: any, index: number) => ({
+        sno: detail.Sno || index + 1,
+        chargeName: detail.ChargeDescription || '',
+        hsnSacCode: detail.HSSACCode || '',
+        currencyCode: detail.CurrencyCode || currencyCode,
+        qty: detail.NumberOfUnit || 1,
+        rate: detail.Rate || 0,
+        roe: detail.ExchangeRate || 1,
+        taxableAmount: detail.TaxableAmount || 0,
+        cgstPercent: detail.cgstRate || 0,
+        cgstAmount: detail.cgstAmt || 0,
+        sgstPercent: detail.sgstRate || 0,
+        sgstAmount: detail.sgstAmt || 0,
+        ugstPercent: detail.ugstRate || 0,
+        ugstAmount: detail.ugstAmt || 0,
+        igstPercent: detail.igstRate || 0,
+        igstAmount: detail.igstAmt || 0,
+        vatPercent: detail.vatRate || 0,
+        vatAmount: detail.vatAmt || 0,
+        localAmount: detail.LocalAmount || 0,
+        partyAmount: detail.PartyAmount || 0,
+      })),
+      totals: {
+        grandTotal: this.invoicePrintData?.totalPartyAmount || this.getGrandTotal(),
+        currency: currencyCode,
+      },
+      bankDetails: this.bankDetails || [],
+      terms: (this as any).effectiveTermsAndConditions || this.TandCList || [],
+      amountInWords: this.invoicePrintData?.AmountInWords || '',
+      localCurrency: this.currentCompanyCurrency?.code || '',
+      taxDisplayConfig: this.printTaxDisplayConfig,
+      isVATMode: this.isVATMode,
+      authorisedSignatory: true,
+      invoicePrintData: this.invoicePrintData,
+    };
+
+    return this.nonJobPdfMakeService.getBlob(generateNonJobInvoiceDocument(pdfData));
+  }
+
+  override async downloadPDF(): Promise<void> {
+    this.nonJobSpinner.show();
+    try {
+      const blob = await this.generatePDFBlob();
+      const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || this.invoiceData?.VoucherNumber || this.invoiceData?.InvoiceNo || 'Invoice';
+      const filename = `Invoice_${voucherNumber}.pdf`;
+      const companyMasterSid = Number(this.currentCompany?.CompanyMasterSid || 0);
+      const saveAsFilePath = await this.nonJobPdfFileSaveService.shouldDownloadByFilePath(companyMasterSid);
+      await this.nonJobPdfFileSaveService.savePdf(blob, filename, saveAsFilePath);
+      this.nonJobAppSettings.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      if ((error as any)?.name !== 'AbortError') {
+        console.error('Error generating non-job PDF:', error);
+        this.nonJobAppSettings.showError('Error generating PDF. Please try again.');
+      }
+    } finally {
+      this.nonJobSpinner.hide();
+    }
   }
 
   override createDetailGroup(data?: any): FormGroup {

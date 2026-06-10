@@ -486,7 +486,7 @@
 
   <div class="modal-body">
     <div id="printContent">
-      <div style="width: 280mm; min-height: 350mm; margin: 10px; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; font-size: 16px;">
+      <div style="width: 280mm; min-height: 350mm; margin: 24px 10px 10px; background: #fff; border: 1px solid #000; box-sizing: border-box; position: relative; color: #000; page-break-after: always; font-size: 16px;">
         <div style="display: flex; flex-direction: column; margin-bottom: 0; width: 100%; padding-top: 5px; padding-left: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; flex-direction: column;">
@@ -495,23 +495,29 @@
             <div style="flex: 1; text-align: right; font-size: 17px; padding-right: 3%;">
               <h3 style="margin: 0; font-weight: 900">{{ currentCompany?.companyName || "Company Name" }}</h3>
               <p style="margin: 0; font-size: 16px">{{ currentBranch?.addressLine1 || "" }}</p>
-              <p style="margin: 0; font-size: 16px">
-                <ng-container *ngIf="currentBranch?.addressLine2 as addr">{{ addr }}, </ng-container>
-                {{ currentBranch?.branchName || "Company Branch" }}
-                <ng-container *ngIf="currentBranch?.branchCode as code"> - {{ code }}</ng-container>
-              </p>
-              <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode" style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
-                <span>Postal Code</span>
-                <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
-              </div>
+
+          <div style="width: 100%; font-size: 16px; text-align: right;">
+            <ng-container *ngIf="currentBranch?.addressLine2 as addr">
+              {{ addr }},
+            </ng-container>
+            {{ currentBranch?.branchName || 'Company Branch' }}
+            <ng-container *ngIf="currentBranch?.branchCode as code">
+              - {{ code }}
+            </ng-container>
+            <ng-container *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode">
+              Postal Code : {{ currentBranch?.postalCode || currentBranch?.ZipCode }}
+            </ng-container>
+          </div>
+
               <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone" style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
                 <span>Phone No</span>
                 <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
               </div>
-              <div style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
+              <div style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">     
                 <span *ngIf="currentCompanyCountryCode === 'in'">GST No</span>
                 <span *ngIf="currentCompanyCountryCode !== 'in'">VAT No</span>
-                <span>: {{ currentCompany?.Pan || currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '' }}</span>
+                <span *ngIf="currentCompanyCountryCode === 'in'">: {{ currentBranch?.taxRegistrationNo || currentCompany?.GST_VAT || '' }}</span>
+                <span *ngIf="currentCompanyCountryCode !== 'in'">: {{  currentCompany?.Pan|| '' }}</span>
               </div>
             </div>
           </div>
@@ -521,24 +527,21 @@
           <h3 style="margin: 2px 0; font-weight: bolder; font-size: 20px">
             <strong>{{ invoicePrintData?.invoiceTitle }}</strong>
           </h3>
-          <p style="font-size: 12px; margin: 2px 0" *ngIf="currentCompanyCountryCode === 'in'">
-            <strong>GST Code :</strong> {{ invoicePrintData?.GSTCode }}
-          </p>
         </div>
 
         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid black; margin-top: 8px; padding: 0 20px 8px;">
           <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
             <strong style="font-weight: bolder">BILLED TO</strong><br />
-            <div style="padding-left: 30px">
+            <div style="padding-left: 45px; padding-right: 24px; line-height: 1.45">
               <span>{{ invoicePrintData?.BilledTo }}</span><br />
               {{ invoicePrintData?.BillingAddress }}<br />
             </div>
-            <div style="display: flex; align-items: flex-start; margin-bottom: 2px;" *ngIf="currentCompanyCountryCode === 'in'">
-              <div style="width: 160px; font-weight: 600; white-space: nowrap;">
-                <strong>{{ invoicePrintData?.CustomerCountryCode === 'ae' ? 'VAT' : invoicePrintData?.CustomerCountryCode === 'in' ? 'PAN No' : 'Tax No' }}</strong>
+             <div style="display: flex">
+              <div style="width: 80px; font-weight: bolder">
+                <strong *ngIf="invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
+                <strong *ngIf="invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
               </div>
-              <div style="width: 15px; text-align: center;">:</div>
-              <div style="flex: 1; line-height: 1.4;">{{ invoicePrintData?.PAN }}</div>
+              <div>: {{ invoicePrintData?.GST_VAT }}</div>
             </div>
           </div>
           <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
@@ -565,13 +568,13 @@
               <div style="width: 180px; font-weight: bolder"><strong>Currency / Ex-Rate</strong></div>
               <div>: {{ invoicePrintData?.CurrExRate }}</div>
             </div>
-            <div style="display: flex">
+            <!-- <div style="display: flex">
               <div style="width: 180px; font-weight: bolder">
                 <strong *ngIf="invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
                 <strong *ngIf="invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
               </div>
               <div>: {{ invoicePrintData?.GST_VAT }}</div>
-            </div>
+            </div> -->
             <div style="display: flex" *ngIf="invoicePrintData?.CustomerCountryCode === 'in'">
               <div style="width: 180px; font-weight: bolder"><strong>IRN No.</strong></div>
               <div>: {{ invoicePrintData?.IRNNumber }}</div>
