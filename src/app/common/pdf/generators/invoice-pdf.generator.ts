@@ -264,7 +264,11 @@
       });
     
 
-    const registrationNo = (isIndiaInvoice ? data.companyPan : (data as any)?.companyVatNo) || '';
+    const registrationNo = (
+      isIndiaInvoice
+        ? data.companyGstCode
+        : data.companyPan || (data as any)?.companyVatNo
+    ) || '';
     if (!isIndiaInvoice || registrationNo) {
       companyInfoStack.push({
         text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
