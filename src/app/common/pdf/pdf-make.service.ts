@@ -44,6 +44,7 @@ import { generateMasterJobDocument, transformMasterJobApiData } from './generato
 import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
+import { generateNonJobInvoiceDocument } from './generators/non-job-invoice-pdf.generator';
 import { generateCommodityInvoiceDocument, transformCommodityInvoiceApiData } from './generators/invoice-commodity-pdf.generator';
 import { generateProformaInvoiceDocument } from './generators/proforma-invoice-pdf.generator';
 import {
@@ -579,6 +580,15 @@ export class PdfMakeService {
   }
 
   /**
+   * Generate and download Non Job Invoice PDF.
+   */
+  generateNonJobInvoice(data: InvoicePdfData): void {
+    const docDefinition = generateNonJobInvoiceDocument(data);
+    const filename = `Invoice_Non_Job_${data.invoice?.invoiceNo || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  /**
    * Generate and download Proforma Invoice PDF using the invoice layout.
    */
   generateProformaInvoice(data: InvoicePdfData): void {
@@ -596,6 +606,19 @@ export class PdfMakeService {
       return this.getBlob(docDefinition);
     } catch (error) {
       console.error('Invoice PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get Non Job Invoice PDF as Blob.
+   */
+  async generateNonJobInvoiceBlob(data: InvoicePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateNonJobInvoiceDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Non Job Invoice PDF Generation Error:', error);
       throw error;
     }
   }
