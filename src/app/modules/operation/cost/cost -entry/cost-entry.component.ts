@@ -1347,7 +1347,7 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
    formGroup.get('CostExchangeRate')?.enable();
-    const payload = { 
+    const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       fromCurrencyCode, 
@@ -2607,42 +2607,42 @@ createRateFormGroup(data?: any): FormGroup {
 
     this.voucherForm = this.fb.group({
       VoucherNumber: [''],
-      VoucherType: ['INV'],
+      VoucherType: ['INV', [Validators.maxLength(10)]],
       VoucherDate: [todayDate],
       PostDate : [null],
-      Narration : [narration],
+      Narration : [narration, [Validators.maxLength(300)]],
       PartyMasterSid : [null,[Validators.required]],
       COAMasterSid : [null,[Validators.required]],
-      PartyName : [{value : '', disabled : true },[Validators.required]],
-      PartyAddress : [{value : '', disabled : true },[Validators.required]],
+      PartyName : [{value : '', disabled : true },[Validators.required, Validators.maxLength(100)]],
+      PartyAddress : [{value : '', disabled : true },[Validators.required, Validators.maxLength(300)]],
       CustomerBranchSid : [null,[Validators.required]],
-      PlaceOfSupply : [{ value : '' , disabled : true },[Validators.required]],
-      State : [''],
-      GST_VAT : [{ value : '', disabled : true }],
-      InvoiceType : [null],
+      PlaceOfSupply : [{ value : '' , disabled : true },[Validators.required, Validators.maxLength(50)]],
+      State : ['', [Validators.maxLength(50)]],
+      GST_VAT : [{ value : '', disabled : true }, [Validators.maxLength(20)]],
+      InvoiceType : [null, [Validators.maxLength(10)]],
       TaxNumber : [''],
-      GSTType : [''],
-      Remarks : [''],
+      GSTType : ['', [Validators.maxLength(10)]],
+      Remarks : ['', [Validators.maxLength(300)]],
       DepartmentMasterSid : [null,[Validators.required]],
-      HouseNumber : [{ value : '' , disabled : true }],
-      MasterNumber : [{ value : '' , disabled : true }],
+      HouseNumber : [{ value : '' , disabled : true }, [Validators.maxLength(50)]],
+      MasterNumber : [{ value : '' , disabled : true }, [Validators.maxLength(50)]],
       HouseJobSid : [null , isHouseFieldsRequired ? [Validators.required] : []],
       MasterJobSid : [null , isMasterFieldsRequired ? [Validators.required] : []],
       CurrencyMasterSid : [ currentCompanyCurrencyId || null ,[Validators.required]],
-      CurrencyCode : [ currentCompanyCurrencyCode || null ,[Validators.required]],
+      CurrencyCode : [ currentCompanyCurrencyCode || null ,[Validators.required, Validators.maxLength(3)]],
       ExchangeRate : [{ value : 1 , disabled : true },[Validators.required , greaterThanZero()]],
       Amount : [null],
       LocalAmount : [null],
       NetAmount : [null],
-      DocumentNumber : [null],
+      DocumentNumber : [null, [Validators.maxLength(30)]],
       DocumentDate : [null],
       SetoffStatus : [null],
-      TaxType : [this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT'],
+      TaxType : [this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT', [Validators.maxLength(3)]],
       VoucherTypeMasterSid : [null],
       VoucherHeaderSid : [null],
       PostStatus : [null],
       BookingHeaderSid : [null , isBookingFieldsRequired ? [Validators.required] : [] ],
-      Salesman : [null],
+      Salesman : [null, [Validators.maxLength(30)]],
       voucherDetails : this.fb.array([]),
 
       // Unused here
@@ -2821,16 +2821,16 @@ createRateFormGroup(data?: any): FormGroup {
       isSelected : [true],
       Sno : [data?.Sno ?? len],
       ChargeMasterSid : [data?.ChargeMasterSid ?? null , [Validators.required]],
-      ChargeDescription : [data?.ChargeDescription ?? '' ],
+      ChargeDescription : [data?.ChargeDescription ?? '', [Validators.maxLength(100)]],
       LedgerMasterSid : [data?.LedgerMasterSid ?? null , [Validators.required]],
       COAMasterSid : [data?.COAMasterSid ?? null , [Validators.required]],
       HSSACMasterSid : [data?.HSSACMasterSid ?? null , [Validators.required]],
       ChargeUOMSid : [data?.ChargeUOMSid ?? null , [Validators.required]],
       NumberOfUnit : [data?.NumberOfUnit ?? this.voucher['NumberOfUnit'].value ?? null , [Validators.required , greaterThanZero()]],
       CurrencyMasterSid : [data?.CurrencyMasterSid ?? this.voucher['CurrencyMasterSid'].value ?? null , [Validators.required]],
-      CurrencyCode : [data?.CurrencyCode ?? this.voucher['CurrencyCode'].value ?? null , [Validators.required]],
+      CurrencyCode : [data?.CurrencyCode ?? this.voucher['CurrencyCode'].value ?? null , [Validators.required, Validators.maxLength(3)]],
       ExchangeRate : [data?.ExchangeRate ?? this.voucher['ExchangeRate'].value ?? null , [Validators.required, greaterThanZero()]],
-      DrCr : [data?.DrCr ?? 'D' , [Validators.required]],
+      DrCr : [data?.DrCr ?? 'D' , [Validators.required, Validators.maxLength(50)]],
       Rate : [data?.Rate ?? null , [Validators.required , greaterThanZero()]],
       Amount : [data?.Amount ?? null , [Validators.required , greaterThanZero()]],
       TaxableAmount : [data?.TaxableAmount ?? null ],
@@ -2846,7 +2846,7 @@ createRateFormGroup(data?: any): FormGroup {
       DepartmentMasterSid : [data?.DepartmentMasterSid ?? null ],
       YearMasterSid : [data?.YearMasterSid ?? YearMasterSid],
       RateSid : [data?.RateSid ?? null],
-      Narration : [''],
+      Narration : ['', [Validators.maxLength(300)]],
       
       IsAutoGenerated : [data?.IsAutoGenerated ?? 'N'],
       VoucherTransactionSid : [data?.VoucherTransactionSid ?? null],
@@ -2854,9 +2854,9 @@ createRateFormGroup(data?: any): FormGroup {
       ReversalAmount : [data?.ReversalAmount ?? null],
       CostCenter : [data?.CostCenter ?? null],
       ProfitCenter : [data?.ProfitCenter ?? null],
-      Remarks : [data?.Remarks ?? ''],
-      CostRevenue : [data?.CostRevenue ?? 'Revenue'],
-      InvoiceType : [data?.InvoiceType ?? ''],
+      Remarks : [data?.Remarks ?? '', [Validators.maxLength(300)]],
+      CostRevenue : [data?.CostRevenue ?? 'Revenue', [Validators.maxLength(10)]],
+      InvoiceType : [data?.InvoiceType ?? '', [Validators.maxLength(10)]],
       TotalTaxAmount : [data?.TotalTaxAmount ?? 0],
       TotalAmount : [data?.TotalAmount ?? 0],
 
@@ -4053,7 +4053,7 @@ createRateFormGroup(data?: any): FormGroup {
     // Validate form after all ledgers are fetched and patched
     const temporaryForm = this.getHeaderAndSelectedDetailsForm();
     if (temporaryForm.invalid) {
-      errorLoggerWithToastr(temporaryForm,this.toaster, this.getVoucherValidationConfig());
+      this.showVoucherValidationErrors(temporaryForm);
       this.voucherForm.markAllAsTouched();
       this.spinner.hide();
       return;
@@ -4835,20 +4835,31 @@ isHBLNoValid(): boolean {
         /* ------------ Header ------------ */
         VoucherNumber: 'Voucher Number',
         VoucherDate: 'Voucher Date',
+        VoucherType: 'Voucher Type',
         PostDate: 'Post Date',
         Narration: 'Narration',
+        Remarks: 'Remarks',
 
         PartyMasterSid: 'Party',
         PartyName: 'Party Name',
         PartyAddress: 'Party Address',
         CustomerBranchSid: 'Customer Branch',
         PlaceOfSupply: 'Place of Supply',
+        State: 'State',
+        GST_VAT: 'GST / VAT',
+        InvoiceType: 'Invoice Type',
+        GSTType: 'GST Type',
+        TaxType: 'Tax Type',
         DepartmentMasterSid: 'Department',
 
         COAMasterSid: 'Ledger',
         CurrencyMasterSid: 'Currency',
         CurrencyCode: 'Currency Code',
         ExchangeRate: 'Exchange Rate',
+        HouseNumber: 'House Number',
+        MasterNumber: 'Master Number',
+        CustomsDuty: 'Customs Duty',
+        Salesman: 'Salesman',
 
         HouseJobSid: 'House Job',
         MasterJobSid: 'Master Job',
@@ -4858,6 +4869,18 @@ isHBLNoValid(): boolean {
         DocumentDate : 'Bill Date',
 
         /* ------------ Details (FormArray) ------------ */
+        ChargeMasterSid: 'Charge',
+        LedgerMasterSid: 'Ledger',
+        HSSACMasterSid: 'HS / SAC Code',
+        ChargeUOMSid: 'UOM',
+        NumberOfUnit: 'Number of Units',
+        DrCr: 'Debit / Credit',
+        Rate: 'Rate',
+        Amount: 'Amount',
+        LocalAmount: 'Local Amount',
+        PartyAmount: 'Party Amount',
+        ChargeDescription: 'Charge Description',
+        CostRevenue: 'Cost / Revenue',
         'voucherDetails.ChargeMasterSid': 'Charge',
         'voucherDetails.LedgerMasterSid': 'Ledger',
         'voucherDetails.COAMasterSid': 'COA',
@@ -4907,14 +4930,16 @@ isHBLNoValid(): boolean {
       // ALL required header fields from your voucherForm (preserves validators)
       PartyMasterSid: [this.voucherForm.get('PartyMasterSid')?.value, [Validators.required]],
       COAMasterSid: [this.voucherForm.get('COAMasterSid')?.value, [Validators.required]],
-      PartyName: [this.voucherForm.get('PartyName')?.value, [Validators.required]],
-      PartyAddress: [this.voucherForm.get('PartyAddress')?.value, [Validators.required]],
+      PartyName: [this.voucherForm.get('PartyName')?.value, [Validators.required, Validators.maxLength(100)]],
+      PartyAddress: [this.voucherForm.get('PartyAddress')?.value, [Validators.required, Validators.maxLength(300)]],
       CustomerBranchSid: [this.voucherForm.get('CustomerBranchSid')?.value, [Validators.required]],
-      PlaceOfSupply: [this.voucherForm.get('PlaceOfSupply')?.value, [Validators.required]],
+      PlaceOfSupply: [this.voucherForm.get('PlaceOfSupply')?.value, [Validators.required, Validators.maxLength(50)]],
       DepartmentMasterSid: [this.voucherForm.get('DepartmentMasterSid')?.value, [Validators.required]],
       CurrencyMasterSid: [this.voucherForm.get('CurrencyMasterSid')?.value, [Validators.required]],
-      CurrencyCode: [this.voucherForm.get('CurrencyCode')?.value, [Validators.required]],
+      CurrencyCode: [this.voucherForm.get('CurrencyCode')?.value, [Validators.required, Validators.maxLength(3)]],
       ExchangeRate: [this.voucherForm.get('ExchangeRate')?.value, [Validators.required, greaterThanZero()]],
+      Narration: [this.voucherForm.get('Narration')?.value, [Validators.maxLength(300)]],
+      Remarks: [this.voucherForm.get('Remarks')?.value, [Validators.maxLength(300)]],
 
       // Conditional header fields (matching your initVoucherForm logic)
       HouseJobSid: [this.voucherForm.get('HouseJobSid')?.value, isHouseFieldsRequired ? [Validators.required] : []],
@@ -4922,10 +4947,21 @@ isHBLNoValid(): boolean {
       BookingHeaderSid: [this.voucherForm.get('BookingHeaderSid')?.value, isBookingFieldsRequired ? [Validators.required] : []],
 
       // Optional but commonly validated fields
-      DocumentNumber: [this.voucherForm.get('DocumentNumber')?.value , this.selectedVoucherType === 'Vendor Invoice' && this.isFieldRequired('DocumentNumber') ? [Validators.required] : []],
+      DocumentNumber: [
+        this.voucherForm.get('DocumentNumber')?.value,
+        this.selectedVoucherType === 'Vendor Invoice' && this.isFieldRequired('DocumentNumber')
+          ? [Validators.required, Validators.maxLength(30)]
+          : [Validators.maxLength(30)]
+      ],
       DocumentDate: [this.voucherForm.get('DocumentDate')?.value , this.selectedVoucherType === 'Vendor Invoice' && this.isFieldRequired('DocumentDate') ? [Validators.required] : []],
-      State: [this.voucherForm.get('State')?.value],
-      GST_VAT: [this.voucherForm.get('GST_VAT')?.value],
+      State: [this.voucherForm.get('State')?.value, [Validators.maxLength(50)]],
+      GST_VAT: [this.voucherForm.get('GST_VAT')?.value, [Validators.maxLength(20)]],
+      InvoiceType: [this.voucherForm.get('InvoiceType')?.value, [Validators.maxLength(10)]],
+      GSTType: [this.voucherForm.get('GSTType')?.value, [Validators.maxLength(10)]],
+      TaxType: [this.voucherForm.get('TaxType')?.value, [Validators.maxLength(3)]],
+      HouseNumber: [this.voucherForm.get('HouseNumber')?.value, [Validators.maxLength(50)]],
+      MasterNumber: [this.voucherForm.get('MasterNumber')?.value, [Validators.maxLength(50)]],
+      Salesman: [this.voucherForm.get('Salesman')?.value, [Validators.maxLength(30)]],
 
       // Scoped details FormArray (reuses ORIGINAL detail validators)
       details: this.fb.array(selectedDetails, { validators: [] })
@@ -4936,6 +4972,12 @@ isHBLNoValid(): boolean {
         this.currentCompanyCurrency?.code
       )]
     });
+  }
+
+  private showVoucherValidationErrors(form: FormGroup | FormArray): void {
+    form.markAllAsTouched();
+    form.updateValueAndValidity({ emitEvent: false });
+    errorLoggerWithToastr(form, this.toaster, this.getVoucherValidationConfig());
   }
 
 

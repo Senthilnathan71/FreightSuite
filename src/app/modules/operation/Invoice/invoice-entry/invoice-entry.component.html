@@ -411,7 +411,7 @@
               <!-- 13. Remarks -->
               <aside class="col-md-3">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="Remarks" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="Remarks" maxlength="300" placeholder="" />
                   <label class="input-label">Remarks
                     <i *ngIf="invoiceForm?.get('Remarks')?.value" class="fas fa-copy ms-1"
                       style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"

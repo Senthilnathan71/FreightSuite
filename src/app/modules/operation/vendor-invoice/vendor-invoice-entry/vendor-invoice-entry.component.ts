@@ -36,7 +36,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
-import { errorLogger, getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
@@ -55,6 +55,7 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -325,6 +326,55 @@ export class VendorInvoiceEntryComponent implements OnInit {
     return this.vendorInvoiceForm.get('voucherTDS') as FormGroup;
   }
 
+  private readonly vendorInvoiceValidationConfig: ValidationMessageConfig = {
+    labels: {
+      VoucherDate: 'Voucher Date',
+      VoucherType: 'Voucher Type',
+      PartyName: 'Vendor',
+      PartyAddress: 'Vendor Address',
+      PlaceOfSupply: 'Place of Supply',
+      State: 'State',
+      GST_VAT: 'GST / VAT',
+      InvoiceType: 'Invoice Type',
+      GSTType: 'GST Type',
+      TaxType: 'Tax Type',
+      CurrencyMasterSid: 'Currency',
+      CurrencyCode: 'Currency',
+      ExchangeRate: 'Exchange Rate',
+      DocumentNumber: 'Document Number',
+      HouseNumber: 'House Number',
+      MasterNumber: 'Master Number',
+      Narration: 'Narration',
+      Remarks: 'Remarks',
+      CustomsDuty: 'Customs Duty',
+      Salesman: 'Salesman',
+      BillNo: 'Bill No',
+      BillDate: 'Bill Date',
+      BillAmt: 'Bill Amount',
+      ChargeMasterSid: 'Charge',
+      ChargeDescription: 'Charge Description',
+      LedgerMasterSid: 'Ledger',
+      COAMasterSid: 'COA',
+      HSSACMasterSid: 'HS / SAC Code',
+      ChargeUOMSid: 'UOM',
+      NumberOfUnit: 'Number of Units',
+      DrCr: 'Debit / Credit',
+      Rate: 'Rate',
+      Amount: 'Amount',
+      LocalAmount: 'Local Amount',
+      PartyAmount: 'Party Amount',
+      CostRevenue: 'Cost / Revenue',
+    },
+    messages: {
+      required: (label: string) => `${label} is required`,
+      maxlength: (label: string, error: any) =>
+        `${label} must not exceed ${error.requiredLength} characters`,
+      min: (label: string, error: any) =>
+        `${label} must be greater than ${error.min}`,
+      default: (label: string) => `${label} is invalid`,
+    },
+  };
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -540,34 +590,34 @@ export class VendorInvoiceEntryComponent implements OnInit {
       VoucherNumber: [{ value: '', disabled: true }],
       VoucherDate: [defaultDate, Validators.required],
       PartyMasterSid: [null],
-      PartyName: [null, Validators.required],
-      PartyAddress: [{ value: '', disabled: true },Validators.required],
+      PartyName: [null, [Validators.required, Validators.maxLength(100)]],
+      PartyAddress: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(300)]],
       COAMasterSid :[null],
       CustomerBranchSid: [null],
-      DocumentNumber : [''],
+      DocumentNumber : ['', [Validators.maxLength(30)]],
       IRNNumber : [''],
       MasterJobSid : [null],
       HBLNo : [{value: '', disabled: true}],
       CurrencyMasterSid : [companyCurrencyId, Validators.required],
-      CurrencyCode : [companyCurrencyCode || "", Validators.required],
+      CurrencyCode : [companyCurrencyCode || "", [Validators.required, Validators.maxLength(3)]],
       ExchangeRate : [
         { value: 1, disabled: true }, 
         [Validators.required, Validators.min(0)]
       ],
-      GST_VAT: [''],
-      PlaceOfSupply: [''],
+      GST_VAT: ['', [Validators.maxLength(20)]],
+      PlaceOfSupply: ['', [Validators.maxLength(50)]],
       PostStatus: ['U'],
-      GSTType: [''],
-      InvoiceType: [null],
-      Narration: [''],
-      Remarks : [''],
+      GSTType: ['', [Validators.maxLength(10)]],
+      InvoiceType: [null, [Validators.maxLength(10)]],
+      Narration: ['', [Validators.maxLength(300)]],
+      Remarks : ['', [Validators.maxLength(300)]],
       IRNStatus : [''],
       MBLNo : [{value: '', disabled: true}],
       Status: ['A',[Validators.required]],
       JobOrNonJob: [{value : this.isNonJob, disabled: true}],  // true then non job , false then job
 
       DepartmentMasterSid: [null],
-      BillNo: ['', Validators.required],
+      BillNo: ['', [Validators.required, Validators.maxLength(30)]],
       BillDate: [null, Validators.required],
       BillAmt: [0, [Validators.required, Validators.min(0)]],
       HouseJobSid: [null],
@@ -1505,14 +1555,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const group = this.fb.group({
       VoucherDetailSid: [data?.VoucherDetailSid || null],
       ChargeMasterSid: [data?.ChargeMasterSid || null, !this.isNonJob ? [Validators.required] : []],
-      ChargeDescription: [data?.ChargeDescription || ''],
+      ChargeDescription: [data?.ChargeDescription || '', [Validators.maxLength(100)]],
       HSSACMasterSid: [data?.HSSACMasterSid || null],
       ChargeUOMSid: [data?.ChargeUOMSid || null],
       NumberOfUnit: [
         data?.NumberOfUnit || 1,
         [Validators.required, Validators.min(0)],
       ],
-      DrCr: [data?.DrCr || 'D', Validators.required],
+      DrCr: [data?.DrCr || 'D', [Validators.required, Validators.maxLength(50)]],
       CurrencyMasterSid: [
         data?.CurrencyMasterSid ||
           this.vendorInvoiceForm.get('CurrencyMasterSid')?.value ||
@@ -1522,6 +1572,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         data?.CurrencyCode ||
           this.vendorInvoiceForm.get('CurrencyCode')?.value ||
           null,
+        [Validators.maxLength(3)]
       ],
       Rate: [data?.Rate || 0, [Validators.required, Validators.min(0)]],
       ExchangeRate: [
@@ -2027,10 +2078,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
 
     if (this.vendorInvoiceForm.invalid) {
-      errorLogger(this.vendorInvoiceForm);
       this.vendorInvoiceForm.markAllAsTouched();
       this.vendorInvoiceForm.updateValueAndValidity();
-      this.appSettingService.showError('Please fill all required fields.');
+      errorLoggerWithToastr(this.vendorInvoiceForm, this.toastr, this.vendorInvoiceValidationConfig);
       if (resolve) resolve(false);
       return;
     }
@@ -2499,7 +2549,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
     return payload;
   }
-
 
   getPartyAmount(detailIndex: number) {
     const detail = (this.details.at(detailIndex) as FormGroup)?.getRawValue();
@@ -3643,33 +3692,33 @@ export class VendorInvoiceEntryComponent implements OnInit {
       VoucherNumber: [{ value: '', disabled: true }], // auto generated
       VoucherDate: [new Date(), Validators.required], // default
       PartyMasterSid: [null], // based on dropdown choose for search
-      PartyName: [null, Validators.required], // based on dropdown choose for search
-      PartyAddress: [{ value: '', disabled: true },Validators.required], // based on dropdown choose for search
+      PartyName: [null, [Validators.required, Validators.maxLength(100)]], // based on dropdown choose for search
+      PartyAddress: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(300)]], // based on dropdown choose for search
       COAMasterSid :[null], // based on dropdown choose for search
       CustomerBranchSid: [null], // based on dropdown choose for search
-      DocumentNumber : [''],
+      DocumentNumber : ['', [Validators.maxLength(30)]],
       IRNNumber : [''],
       MasterJobSid : [null],
       HBLNo : [{value: '', disabled: true}],
       CurrencyMasterSid : [companyCurrencyId, Validators.required],
-      CurrencyCode : [companyCurrencyCode || "", Validators.required],
+      CurrencyCode : [companyCurrencyCode || "", [Validators.required, Validators.maxLength(3)]],
       ExchangeRate : [
         { value: 1, disabled: true }, 
         [Validators.required, Validators.min(0)]
       ],
-      GST_VAT: [''],
-      PlaceOfSupply: [''],
+      GST_VAT: ['', [Validators.maxLength(20)]],
+      PlaceOfSupply: ['', [Validators.maxLength(50)]],
       PostStatus: ['U'],
-      GSTType: [''],
-      InvoiceType: [null],
-      Narration: [''],
-      Remarks : [''],
+      GSTType: ['', [Validators.maxLength(10)]],
+      InvoiceType: [null, [Validators.maxLength(10)]],
+      Narration: ['', [Validators.maxLength(300)]],
+      Remarks : ['', [Validators.maxLength(300)]],
       IRNStatus : [''],
       MBLNo : [{value: '', disabled: true}],
       Status: ['A',[Validators.required]],
 
       DepartmentMasterSid: [null],
-      BillNo: ['', Validators.required],
+      BillNo: ['', [Validators.required, Validators.maxLength(30)]],
       BillDate: [null, Validators.required],
       BillAmt: [0, [Validators.required, Validators.min(0)]],
       HouseJobSid: [null],
