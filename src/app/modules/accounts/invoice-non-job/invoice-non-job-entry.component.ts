@@ -36,7 +36,7 @@ import { TaxCalculationService } from 'src/app/modules/operation/services/tax-ca
 import { InvoiceEntryComponent } from 'src/app/modules/operation/Invoice/invoice-entry/invoice-entry.component';
 import { InvoiceNonJobService } from '../services/invoice-non-job.service';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
-import { toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-invoice-non-job-entry',
@@ -137,6 +137,7 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     this.invoiceForm.addControl('BillNo', this.nonJobFb.control(''));
     this.invoiceForm.addControl('BillDate', this.nonJobFb.control(null));
     this.invoiceForm.addControl('BillAmt', this.nonJobFb.control(0));
+    this.invoiceForm.get('voucherOthers.DueDate')?.disable({ emitEvent: false });
     this.invoiceForm.patchValue({
       Narration: '',
       Remarks: '',
@@ -322,6 +323,7 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
 
   override onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean): void {
     const narration = this.invoiceForm.get('Narration')?.value || '';
+    this.syncNonJobDueDate(this.invoiceForm.get('voucherOthers.DueDate')?.value || this.dueDate);
     this.invoiceForm.get('Remarks')?.setValue(narration, { emitEvent: false });
     this.invoiceForm.get('DocumentNumber')?.setValue(this.invoiceForm.get('BillNo')?.value || '', { emitEvent: false });
     this.details.controls.forEach((control) => {
@@ -363,6 +365,49 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       }
     });
     this.updateBillAmount();
+  }
+
+  override patchDueDate(): void {
+    let CustomerMasterSid: number | undefined;
+    let CustomerBranchSid: number | undefined;
+    const partyLedgerSid = this.invoiceForm?.get('PartyMasterSid')?.value;
+    if (partyLedgerSid) {
+      const selectedParty = this.customerList.find((cus: any) => cus.SubledgerMasterSid === partyLedgerSid);
+      CustomerMasterSid = selectedParty?.CustomerMasterSid;
+    }
+
+    const branchId = this.invoiceForm?.get('CustomerBranchSid')?.value;
+    if (branchId) {
+      const selectedBranch = this.customerBranchList.find(
+        (branch: any) => Number(branch.CustomerBranchSid || branch.BranchMasterSid) === Number(branchId)
+      );
+      CustomerBranchSid = branchId;
+      CustomerMasterSid = CustomerMasterSid || selectedBranch?.CustomerMasterSid;
+    }
+
+    const voucherDate = this.invoiceForm?.get('VoucherDate')?.value;
+    const validDate = voucherDate && !isNaN(new Date(voucherDate).getTime());
+
+    if (!voucherDate || !CustomerMasterSid) {
+      this.syncNonJobDueDate(null, false);
+      return;
+    }
+
+    this.nonJobOperationService.getDueDate({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      CustomerMasterSid,
+      CustomerBranchSid,
+      DepartmentMasterSid: null,
+      current_date: getDefaultTodayDate(),
+      VoucherDate: validDate ? new Date(voucherDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    }).subscribe({
+      next: (response: any) => {
+        this.syncNonJobDueDate(response?.status && response.data ? response.data?.dueDate : null, false);
+      },
+      error: () => {
+        this.syncNonJobDueDate(null, false);
+      },
+    });
   }
 
   override goBack(): void {
@@ -422,6 +467,8 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     const billNo = this.invoiceForm.get('BillNo')?.value || payload?.BillNo || payload?.DocumentNumber || '';
     const billDate = this.invoiceForm.get('BillDate')?.value || payload?.BillDate || payload?.DocumentDate || null;
     const payloadVoucherOthers = this.getVoucherOthersSource(payload);
+    const voucherOthersPayload = { ...(payloadVoucherOthers || {}) };
+    delete voucherOthersPayload.DueDate;
     const irnNumber = this.invoiceForm.get('IRNNumber')?.value || payload?.IRNNumber || payloadVoucherOthers?.IRNNumber || payloadVoucherOthers?.IRNNo || '';
 
     return {
@@ -432,7 +479,7 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       DocumentDate: billDate,
       IRNNumber: irnNumber,
       VoucherOthers: {
-        ...(payloadVoucherOthers || {}),
+        ...voucherOthersPayload,
         IRNNumber: irnNumber,
       },
       TaxType: payload?.TaxType || this.invoiceForm.get('TaxType')?.value || (this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT'),
@@ -458,6 +505,22 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     if (source.VoucherOthers) return source.VoucherOthers;
     if (Array.isArray(source.voucherOthers)) return source.voucherOthers[0] || null;
     return source.voucherOthers || null;
+  }
+
+  syncNonJobDueDate(value: any, emitEvent: boolean = true): void {
+    const dueDate = this.normalizeNonJobDate(value);
+    this.dueDate = dueDate;
+    this.invoiceForm.get('voucherOthers.DueDate')?.setValue(dueDate, { emitEvent });
+  }
+
+  private normalizeNonJobDate(value: any): any {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value === 'object' && 'year' in value && 'month' in value && 'day' in value) {
+      return new Date(value.year, value.month - 1, value.day);
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed;
   }
 
   private installNonJobNavigationInterceptor(): void {
