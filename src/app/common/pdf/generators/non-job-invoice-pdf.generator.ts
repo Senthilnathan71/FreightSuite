@@ -8,12 +8,18 @@ const LOGO_HEIGHT_PT = 82.5;
 export function generateNonJobInvoiceDocument(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
   const taxConfig = (data.taxDisplayConfig as any) || {};
-  const isIndiaInvoice = getCompanyCountryCode(data) === 'in';
+  const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
   const invoice: any = data.invoice || {};
+  const printBillingAddress =
+    printData.BillingAddress ||
+    printData.billingAddress ||
+    invoice.customerAddress ||
+    '';
   const hasDueDate = !!(printData.InvoiceDueDate || invoice.invoiceDueDate || invoice.dueDate);
+  const extraTopMarginForBillingAddress = getTextLineCount(printBillingAddress, 45) * 12;
   const topMargin = isIndiaInvoice
-    ? 190 + (hasDueDate ? 10 : 0)
-    : 172 + (hasDueDate ? 8 : 0);
+    ? 224 + (hasDueDate ? 10 : 0) + extraTopMarginForBillingAddress
+    : 208 + (hasDueDate ? 8 : 0) + extraTopMarginForBillingAddress;
 
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -58,7 +64,8 @@ function buildHeader(data: InvoicePdfData, isIndiaInvoice: boolean): any {
   const branchName = branch.branchName || branch.BranchName || 'Company Branch';
   const branchCode = branch.branchCode || branch.BranchCode || '';
   const branchPlace = `${branchName}${branchCode ? ` - ${branchCode}` : ''}`;
-  const branchPostalLine = `${branch.addressLine2 ? `${branch.addressLine2}, ` : ''}${branchPlace}${postalCode ? ` Postal Code : ${postalCode}` : ''}`;
+  const addressLine = `${branch.addressLine1 || company.addressLine1 || ''}${branch.addressLine2 ? `, ${branch.addressLine2}` : ''}`;
+  const branchPostalLine = `${branchPlace}${postalCode ? ` Postal Code : ${postalCode}` : ''}`;
   const companyTaxLabel = isIndiaInvoice ? 'GST No' : 'VAT No';
   const companyTaxValue = isIndiaInvoice
     ? ((branch as any).taxRegistrationNo || (branch as any).TaxRegistrationNo || (company as any).GST_VAT || '')
@@ -74,7 +81,7 @@ function buildHeader(data: InvoicePdfData, isIndiaInvoice: boolean): any {
             {
               stack: [
                 { text: companyName, alignment: 'right', bold: true, fontSize: 16, color: '#000', margin: [0, 0, 0, 7] },
-                { text: branch.addressLine1 || company.addressLine1 || '', alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
+                { text: addressLine, alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
                 { text: branchPostalLine, alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
                 { text: phone ? `Phone No : ${phone}` : '', alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
                 { text: `${companyTaxLabel} : ${companyTaxValue}`, alignment: 'right', fontSize: 11, color: '#000' }
@@ -165,18 +172,18 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
     {
       text: billedTo,
       fontSize: 10,
-      margin: [45, 0, 24, 4]
+      margin: [45, 0, 0, 4]
     },
     {
       text: billingAddress,
       fontSize: 10,
-      margin: [45, 0, 24, 6],
+      margin: [45, 0, 0, 6],
       lineHeight: 1.25
     },
     {
       columns: [
         {
-          width: 80,
+          width: 48,
           text: customerTaxLabel,
           bold: true,
           fontSize: 10
@@ -211,18 +218,18 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
     )
   ];
 
-  if (dueDate) {
-    rightRows.push(
-      labelValue(
-        'Invoice Due Date',
-        dueDate === 'Cash Invoice'
+  rightRows.push(
+    labelValue(
+      'Invoice Due Date',
+      dueDate
+        ? dueDate === 'Cash Invoice'
           ? dueDate
-          : formatDate(dueDate),
-        118,
-        10
-      )
-    );
-  }
+          : formatDate(dueDate)
+        : '',
+      118,
+      10
+    )
+  );
 
   rightRows.push(
     labelValue(
@@ -234,23 +241,16 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
     )
   );
 
-  // Always show IRN row
-  rightRows.push({
-    columns: [
-      {
-        width: 118,
-        text: 'IRN No.',
-        bold: true,
-        fontSize: 10
-      },
-      {
-        width: '*',
-        text: `: ${irnNo || ''}`,
-        fontSize: 10
-      }
-    ],
-    margin: [0, 2, 0, 0]
-  });
+  if (isIndiaInvoice) {
+    rightRows.push(
+      labelValue(
+        'IRN No.',
+        irnNo || '',
+        118,
+        10
+      )
+    );
+  }
 
   return {
     stack: [
@@ -315,19 +315,7 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
     { text: printData.totalPartyAmount || formatNumberWithCommas(data.totals?.grandTotal || 0), bold: true, alignment: 'right' }
   ]);
 
-  const widths: (number | string)[] = [
-    24,
-    '*',
-    ...(showHsnSac ? [48] : []),
-    30,
-    48,
-    38,
-    42,
-    55,
-    ...taxColumnWidths(taxConfig),
-    58,
-    ...(showForeign ? [58] : [])
-  ];
+  const widths = buildChargeTableWidths(showHsnSac, taxConfig, showForeign);
 
   return {
     table: {
@@ -464,6 +452,16 @@ function getCompanyCountryCode(data: InvoicePdfData): string {
   ).toLowerCase();
 }
 
+function isIndiaPdfInvoice(data: InvoicePdfData, taxConfig: any): boolean {
+  const companyCountry = getCompanyCountryCode(data).trim().replace(/[^a-z]/g, '');
+
+  if (companyCountry) {
+    return companyCountry === 'in' || companyCountry === 'india';
+  }
+
+  return !taxConfig.showVAT;
+}
+
 function buildCurrencyExRate(invoice: any): string {
   if (invoice?.currencyCode && invoice?.exchangeRate) return `${invoice.currencyCode} / ${invoice.exchangeRate}`;
   return invoice?.currencyCode || '';
@@ -491,16 +489,6 @@ function taxHeaders(config: any): any[] {
   ];
 }
 
-function taxColumnWidths(config: any): number[] {
-  return [
-    ...(config.showCGST ? [38, 50] : []),
-    ...(config.showSGST ? [38, 50] : []),
-    ...(config.showUGST ? [38, 50] : []),
-    ...(config.showIGST ? [38, 50] : []),
-    ...(config.showVAT ? [38, 50] : [])
-  ];
-}
-
 function taxCells(detail: any, config: any): any[] {
   return [
     ...(config.showCGST ? [amountCell(detail.cgstRate ?? detail.cgstPercent), amountCell(detail.cgstAmt ?? detail.cgstAmount)] : []),
@@ -512,7 +500,7 @@ function taxCells(detail: any, config: any): any[] {
 }
 
 function tableHeader(text: string): any {
-  return { text, bold: true, alignment: 'center', fillColor: '#f2f2f2', fontSize: 7, noWrap: true };
+  return { text, bold: true, alignment: 'center', fillColor: '#f2f2f2', fontSize: 7, noWrap: false };
 }
 
 function cell(text: any, alignment: 'left' | 'center' | 'right' = 'left'): any {
@@ -537,11 +525,56 @@ function tableLayout(): any {
   };
 }
 
+function buildChargeTableWidths(showHsnSac: boolean, taxConfig: any, showForeign: boolean): (number | string)[] {
+  const taxColumnCount = taxHeaders(taxConfig).length;
+  const compact = taxColumnCount > 4 || showForeign;
+  const veryCompact = taxColumnCount > 6;
+
+  return [
+    veryCompact ? 20 : 24,
+    '*',
+    ...(showHsnSac ? [veryCompact ? 30 : compact ? 38 : 44] : []),
+    veryCompact ? 24 : 28,
+    veryCompact ? 32 : compact ? 38 : 44,
+    veryCompact ? 28 : compact ? 32 : 36,
+    veryCompact ? 28 : compact ? 34 : 38,
+    veryCompact ? 38 : compact ? 44 : 48,
+    ...buildTaxColumnWidths(taxColumnCount),
+    veryCompact ? 38 : compact ? 46 : 54,
+    ...(showForeign ? [veryCompact ? 38 : 46] : [])
+  ];
+}
+
+function buildTaxColumnWidths(taxColumnCount: number): number[] {
+  if (taxColumnCount <= 2) {
+    return Array(taxColumnCount).fill(0).map((_, index) => index % 2 === 0 ? 38 : 50);
+  }
+
+  if (taxColumnCount <= 4) {
+    return Array(taxColumnCount).fill(0).map((_, index) => index % 2 === 0 ? 34 : 42);
+  }
+
+  if (taxColumnCount <= 6) {
+    return Array(taxColumnCount).fill(0).map((_, index) => index % 2 === 0 ? 28 : 34);
+  }
+
+  return Array(taxColumnCount).fill(22);
+}
+
 function divider(): any {
   return {
     canvas: [{ type: 'line', x1: -10, y1: 0, x2: 565, y2: 0, lineWidth: 0.5 }],
     margin: [0, 0, 0, 6]
   };
+}
+
+function getTextLineCount(text: any, charactersPerLine: number): number {
+  const value = String(text || '').trim();
+  if (!value) return 0;
+
+  return value
+    .split(/\r?\n/)
+    .reduce((lineCount, line) => lineCount + Math.max(0, Math.ceil(line.length / charactersPerLine) - 1), 0);
 }
 
 function firstValue(source: any, keys: string[]): string {
