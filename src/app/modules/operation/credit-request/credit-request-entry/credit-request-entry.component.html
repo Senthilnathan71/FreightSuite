@@ -343,8 +343,9 @@
                               [class.filled]="!!credit.get('ApprovalStatus')?.value">
                               <!-- <input type="text" formControlName="ApprovalStatus"
                                class="custom-input-field sm" placeholder=""/> -->
-                              <ng-select formControlName="ApprovalStatus" [items]="approvalStatus" bindLabel="name"
-                                bindValue="value" placeholder="" [disabled]="isApprovedRow(credit)">
+                              <ng-select formControlName="ApprovalStatus" [items]="getApprovalStatusOptions(i)" bindLabel="name"
+                                bindValue="value" placeholder="" [disabled]="!canEditApprovalStatus(i)"
+                                (change)="onApprovalStatusChange(i, $event)">
                               </ng-select>
                               <label class="input-label">Approval Status</label>
                             </div>
@@ -363,6 +364,19 @@
                               </div>
                             </div>
                           </aside>
+                        </div>
+                        <div class="row mt-1" *ngIf="shouldShowAuthorizationMessage(i)">
+                          <div class="col-12">
+                            <span class="fw-semibold my-1 ps-2 d-inline-flex align-items-center gap-2"
+                              [ngClass]="{
+                                'text-warning': getAuthorizationMessageType(i) === 'warning',
+                                'text-success': getAuthorizationMessageType(i) === 'success',
+                                'text-info': getAuthorizationMessageType(i) === 'info'
+                              }">
+                              <i class="fas fa-shield-alt"></i>
+                              {{ getAuthorizationMessage(i) }}
+                            </span>
+                          </div>
                         </div>
                         <!-- KYC Section -->
                         <div class="col-12" style="width: 80%; margin: 0 auto;">

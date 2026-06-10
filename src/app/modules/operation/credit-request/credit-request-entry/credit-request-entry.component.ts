@@ -30,6 +30,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -99,8 +100,14 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     canAuthorize: false,
     AuthorityLevel: null,
     AuthorityDetailSid: null,
-    ApprovedBy: ''
+    ApprovedBy: '',
+    totalNumberOfAuthorizers: 0,
+    FinalAuthority: false
   };
+  creditAuthorizationDetails: { [creditIndex: number]: any } = {};
+  creditAuthorizationRequired: { [creditIndex: number]: boolean } = {};
+  creditAuthorizationChecked: { [creditIndex: number]: boolean } = {};
+  creditAuthorizationMessages: { [creditIndex: number]: { message: string; type: 'info' | 'warning' | 'success' } } = {};
   auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
   allApprovalStatus = [
@@ -111,6 +118,26 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     { value : "Counter" , name :"Counter"},
     { value : "Rejected" , name : "Rejected"}
   ]
+
+  private readonly nonFinalApprovalStatusValues = [
+    'WaitingForFinalApproval',
+    'Counter',
+    'Rejected'
+  ];
+
+  private readonly finalApprovalStatusValues = [
+    'Approved',
+    'Counter',
+    'Rejected'
+  ];
+
+  readonly nonFinalApprovalStatusOptions = this.allApprovalStatus.filter(status =>
+    this.nonFinalApprovalStatusValues.includes(status.value)
+  );
+
+  readonly finalApprovalStatusOptions = this.allApprovalStatus.filter(status =>
+    this.finalApprovalStatusValues.includes(status.value)
+  );
 
   approvalStatus = [
     { value : "Pending" , name :"Waiting for Approval"},
@@ -152,6 +179,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     private masterService: MasterService,
     public mps : MenuPermissionService,
     private emailTriggerService: EmailTriggerService,
+    private leadService: LeadService,
   ) {
     this.initForm();
   }
@@ -282,7 +310,8 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       PublishedLimit: [data?.PublishedLimit || 0],
       EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : null, Validators.required],
       EffectiveTo: [data?.EffectiveTo ? new Date(data.EffectiveTo) : null, Validators.required],
-      ApprovalStatus: [data?.ApprovalStatus || 'Pending'], 
+      ApprovalStatus: [data?.ApprovalStatus || 'Pending'],
+      ApprovedBy: [data?.ApprovedBy || ''],
       Status: [data?.Status || 'A'],
       customerKyc: this.fb.array([])
     });
@@ -299,12 +328,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
 
     this.applyApprovalLock(creditForm);
 
-    // Disable ApprovalStatus only for new records
-    if (!data?.CustomerCreditRequestSid) {
-      creditForm.get('ApprovalStatus')?.disable({ emitEvent: false });
-    } else {
-      creditForm.get('ApprovalStatus')?.enable({ emitEvent: false });
-    }
+    creditForm.get('ApprovalStatus')?.disable({ emitEvent: false });
 
     let previousApprovalStatus = creditForm.get('ApprovalStatus')?.value;
     creditForm.get('ApprovalStatus')?.valueChanges.subscribe((status) => {
@@ -361,6 +385,8 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       if (sourceBranchSid) {
         this.onBranchSelect(sourceBranchSid, this.expandedIndex);
       }
+    } else {
+      this.refreshAuthorizationForCreditRequest(this.expandedIndex);
     }
   }
 
@@ -371,6 +397,10 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     this.creditRequest.removeAt(index);
     this.departmentListPerRow.splice(index, 1);
     this.salesmanListPerRow.splice(index, 1);
+    delete this.creditAuthorizationDetails[index];
+    delete this.creditAuthorizationRequired[index];
+    delete this.creditAuthorizationChecked[index];
+    delete this.creditAuthorizationMessages[index];
   }
   getEffectiveToMinDate(index: number): any {
   const effectiveFrom = this.creditRequest
@@ -539,6 +569,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
                 SalesmanSid: salesmanObj.UserMasterSid
               });
               this.applySalesmenForRow(rowIndex);
+              this.refreshAuthorizationForCreditRequest(rowIndex);
 
               // Load file names for existing KYC attachments
               if (req?.customerKyc?.length) {
@@ -614,8 +645,8 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       return;
     }
 
-    const creditRequests = this.creditRequest.getRawValue();
-    const continuityError = this.validateCreditRequestContinuity(creditRequests);
+    const rawCreditRequests = this.creditRequest.getRawValue();
+    const continuityError = this.validateCreditRequestContinuity(rawCreditRequests);
     if (continuityError) {
       this.appSettingService.showError(continuityError);
       this.isSaving = false;
@@ -635,12 +666,17 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     this.loading = true;
 
     const currentUserEmail = this.userData?.LoginId || this.appSettingService.userSettingSource.value['userEmail'];
+    const approvalChanges = this.getCreditApprovalChanges();
+    const approvalAuthorizerDetails = approvalChanges.length
+      ? this.getCreditAuthorizerDetails(approvalChanges[0]?.creditIndex)
+      : this.authorizerDetails;
 
     // Build payload with nested KYC
-    const payload = this.creditRequest.getRawValue().map((req) => ({
+    const creditRequests = rawCreditRequests.map((req) => ({
       CustomerCreditRequestSid: req.CustomerCreditRequestSid || null,
       CustomerMasterSid: this.customerId,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       CustomerBranchSid: req.CustomerBranchSid,
       DepartmentMasterSid: req.DepartmentMasterSid,
       SalesmanSid: req.SalesmanSid,
@@ -651,6 +687,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       EffectiveFrom: req.EffectiveFrom,
       EffectiveTo: req.EffectiveTo,
       ApprovalStatus: req.ApprovalStatus || 'Pending',
+      ApprovedBy: req.ApprovedBy || null,
       Status: req.Status || 'A',
       CreatedBy: currentUserEmail,
       UpdatedBy: currentUserEmail,
@@ -668,6 +705,17 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
         UpdatedBy: currentUserEmail,
       }))
     }));
+
+    const payload = {
+      creditRequests,
+      authDetails: {
+        canAuthorize: approvalChanges.length > 0,
+        AuthorityDetailSid: approvalAuthorizerDetails?.AuthorityDetailSid || null,
+        ApprovalStatus: approvalChanges[0]?.ApprovalStatus || null,
+        ApprovedBy: approvalAuthorizerDetails?.ApprovedBy || this.userData?.userName || currentUserEmail,
+        approvalTargets: approvalChanges
+      }
+    };
 
     const apiCall = this.isEditMode 
       ? this.operationService.updateCreditRequest(payload)
@@ -715,6 +763,9 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     this.creditRequest.clear();
     this.departmentListPerRow = [];
     this.salesmanListPerRow = [];
+    if (this.customerData) {
+      this.customerData.customerCreditRequest = savedItems;
+    }
 
     savedItems.forEach((item: any, rowIndex: number) => {
       const normalized = {
@@ -737,6 +788,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
           }
         });
       }
+      this.refreshAuthorizationForCreditRequest(rowIndex);
     });
 
     if (this.creditRequest.length === 0) {
@@ -765,6 +817,252 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     if (!credit) return false;
     const raw = credit.get('ApprovalStatus')?.value;
     return this.normalizeApprovalStatus(raw) === 'approved';
+  }
+
+  private getDefaultAuthorizerDetails(): any {
+    return {
+      isAuthorizer: false,
+      isAlreadyApproved: false,
+      canAuthorize: false,
+      AuthorityLevel: null,
+      AuthorityDetailSid: null,
+      ApprovedBy: this.userData?.userName || this.userData?.LoginId || this.appSettingService.userSettingSource.value['userEmail'] || '',
+      totalNumberOfAuthorizers: 0,
+      FinalAuthority: false
+    };
+  }
+
+  private getCreditDocumentSid(creditIndex: number): number | null {
+    const sid = this.creditRequest.at(creditIndex)?.get('CustomerCreditRequestSid')?.value;
+    return Number(sid) || null;
+  }
+
+  private getCreditAuthorizationDepartment(creditIndex: number): { DepartmentMasterSid: number | null; departmentName: string } {
+    const row = this.creditRequest.at(creditIndex) as FormGroup;
+    const DepartmentMasterSid = Number(row?.get('DepartmentMasterSid')?.value) || null;
+    return {
+      DepartmentMasterSid,
+      departmentName: this.getDepartmentName(DepartmentMasterSid, creditIndex) || ''
+    };
+  }
+
+  private refreshAuthorizationForCreditRequest(creditIndex: number): void {
+    const menuMasterSid = Number(this.currentMenuId || this.MenuMasterSid || sessionStorage.getItem('currentMenuId') || 0);
+    this.currentMenuId = menuMasterSid;
+    this.MenuMasterSid = menuMasterSid || this.MenuMasterSid;
+
+    if (
+      !this.userData?.UserMasterSid ||
+      !menuMasterSid ||
+      !this.currentCompany?.CompanyMasterSid ||
+      !this.currentBranch?.BranchMasterSid
+    ) {
+      this.setCreditAuthorizationDefault(creditIndex, false, true);
+      return;
+    }
+
+    const authorizationDepartment = this.getCreditAuthorizationDepartment(creditIndex);
+    const documentSid = this.getCreditDocumentSid(creditIndex);
+    this.creditAuthorizationDetails[creditIndex] = this.getDefaultAuthorizerDetails();
+    this.creditAuthorizationRequired[creditIndex] = true;
+    this.creditAuthorizationChecked[creditIndex] = false;
+    this.creditAuthorizationMessages[creditIndex] = { message: '', type: 'info' };
+    this.applyAuthorizationControlState();
+
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: menuMasterSid,
+      UserMasterSid: this.userData.UserMasterSid,
+      DocumentSid: documentSid,
+      DepartmentMasterSid: authorizationDepartment.DepartmentMasterSid,
+      DepartmentMaster: authorizationDepartment.departmentName
+    };
+
+    this.leadService.isUserAuthorizer(payload).subscribe({
+      next: (resp: any) => {
+        const data = resp?.data || {};
+        const totalNumberOfAuthorizers = Number(data?.totalNumberOfAuthorizers || 0);
+        const hasPendingApproval = this.hasPendingCreditApproval(creditIndex);
+        const details = {
+          isAuthorizer: !!data?.canAuthorize,
+          isAlreadyApproved: !!data?.alreadyApproved,
+          canAuthorize: !!data?.canAuthorize && (!data?.alreadyApproved || hasPendingApproval),
+          AuthorityLevel: data?.AuthorityLevel,
+          AuthorityDetailSid: data?.AuthorityDetailSid,
+          ApprovedBy: this.userData?.userName || this.userData?.LoginId || '',
+          totalNumberOfAuthorizers,
+          FinalAuthority: data?.FinalAuthority === 'Y' || data?.FinalAuthority === true || data?.isFinalAuthorizer === true
+        };
+        const hasAuthorizationSetup =
+          totalNumberOfAuthorizers > 0 ||
+          !!data?.canAuthorize ||
+          !!data?.AuthorityDetailSid ||
+          !!data?.AuthorityLevel;
+
+        this.creditAuthorizationDetails[creditIndex] = details;
+        this.authorizerDetails = details;
+        this.creditAuthorizationRequired[creditIndex] = hasAuthorizationSetup;
+        this.creditAuthorizationChecked[creditIndex] = true;
+        this.creditAuthorizationMessages[creditIndex] = {
+          message: hasAuthorizationSetup && !details.canAuthorize && !this.isApprovedRow(this.creditRequest.at(creditIndex))
+            ? 'You are not authorized to approve this credit request.'
+            : '',
+          type: 'warning'
+        };
+        this.applyAuthorizationControlState();
+      },
+      error: () => this.setCreditAuthorizationDefault(creditIndex, false, true)
+    });
+  }
+
+  private setCreditAuthorizationDefault(creditIndex: number, required: boolean, checked: boolean): void {
+    this.creditAuthorizationDetails[creditIndex] = this.getDefaultAuthorizerDetails();
+    this.creditAuthorizationRequired[creditIndex] = required;
+    this.creditAuthorizationChecked[creditIndex] = checked;
+    this.creditAuthorizationMessages[creditIndex] = { message: '', type: 'info' };
+    this.applyAuthorizationControlState();
+  }
+
+  private getCreditAuthorizerDetails(creditIndex?: number): any {
+    return Number.isInteger(creditIndex) && this.creditAuthorizationDetails[creditIndex] !== undefined
+      ? this.creditAuthorizationDetails[creditIndex]
+      : this.authorizerDetails;
+  }
+
+  private isAuthorizationRequiredForCredit(creditIndex: number): boolean {
+    if (this.creditAuthorizationRequired[creditIndex] !== undefined) {
+      return this.creditAuthorizationRequired[creditIndex];
+    }
+    return false;
+  }
+
+  isFinalAuthorizer(creditIndex?: number): boolean {
+    const details = this.getCreditAuthorizerDetails(creditIndex);
+    const level = Number(details?.AuthorityLevel || 0);
+    const total = Number(details?.totalNumberOfAuthorizers || 0);
+    return !!details?.FinalAuthority || (level > 0 && total > 0 && level === total);
+  }
+
+  getApprovalStatusOptions(creditIndex: number): any[] {
+    if (!this.isAuthorizationRequiredForCredit(creditIndex)) {
+      return this.approvalStatus;
+    }
+    return this.isFinalAuthorizer(creditIndex)
+      ? this.finalApprovalStatusOptions
+      : this.nonFinalApprovalStatusOptions;
+  }
+
+  canEditApprovalStatus(creditIndex: number): boolean {
+    const credit = this.creditRequest.at(creditIndex);
+    if (!credit || this.isApprovedRow(credit) || !this.getCreditDocumentSid(creditIndex)) {
+      return false;
+    }
+
+    const details = this.getCreditAuthorizerDetails(creditIndex);
+    return !!details?.canAuthorize || !this.isAuthorizationRequiredForCredit(creditIndex);
+  }
+
+  shouldShowAuthorizationMessage(creditIndex: number): boolean {
+    if (!this.creditAuthorizationChecked[creditIndex] || this.isApprovedRow(this.creditRequest.at(creditIndex))) {
+      return false;
+    }
+    return this.isAuthorizationRequiredForCredit(creditIndex) &&
+      !this.getCreditAuthorizerDetails(creditIndex)?.canAuthorize &&
+      !!this.creditAuthorizationMessages[creditIndex]?.message;
+  }
+
+  getAuthorizationMessage(creditIndex: number): string {
+    return this.creditAuthorizationMessages[creditIndex]?.message || '';
+  }
+
+  getAuthorizationMessageType(creditIndex: number): 'info' | 'warning' | 'success' {
+    return this.creditAuthorizationMessages[creditIndex]?.type || 'info';
+  }
+
+  private hasPendingCreditApproval(creditIndex: number): boolean {
+    const status = this.creditRequest.at(creditIndex)?.get('ApprovalStatus')?.value || 'Pending';
+    return !['approved', 'rejected'].includes(this.normalizeApprovalStatus(status));
+  }
+
+  private applyAuthorizationControlState(): void {
+    this.creditRequest?.controls?.forEach((credit: FormGroup, creditIndex: number) => {
+      const statusCtrl = credit.get('ApprovalStatus');
+      if (!statusCtrl) return;
+
+      if (this.canEditApprovalStatus(creditIndex)) {
+        statusCtrl.enable({ emitEvent: false });
+      } else {
+        statusCtrl.disable({ emitEvent: false });
+      }
+    });
+  }
+
+  onApprovalStatusChange(creditIndex: number, status: any): void {
+    if (!this.canEditApprovalStatus(creditIndex)) {
+      this.appSettingService.showWarning(this.getAuthorizationMessage(creditIndex) || 'You are not authorized to approve this credit request.');
+      this.revertCreditApprovalStatus(creditIndex);
+      return;
+    }
+
+    const selectedStatus = typeof status === 'string' ? status : status?.value;
+    const credit = this.creditRequest.at(creditIndex) as FormGroup;
+    if (selectedStatus === 'Approved' && this.isAuthorizationRequiredForCredit(creditIndex) && !this.isFinalAuthorizer(creditIndex)) {
+      this.appSettingService.showWarning('Only the final authorizer can approve the credit request.');
+      credit.get('ApprovalStatus')?.setValue('WaitingForFinalApproval', { emitEvent: false });
+      return;
+    }
+
+    const approvalError = selectedStatus === 'Approved' ? this.getApprovalKycError(credit) : null;
+    if (approvalError) {
+      this.appSettingService.showWarning(approvalError);
+      this.revertCreditApprovalStatus(creditIndex);
+      return;
+    }
+
+    if (['Approved', 'Rejected'].includes(selectedStatus)) {
+      credit.get('ApprovedBy')?.setValue(this.getCreditAuthorizerDetails(creditIndex)?.ApprovedBy || '', { emitEvent: false });
+    }
+    this.approvalStatusChanged = true;
+  }
+
+  private revertCreditApprovalStatus(creditIndex: number): void {
+    const credit = this.creditRequest.at(creditIndex) as FormGroup;
+    const savedStatus = this.getSavedCreditApprovalStatus(creditIndex);
+    credit.get('ApprovalStatus')?.setValue(savedStatus, { emitEvent: false });
+  }
+
+  private getSavedCreditApprovalStatus(creditIndex: number): string {
+    const creditSid = this.getCreditDocumentSid(creditIndex);
+    const savedRows = this.customerData?.customerCreditRequest || [];
+    const saved = creditSid
+      ? savedRows.find((row: any) => Number(row?.CustomerCreditRequestSid) === creditSid)
+      : savedRows[creditIndex];
+    return saved?.ApprovalStatus || 'Pending';
+  }
+
+  private getCreditApprovalChanges(): any[] {
+    return this.creditRequest.controls
+      .map((credit: FormGroup, creditIndex: number) => {
+        const creditSid = this.getCreditDocumentSid(creditIndex);
+        if (!creditSid) return null;
+
+        const currentStatus = credit.get('ApprovalStatus')?.value || 'Pending';
+        const savedStatus = this.getSavedCreditApprovalStatus(creditIndex);
+        if (currentStatus === savedStatus) return null;
+
+        const details = this.getCreditAuthorizerDetails(creditIndex);
+        return {
+          creditIndex,
+          CustomerCreditRequestSid: creditSid,
+          DocumentSid: creditSid,
+          ApprovalStatus: currentStatus,
+          AuthorizationRequired: this.isAuthorizationRequiredForCredit(creditIndex),
+          AuthorityDetailSid: details?.AuthorityDetailSid || null,
+          Remarks: `CreditRequest:${creditSid} Status:${currentStatus}`
+        };
+      })
+      .filter(Boolean);
   }
 
   private normalizeApprovalStatus(raw: any): string {
@@ -1059,16 +1357,18 @@ getDepartmentName(deptId: number, rowIndex: number): string {
 
     return null;
   }
-  onDepartmentSelect(departmentSid: number, rowIndex: number) {
+onDepartmentSelect(departmentSid: number, rowIndex: number) {
   const branchSid = this.creditRequest.at(rowIndex).get('CustomerBranchSid')?.value;
 
   if (!departmentSid || !branchSid) {
     this.salesmanListPerRow[rowIndex] = [];
     this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
+    this.refreshAuthorizationForCreditRequest(rowIndex);
     return;
   }
 
   this.applySalesmenForRow(rowIndex);
+  this.refreshAuthorizationForCreditRequest(rowIndex);
 }
 
   private loadAllSalesmen() {
@@ -1510,14 +1810,27 @@ if (this.isTermsAndConditionsEnabled) {
     
     openAuthority() {
       if (!this.customerData) return;
+      const creditIndex = this.expandedIndex ?? 0;
+      const documentSid = this.getCreditDocumentSid(creditIndex);
+      if (!documentSid) {
+        this.appSettingService.showWarning('Please save the credit request before viewing authorization.');
+        return;
+      }
+      const authorizationDepartment = this.getCreditAuthorizationDepartment(creditIndex);
       const modalRef = this.modalService.open(AuthorityLogComponent, { 
         size: 'lg', 
         centered: true, 
         backdrop: 'static' 
       });
       modalRef.componentInstance.item = this.customerData;
-      modalRef.componentInstance.idLabel = 'Customer Id';
-      modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
+      modalRef.componentInstance.idLabel = 'Credit Request Id';
+      modalRef.componentInstance.idValue = documentSid;
+      modalRef.componentInstance.documentSid = documentSid;
+      modalRef.componentInstance.menuMasterSid = Number(this.currentMenuId || this.MenuMasterSid || sessionStorage.getItem('currentMenuId'));
+      modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+      modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+      modalRef.componentInstance.DepartmentMasterSid = authorizationDepartment.DepartmentMasterSid;
+      modalRef.componentInstance.DepartmentMaster = authorizationDepartment.departmentName;
     }
     
     openFollowup() {
