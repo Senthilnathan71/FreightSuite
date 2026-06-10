@@ -125,3 +125,28 @@
     }
   }
 }
+
+.gstin-group {
+  display: grid;
+  grid-template-columns: 44px minmax(104px, 1fr) 32px 28px 32px;
+  column-gap: 6px;
+  align-items: end;
+
+  .custom-input-field {
+    width: 100%;
+    min-width: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    letter-spacing: 0;
+  }
+
+  .pan-code {
+    font-family: inherit;
+    text-align: center;
+  }
+
+  .input-label,
+  .error-message {
+    grid-column: 1 / -1;
+  }
+}

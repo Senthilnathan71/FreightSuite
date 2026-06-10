@@ -468,6 +468,7 @@ clearReportLogo() {
 		});
 		  this.companyForm.get('Pan')?.valueChanges.subscribe((panValue) => {
     this.isPanAvailable = !!panValue;
+    this.syncBranchGSTWithCompanyPAN(panValue);
   });
 	}
 
@@ -557,7 +558,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			branchTimeZone: ['', [Validators.maxLength(6)]],
 			branchRemarks: ['', [Validators.maxLength(500)]],
 			branchStatus: ['Active'],
-			branchTaxRegistrationNo: ['', [Validators.maxLength(50), this.gstValidator]],
+			branchTaxRegistrationNo: ['', [Validators.maxLength(50)]],
 			branchCompanyLogo: [],
 			branchReportLogo: [],
 			consolePrefix: ['', [Validators.maxLength(20)]],
@@ -573,7 +574,11 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			config: [{}],
 			company: [{}],
 			cityMaster: [{}],
-		})
+		});
+
+		this.branchForm.get('branchCountryMasterSid')?.valueChanges.subscribe((countryId) => {
+			this.updateBranchTaxRegistrationValidation(countryId);
+		});
 	}
 	initBranchBankForm() {
 		this.branchBankForm = this.fb.group({
@@ -932,7 +937,10 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			email: formValue.branchEmail,
 			timeZone: formValue.branchTimeZone,
 			remarks: formValue.branchRemarks,
-			taxRegistrationNo: formValue.branchTaxRegistrationNo,
+			taxRegistrationNo: this.normalizeBranchTaxRegistrationNo(
+				formValue.branchTaxRegistrationNo,
+				formValue.branchCountryMasterSid
+			),
 			status: formValue.branchStatus,
 			config: formValue.config,
 			consolePrefix: formValue.consolePrefix,
@@ -1149,7 +1157,10 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 				email: branchValue.email,
 				timeZone: branchValue.timeZone,
 				remarks: branchValue.remarks,
-				taxRegistrationNo: branchValue.taxRegistrationNo,
+				taxRegistrationNo: this.normalizeBranchTaxRegistrationNo(
+					branchValue.taxRegistrationNo,
+					branchValue.CountryMasterSid
+				),
 				status: branchValue.status === 'Active' ? 'A' : 'S',
 				consolePrefix: branchValue.consolePrefix,
             consoleNoLen: branchValue.consoleNoLen,
@@ -1397,10 +1408,16 @@ private linkTemporaryConfigurations(companyId: number) {
 	}
 
 	getStatesByCountry(CountryMasterSid, isPatch?: boolean) {
+		const countryId = this.getCountryId(CountryMasterSid);
+		this.updateBranchTaxRegistrationValidation(countryId);
 		// Remove Everything and mark the control as touched
 		this.branchCityList = [];
 		this.stateResults = [];
 		console.log(isPatch)
+		if (!isPatch) {
+			this.branchForm.get('branchTaxRegistrationNo')?.reset();
+			this.resetGSTDigitInputs();
+		}
 		if (!isPatch && this.branchForm.get('branchStateMasterSid').value) {
 			this.branchForm.get('branchStateMasterSid').reset();
 			this.branchForm.get('branchStateMasterSid').markAsTouched();
@@ -1410,11 +1427,11 @@ private linkTemporaryConfigurations(companyId: number) {
 			this.branchForm.get('branchCityMasterSid').markAsTouched();
 		}
 
-		if (!CountryMasterSid) {
+		if (!countryId) {
 			return;
 		}
 
-		this.masterService.getStateByCountryId(CountryMasterSid).subscribe(
+		this.masterService.getStateByCountryId(countryId).subscribe(
 			(resp: any) => {
 				if (resp.status) {
 					this.stateResults = (resp.data || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
@@ -2131,8 +2148,19 @@ getTaxIdErrorMessage(): string {
 
   // Parse GST digit at specific position
 parseGST(gstin: string, digit: number): string {
-    if (!gstin || gstin.length !== 15) return '';
-    return gstin[digit];
+    const cleanGstin = this.normalizeGSTValue(gstin);
+    if (!cleanGstin || cleanGstin.length !== 15) return '';
+    return cleanGstin[digit];
+}
+
+getBranchGSTPanSegment(): string {
+    const gstin = this.normalizeGSTValue(this.branchForm?.get('branchTaxRegistrationNo')?.value);
+    const companyPan = this.normalizePANValue(this.companyForm.get('Pan')?.value);
+
+    if (companyPan.length === 10) return companyPan;
+    if (gstin?.length === 15) return gstin.substring(2, 12);
+
+    return companyPan;
 }
 
 // Initialize GSTIN digits when editing
@@ -2156,13 +2184,17 @@ async generateCompanyGST(): Promise<void> {
     // Get state code from the first branch (since company doesn't have direct state)
     let stateCode = this.getCompanyStateGSTCode(stateId);
 
-    const pan = String(this.companyForm.get('Pan')?.value).toUpperCase() || '';
+    const pan = this.getBranchGSTPanSegment();
 
     const thirteenthDigitInput = document.getElementById(`company_thirteenthDigit`) as HTMLInputElement;
     const fifteenthDigitInput = document.getElementById(`company_fifteenthDigit`) as HTMLInputElement;
 
-    const thirteenthDigit = thirteenthDigitInput?.value || '';
-    const fifteenthDigit = fifteenthDigitInput?.value || '';
+    if (!thirteenthDigitInput || !fifteenthDigitInput) {
+        return;
+    }
+
+    const thirteenthDigit = (thirteenthDigitInput?.value || '').toUpperCase();
+    const fifteenthDigit = (fifteenthDigitInput?.value || '').toUpperCase();
     const fourteenthDigit = 'Z';
 
     if (stateCode && stateCode.trim().length === 2 &&
@@ -2171,22 +2203,133 @@ async generateCompanyGST(): Promise<void> {
         fifteenthDigit.length === 1) {
 
         const gstin = `${stateCode.trim()}${pan}${thirteenthDigit}${fourteenthDigit}${fifteenthDigit}`;
-        this.companyForm.get('branchTaxRegistrationNo')?.setValue(gstin);
-    } else {
-        this.companyForm.get('branchTaxRegistrationNo')?.setValue('');
+        this.branchForm.get('branchTaxRegistrationNo')?.setValue(gstin);
     }
 }
 
 // Check if GST fields should be shown
 shouldShowCompanyGSTFields(): boolean {
-    const countryId = this.companyForm.get('CountryMasterSid')?.value;
+    const countryId = this.branchForm?.get('branchCountryMasterSid')?.value;
     if (!countryId) return false;
     
-    const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
+    const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === this.getCountryId(countryId));
     const isIndia = country?.countryName?.toLowerCase().includes('india') || false;
     const panAvailable = this.companyForm.get('Pan')?.value;
     
     return isIndia && !!panAvailable;
+}
+
+isBranchIndianCountry(countryId?: any): boolean {
+  const resolvedCountryId = this.getCountryId(countryId ?? this.branchForm?.get('branchCountryMasterSid')?.value);
+  if (!resolvedCountryId) return false;
+
+  const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === resolvedCountryId);
+  return country?.countryName?.toLowerCase().includes('india') || false;
+}
+
+getBranchTaxRegistrationLabel(): string {
+  const countryId = this.getCountryId(this.branchForm?.get('branchCountryMasterSid')?.value);
+  if (!countryId) return 'GST / Tax Registration No.';
+
+  const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
+  const countryName = country?.countryName?.toLowerCase() || '';
+
+  if (countryName.includes('india')) return 'GST No.';
+  if (countryName.includes('uae') || countryName.includes('dubai') || countryName.includes('united arab emirates')) {
+    return 'TRN No.';
+  }
+  return 'Tax Registration No.';
+}
+
+private updateBranchTaxRegistrationValidation(countryValue: any): void {
+  const taxControl = this.branchForm?.get('branchTaxRegistrationNo');
+  if (!taxControl) return;
+
+  taxControl.clearValidators();
+  taxControl.setValidators(
+    this.isBranchIndianCountry(countryValue)
+      ? [Validators.maxLength(50), this.gstValidator]
+      : [Validators.maxLength(50)]
+  );
+  taxControl.updateValueAndValidity();
+}
+
+private normalizeBranchTaxRegistrationNo(value: any, countryValue: any): string | null {
+  const trimmedValue = value == null ? '' : String(value).trim();
+  if (!trimmedValue) return null;
+
+  return this.isBranchIndianCountry(countryValue)
+    ? this.normalizeGSTValue(trimmedValue)
+    : trimmedValue;
+}
+
+private normalizeGSTValue(value: any): string {
+  return value == null ? '' : String(value).replace(/\s/g, '').toUpperCase();
+}
+
+private normalizePANValue(value: any): string {
+  return value == null ? '' : String(value).replace(/\s/g, '').toUpperCase();
+}
+
+private syncBranchGSTWithCompanyPAN(panValue: any): void {
+  const pan = this.normalizePANValue(panValue);
+  if (pan.length !== 10) return;
+
+  this.branches.controls.forEach((branchControl) => {
+    const branchCountryId = branchControl.get('CountryMasterSid')?.value;
+    if (!this.isBranchIndianCountry(branchCountryId)) return;
+
+    const updatedGst = this.buildGSTWithPAN(
+      branchControl.get('taxRegistrationNo')?.value,
+      pan,
+      branchControl.get('StateMasterSid')?.value
+    );
+
+    if (updatedGst) {
+      branchControl.get('taxRegistrationNo')?.setValue(updatedGst);
+    }
+  });
+
+  if (this.branchForm && this.isBranchIndianCountry(this.branchForm.get('branchCountryMasterSid')?.value)) {
+    const updatedGst = this.buildGSTWithPAN(
+      this.branchForm.get('branchTaxRegistrationNo')?.value,
+      pan,
+      this.branchForm.get('branchStateMasterSid')?.value
+    );
+
+    if (updatedGst) {
+      this.branchForm.get('branchTaxRegistrationNo')?.setValue(updatedGst);
+    }
+  }
+}
+
+private buildGSTWithPAN(existingGstValue: any, pan: string, stateId: any): string | null {
+  const gstin = this.normalizeGSTValue(existingGstValue);
+  const stateCode = this.getCompanyStateGSTCode(stateId) || (gstin.length === 15 ? gstin.substring(0, 2) : '');
+  const thirteenthDigit = gstin.length === 15 ? gstin[12] : '';
+  const fifteenthDigit = gstin.length === 15 ? gstin[14] : '';
+
+  if (stateCode.length !== 2 || pan.length !== 10 || !thirteenthDigit || !fifteenthDigit) {
+    return null;
+  }
+
+  return `${stateCode}${pan}${thirteenthDigit}Z${fifteenthDigit}`;
+}
+
+private resetGSTDigitInputs(): void {
+  const thirteenthDigitInput = document.getElementById(`company_thirteenthDigit`) as HTMLInputElement;
+  const fifteenthDigitInput = document.getElementById(`company_fifteenthDigit`) as HTMLInputElement;
+
+  if (thirteenthDigitInput) thirteenthDigitInput.value = '';
+  if (fifteenthDigitInput) fifteenthDigitInput.value = '';
+}
+
+private getCountryId(countryValue: any): number | null {
+  if (!countryValue) return null;
+  if (typeof countryValue === 'object') {
+    return Number(countryValue.CountryMasterSid || countryValue.id || countryValue.value) || null;
+  }
+  return Number(countryValue) || null;
 }
 
 getCompanyStateGSTCode(StateMasterSid:number): string {

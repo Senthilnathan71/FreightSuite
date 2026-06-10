@@ -1219,7 +1219,8 @@
                         <ng-container *ngIf="shouldShowCompanyGSTFields()">
                           <!-- GSTIN -->
                           <aside class="col-md-4">
-                            <div class="custom-form-group  gstin-group aos-horizontal">
+                            <div class="custom-form-group gstin-group aos-horizontal"
+                              [attr.title]="branchForm.get('branchTaxRegistrationNo')?.value || ''">
 
                               <!-- State Code -->
                               <input type="text" class="custom-input-field sm gstin-fixed state-code"
@@ -1228,8 +1229,8 @@
                                 [class.border-danger]="!getCompanyStateGSTCode(branchForm.get('branchStateMasterSid')?.value)" />
 
                               <!-- PAN -->
-                              <input type="text" class="custom-input-field sm gstin-fixed pan-code mx-1"
-                                [value]="companyForm.get('Pan')?.value || ''" disabled tabindex="-1" aria-label="PAN"
+                              <input type="text" class="custom-input-field sm gstin-fixed pan-code"
+                                [value]="getBranchGSTPanSegment()" disabled tabindex="-1" aria-label="PAN"
                                 style="border-bottom: 2px solid sandybrown;" />
 
                               <!-- 13th Digit -->
@@ -1240,7 +1241,7 @@
                                 aria-label="13th Digit" style="border-bottom: 2px solid #ff00cc;" />
 
                               <!-- 14th Digit -->
-                              <input type="text" class="custom-input-field sm gstin-fixed mx-1 text-center digit-14"
+                              <input type="text" class="custom-input-field sm gstin-fixed text-center digit-14"
                                 value="Z" disabled tabindex="-1" aria-label="14th Digit"
                                 style="border-bottom: 2px solid purple;" />
 
@@ -1264,6 +1265,29 @@
                             </div>
                           </aside>
 
+                        </ng-container>
+                        <ng-container *ngIf="!shouldShowCompanyGSTFields()">
+                          <aside class="col-md-4">
+                            <div class="custom-form-group">
+                              <input type="text" id="branchTaxRegistrationNo" placeholder=""
+                                class="custom-input-field sm" formControlName="branchTaxRegistrationNo"
+                                [textWithNumbers]="50">
+                              <label for="branchTaxRegistrationNo" class="input-label">
+                                {{ getBranchTaxRegistrationLabel() }}
+                              </label>
+                              @if(branchForm.get('branchTaxRegistrationNo')?.touched &&
+                              branchForm.get('branchTaxRegistrationNo')?.invalid){
+                              <div class="error-message">
+                                @if(branchForm.get('branchTaxRegistrationNo')?.hasError('invalidGST')){
+                                <span>Provided GST is invalid</span>
+                                }
+                                @else if(branchForm.get('branchTaxRegistrationNo')?.hasError('maxlength')){
+                                <span>Max 50 characters</span>
+                                }
+                              </div>
+                              }
+                            </div>
+                          </aside>
                         </ng-container>
                         <aside class="col-md-4 ">
                           <div class="custom-form-group custom-form-group-select"

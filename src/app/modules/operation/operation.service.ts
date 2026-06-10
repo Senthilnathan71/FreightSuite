@@ -1263,6 +1263,15 @@ processProductUpload(payload: any): Observable<any> {
       })
     );
   }
+  getHssacByCountry(countryMasterSid: number, taxType?: string) {
+    const taxTypeParam = taxType ? `?taxType=${encodeURIComponent(taxType)}` : '';
+    return this.http.get<{ data: HSSAC[] }>(`hssac/country/${countryMasterSid}${taxTypeParam}`).pipe(
+      map((resp: any) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
   getAllSuledgermaster() {
     return this.http.get<{ data: any[] }>('subledgermaster').pipe(
       map((resp: any) => {
