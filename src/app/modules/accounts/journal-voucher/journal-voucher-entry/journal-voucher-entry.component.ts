@@ -1045,14 +1045,20 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   loadVoucherForEdit(id: number): void {
-    this.journalVoucherService.getJournalVoucherById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      VoucherHeaderSid: id,
+      CompanyMasterSid,
+      BranchMasterSid
+    }
+    this.journalVoucherService.getJournalVoucherById(payload).subscribe({
       next: (response) => {
         this.isPatchingEditData = true;
         const voucher = response.data;
         this.voucherData = voucher;
-        if (!voucher) {
-          this.appSettingService.showError('Voucher not found', 'Error');
-          this.router.navigate(['/accounts/journal-voucher/list']);
+        if (response.status === false) {
+          this.appSettingService.showError('Access denied.');
           return;
         }
 

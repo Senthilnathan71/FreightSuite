@@ -1610,7 +1610,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error loading receipt:', error);
+        this.appSettingService.showError(
+      error?.error?.message || 'Access denied.'
+    );
       },
     });
   }

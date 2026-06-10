@@ -214,20 +214,20 @@ export class LedgerMappingComponent implements OnInit, HasUnsavedChanges {
   loadData(): void {
     this.isLoading = true;
     this.spinner.show();
-
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let observable;
     switch (this.selectedTab) {
       case 'Party':
-        observable = this.masterService.getSubledgerMasterByType('Customer', this.currentCompany?.CompanyMasterSid);
+        observable = this.masterService.getSubledgerMasterByType({subledgerType:'Customer',CompanyMasterSid});
         break;
       case 'Charge':
-        observable = this.masterService.getSubledgerMasterByType('Charge', this.currentCompany?.CompanyMasterSid);
+        observable = this.masterService.getSubledgerMasterByType({subledgerType:'Charge',CompanyMasterSid});
         break;
       case 'Tax':
-        observable = this.masterService.getSubledgerMasterByType('Tax', this.currentCompany?.CompanyMasterSid);
+        observable = this.masterService.getSubledgerMasterByType({subledgerType:'Tax',CompanyMasterSid});
         break;
       default:
-        observable = this.masterService.getSubledgerMasterByType('Customer', this.currentCompany?.CompanyMasterSid);
+        observable = this.masterService.getSubledgerMasterByType({subledgerType:'Customer',CompanyMasterSid});
     }
 
     observable.subscribe({

@@ -199,7 +199,7 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
     });
 
     // Subledgers (Customer type)
-    this.masterService.getSubledgerMasterByType('Customer', companyId).subscribe({
+    this.masterService.getSubledgerMasterByType({subledgerType:'Customer', CompanyMasterSid:companyId}).subscribe({
       next: (resp: any) => {
         this.subledgerList = resp.data || [];
       },

@@ -501,7 +501,14 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
   }
 
   loadVoucherById(id: number) {
-    this.operationService.findVoucherById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      VoucherHeaderSid: id
+    }
+    this.operationService.findVoucherById(payload).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
 
@@ -517,7 +524,7 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
           this.subscribeToFormChanges();
         } else {
           this.spinner.hide();
-          this.appSettingService.showError(resp.message);
+          this.appSettingService.showError('Access denied');
         }
       },
       error: (err) => {

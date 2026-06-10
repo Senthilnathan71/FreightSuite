@@ -478,15 +478,15 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   }
 
   private loadSubledgerOptions(): void {
-    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
-    if (!companyMasterSid) {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!CompanyMasterSid) {
       this.subledgerFilterConfig = { ...this.subledgerFilterConfig, options: [] };
       return;
     }
     forkJoin({
-      customers: this.masterService.getSubledgerMasterByType('Customer', companyMasterSid).pipe(catchError(() => of({ data: [] }))),
-      charges: this.masterService.getSubledgerMasterByType('Charge', companyMasterSid).pipe(catchError(() => of({ data: [] }))),
-      taxes: this.masterService.getSubledgerMasterByType('Tax', companyMasterSid).pipe(catchError(() => of({ data: [] })))
+      customers: this.masterService.getSubledgerMasterByType({subledgerType:'Customer', CompanyMasterSid}).pipe(catchError(() => of({ data: [] }))),
+      charges: this.masterService.getSubledgerMasterByType({subledgerType:'Charge', CompanyMasterSid}).pipe(catchError(() => of({ data: [] }))),
+      taxes: this.masterService.getSubledgerMasterByType({subledgerType:'Tax', CompanyMasterSid}).pipe(catchError(() => of({ data: [] })))
     }).subscribe({
       next: ({ customers, charges, taxes }: any) => {
         const rows = [

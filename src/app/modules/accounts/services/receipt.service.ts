@@ -155,8 +155,8 @@ export class ReceiptService {
    * @param voucherHeaderSid - Receipt voucher header Sid
    * @returns Observable of receipt details
    */
-  getReceiptById(voucherHeaderSid: number): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/${voucherHeaderSid}`).pipe(
+  getReceiptById(payload:any): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.baseUrl}/fetch`,payload).pipe(
       tap((response) => {
         console.log('Receipt details:', response);
       }),

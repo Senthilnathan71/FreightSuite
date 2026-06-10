@@ -1728,6 +1728,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       error: (error) => {
         this.isLoading = false;
         console.error('Error loading payment:', error);
+        this.appSettingService.showError(
+      error?.error?.message || 'Access denied.'
+    );
       },
     });
   }

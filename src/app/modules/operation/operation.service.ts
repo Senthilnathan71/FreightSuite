@@ -1477,7 +1477,7 @@ processProductUpload(payload: any): Observable<any> {
 
   // Service Job related Operations
   getServiceJobById(payload: any) {
-    return this.http.post<{ data: any }>(`service-job/fetch`,payload).pipe(
+    return this.http.post<{ status: boolean;data: any }>(`service-job/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -1783,8 +1783,8 @@ createReverseVoucher(payload: any) {
   }
 
 
-  getReverseVoucherById(VoucherHeaderSid: number) {
-    return this.http.get<{ status: boolean; data: any }>(`reverse-voucher/fetch/${VoucherHeaderSid}`).pipe(
+  getReverseVoucherById(payload: any) {
+    return this.http.post<{ status: boolean; data: any }>(`reverse-voucher/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
@@ -1825,8 +1825,8 @@ createReverseVoucher(payload: any) {
     );
   }
 
-  findVoucherById(VoucherHeaderSid: number) {
-    return this.http.get<{ data: any }>(`voucher-correction/fetch/${VoucherHeaderSid}`).pipe(
+  findVoucherById(payload: any) {
+    return this.http.post<{ status:boolean; data: any }>(`voucher-correction/fetch`,payload).pipe(
       map((resp) => {
         return resp;
       })
