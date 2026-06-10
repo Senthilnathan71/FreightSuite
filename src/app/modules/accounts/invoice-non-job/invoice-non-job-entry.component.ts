@@ -422,7 +422,12 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
   private loadNonJobLedgers(): void {
     const companyId = this.currentCompany?.CompanyMasterSid;
     if (!companyId) return;
-    this.nonJobOperationService.getAllHssac().subscribe({
+    const countryMasterSid = Number(this.currentCompany?.CountryMasterSid || this.currentCompany?.countryMaster?.CountryMasterSid || 0);
+    const hssacRequest = countryMasterSid
+      ? this.nonJobOperationService.getHssacByCountry(countryMasterSid)
+      : this.nonJobOperationService.getAllHssac();
+
+    hssacRequest.subscribe({
       next: (resp: any) => {
         const hssacRows = Array.isArray(resp) ? resp : [];
         this.hssacListForNonJob = hssacRows.filter((item: any) => this.isOutputTaxHssac(item));
