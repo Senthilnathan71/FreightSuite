@@ -111,10 +111,15 @@ auditLogs: any[] = []; // Stores audit logs
 
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
     console.log('Current Company:', this.currentCompany);
   console.log('CompanyMasterSid:', this.currentCompany?.CompanyMasterSid);
   this.loadAllFields();
     this.branchList = this.getBranchListByCompany(this.userData,this.currentCompany?.CompanyMasterSid)
+    if (this.currentBranch?.BranchMasterSid) {
+      this.authorityForm.patchValue({ BranchMasterSid: this.currentBranch.BranchMasterSid });
+    }
     console.log(this.branchList);
 
     // this.filterBranchByCompany(CompanyMasterSid);
@@ -262,7 +267,11 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   loadAuthorityData() {
-    this.masterService.getAuthorityById(this.AuthorityMasterSid).subscribe({
+    this.masterService.getAuthorityById(
+      this.AuthorityMasterSid,
+      this.currentCompany?.CompanyMasterSid,
+      this.currentBranch?.BranchMasterSid
+    ).subscribe({
       next :(resp: any) => {
         if(resp.status){
           this.authorityData = resp.data;
@@ -345,7 +354,13 @@ auditLogs: any[] = []; // Stores audit logs
 
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const formValue = this.authorityForm.getRawValue();
+    if (!CompanyMasterSid || !BranchMasterSid) {
+      this.appSettingService.showError('Company or branch information not available');
+      resolve?.(false);
+      return;
+    }
     const length = this.authDetails.length - 1;
     const detailPayload = this.authDetails.value.map((detail,index) => {
       return {
@@ -360,7 +375,7 @@ auditLogs: any[] = []; // Stores audit logs
      
     const payload = {
       CompanyMasterSid,
-      BranchMasterSid: formValue.BranchMasterSid,
+      BranchMasterSid: formValue.BranchMasterSid || BranchMasterSid,
       DepartmentMaster:formValue.DepartmentMaster,
       MenuMaster: formValue.MenuMaster,
       status: formValue.status === 'Active' ? 'A' : 'S',
@@ -660,6 +675,9 @@ openAuditLogs(modal: TemplateRef<any>) {
      });
      modalRef.componentInstance.menuMasterSid = MenuMasterSid;
      modalRef.componentInstance.documentSid = this.AuthorityMasterSid;
+     modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+     modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+     modalRef.componentInstance.DepartmentMaster = this.authorityForm.get('DepartmentMaster')?.value?.[0];
    }
    
    openEDoc() {

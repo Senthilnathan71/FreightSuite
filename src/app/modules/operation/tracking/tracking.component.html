@@ -1,0 +1,241 @@
+<section class="tracking-page">
+  <header class="tracking-header">
+    <button type="button" class="back-button" aria-label="Back" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div>
+      <span class="eyebrow">Track &amp; Trace</span>
+      <h1>Track your shipment</h1>
+    </div>
+  </header>
+
+  <section class="tracking-search-card">
+    <div class="search-copy">
+      <h2>Shipment visibility</h2>
+      <p>Search by booking, HBL/HAWB, MBL/MAWB, job, shipment, or container number.</p>
+    </div>
+
+    <div class="search-row">
+      <input
+        type="text"
+        class="tracking-input"
+        [(ngModel)]="searchText"
+        (keyup.enter)="onSearchClick()"
+        placeholder="Enter tracking reference"
+        aria-label="Tracking reference"
+      />
+      <button type="button" class="search-button" (click)="onSearchClick()" [disabled]="isLoading">
+        <i class="fas" [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+        <span>{{ isLoading ? 'Searching' : 'Search' }}</span>
+      </button>
+    </div>
+
+    <div class="quick-searches" aria-label="Quick search types">
+      <button
+        type="button"
+        class="quick-chip"
+        *ngFor="let item of quickSearches"
+        (click)="applyQuickSearch(item)"
+        [class.active-chip]="item === activeSearchType()"
+      >
+        {{ item }}
+      </button>
+    </div>
+  </section>
+
+  <section class="empty-state" *ngIf="!trackingResult && !isLoading && !errorMessage && !hasSearched">
+    <div class="empty-icon"><i class="fas fa-route"></i></div>
+    <h2>Ready to locate your cargo</h2>
+    <p>Enter a tracking reference to view shipment status, routing, milestones, containers, and documents.</p>
+  </section>
+
+  <section class="alert-panel" *ngIf="errorMessage && !isLoading">
+    <i class="fas fa-info-circle"></i>
+    <span>{{ errorMessage }}</span>
+  </section>
+
+  <ng-container *ngIf="trackingResult as tracking">
+    <section class="shipment-overview-card">
+      <div class="shipment-main">
+        <h2>{{ shipmentInfoValue(tracking, 'shipmentNumber', 'bookingNumber', 'bookingNo') }}</h2>
+        <p>{{ displayValue(tracking.shipmentInfo?.customerName) }}</p>
+      </div>
+
+      <aside class="current-status-card">
+        <span>Current status</span>
+        <strong>{{ displayValue(tracking.currentStatus?.label || tracking.currentStatus?.eventName, 'Pending') }}</strong>
+        <small>{{ currentStatusDate(tracking) }}</small>
+      </aside>
+
+      <div class="shipment-detail-grid">
+        <div><span>Booking No</span><strong>{{ shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') }}</strong></div>
+        <div><span>Job No</span><strong>{{ shipmentInfoValue(tracking, 'jobNumber', 'jobNo') }}</strong></div>
+        <div><span>HBL / HAWB</span><strong>{{ shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') }}</strong></div>
+        <div><span>MBL / MAWB</span><strong>{{ shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') }}</strong></div>
+        <div><span>Department</span><strong>{{ displayValue(tracking.shipmentInfo?.department) }}</strong></div>
+        <div><span>Job Type</span><strong>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</strong></div>
+      </div>
+
+      <section class="journey-flow" aria-label="Shipment journey">
+        <div class="journey-line">
+          <span class="journey-line-progress" [style.width.%]="routeProgressPercent(tracking)"></span>
+        </div>
+        <article
+          class="journey-point"
+          *ngFor="let point of routePoints(tracking); let i = index"
+          [ngClass]="routePointClass(i, tracking)"
+        >
+          <span class="journey-node">
+            <i class="fas" [ngClass]="i < routeProgressIndex(tracking) ? 'fa-check' : 'fa-circle'"></i>
+          </span>
+          <strong>{{ point.label }}</strong>
+          <small>{{ point.role }}</small>
+        </article>
+      </section>
+
+      <section class="mobile-stat-strip">
+        <div><strong>{{ containerCount(tracking) }}</strong><span>Containers</span></div>
+        <div><strong>{{ completedMilestoneCount(tracking) }}</strong><span>Milestones done</span></div>
+        <div><strong>{{ totalWeight(tracking) }}</strong><span>Weight</span></div>
+      </section>
+    </section>
+
+    <section class="tracking-tabs">
+      <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="tab-nav">
+        <li [ngbNavItem]="1">
+          <button ngbNavLink>Overview</button>
+          <ng-template ngbNavContent>
+            <section class="tab-body overview-ticker" [class.paused]="isPaused">
+              <div class="overview-track">
+                <article class="insight-panel primary">
+                  <span>Shipment status</span>
+                  <strong>{{ displayValue(tracking.currentStatus?.label || tracking.currentStatus?.eventName, 'Pending') }}</strong>
+                  <p>{{ displayValue(tracking.currentStatus?.description || tracking.currentStatus?.remarks, 'Latest shipment update is pending.') }}</p>
+                </article>
+                <article class="insight-panel">
+                  <span>Vessel / Voyage</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName') }}</strong>
+                  <p>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</p>
+                </article>
+                <article class="insight-panel">
+                  <span>Milestone progress</span>
+                  <strong>{{ completedMilestoneCount(tracking) }} / {{ tracking.milestones?.length || 0 }}</strong>
+                  <p>{{ completedMilestoneCount(tracking) }} milestones completed or active.</p>
+                </article>
+                <article class="insight-panel primary ticker-clone" aria-hidden="true">
+                  <span>Shipment status</span>
+                  <strong>{{ displayValue(tracking.currentStatus?.label || tracking.currentStatus?.eventName, 'Pending') }}</strong>
+                  <p>{{ displayValue(tracking.currentStatus?.description || tracking.currentStatus?.remarks, 'Latest shipment update is pending.') }}</p>
+                </article>
+                <article class="insight-panel ticker-clone" aria-hidden="true">
+                  <span>Vessel / Voyage</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName') }}</strong>
+                  <p>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</p>
+                </article>
+                <article class="insight-panel ticker-clone" aria-hidden="true">
+                  <span>Milestone progress</span>
+                  <strong>{{ completedMilestoneCount(tracking) }} / {{ tracking.milestones?.length || 0 }}</strong>
+                  <p>{{ completedMilestoneCount(tracking) }} milestones completed or active.</p>
+                </article>
+              </div>
+            </section>
+          </ng-template>
+        </li>
+
+        <li [ngbNavItem]="2">
+          <button ngbNavLink>Milestones</button>
+          <ng-template ngbNavContent>
+            <section class="tab-body milestone-flow" *ngIf="tracking.milestones?.length; else noMilestones">
+              <article
+                class="milestone-step"
+                *ngFor="let milestone of tracking.milestones; trackBy: trackByMilestone"
+                [ngClass]="milestoneClass(milestone)"
+              >
+                <div class="milestone-rail">
+                  <span class="milestone-node"><i class="fas" [ngClass]="milestoneIcon(milestone)"></i></span>
+                </div>
+
+                <div class="milestone-card">
+                  <div class="milestone-copy">
+                    <span class="milestone-status">{{ milestoneStatusLabel(milestone) }}</span>
+                    <h3>{{ milestoneTitle(milestone) }}</h3>
+                    <p>{{ displayValue(milestone.location, 'Location pending') }}</p>
+                  </div>
+                  <div class="milestone-time">
+                    <strong>{{ milestoneDateTime(milestone) }}</strong>
+                    <span>{{ displayValue(milestone.remarks, 'Awaiting update') }}</span>
+                  </div>
+                </div>
+              </article>
+            </section>
+          </ng-template>
+        </li>
+
+        <li [ngbNavItem]="3">
+          <button ngbNavLink>Containers</button>
+          <ng-template ngbNavContent>
+            <section class="tab-body container-grid" *ngIf="tracking.containers?.length; else noContainers">
+              <article class="container-card" *ngFor="let container of tracking.containers; trackBy: trackByContainer">
+                <span>Container</span>
+                <strong>{{ displayValue(container.containerNo) }}</strong>
+                <div><small>Type</small><b>{{ displayValue(container.containerType) }}</b></div>
+                <div><small>Seal No</small><b>{{ displayValue(container.sealNo || container.customsSealNo) }}</b></div>
+                <div><small>Weight / Volume</small><b>{{ displayValue(container.weight) }} / {{ displayValue(container.volume) }}</b></div>
+              </article>
+            </section>
+          </ng-template>
+        </li>
+
+        <li [ngbNavItem]="4">
+          <button ngbNavLink>Documents</button>
+          <ng-template ngbNavContent>
+            <section class="tab-body documents-panel">
+              <div class="document-grid" *ngIf="tracking.documents?.length; else noDocuments">
+                <article class="document-card" *ngFor="let document of tracking.documents; trackBy: trackByDocument">
+                  <span class="document-icon"><i class="fas fa-file-alt"></i></span>
+                  <div class="document-copy">
+                    <strong>{{ displayValue(document.documentName || document.fileName, 'Document') }}</strong>
+                    <span>{{ displayValue(document.documentType, 'File') }} / {{ displayValue(document.source, 'Shipment') }}</span>
+                    <small>{{ documentDateLabel(document) }}</small>
+                  </div>
+                  <button type="button" class="document-action" *ngIf="document.downloadUrl" (click)="downloadDocument(document)" aria-label="Download document">
+                    <i class="fas fa-download"></i>
+                  </button>
+                </article>
+              </div>
+            </section>
+          </ng-template>
+        </li>
+      </ul>
+
+      <div [ngbNavOutlet]="nav"></div>
+    </section>
+  </ng-container>
+</section>
+
+<ng-template #noMilestones>
+  <section class="tab-body empty-inline">
+    <i class="fas fa-stream"></i>
+    <strong>No milestones available</strong>
+    <span>Milestone updates are pending for this shipment.</span>
+  </section>
+</ng-template>
+
+<ng-template #noContainers>
+  <section class="tab-body empty-inline">
+    <i class="fas fa-box"></i>
+    <strong>No containers available</strong>
+    <span>Container details are pending for this shipment.</span>
+  </section>
+</ng-template>
+<ng-template #noDocuments>
+  <div class="empty-inline">
+    <i class="fas fa-file-alt"></i>
+    <strong>Documents will appear here</strong>
+    <span>Shipment documents are shown when they are available for this tracking reference.</span>
+  </div>
+</ng-template>
+
+
+
+

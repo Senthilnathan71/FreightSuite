@@ -46,12 +46,21 @@ import { AgentMasterAirWaybillListComponent } from './agent-master-air-waybill/a
 import { ProRateComponent } from './master-job/pro-rate/pro-rate.component';
 import { PaymentRequestEntryComponent } from './payment-request/payment-request-entry/payment-request-entry.component';
 import { PaymentRequestListComponent } from './payment-request/payment-request-list/payment-request-list.component';
+import { TrackingComponent } from './tracking/tracking.component';
 
 
 export const OperationRoutes: Routes = [
   {
     path: '',
     children: [
+      {
+        path: 'tracking',
+        component: TrackingComponent,
+        data: {
+          title: 'Tracking',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Tracking' }],
+        },
+      },
       {
         path: 'payment-request/list',
         component: PaymentRequestListComponent,

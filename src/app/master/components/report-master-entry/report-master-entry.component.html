@@ -41,7 +41,7 @@
                         <div class="action-group primary">
                             <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
                                 [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
-                                (click)="onSubmit()" [disabled]="!reportForm.valid || isSaving || (!mps.can('update') && isEditMode)">
+                                (click)="onSubmit()" [disabled]="isSaving || (!mps.can('update') && isEditMode)">
                                 <i class="fas fa-save me-1"></i>
                                 <span>{{ isSaving ? "Saving..." : "Save" }}</span>
                                 <span *ngIf="hasUnsavedChanges()"
@@ -238,8 +238,8 @@
                         <thead>
                             <tr class="bg-info text-light">
                                 <th class="bg-transparent text-light" style="min-width: 30px"></th>
-                                <th class="bg-transparent text-light" style="min-width: 200px">Parameter Name</th>
-                                <th class="bg-transparent text-light" style="min-width: 150px">Field Type</th>
+                                <th class="bg-transparent text-light" style="min-width: 200px">Parameter Name <span class="text-danger">*</span></th>
+                                <th class="bg-transparent text-light" style="min-width: 150px">Field Type <span class="text-danger">*</span></th>
                                 <th class="bg-transparent text-light" style="min-width: 250px">Dropdown Value (JSON)</th>
                                 <th class="bg-transparent text-light" style="min-width: 250px">Parameter Query</th>
                                 <th class="bg-transparent text-light" style="min-width: 250px">Validation Rules</th>
@@ -258,7 +258,7 @@
                                         placeholder="">
                                     <small class="text-danger"
                                         *ngIf="param.get('ParameterName')?.touched && param.get('ParameterName')?.invalid">
-                                        Required
+                                        Parameter Name is required
                                     </small>
                                 </td>
                                 <td>
@@ -268,7 +268,7 @@
                                     </ng-select>
                                     <small class="text-danger"
                                         *ngIf="param.get('ParameterFieldType')?.touched && param.get('ParameterFieldType')?.invalid">
-                                        Required
+                                        Field Type is required
                                     </small>
                                 </td>
                                 <td>

@@ -280,6 +280,25 @@ private parseExcludedCompanyIds(raw: any): number[] {
     return error?.error?.message || error?.message || fallback;
   }
 
+  private getParameterValidationMessage(): string | null {
+    const missingNames = this.parameters.controls.some(param => param.get('ParameterName')?.hasError('required'));
+    const missingFieldTypes = this.parameters.controls.some(param => param.get('ParameterFieldType')?.hasError('required'));
+
+    if (missingNames && missingFieldTypes) {
+      return 'Please enter Parameter Name and Field Type for all report parameters.';
+    }
+
+    if (missingNames) {
+      return 'Please enter Parameter Name for all report parameters.';
+    }
+
+    if (missingFieldTypes) {
+      return 'Please select Field Type for all report parameters.';
+    }
+
+    return null;
+  }
+
   loadReportData() {
     this.isFormInitializing = true;
     this.masterService.getReportMasterById(this.ReportMasterSid).subscribe({
@@ -333,7 +352,7 @@ private parseExcludedCompanyIds(raw: any): number[] {
 
     if (this.reportForm.invalid) {
       this.reportForm.markAllAsTouched();
-      this.appSettingsService.showWarning('Please fill all required fields.');
+      this.appSettingsService.showWarning(this.getParameterValidationMessage() || 'Please fill all required fields.');
       if (resolve) resolve(false);
       return;
     }

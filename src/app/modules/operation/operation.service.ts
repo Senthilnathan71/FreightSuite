@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { map, Observable } from "rxjs";
 import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.metadata";
@@ -28,6 +28,29 @@ export class OperationService {
 
   clearLoadingPlanData() {
     this.loadingPlanData = null;
+  }
+
+  trackShipment(referenceNo: string, context: any = {}) {
+    let params = new HttpParams();
+    Object.entries(context || {}).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+
+    return this.http.get<{ status: boolean; data: any; message: string }>(
+      `tracking/search/${encodeURIComponent(referenceNo)}`,
+      { params }
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  downloadTrackingDocument(downloadUrl: string) {
+    return this.http.get(downloadUrl, {
+      observe: 'response',
+      responseType: 'blob',
+    });
   }
 
   getAuditLogsBooking(tableName: string, recordId?: string) {

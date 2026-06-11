@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 
 @Component({
@@ -23,9 +24,17 @@ export class AuthorityLogComponent implements OnInit {
   approvalLogs: any[] = [];
   waitingMessage = 'Checking approval status...';
 
-  constructor(private modalRef: NgbActiveModal, private leadService : LeadService) {}
+  constructor(
+    private modalRef: NgbActiveModal,
+    private leadService : LeadService,
+    private appSettingService: AppSettingsService
+  ) {}
 
   ngOnInit(): void {
+    const selectedCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    const selectedBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.CompanyMasterSid = this.CompanyMasterSid || selectedCompany?.CompanyMasterSid;
+    this.BranchMasterSid = this.BranchMasterSid || selectedBranch?.BranchMasterSid;
     this.fetchApprovalStatus();
   }
 
