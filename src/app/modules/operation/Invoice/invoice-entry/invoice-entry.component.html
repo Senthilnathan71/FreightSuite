@@ -1174,7 +1174,7 @@
                   <span>{{ invoicePrintData?.BilledTo }}</span><br />
                   {{ invoicePrintData?.BillingAddress }}<br />
                 </div>
-                <div style="display: flex; align-items: flex-start; margin-bottom: 2px;"
+                <!-- <div style="display: flex; align-items: flex-start; margin-bottom: 2px;"
                   *ngIf="currentCompanyCountryCode === 'in'">
                   <div style="width: 50px; font-weight: 600; white-space: nowrap;">
                     <strong>{{ invoicePrintData?.CustomerCountryCode === 'ae' ? 'VAT' :
@@ -1184,7 +1184,14 @@
                   <div style="flex: 1; line-height: 1.4;">
                     {{ invoicePrintData?.PAN }}
                   </div>
-                </div>
+                </div> -->
+                   <div style="display: flex">
+                    <div style="width: 110px; font-weight: bolder">
+                      <strong *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
+                      <strong *ngIf=" invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
+                    </div>
+                    <div>: {{ invoicePrintData?.GST_VAT }}</div>
+                  </div>
               </div>
               <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
                 <div>
@@ -1204,13 +1211,7 @@
                       : {{ invoicePrintData?.InvoiceDate | formatDate }}
                     </div>
                   </div>
-                  <div style="display: flex">
-                    <div style="width: 150px; font-weight: bolder">
-                      <strong *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
-                      <strong *ngIf=" invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
-                    </div>
-                    <div>: {{ invoicePrintData?.GST_VAT }}</div>
-                  </div>
+               
                   <div style="display: flex" *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'">
                     <div style="width: 150px; font-weight: bolder">
                       <strong>IRN No.</strong>

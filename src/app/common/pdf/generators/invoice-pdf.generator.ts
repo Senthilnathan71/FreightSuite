@@ -390,22 +390,33 @@
     });
   }
 
-  if (isIndiaInvoice && (printData?.PAN || (data as any)?.companyPan)) {
-    const customerCountryCode = String(printData?.CustomerCountryCode || '')
-      .trim()
-      .toLowerCase();
-    const billedToTaxLabel = customerCountryCode === 'ae'
-      ? 'VAT'
-      : customerCountryCode === 'in'
-        ? 'PAN'
-        : 'Tax No';
-    const billedToTaxLabelWidth = 25;
+  // if (isIndiaInvoice && (printData?.PAN || (data as any)?.companyPan)) {
+  //   const customerCountryCode = String(printData?.CustomerCountryCode || '')
+  //     .trim()
+  //     .toLowerCase();
+  //   const billedToTaxLabel = customerCountryCode === 'ae'
+  //     ? 'VAT'
+  //     : customerCountryCode === 'in'
+  //       ? 'PAN'
+  //       : 'Tax No';
+  //   const billedToTaxLabelWidth = 25;
 
+  //   leftStack.push({
+  //     columns: [
+  //       { text: billedToTaxLabel, width: billedToTaxLabelWidth, style: 'labelBold', noWrap: true },
+  //       { text: ':', width: COLON_WIDTH, alignment: 'center' },
+  //       { text: printData?.PAN || (data as any)?.companyPan || '', width: '*' }
+  //     ],
+  //     margin: [0, 6, 0, 0]
+  //   });
+  // }
+
+ if (isIndiaInvoice) {
     leftStack.push({
       columns: [
-        { text: billedToTaxLabel, width: billedToTaxLabelWidth, style: 'labelBold', noWrap: true },
+         { text: customerTaxLabel, width: 40, style: 'labelBold', noWrap: true },
         { text: ':', width: COLON_WIDTH, alignment: 'center' },
-        { text: printData?.PAN || (data as any)?.companyPan || '', width: '*' }
+        { text: printData?.customerGstVat || invoice?.customerGstVat || '', width: '*'}
       ],
       margin: [0, 6, 0, 0]
     });
@@ -472,14 +483,14 @@
   }
 
   if (isIndiaInvoice) {
-     rightStack.push({
-      columns: [
-        { text: customerTaxLabel, width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
-        { text: ':', width: COLON_WIDTH, alignment: 'center' },
-        { text: printData?.customerGstVat || invoice?.customerGstVat || '', width: '*', margin: [4, 0, 0, 0] }
-      ],
-      margin: [0, 0, 0, 7]
-    });
+    //  rightStack.push({
+    //   columns: [
+    //     { text: customerTaxLabel, width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+    //     { text: ':', width: COLON_WIDTH, alignment: 'center' },
+    //     { text: printData?.customerGstVat || invoice?.customerGstVat || '', width: '*', margin: [4, 0, 0, 0] }
+    //   ],
+    //   margin: [0, 0, 0, 7]
+    // });
     if (customerCountryCode === 'in') {
       // IRN Number - show the label even when the customer country is India
       rightStack.push({
