@@ -223,9 +223,20 @@ hasAnyDropdownPermission(): boolean {
 }
 
   getMilestoneById(id: number) {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      MilestoneMasterSid: id
+    }
     this.milestoneForm.reset();
-    this.masterService.getMilestoneById(id).subscribe({
+    this.masterService.getMilestoneById(payload).subscribe({
       next: (milestone: any) => {
+        if (!milestone.status) {
+      this.appSettingService.showError(milestone.message || 'Access denied.');
+      return;
+    }
         this.milestoneData = milestone;
         this.milestoneForm.patchValue({
           MilestoneName: milestone.MilestoneName,

@@ -319,8 +319,9 @@ loadHeaderSubledgerAddress(): void {
     this.loadHeaderSubledgerAddressByName(detailRow);
     return;
   }
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
 
-  this.masterService.getCustomerById(organizationId).subscribe({
+  this.masterService.getCustomerById({CustomerMasterSid:organizationId,CompanyMasterSid: CompanyMasterSid}).subscribe({
     next: (organization: any) => {
       this.headerSubledgerAddress = this.formatOrganizationAddress(organization);
       if (!this.headerSubledgerAddress) {

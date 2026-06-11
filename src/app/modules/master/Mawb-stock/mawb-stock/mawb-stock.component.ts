@@ -441,8 +441,19 @@ updateSaveButtonState(): void {
     }
   
     loadMawbData(id: number): void {
-  this.masterService.fetchMawbStockById(id).subscribe(
+      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      MawbStockSid: id
+    }
+  this.masterService.fetchMawbStockById(payload).subscribe(
     (data: any) => {
+      if (!data.status) {
+      this.appSettingService.showError(data.message || 'Access denied.');
+      return;
+    }
       const mawbData = data.data;
       const receivedDate = mawbData.ReceivedDate ? new Date(mawbData.ReceivedDate) : this.todayDate;
 

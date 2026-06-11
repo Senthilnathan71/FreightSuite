@@ -1594,7 +1594,14 @@ private parseFloatSafe(value: any): number {
 
 
   loadEnquiry(id): void {
-    this.leadService.getEnquiryById(id).subscribe((resp: any) => {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      EnquiryHeaderSid: id
+    }
+    this.leadService.getEnquiryById(payload).subscribe((resp: any) => {
       if (resp.status) {
         this.enquiryData = resp.data;
         this.patchValues(resp.data);
@@ -1604,6 +1611,8 @@ private parseFloatSafe(value: any): number {
         this.rateRequestForm.disable();
         this.enquiryOtherForm.disable();
       }
+      } else {
+        this.appSettingService.showError('Access denied.');
       }
     });
   }

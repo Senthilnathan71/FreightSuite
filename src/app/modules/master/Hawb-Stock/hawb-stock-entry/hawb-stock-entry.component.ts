@@ -210,8 +210,19 @@ generateAWB(): void {
   }
 
   loadHawbData(id: number): void {
-  this.masterService.fetchHawbStockById(id).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      HawbStockSid: id
+    }
+  this.masterService.fetchHawbStockById(payload).subscribe(
     (data: any) => {
+       if (!data.status) {
+      this.appSettingService.showError(data.message || 'Access denied.');
+      return;
+    }
       const hawbData = data.data;
       const receivedDate = hawbData.ReceivedDate ? new Date(hawbData.ReceivedDate) : this.todayDate;
       const airBillParts = hawbData.AirwayBillNumber ? hawbData.AirwayBillNumber.split('-') : [];

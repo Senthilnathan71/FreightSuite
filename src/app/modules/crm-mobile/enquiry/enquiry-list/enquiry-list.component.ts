@@ -634,6 +634,12 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
 
   goForQuotationCreation(EnquiryHeaderSid) {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      EnquiryHeaderSid: EnquiryHeaderSid
+    }
     this.loadingEnquiry = true;
     forkJoin({
 
@@ -643,7 +649,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
       this.containerTypeList = containerTypes;
       this.departmentList = departments;
 
-      this.leadService.getEnquiryById(EnquiryHeaderSid).subscribe(
+      this.leadService.getEnquiryById(payload).subscribe(
         (resp: any) => {
           if (resp) {
             const enquiryData = resp.data;

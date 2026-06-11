@@ -275,7 +275,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
 
 
   createQuotation(payload: any) {
-    return this.http.post("ff-quotation", payload).pipe(
+    return this.http.post("ff-quotation/create", payload).pipe(
       map((res: any) => {
         return res;
       })
@@ -412,8 +412,8 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   }
 
 
-  getQuoteById(id: number) {
-    return this.http.get<{ data: any }>(`ff-quotation/header/${id}`).pipe(
+  getQuoteById(payload: any) {
+    return this.http.post<{ data: any }>(`ff-quotation/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -448,8 +448,8 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
-  getEnquiryById(id: number) {
-    return this.http.get<{ data: any }>(`ff-enquiry/header/${id}`).pipe(
+  getEnquiryById(payload:any) {
+    return this.http.post<{ data: any }>(`ff-enquiry/header/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

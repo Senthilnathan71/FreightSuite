@@ -336,8 +336,17 @@ calculateEndDate(startDate: any): any {
   };
 
   loadYearData(id: number) {
-    this.masterService.getYearById(id).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      YearMasterSid: id
+    }
+    this.masterService.getYearById(payload).subscribe(
       (data) => {
+        if (!data.status) {
+        this.appSettingService.showError( 'Access denied.');
+        return;
+      }
         const startDate = data.StartDate? new Date(data.StartDate) : this.todayDate;
         const endDate = data.EndDate? new Date(data.EndDate) : this.todayDate;
         this.yearForm.patchValue({

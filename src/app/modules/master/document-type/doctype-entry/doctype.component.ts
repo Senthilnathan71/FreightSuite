@@ -260,7 +260,14 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 }
 
 	loadDocumentType(VoucherTypeMasterSid) {
-		this.masterService.getDocTypeById(VoucherTypeMasterSid).subscribe(
+		const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+		const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+		const payload = {
+			CompanyMasterSid: CompanyMasterSid,
+			BranchMasterSid: BranchMasterSid,
+			VoucherTypeMasterSid: VoucherTypeMasterSid
+		}
+		this.masterService.getDocTypeById(payload).subscribe(
 			(resp: any) => {
 				if (resp.status) {
 					this.documentData = resp.data;
@@ -300,7 +307,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 					// 	this.documentForm.get('DocumentValue').enable();
 					// }
 				} else {
-					this.appSettingService.showError('Error Loading Document Type');
+					this.appSettingService.showError('Access denied.');
 				}
 			},
 			(error) => {
