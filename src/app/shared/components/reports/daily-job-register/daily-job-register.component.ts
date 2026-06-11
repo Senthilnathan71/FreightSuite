@@ -80,7 +80,7 @@ export class DailyJobRegisterComponent {
     const tableHeaders: ExcelHeader[] = [
       { key: 'job', label: 'Job' },
       { key: 'dateCount', label: dateLabel },
-      { key: 'total', label: 'MTD Total' },
+      { key: 'total', label: 'Total' },
     ];
 
     const rows: ExcelRow[] = (this.fullData?.data || []).map((item) => {
@@ -93,36 +93,16 @@ export class DailyJobRegisterComponent {
       return { cells, style: 'data' };
     });
 
-    const customerHeaders: ExcelHeader[] = [
-      { key: 'customerName', label: 'Customer' },
-      { key: 'jobsOpenedCount', label: 'Jobs Opened' },
-      { key: 'm3Booked', label: 'M3 Booked' },
-      { key: 'importCount', label: 'Import' },
-      { key: 'exportCount', label: 'Export' },
-      { key: 'transhipmentCount', label: 'Transhipment' },
-      { key: 'nominatedCount', label: 'Nominated' },
-      { key: 'lclCount', label: 'LCL' },
-      { key: 'fclCount', label: 'FCL' },
-      { key: 'airCount', label: 'Air' },
-      { key: 'total', label: 'Total' },
-    ];
+    const additionalTables: ComplexReportExportConfig['additionalTables'] = [];
 
-    const customerRows: ExcelRow[] = (this.customerData || []).map((item) => {
-      const cells: ExcelCell[] = [
-        { value: item.customerName || '' },
-        { value: item.jobsOpenedCount || 0 },
-        { value: this.formatNumber(item.m3Booked) || 0 },
-        { value: item.importCount || 0 },
-        { value: item.exportCount || 0 },
-        { value: item.transhipmentCount || 0 },
-        { value: item.nominatedCount || 0 },
-        { value: item.lclCount || 0 },
-        { value: item.fclCount || 0 },
-        { value: item.airCount || 0 },
-        { value: item.total || 0 },
-      ];
-
-      return { cells, style: 'data' };
+    additionalTables.push({
+      title: 'Note :',
+      headers: ['Description'],
+      rows: this.getReportNotes().map((note) => ({
+        cells: [{ value: note }],
+        style: 'data',
+      })),
+      columnWidths: [120],
     });
 
     return {
@@ -142,29 +122,27 @@ export class DailyJobRegisterComponent {
       tableHeaders,
       rows,
 
-      additionalTables: [
-        {
-          title: 'Customer Wise Job Count',
-          headers: customerHeaders.map((header) => header.label),
-          rows: customerRows,
-          columnWidths: [35, 14, 14, 12, 12, 18, 14, 10, 10, 10, 12],
-        },
-      ],
+      additionalTables,
 
       columnWidths: [30, 15, 15],
     };
   }
 
-  private formatNumber(value: any): string {
-    if (value === null || value === undefined) return '';
-
-    const num = Number(value);
-    if (isNaN(num)) return '';
-
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+  private getReportNotes(): string[] {
+    return [
+      'Jobs Opened - Total count of filtered Master Job records.',
+      'M3 Booked - Sum of the Volume value from Master Jobs.',
+      'Import Jobs - Count of jobs where Department Export/Import type is Import.',
+      'Export Jobs - Count of jobs where Department Export/Import type is Export.',
+      'Transhipment Jobs - Count of jobs where a Transhipment Port is assigned.',
+      'Nominated Jobs - Count of jobs where a Destination Agent is assigned.',
+      'LCL Jobs - Count of jobs where Department is LCL.',
+      'FCL Jobs - Count of jobs where Department is FCL.',
+      'Air Jobs - Count of jobs where Department is Air.',
+      'Employee-wise Jobs - Shows the number of Master Jobs created by each employee.',
+      'Date Count - Displays the count/value for the selected date only.',
+      'Total - Displays the cumulative count/value from the beginning of the month up to the selected date.',
+    ];
   }
 
   private formatDate(date: any): string {
