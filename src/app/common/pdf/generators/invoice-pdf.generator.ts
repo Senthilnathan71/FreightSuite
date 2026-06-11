@@ -236,7 +236,12 @@
 
     const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
     const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-    const cityCountry = joinNonEmpty([addressLine2, cityName], ', ');
+    const branchName = branch?.branchName || (branch as any)?.BranchName || '';
+    const branchCode = (branch as any)?.branchCode || (branch as any)?.BranchCode || '';
+    const branchNameCode = branchName
+      ? `${branchName}${branchCode ? ` - ${branchCode}` : ''}`
+      : '';
+    const cityCountry = joinNonEmpty([addressLine2, isIndiaInvoice ? (branchNameCode || cityName) : cityName], ', ');
     if (cityCountry) {
       companyInfoStack.push({
         text: cityCountry,
@@ -246,23 +251,33 @@
       });
     }
 
-    const phone = branch?.phoneNumber || company?.phoneNumber;
-      companyInfoStack.push({
-        text: `Phone No : ${phone}`,
-        style: 'addressText',
-        alignment: 'right',
-        margin: [0, 0, 0, 6]
-      });
-   
-
     const postalCode = branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode;
+    if (isIndiaInvoice && postalCode) {
       companyInfoStack.push({
         text: `Postal Code : ${postalCode}`,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
       });
-    
+    }
+
+     if (!isIndiaInvoice && postalCode) {
+      companyInfoStack.push({
+        text: `Postal Code : ${postalCode}`,
+        style: 'addressText',
+        alignment: 'right',
+        margin: [0, 0, 0, 6]
+      });
+    }
+    const phone = branch?.phoneNumber || company?.phoneNumber;
+    if (phone) {
+      companyInfoStack.push({
+        text: `Phone No : ${phone}`,
+        style: 'addressText',
+        alignment: 'right',
+        margin: [0, 0, 0, 6]
+      });
+    }
 
     const registrationNo = (
       isIndiaInvoice
@@ -317,10 +332,10 @@
           alignment: 'center',
           bold: true,
           fontSize: 12,
-          margin: [0, 2, 0, 2]
+          margin: [0, 0, 0, 0]
         },
       ],
-      margin: [0, 0, 0, 2]
+      margin: [0, 0, 0, 0]
     };
   }
 
@@ -333,7 +348,10 @@
   const taxConfig = (data.taxDisplayConfig as any) || {};
   const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
   const isNonJobInvoice = isNonJobPdfInvoice(data);
-  const customerTaxLabel = isIndiaInvoice ? 'GST No.' : 'VAT No.';
+  const customerCountryCode = String(printData?.CustomerCountryCode || '')
+    .trim()
+    .toLowerCase();
+  const customerTaxLabel = customerCountryCode === 'in' ? 'GST No.' : 'VAT No.';
 
   if (isNonJobInvoice) {
     return buildNonJobInvoiceInfo(data, isIndiaInvoice, customerTaxLabel);
@@ -341,9 +359,9 @@
 
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
-  const RIGHT_LABEL_WIDTH = isNonJobInvoice ? 112 : 89;
+  const RIGHT_LABEL_WIDTH = isNonJobInvoice ? 112 : 92;
   const COLON_WIDTH = 6;
-  const LEFT_LABEL_WIDTH = 88;
+  const LEFT_LABEL_WIDTH = 68;
 
   // -----------------------------
   // Left side - Billed To
@@ -361,14 +379,14 @@
     },
     {
       text: billedTo,
-      margin: [0, 0, 0, 3]
+      margin: [10, 0, 0, 3]
     }
   ];
 
   if (billingAddress) {
     leftStack.push({
       text: billingAddress,
-      margin: [0, 0, 0, 3]
+      margin: [10, 0, 0, 3]
     });
   }
 
@@ -381,14 +399,15 @@
       : customerCountryCode === 'in'
         ? 'PAN'
         : 'Tax No';
+    const billedToTaxLabelWidth = 25;
 
     leftStack.push({
       columns: [
-        { text: billedToTaxLabel, width: LEFT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH },
+        { text: billedToTaxLabel, width: billedToTaxLabelWidth, style: 'labelBold', noWrap: true },
+        { text: ':', width: COLON_WIDTH, alignment: 'center' },
         { text: printData?.PAN || (data as any)?.companyPan || '', width: '*' }
       ],
-      margin: [0, 0, 0, 0]
+      margin: [0, 6, 0, 0]
     });
   }
 
@@ -400,9 +419,9 @@
   // Invoice No
   rightStack.push({
     columns: [
-      { text: 'Invoice No', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-     { text: ':', width: COLON_WIDTH },
-      { text: printData?.InvoiceNo || invoice?.invoiceNo || '', width: '*' }
+      { text: 'Invoice No', width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+      { text: ':', width: COLON_WIDTH, alignment: 'center' },
+      { text: printData?.InvoiceNo || invoice?.invoiceNo || '', width: '*', margin: [4, 0, 0, 0] }
     ],
     margin: [0, 0, 0, 5]
   });
@@ -410,13 +429,14 @@
   // Invoice Date
   rightStack.push({
     columns: [
-      { text: 'Invoice Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH  },
+      { text: 'Invoice Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+      { text: ':', width: COLON_WIDTH, alignment: 'center' },
       {
         text: printData?.InvoiceDate
           ? formatDate(printData.InvoiceDate)
           : formatDate(invoice?.invoiceDate),
-        width: '*'
+        width: '*',
+        margin: [4, 0, 0, 0]
       }
     ],
     margin: [0, 0, 0, 5]
@@ -427,8 +447,8 @@
     if (dueDate) {
       rightStack.push({
         columns: [
-          { text: 'Invoice Due Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-          { text: ':', width: COLON_WIDTH },
+          { text: 'Invoice Due Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+          { text: ':', width: COLON_WIDTH, alignment: 'center' },
           { text: dueDate === 'Cash Invoice' ? 'Cash Invoice' : formatDate(dueDate), width: '*' }
         ],
         margin: [0, 0, 0, 5]
@@ -437,8 +457,8 @@
 
     rightStack.push({
       columns: [
-        { text: 'Currency / Ex-Rate', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH },
+        { text: 'Currency / Ex-Rate', width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+        { text: ':', width: COLON_WIDTH, alignment: 'center' },
         {
           text: printData?.CurrExRate ||
             (invoice?.currencyCode && invoice?.exchangeRate
@@ -454,28 +474,30 @@
   if (isIndiaInvoice) {
      rightStack.push({
       columns: [
-        { text: 'GST No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH },
-        { text: printData?.customerGstVat || invoice?.customerGstVat || '', width: '*' }
+        { text: customerTaxLabel, width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+        { text: ':', width: COLON_WIDTH, alignment: 'center' },
+        { text: printData?.customerGstVat || invoice?.customerGstVat || '', width: '*', margin: [4, 0, 0, 0] }
       ],
       margin: [0, 0, 0, 7]
     });
-    // IRN Number - show the label even when the value is empty
-    rightStack.push({
-      columns: [
-        { text: 'IRN No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH },
-        { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
-      ],
-      margin: [0, 0, 0, 7]
-    });
+    if (customerCountryCode === 'in') {
+      // IRN Number - show the label even when the customer country is India
+      rightStack.push({
+        columns: [
+          { text: 'IRN No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+          { text: ':', width: COLON_WIDTH, alignment: 'center' },
+          { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*', margin: [4, 0, 0, 0] }
+        ],
+        margin: [0, 0, 0, 7]
+      });
+    }
   } else {
     // VAT Number - show the label even when the value is empty
     rightStack.push({
       columns: [
-        { text: String(customerTaxLabel), width: RIGHT_LABEL_WIDTH, bold: true },
-        { text: ':', width: COLON_WIDTH },
-        { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
+        { text: String(customerTaxLabel), width: RIGHT_LABEL_WIDTH, bold: true, noWrap: true },
+        { text: ':', width: COLON_WIDTH, alignment: 'center' },
+        { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*', margin: [4, 0, 0, 0] }
       ],
       margin: [0, 0, 0, 4]
     });
@@ -497,11 +519,12 @@
       },
       {
         width: '50%',
-        stack: rightStack
+        stack: rightStack,
+        margin: [20, 4, 0, 4]
       }
     ],
     columnGap: 0,
-    margin: [15, 0, 0, 0]
+    margin: [0, 0, 0, 0]
   };
 
   // -----------------------------
@@ -526,7 +549,7 @@
       twoColumnLayout,
       // bottomLine
     ],
-    margin: [0, 0, 0, 0]
+    margin: [0, 0, 0, 4]
   };
 }
 
@@ -594,7 +617,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     [isIndiaInvoice ? 'GST No.' : customerTaxLabel, customerTaxNo]
   );
 
-  if (isIndiaInvoice) {
+  if (String(printData?.CustomerCountryCode || '').trim().toLowerCase() === 'in') {
     rightRows.push(['IRN No.', printData?.IRNNumber || invoice?.irnNumber || '']);
   }
 
@@ -643,8 +666,9 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     .toLowerCase();
   const isUAECompany = companyCountry === 'ae' || companyCountry === 'uae' || companyCountry === 'dubai';
 
-  const RIGHT_LABEL_WIDTH = 88;
-  const COLON_WIDTH = 5;
+  const LEFT_LABEL_WIDTH = 88;
+  const RIGHT_LABEL_WIDTH = 92;
+  const COLON_WIDTH = 6;
   const vesselValue = printData?.Vessel || invoice?.vesselName || '';
   const voyageValue = printData?.VoyageNo || invoice?.voyageNo || '';
   const etdValue = printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '');
@@ -711,11 +735,11 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
   // -----------------------------
   const leftStack = leftItems.map(item => ({
     columns: [
-      { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      { text: item.value, width: '*' }
+      { text: item.label, width: LEFT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+      { text: ':', width: COLON_WIDTH, alignment: 'center' },
+      { text: item.value, width: '*', margin: [4, 0, 0, 0] }
     ],
-    margin: [10, 2, 0, 3]
+    margin: [0, 3, 0, 5]
   }));
 
   // -----------------------------
@@ -723,11 +747,11 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
   // -----------------------------
   const rightStack: any[] = rightItems.map(item => ({
     columns: [
-      { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      { text: item.value, width: '*' }
+      { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold', noWrap: true },
+      { text: ':', width: COLON_WIDTH, alignment: 'center' },
+      { text: item.value, width: '*', margin: [4, 0, 0, 0] }
     ],
-    margin: [0, 2, 0, 2]
+    margin: [0, 3, 0, 5]
   }));
 
   // -----------------------------
@@ -745,7 +769,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     rightStack.push({
       table: {
         headerRows: 1,
-        widths: [30, '*', 55, 55],
+        widths: [22, '*', 55, 55],
         body: [
           [
             { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
@@ -779,9 +803,9 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     table: {
       widths: ['50%', '50%'],
       body: [[
-        { stack: leftStack, margin: [5, 2, 5, 2] },
+        { stack: leftStack, margin: [0, 2, 5, 2] },
         // Keep right edge flush so cargo table aligns with charges table below.
-        { stack: rightStack, margin: [5, 2, 0, 2] }
+        { stack: rightStack, margin: [15, 2, 0, 2] }
       ]]
     },
     layout: 'noBorders',
@@ -799,7 +823,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
           y2: 0,
           lineWidth: 0.5
         }],
-        margin: [0, 6, 0, 4]
+        margin: [0, 1, 0, 4]
       },
       detailsTable
     ],
@@ -866,66 +890,69 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
       (taxConfig.showVAT ? 2 : 0) +
       (invoiceCurr && invoiceCurr !== localCurrency ? 1 : 0);
 
-    const compactMode = totalColumns >= 12;
+    const hasForeignCurrencyColumn = !!(invoiceCurr && invoiceCurr !== localCurrency);
+    const compactMode = totalColumns >= 12 || (isIndiaInvoice && hasForeignCurrencyColumn);
 
     /* ---------------- HEADER ---------------- */
     const headerRow: any[] = [
       { text: 'S.No.', style: 'tableHeaderSmall', alignment: 'center', noWrap: true },
       { text: 'Particulars', style: 'tableHeaderSmall',alignment:'center'},
-      ...(showHsnSac ? [{ text: 'HSN/SAC', style: 'tableHeaderSmall', alignment: 'center' }] : []),
+      ...(showHsnSac ? [{ text: 'HSN/SAC', style: 'tableHeaderSmall', alignment: 'center', noWrap: true }] : []),
       { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
-      { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'center' },
+      { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'center', noWrap: true },
       { text: 'Rate', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'ROE', style: 'tableHeaderSmall', alignment: 'center' },
-      { text: 'Taxable Amt', style: 'tableHeaderSmall', alignment: 'center' }
+      { text: 'Taxable Amt', style: 'tableHeaderSmall', alignment: 'center', noWrap: true }
     ];
 
     if (taxConfig.showCGST) {
       headerRow.push(
         { text: 'CGST %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
-        { text: 'CGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
+        { text: 'CGST Amt', style: 'tableHeaderSmall', alignment: 'right', noWrap: true }
       );
     }
 
     if (taxConfig.showSGST) {
       headerRow.push(
         { text: 'SGST %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
-        { text: 'SGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
+        { text: 'SGST Amt', style: 'tableHeaderSmall', alignment: 'right', noWrap: true }
       );
     }
 
     if (taxConfig.showUGST) {
       headerRow.push(
-        { text: 'UGST %', style: 'tableHeaderSmall', alignment: 'right' },
-        { text: 'UGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
+        { text: 'UGST %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
+        { text: 'UGST Amt', style: 'tableHeaderSmall', alignment: 'right', noWrap: true }
       );
     }
 
     if (taxConfig.showIGST) {
       headerRow.push(
-        { text: 'IGST %', style: 'tableHeaderSmall', alignment: 'right' },
-        { text: 'IGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
+        { text: 'IGST %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
+        { text: 'IGST Amt', style: 'tableHeaderSmall', alignment: 'right', noWrap: true }
       );
     }
 
     if (taxConfig.showVAT) {
       headerRow.push(
         { text: 'VAT %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
-        { text: 'VAT Amt', style: 'tableHeaderSmall', alignment: 'right' }
+        { text: 'VAT Amt', style: 'tableHeaderSmall', alignment: 'right', noWrap: true }
       );
     }
 
     headerRow.push({
       text: `Amt In ${localCurrency}`,
       style: 'tableHeaderSmall',
-      alignment: 'right'
+      alignment: 'right',
+      noWrap: true
     });
 
     if (invoiceCurr && invoiceCurr !== localCurrency) {
       headerRow.push({
         text: `Amt In ${invoiceCurr}`,
         style: 'tableHeaderSmall',
-        alignment: 'right'
+        alignment: 'right',
+        noWrap: true
       });
     }
 
@@ -1002,7 +1029,6 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     });
 
     /* ---------------- TOTAL ROW ---------------- */
-    const hasForeignCurrencyColumn = !!(invoiceCurr && invoiceCurr !== localCurrency);
     const totalRow: any[] = taxConfig.showCGST && taxConfig.showSGST
       ? buildIndiaGstTotalRow(displayDetails, showHsnSac, hasForeignCurrencyColumn, grandTotal)
       : taxConfig.showVAT
@@ -1014,35 +1040,35 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
       ? [
           18,    // S.No
           '*',   // Particulars - stretches compact invoice tables to full page width
-          ...(showHsnSac ? [36] : []),
+          ...(showHsnSac ? [hasForeignCurrencyColumn ? 36 : 34] : []),
           21,    // Curr
-          50,    // Qty
-          29,    // Rate
-          32,    // ROE
-          51     // Taxable
+          hasForeignCurrencyColumn ? 46 : 42,    // Qty
+          hasForeignCurrencyColumn ? 38 : 42,    // Rate
+          hasForeignCurrencyColumn ? 34 : 32,    // ROE
+          hasForeignCurrencyColumn ? 52 : 52     // Taxable
         ]
       : [
           16,    // S.No
           '*',   // Particulars
-          ...(showHsnSac ? [34] : []),
+          ...(showHsnSac ? [42] : []),
           21,    // Curr
-          36,    // Qty
+          56,    // Qty
           34,    // Rate
           34,    // ROE
-          44     // Taxable
+          58     // Taxable
         ];
 
     const taxAmountColumnWidth = hasForeignCurrencyColumn ? 36 : 40;
-    if (taxConfig.showCGST) widths.push(...(compactMode ? [30, taxAmountColumnWidth] : [28, 34]));
-    if (taxConfig.showSGST) widths.push(...(compactMode ? [30, taxAmountColumnWidth] : [28, 34]));
-    if (taxConfig.showUGST) widths.push(...(compactMode ? [20, taxAmountColumnWidth] : [22, 34]));
-    if (taxConfig.showIGST) widths.push(...(compactMode ? [20, taxAmountColumnWidth] : [22, 34]));
-    if (taxConfig.showVAT)  widths.push(...(compactMode ? [24, 26] : [28, 32]));
+    if (taxConfig.showCGST) widths.push(...(compactMode ? [28, 48] : [34, 50]));
+    if (taxConfig.showSGST) widths.push(...(compactMode ? [28, 48] : [34, 50]));
+    if (taxConfig.showUGST) widths.push(...(compactMode ? [28, 48] : [34, 50]));
+    if (taxConfig.showIGST) widths.push(...(compactMode ? [28, 48] : [34, 50]));
+    if (taxConfig.showVAT)  widths.push(...(compactMode ? [28, 48] : [34, 50]));
 
-    widths.push(compactMode ? (hasForeignCurrencyColumn ? 38 : 43) : 44); // Amt in Local Currency
+    widths.push(compactMode ? (hasForeignCurrencyColumn ? 48 : 54) : 58); // Amt in Local Currency
 
     if (invoiceCurr && invoiceCurr !== localCurrency) {
-      widths.push(compactMode ? 38 : 44); // Amt in Party Currency
+      widths.push(compactMode ? 44 : 58); // Amt in Party Currency
     }
 
     /* ---------------- RETURN ---------------- */
@@ -1054,7 +1080,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
       },
       layout: compactMode ? compactBorderedLayout : PDF_TABLE_LAYOUTS.bordered,
       margin: [0, 0, 0, 2],
-      fontSize: compactMode ? 6.5 : undefined
+      fontSize: compactMode ? 6 : undefined
     };
   }
 
@@ -1748,6 +1774,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       },
       branch: {
         branchName: branch?.branchName || '',
+        branchCode: branch?.branchCode || branch?.BranchCode || '',
         addressLine1: branch?.addressLine1 || '',
         addressLine2: branch?.addressLine2 || '',
         cityName: branch?.cityMaster?.cityName || '',

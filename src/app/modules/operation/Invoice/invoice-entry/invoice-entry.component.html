@@ -1176,7 +1176,7 @@
                 </div>
                 <div style="display: flex; align-items: flex-start; margin-bottom: 2px;"
                   *ngIf="currentCompanyCountryCode === 'in'">
-                  <div style="width: 160px; font-weight: 600; white-space: nowrap;">
+                  <div style="width: 50px; font-weight: 600; white-space: nowrap;">
                     <strong>{{ invoicePrintData?.CustomerCountryCode === 'ae' ? 'VAT' :
                       invoicePrintData?.CustomerCountryCode === 'in' ? 'PAN' : 'Tax No' }}</strong>
                   </div>
@@ -1189,7 +1189,7 @@
               <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
                 <div>
                   <div style="display: flex">
-                    <div style="width: 180px; font-weight: bolder">
+                    <div style="width: 150px; font-weight: bolder">
                       <strong>Invoice No.</strong>
                     </div>
                     <div>
@@ -1197,7 +1197,7 @@
                     </div>
                   </div>
                   <div style="display: flex">
-                    <div style="width: 180px; font-weight: bolder">
+                    <div style="width: 150px; font-weight: bolder">
                       <strong>Invoice Date</strong>
                     </div>
                     <div>
@@ -1205,14 +1205,14 @@
                     </div>
                   </div>
                   <div style="display: flex">
-                    <div style="width: 180px; font-weight: bolder">
+                    <div style="width: 150px; font-weight: bolder">
                       <strong *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
                       <strong *ngIf=" invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
                     </div>
                     <div>: {{ invoicePrintData?.GST_VAT }}</div>
                   </div>
                   <div style="display: flex" *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'">
-                    <div style="width: 180px; font-weight: bolder">
+                    <div style="width: 150px; font-weight: bolder">
                       <strong>IRN No.</strong>
                     </div>
                     <div>: {{ invoicePrintData?.IRNNumber }}</div>
@@ -1369,7 +1369,7 @@
                 @if(invoicePrintData?.IsServiceJob !== 'Y'){
                 @if(invoicePrintData?.JobType !== 'Agent'){
                 <div style="display: flex">
-                  <div style="width: 180px; font-weight: bolder">
+                  <div style="width: 150px; font-weight: bolder">
                     <strong> {{isSeaDepartment() ? 'HBL' : 'HAWB'}}</strong>
                   </div>
                   <div>: {{ invoicePrintData?.HBLNo }}</div>
@@ -1377,14 +1377,14 @@
                 }
 
                 <div style="display: flex">
-                  <div style="width: 180px; font-weight: bolder">
+                  <div style="width: 150px; font-weight: bolder">
                     <strong> {{isSeaDepartment() ? 'MBL' : 'MAWB'}}</strong>
                   </div>
                   <div>: {{ invoicePrintData?.MBLNo }}</div>
                 </div>
                 }
                 <div style="display: flex">
-                  <div style="width: 180px; font-weight: bolder">
+                  <div style="width: 150px; font-weight: bolder">
                     <strong>Job No.</strong>
                   </div>
 
@@ -1407,7 +1407,7 @@
 
 
                 <div style="display: flex">
-                  <div style="width: 180px; font-weight: bolder">
+                  <div style="width: 150px; font-weight: bolder">
                     <strong>Freight Terms</strong>
                   </div>
                   <div>
@@ -1417,7 +1417,7 @@
                 </div>
 
                 <div style="display: flex">
-                  <div style="width: 180px; font-weight: bolder">
+                  <div style="width: 150px; font-weight: bolder">
                     <strong>Booking No.</strong>
                   </div>
                   <div>
@@ -1427,7 +1427,7 @@
                 </div>
 
                 <div style="display: flex">
-                  <div style="width: 180px; font-weight: bolder">
+                  <div style="width: 150px; font-weight: bolder">
                     <strong>Invoice Due Date</strong>
                   </div>
                   <div>
@@ -1441,7 +1441,7 @@
                 </div>
 
                 <div style="display: flex">
-                  <div style="width: 180px; font-weight: bolder">
+                  <div style="width: 150px; font-weight: bolder">
                     <strong>Currency / Ex-Rate</strong>
                   </div>
                   <div>
