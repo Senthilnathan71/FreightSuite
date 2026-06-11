@@ -16,9 +16,10 @@ export function generateNonJobInvoiceDocument(data: InvoicePdfData): any {
     invoice.customerAddress ||
     '';
   const hasDueDate = !!(printData.InvoiceDueDate || invoice.invoiceDueDate || invoice.dueDate);
-  const extraTopMarginForBillingAddress = getTextLineCount(printBillingAddress, 45) * 12;
+  const extraBillingAddressLines = getTextLineCount(printBillingAddress, 45);
+  const extraTopMarginForBillingAddress = extraBillingAddressLines * (isIndiaInvoice ? 8 : 12);
   const topMargin = isIndiaInvoice
-    ? 224 + (hasDueDate ? 10 : 0) + extraTopMarginForBillingAddress
+    ? 216 + (hasDueDate ? 6 : 0) + extraTopMarginForBillingAddress
     : 208 + (hasDueDate ? 8 : 0) + extraTopMarginForBillingAddress;
 
   return {
@@ -172,26 +173,28 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
     {
       text: billedTo,
       fontSize: 10,
-      margin: [45, 0, 0, 4]
+      margin: [40, 0, 0, 4]
     },
     {
       text: billingAddress,
       fontSize: 10,
-      margin: [45, 0, 0, 6],
+      margin: [40, 0, 0, 6],
       lineHeight: 1.25
     },
     {
       columns: [
         {
-          width: 48,
+          width: 35,
           text: customerTaxLabel,
           bold: true,
-          fontSize: 10
+          fontSize: 10,
+          noWrap: true
         },
         {
           width: '*',
           text: `: ${customerTaxNo || ''}`,
-          fontSize: 10
+          fontSize: 10,
+          margin: [-2, 0, 0, 0]
         }
       ],
       margin: [0, 2, 0, 0]
@@ -202,7 +205,7 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
     labelValue(
       'Invoice No.',
       printData.InvoiceNo || invoice.invoiceNo || '',
-      118,
+      80,
       10
     ),
 
@@ -213,7 +216,7 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
         invoice.invoiceDate ||
         ''
       ),
-      118,
+      80,
       10
     )
   ];
@@ -226,7 +229,7 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
           ? dueDate
           : formatDate(dueDate)
         : '',
-      118,
+      80,
       10
     )
   );
@@ -236,7 +239,7 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
       'Currency / Ex-Rate',
       printData.CurrExRate ||
       buildCurrencyExRate(invoice),
-      118,
+      80,
       10
     )
   );
@@ -246,7 +249,7 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
       labelValue(
         'IRN No.',
         irnNo || '',
-        118,
+        80,
         10
       )
     );
@@ -262,7 +265,8 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
           },
           {
             width: '50%',
-            stack: rightRows
+            stack: rightRows,
+            margin: [24, 0, 0, 0]
           }
         ],
         columnGap: 10,
@@ -317,7 +321,7 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
 
   const widths = buildChargeTableWidths(showHsnSac, taxConfig, showForeign);
 
-  return {
+  const chargesTable = {
     table: {
       headerRows: 1,
       widths,
@@ -328,17 +332,31 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
     fontSize: 8,
     margin: [-10, 8, -10, 8]
   };
+
+  if (isIndiaPdfInvoice(data, taxConfig)) {
+    return {
+      stack: [
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 575, y2: 0, lineWidth: 0.5 }],
+          margin: [-10, -4, -10, 8]
+        },
+        chargesTable
+      ]
+    };
+  }
+
+  return chargesTable;
 }
 
 function buildAmountInWords(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
   return {
     columns: [
-      { text: 'Amount In Words', width: 120, bold: true },
-      { text: ':', width: 8 },
+      { text: 'Amount In Words', width: 80, bold: true },
+      { text: ':', width: 5 },
       { text: printData.AmountInWords || data.amountInWords || '', width: '*' }
     ],
-    fontSize: 11,
+    fontSize: 10,
     margin: [0, 0, 0, 8]
   };
 }
@@ -348,7 +366,7 @@ function buildRemarks(data: InvoicePdfData): any[] {
   const remarks = printData.Remarks || data.invoice?.remarks || '';
   return [{
     columns: [
-      { text: 'Remarks', width: 120, bold: true },
+      { text: 'Remarks', width: 80, bold: true },
       { text: ':', width: 8 },
       { text: remarks, width: '*' }
     ],
@@ -471,8 +489,8 @@ function labelValue(label: string, value: any, labelWidth: number, fontSize?: nu
   return {
     columns: [
       { text: label, width: labelWidth, bold: true, noWrap: true },
-      { text: ':', width: 8 },
-      { text: value || '', width: '*' }
+      { text: ':', width: 3 },
+      { text: value || '', width: '*', margin: [-2, 0, 0, 0] }
     ],
     fontSize,
     margin: [0, 0, 0, 4]
@@ -500,7 +518,7 @@ function taxCells(detail: any, config: any): any[] {
 }
 
 function tableHeader(text: string): any {
-  return { text, bold: true, alignment: 'center', fillColor: '#f2f2f2', fontSize: 7, noWrap: false };
+  return { text, bold: true, alignment: 'center', fontSize: 7, noWrap: false };
 }
 
 function cell(text: any, alignment: 'left' | 'center' | 'right' = 'left'): any {
@@ -530,6 +548,22 @@ function buildChargeTableWidths(showHsnSac: boolean, taxConfig: any, showForeign
   const compact = taxColumnCount > 4 || showForeign;
   const veryCompact = taxColumnCount > 6;
 
+  if (showHsnSac && showForeign && taxColumnCount >= 4) {
+    return [
+      20,
+      '*',
+      32,
+      24,
+      34,
+      28,
+      30,
+      40,
+      ...buildTaxColumnWidths(taxColumnCount, true),
+      42,
+      42
+    ];
+  }
+
   return [
     veryCompact ? 20 : 24,
     '*',
@@ -545,7 +579,11 @@ function buildChargeTableWidths(showHsnSac: boolean, taxConfig: any, showForeign
   ];
 }
 
-function buildTaxColumnWidths(taxColumnCount: number): number[] {
+function buildTaxColumnWidths(taxColumnCount: number, forceCompact = false): number[] {
+  if (forceCompact) {
+    return Array(taxColumnCount).fill(0).map((_, index) => index % 2 === 0 ? 26 : 32);
+  }
+
   if (taxColumnCount <= 2) {
     return Array(taxColumnCount).fill(0).map((_, index) => index % 2 === 0 ? 38 : 50);
   }

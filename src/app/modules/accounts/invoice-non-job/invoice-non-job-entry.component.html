@@ -540,24 +540,24 @@
               {{ invoicePrintData?.BillingAddress }}<br />
             </div>
              <div style="display: flex">
-              <div style="width: 80px; font-weight: bolder">
+              <div style="width: 70px; font-weight: bolder">
                 <strong *ngIf="invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
                 <strong *ngIf="invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
               </div>
               <div>: {{ invoicePrintData?.GST_VAT }}</div>
             </div>
           </div>
-          <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+          <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px; padding-left: 84px; padding-top: 4px;">
             <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder"><strong>Invoice No.</strong></div>
+              <div style="width: 150px; font-weight: bolder"><strong>Invoice No.</strong></div>
               <div>: {{ invoicePrintData?.InvoiceNo }}</div>
             </div>
             <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder"><strong>Invoice Date</strong></div>
+              <div style="width: 150px; font-weight: bolder"><strong>Invoice Date</strong></div>
               <div>: {{ invoicePrintData?.InvoiceDate | formatDate }}</div>
             </div>
             <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder"><strong>Invoice Due Date</strong></div>
+              <div style="width: 150px; font-weight: bolder"><strong>Invoice Due Date</strong></div>
               <div>
                 :
                 @if (invoicePrintData?.InvoiceDueDate === 'Cash Invoice') {
@@ -568,7 +568,7 @@
               </div>
             </div>
             <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder"><strong>Currency / Ex-Rate</strong></div>
+              <div style="width: 150px; font-weight: bolder"><strong>Currency / Ex-Rate</strong></div>
               <div>: {{ invoicePrintData?.CurrExRate }}</div>
             </div>
             <!-- <div style="display: flex">
@@ -579,7 +579,7 @@
               <div>: {{ invoicePrintData?.GST_VAT }}</div>
             </div> -->
             <div style="display: flex" *ngIf="invoicePrintData?.CustomerCountryCode === 'in'">
-              <div style="width: 180px; font-weight: bolder"><strong>IRN No.</strong></div>
+              <div style="width: 150px; font-weight: bolder"><strong>IRN No.</strong></div>
               <div>: {{ invoicePrintData?.IRNNumber }}</div>
             </div>
           </div>
