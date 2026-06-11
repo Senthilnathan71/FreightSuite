@@ -623,16 +623,20 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
   // 3. DISABLE FORM (Read-Only Mode)
   // Prevents 'Dirty Reads': User cannot type into fields before the DB data arrives.
   this.chargeGroupForm.disable();
-
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const payload = {
+    CompanyMasterSid: CompanyMasterSid,
+    ChargeGroupSid: id
+  }
   // 4. FETCH DATA (Async Operation)
-  this.masterService.getChargeGroupById(id)
+  this.masterService.getChargeGroupById(payload)
     .pipe(take(1)) // Memory Safety: Ensures subscription dies after 1 emit
     .subscribe({
       next: (response: any) => {
         // Validation Guard: Protect against malformed API responses
         if (!response?.data) {
           console.warn('API returned success but no data payload.');
-          throw new Error('Data payload missing'); 
+          this.appSettingService.showError('Access denied.');
         }
 
         const data = response.data;

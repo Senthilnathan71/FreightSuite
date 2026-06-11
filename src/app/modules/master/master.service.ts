@@ -178,8 +178,8 @@ export class MasterService {
     )
   }
 
-  getCustomerById(id: number) {
-    return this.http.get<{ data: any }>(`customer/fetch/${id}`).pipe(
+  getCustomerById(payload: any) {
+    return this.http.post<{ status: boolean;data: any }>(`customer/fetch`,payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -453,8 +453,8 @@ export class MasterService {
 
   //department-master
 
-  getDepartmentById(id: number) {
-    return this.http.get<{ data: City }>(`department/fetch/${id}`).pipe(
+  getDepartmentById(payload:any) {
+    return this.http.post<{ status: boolean;data: any }>(`department/fetch`,payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -1676,8 +1676,8 @@ getFieldConfiguration() {
 
   //charge-master//
 
-  getChargeById(ChargeMasterSid: number) {
-    return this.http.get<{ data: Charge }>(`charge/fetch/${ChargeMasterSid}`).pipe(
+  getChargeById(payload: any) {
+    return this.http.post<{ data: Charge }>(`charge/fetch`,payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -2002,8 +2002,8 @@ getFieldConfiguration() {
     );
   }
 
-  getChargeGroupById(ChargeGroupSid: number) {
-    return this.http.get<{ data: any }>(`charge-group/fetch/${ChargeGroupSid}`).pipe(
+  getChargeGroupById(payload: any) {
+    return this.http.post<{ data: any }>(`charge-group/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2758,8 +2758,8 @@ getFieldConfiguration() {
     );
   }
 
-  getMilestoneById(MilestoneMasterSid: number) {
-    return this.http.get<{ data: any }>(`milestone/fetch/${MilestoneMasterSid}`).pipe(
+  getMilestoneById(payload: any) {
+    return this.http.post<{ data: any }>(`milestone/fetch`,payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -2930,8 +2930,8 @@ getFieldConfiguration() {
     );
   }
 
-  getDocTypeById(DocumentTypeMasterSid: number) {
-    return this.http.get<{ data: any }>(`document-type/fetch/${DocumentTypeMasterSid}`).pipe(
+  getDocTypeById(payload: any) {
+    return this.http.post<{ data: any }>(`document-type/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -3012,8 +3012,8 @@ getFieldConfiguration() {
     )
   }
 
-  fetchHawbStockById(HawbStockSid) {
-    return this.http.get<{ data: any }>(`hawb-stock/fetch/${HawbStockSid}`).pipe(
+  fetchHawbStockById(payload: any) {
+    return this.http.post<{status: boolean; data: any }>(`hawb-stock/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -3075,8 +3075,8 @@ getFieldConfiguration() {
     )
   }
 
-  getYearById(YearMasterSid: number) {
-    return this.http.get<{ data: Year }>(`year/fetch/${YearMasterSid}`).pipe(
+  getYearById(payload: any) {
+    return this.http.post<{ status: boolean; data: Year }>(`year/fetch`,payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -4190,8 +4190,8 @@ createReportMaster(payload: any) {
     )
   }
 
-  fetchMawbStockById(MawbStockSid) {
-    return this.http.get<{ data: any }>(`mawb-stock/fetch/${MawbStockSid}`).pipe(
+  fetchMawbStockById(payload: any) {
+    return this.http.post<{ status:boolean;data: any }>(`mawb-stock/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

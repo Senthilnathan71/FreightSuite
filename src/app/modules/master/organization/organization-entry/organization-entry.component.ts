@@ -2265,8 +2265,17 @@ onCompanyTypeChange(): void {
   // Fetch customer data and patch the form
   
 loadCustomerData(customerId: number) {
-  this.masterService.getCustomerById(customerId).subscribe(
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const payload = {
+    CompanyMasterSid: CompanyMasterSid,
+    CustomerMasterSid: customerId
+  }
+  this.masterService.getCustomerById(payload).subscribe(
     (customerData: any) => {
+       if (!customerData || Object.keys(customerData).length === 0) {
+    this.appSettingService.showError('Access denied.');
+    return;
+  }
       this.customerData = customerData;
       this.customerName = customerData.CustomerName;
       this.status = customerData.status;

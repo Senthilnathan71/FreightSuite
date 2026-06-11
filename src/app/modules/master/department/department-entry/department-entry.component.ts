@@ -393,8 +393,17 @@ hasAnyDropdownPermission(): boolean {
 
   // Fetch lead data and patch the form
   loadDepartmentData(deptId: number) {
-    this.masterService.getDepartmentById(deptId).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      DepartmentMasterSid: deptId
+    }
+    this.masterService.getDepartmentById(payload).subscribe(
       (deptData: any) => {
+        if (!deptData || Object.keys(deptData).length === 0) {
+    this.appSettingService.showError('Access denied.');
+    return;
+  }
         this.departmentData = deptData;
         this.departmentForm.patchValue({
           ...deptData,

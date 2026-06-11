@@ -2772,8 +2772,15 @@ isRateLockDisabled(): boolean {
   return !this.canUserLockRates || this.disableAllModification || this.quotationApproved;
 }
   loadQuotation(id): void {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      QuoteHeaderSid: id
+    }
     this.spinner.show();
-    this.leadService.getQuoteById(id).subscribe(
+    this.leadService.getQuoteById(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.spinner.hide();
@@ -2784,7 +2791,7 @@ isRateLockDisabled(): boolean {
           this.clearPdfCache(); // Clear cached PDF when new quotation is loaded
         } else {
           this.spinner.hide();
-          this.appSettingService.showError("Error loading Quotation")
+          this.appSettingService.showError('Access denied.');
           console.error(resp.message);
         }
       });
@@ -4022,8 +4029,15 @@ isRateLockDisabled(): boolean {
   }
 
   getEnquiryName(EnquirySid: number) {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      EnquiryHeaderSid: EnquirySid
+    }
     if (!EnquirySid) return;
-    this.leadService.getEnquiryById(EnquirySid).subscribe(
+    this.leadService.getEnquiryById(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           let enquiryData = resp.data;

@@ -295,8 +295,18 @@ selectedTab = this.tab[0].name;
 
   getChargeById(id: number) {
   this.loading = true;
-  this.masterService.getChargeById(id).subscribe({
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+  const payload = {
+    CompanyMasterSid: CompanyMasterSid,
+    ChargeMasterSid: id
+  }
+  this.masterService.getChargeById(payload).subscribe({
     next: (charge: any) => {
+      if (!charge || Object.keys(charge).length === 0) {
+    this.appSettingService.showError('Access denied.');
+    this.loading = false;
+    return;
+  }
       this.chargeData = charge;
       
       // Clear existing arrays first
