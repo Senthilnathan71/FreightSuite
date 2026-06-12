@@ -143,6 +143,7 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       Narration: '',
       Remarks: '',
       CustomsDuty: 'N',
+      TaxType: this.getNonJobCompanyTaxType(),
     }, { emitEvent: false });
   }
 
@@ -151,6 +152,11 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     this.installNonJobNavigationInterceptor();
     super.ngOnInit();
     this.loadNonJobLedgers();
+  }
+
+  override determineGSTType(placeOfSupply: string): void {
+    super.determineGSTType(placeOfSupply);
+    this.invoiceForm.get('TaxType')?.setValue(this.getNonJobCompanyTaxType(), { emitEvent: false });
   }
 
   override async openPrintModal(): Promise<void> {
@@ -442,10 +448,9 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     this.invoiceForm.get('DocumentNumber')?.setValue(this.invoiceForm.get('BillNo')?.value || '', { emitEvent: false });
     this.details.controls.forEach((control) => {
       const group = control as FormGroup;
-      if (!group.get('ChargeDescription')?.value) {
-        group.get('ChargeDescription')?.setValue(narration, { emitEvent: false });
-      }
       group.patchValue({
+        ChargeDescription: narration,
+        Narration: narration,
         MasterJobSid: null,
         HouseJobSid: null,
         DepartmentMasterSid: null,
@@ -558,12 +563,19 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       LedgerCategory: 'Ledger',
     }).subscribe({
       next: (resp: any) => {
-        this.coaList = Array.isArray(resp?.data) ? resp.data : [];
+        this.coaList = Array.isArray(resp?.data)
+          ? resp.data.filter((coa: any) => this.isAllowedNonJobLedger(coa))
+          : [];
       },
       error: () => {
         this.coaList = [];
       },
     });
+  }
+
+  private isAllowedNonJobLedger(coa: any): boolean {
+    const ledgerType = String(coa?.LedgerType || '').trim().toLowerCase();
+    return !['revenue', 'cost', 'other cost'].includes(ledgerType);
   }
 
   private routerNavigateToList(): void {
@@ -601,13 +613,15 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
         ...voucherOthersPayload,
         IRNNumber: irnNumber,
       },
-      TaxType: payload?.TaxType || this.invoiceForm.get('TaxType')?.value || (this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT'),
+      TaxType: this.getNonJobCompanyTaxType(),
       CustomsDuty: 'N',
       MasterJobSid: null,
       HouseJobSid: null,
       DepartmentMasterSid: null,
       VoucherDetail: (payload?.VoucherDetail || []).map((detail: any) => ({
         ...detail,
+        ChargeDescription: payload?.Narration || payload?.Remarks || '',
+        Narration: payload?.Narration || payload?.Remarks || '',
         ChargeMasterSid: null,
         ChargeUOMSid: null,
         NumberOfUnit: 1,
@@ -624,6 +638,10 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     if (source.VoucherOthers) return source.VoucherOthers;
     if (Array.isArray(source.voucherOthers)) return source.voucherOthers[0] || null;
     return source.voucherOthers || null;
+  }
+
+  private getNonJobCompanyTaxType(): 'GST' | 'VAT' {
+    return String(this.currentCompanyCountryCode || '').toLowerCase() === 'in' ? 'GST' : 'VAT';
   }
 
   syncNonJobDueDate(value: any, emitEvent: boolean = true): void {
