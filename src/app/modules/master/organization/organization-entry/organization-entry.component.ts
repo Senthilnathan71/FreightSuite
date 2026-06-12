@@ -990,6 +990,8 @@ clearCustomerSearch(): void {
       CustBranchRegistered: [data?.Registered || 'Y', [Validators.required]],
       CustBranchGSTtype: [data?.CustomerGstType || 'Regular'],
       CustBranchGSTIN: [data?.GSTNo || '', this.gstValidator],
+      CustBranchGSTDigit13: [this.parseGST(data?.GSTNo || '', 12)],
+      CustBranchGSTDigit15: [this.parseGST(data?.GSTNo || '', 14)],
       status: [{ value: this.isCustomerSuspended() ? 'Suspended' : this.toDisplayStatus(data?.status), disabled: this.isCustomerSuspended() }, Validators.required],
 
       // Contacts array
@@ -1567,13 +1569,17 @@ private clearBranchStateAndCityOnCountryChange(): void {
   
   const stateCode = this.getStateGSTCode(stateId);
   const pan = String(this.customerForm.get('PanType')?.value).toUpperCase() || '';
-
-  const thirteenthDigitInput = document.getElementById(`thirteenthDigit_${branchIndex}`) as HTMLInputElement;
-  const fifteenthDigitInput = document.getElementById(`fifteenthDigit_${branchIndex}`) as HTMLInputElement;
-
-  const thirteenthDigit = thirteenthDigitInput?.value || '';
-  const fifteenthDigit = fifteenthDigitInput?.value || '';
+  const thirteenthDigit = String(branchForm.get('CustBranchGSTDigit13')?.value || '').toUpperCase();
+  const fifteenthDigit = String(branchForm.get('CustBranchGSTDigit15')?.value || '').toUpperCase();
   const fourteenthDigit = 'Z';
+
+  branchForm.patchValue(
+    {
+      CustBranchGSTDigit13: thirteenthDigit,
+      CustBranchGSTDigit15: fifteenthDigit
+    },
+    { emitEvent: false }
+  );
 
   if (stateCode && stateCode.trim().length === 2 &&
     pan && pan.length === 10 &&
@@ -1653,12 +1659,14 @@ private clearBranchStateAndCityOnCountryChange(): void {
   }
   initializeGSTINDigits(branchIndex: number, gstin: string): void {
     if (!gstin || gstin.length !== 15) return;
-
-    const thirteenthDigitInput = document.getElementById(`thirteenthDigit_${branchIndex}`) as HTMLInputElement;
-    const fifteenthDigitInput = document.getElementById(`fifteenthDigit_${branchIndex}`) as HTMLInputElement;
-
-    if (thirteenthDigitInput) thirteenthDigitInput.value = gstin[12] || '';
-    if (fifteenthDigitInput) fifteenthDigitInput.value = gstin[14] || '';
+    const branchForm = this.branches.at(branchIndex) as FormGroup;
+    branchForm.patchValue(
+      {
+        CustBranchGSTDigit13: gstin[12] || '',
+        CustBranchGSTDigit15: gstin[14] || ''
+      },
+      { emitEvent: false }
+    );
   }
 
  
