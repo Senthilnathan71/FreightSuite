@@ -504,17 +504,17 @@
           <div style="width: 100%; font-size: 16px; text-align: right;">
             
             {{ currentBranch?.branchName || 'Company Branch' }}
-            <ng-container *ngIf="currentBranch?.branchCode as code">
+            <!-- <ng-container *ngIf="currentBranch?.branchCode as code">
               - {{ code }}
-            </ng-container>
+            </ng-container> -->
             <ng-container *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode">
-              Postal Code : {{ currentBranch?.postalCode || currentBranch?.ZipCode }}
+              , Postal Code : {{ currentBranch?.postalCode || currentBranch?.ZipCode }}
             </ng-container>
           </div>
 
-              <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone" style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
+              <div style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">
                 <span>Phone No</span>
-                <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
+                <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</span>
               </div>
               <div style="display: flex; justify-content: right; gap: 6px; width: 100%; font-size: 16px;">     
                 <span *ngIf="currentCompanyCountryCode === 'in'">GST No</span>

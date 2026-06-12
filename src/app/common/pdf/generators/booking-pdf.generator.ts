@@ -55,7 +55,8 @@ export function generateBookingDocument(
       buildHeader(data.company, data.branch, data.logo, {
         showLogo: true,
         logoWidth: 70,
-        logoHeight: 70
+        logoHeight: 70,
+        showPostalPhoneLabels: true
       }),
 
       // Title
@@ -71,7 +72,7 @@ export function generateBookingDocument(
       {
         text: 'We are pleased to confirm your booking as below',
         style: 'labelBold',
-        fontSize: 11,
+        fontSize: 10,
         margin: [4, 0, 0, 6]
       },
 
@@ -84,10 +85,8 @@ export function generateBookingDocument(
       // Cost/Revenue table
       // buildBookingRatesTable(data),
 
-      // Terms (if available)
-      ...(data.terms && data.terms.length > 0 ? [
-        buildTermsSection(data.terms)
-      ] : [])
+      // Terms heading should show even when no terms are available.
+      buildTermsSection(data.terms || [], { showTitleWhenEmpty: true })
     ],
     footer: (currentPage: number, pageCount: number) => buildBookingFooter(data, currentPage, pageCount),
     styles: getPdfStyles(),
@@ -132,9 +131,9 @@ function buildBookingInfo(data: BookingPdfData): any {
 
   const leftBlock = {
     stack: [
-      { text: 'Customer', style: 'labelBold', fontSize: 11, margin: [10, 0, 0, 4] },
-      { text: booking?.customerName || '', fontSize: 10, margin: [36, 0, 0, 3] },
-      { text: booking?.customerAddress || '', fontSize: 10, margin: [36, 0, 0, 0] }
+      { text: 'Customer', style: 'labelBold', fontSize: 11, margin: [8, 0, 0, 4] },
+      { text: booking?.customerName || '', fontSize: 10, margin: [24, 0, 0, 3] },
+      { text: booking?.customerAddress || '', fontSize: 10, margin: [24, 0, 10, 0] }
     ]
   };
 
@@ -147,7 +146,7 @@ function buildBookingInfo(data: BookingPdfData): any {
   const rightBlock = {
     stack: rightItems.map((item) => ({
       columns: [
-        { text: item.label, style: 'labelBold', width: 95 },
+        { text: item.label, style: 'labelBold', width: 85 },
         { text: ':', width: 8 },
         { text: item.value, width: '*' }
       ],
@@ -157,10 +156,11 @@ function buildBookingInfo(data: BookingPdfData): any {
 
   return {
     columns: [
-      { width: '50%', ...leftBlock },
-      { width: '50%', ...rightBlock }
+      { width: '49%', ...leftBlock },
+      { width: '51%', ...rightBlock }
     ],
-    margin: [0, 0, 0, 2]
+    columnGap: 10,
+    margin: [0, 0, 0, 4]
   };
 }
 
@@ -205,7 +205,16 @@ function buildShipmentDetails(data: BookingPdfData): any {
         { stack: buildDetailRows(rightDetails, 95), margin: [4, 3, 2, 3] }
       ]]
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
+    layout: {
+      hLineWidth: () => 0.5,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length) ? 0.5 : 0,
+      hLineColor: () => '#000000',
+      vLineColor: () => '#000000',
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0
+    },
     margin: [0, 0, 0, 5]
   };
 }

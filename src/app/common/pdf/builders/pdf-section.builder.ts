@@ -345,15 +345,26 @@ export function buildTermsSection(
     title?: string;
     numbered?: boolean;
     margin?: [number, number, number, number];
+    showTitleWhenEmpty?: boolean;
   } = {}
 ): any {
   const {
     title = 'Terms and Conditions',
     numbered = false,
-    margin = [0, 0, 0, 15]
+    margin = [0, 0, 0, 15],
+    showTitleWhenEmpty = false
   } = options;
 
   if (!terms || terms.length === 0) {
+    if (showTitleWhenEmpty) {
+      return {
+        stack: [
+          { text: title, style: 'sectionTitle', margin: [0, 10, 0, 5] }
+        ],
+        margin
+      };
+    }
+
     return { text: '' };
   }
 

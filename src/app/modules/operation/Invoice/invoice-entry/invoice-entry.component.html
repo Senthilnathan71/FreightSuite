@@ -1111,7 +1111,7 @@
                     <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
                     - {{ code }}
                   </ng-container> -->
-                    <ng-container *ngIf="currentBranch?.branchCode as code">
+                    <ng-container *ngIf="currentCompanyCountryCode !== 'in' && currentBranch?.branchCode as code">
                       - {{ code }}
                     </ng-container>
 
@@ -1186,7 +1186,7 @@
                   </div>
                 </div> -->
                    <div style="display: flex">
-                    <div style="width: 110px; font-weight: bolder">
+                    <div style="width: 70px; font-weight: bolder">
                       <strong *ngIf=" invoicePrintData?.CustomerCountryCode === 'in'">GST No.</strong>
                       <strong *ngIf=" invoicePrintData?.CustomerCountryCode !== 'in'">VAT No.</strong>
                     </div>
@@ -2008,11 +2008,12 @@
             </div>
 
             <!-- Amount in words -->
-            <div style="display: flex;margin-top: 8px;font-size: 16px;padding: 0 20px;">
-              <p style="font-weight: bolder;width: 165px;margin: 0;font-weight: bolder;">
+            <div style="display: flex;align-items:flex-start;margin-top: 8px;font-size: 16px;padding: 0 20px;">
+              <p style="font-weight: bolder;width: 165px;margin: 0;font-weight: bolder;flex:0 0 165px;">
                 <strong>Amount In Words</strong>
               </p>
-              <p style="margin: 0">: {{ invoicePrintData?.AmountInWords }}</p>
+              <span style="width:12px;flex:0 0 12px;text-align:center;">:</span>
+              <p style="margin: 0;flex:1;line-height:1.35;">{{ invoicePrintData?.AmountInWords }}</p>
             </div>
 
             <!--Container No and type-->
@@ -2034,21 +2035,22 @@
 
 
             <!-- Remarks -->
-            <div style="display: flex;margin-top: 8px;padding: 0 20px;font-size: 13px">
-              <p style="font-weight: bolder; width: 165px; margin: 0"><strong>Remarks</strong></p>
-              <p style="margin: 0">
-                : {{ invoicePrintData?.Remarks }}
+            <div style="display: flex;align-items:flex-start;margin-top: 8px;padding: 0 20px;font-size: 13px">
+              <p style="font-weight: bolder; width: 165px; flex:0 0 165px; margin: 0"><strong>Remarks</strong></p>
+              <span style="width:12px;flex:0 0 12px;text-align:center;">:</span>
+              <p style="margin: 0;flex:1;line-height:1.35;">
+                {{ invoicePrintData?.Remarks }}
               </p>
             </div>
 
             <div *ngIf="invoicePrintData?.ContainerNumber || invoicePrintData?.ContainerType"
-              style="display: flex; margin-top: 8px; font-size: 14px; padding: 0 20px;">
-              <p style="font-weight: bolder; width: 165px; margin: 0">
+              style="display: flex; align-items:flex-start; margin-top: 8px; font-size: 14px; padding: 0 20px;">
+              <p style="font-weight: bolder; width: 165px; flex:0 0 165px; margin: 0">
                 <strong>Container No / Type</strong>
               </p>
 
-              <p style="margin: 0">
-                :
+              <span style="width:12px;flex:0 0 12px;text-align:center;">:</span>
+              <p style="margin: 0;flex:1;line-height:1.35;">
                 {{ invoicePrintData?.ContainerNumber }}
                 {{
                 invoicePrintData?.ContainerNumber && invoicePrintData?.ContainerType
@@ -2509,21 +2511,21 @@
                   <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
                     - {{ code }}
                   </ng-container> -->
-                  <ng-container *ngIf="currentBranch?.branchCode as code">
+                  <ng-container *ngIf="currentCompanyCountryCode !== 'in' && currentBranch?.branchCode as code">
                     - {{ code }}
                   </ng-container>
 
                 </p>
+                <div *ngIf="currentCompanyCountryCode === 'in' || currentBranch?.phoneNumber || currentBranch?.Phone"
+                  style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
+                  <span>Phone No</span>
+                  <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</span>
+                </div>
+
                 <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
                   style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
                   <span>Postal Code</span>
                   <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
-                </div>
-
-                <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
-                  style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-                  <span>Phone No</span>
-                  <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
                 </div>
 
                 <div
@@ -3084,11 +3086,12 @@
           </div>
 
           <!-- Amount in words -->
-          <div style="display: flex;margin-top: 8px;font-size: 16px;padding: 0 20px;">
-            <p style="font-weight: bolder;width: 165px;margin: 0;font-weight: bolder;">
+          <div style="display: flex;align-items:flex-start;margin-top: 8px;font-size: 16px;padding: 0 20px;">
+            <p style="font-weight: bolder;width: 165px;margin: 0;font-weight: bolder;flex:0 0 165px;">
               <strong>Amount In Words</strong>
             </p>
-            <p style="margin: 0">: {{ invoicePrintData?.AmountInWords }}</p>
+            <span style="width:12px;flex:0 0 12px;text-align:center;">:</span>
+            <p style="margin: 0;flex:1;line-height:1.35;">{{ invoicePrintData?.AmountInWords }}</p>
           </div>
 
           <!--Container No and type-->
@@ -3110,21 +3113,22 @@
 
 
           <!-- Remarks -->
-          <div style="display: flex;margin-top: 8px;padding: 0 20px;font-size: 13px">
-            <p style="font-weight: bolder; width: 165px; margin: 0"><strong>Remarks</strong></p>
-            <p style="margin: 0">
-              : {{ invoicePrintData?.Remarks }}
+          <div style="display: flex;align-items:flex-start;margin-top: 8px;padding: 0 20px;font-size: 13px">
+            <p style="font-weight: bolder; width: 165px; flex:0 0 165px; margin: 0"><strong>Remarks</strong></p>
+            <span style="width:12px;flex:0 0 12px;text-align:center;">:</span>
+            <p style="margin: 0;flex:1;line-height:1.35;">
+              {{ invoicePrintData?.Remarks }}
             </p>
           </div>
 
           <div *ngIf="invoicePrintData?.ContainerNumber || invoicePrintData?.ContainerType"
-            style="display: flex; margin-top: 8px; font-size: 14px; padding: 0 20px;">
-            <p style="font-weight: bolder; width: 165px; margin: 0">
+            style="display: flex; align-items:flex-start; margin-top: 8px; font-size: 14px; padding: 0 20px;">
+            <p style="font-weight: bolder; width: 165px; flex:0 0 165px; margin: 0">
               <strong>Container No / Type</strong>
             </p>
 
-            <p style="margin: 0">
-              :
+            <span style="width:12px;flex:0 0 12px;text-align:center;">:</span>
+            <p style="margin: 0;flex:1;line-height:1.35;">
               {{ invoicePrintData?.ContainerNumber }}
               {{
               invoicePrintData?.ContainerNumber && invoicePrintData?.ContainerType

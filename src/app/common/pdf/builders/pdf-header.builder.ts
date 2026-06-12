@@ -14,6 +14,7 @@ export interface HeaderOptions {
   showBranch?: boolean;
   showAddress?: boolean;
   showPhone?: boolean;
+  showPostalPhoneLabels?: boolean;
   compact?: boolean;
 }
 
@@ -25,6 +26,7 @@ const DEFAULT_OPTIONS: HeaderOptions = {
   showBranch: true,
   showAddress: true,
   showPhone: true,
+  showPostalPhoneLabels: false,
   compact: false
 };
 
@@ -102,22 +104,28 @@ export function buildHeader(
     const postalCode = branch?.postalCode || company?.postalCode;
     const phone = opts.showPhone ? (branch?.phoneNumber || company?.phoneNumber) : null;
 
-    const addressParts = joinNonEmpty([
-      branch?.addressLine2 || company?.addressLine2,
-      cityName,
-      postalCode
-    ]);
+    const addressParts = opts.showPostalPhoneLabels
+      ? joinNonEmpty([
+          branch?.addressLine2 || company?.addressLine2,
+          cityName,
+          postalCode ? `Postal Code : ${postalCode}` : ''
+        ])
+      : joinNonEmpty([
+          branch?.addressLine2 || company?.addressLine2,
+          cityName,
+          postalCode
+        ]);
 
     if (addressParts) {
       companyInfoStack.push({
-        text: phone ? `${addressParts} - ${phone}` : addressParts,
+        text: phone ? `${addressParts}${opts.showPostalPhoneLabels ? ' , Ph.no : ' : ' - '}${phone}` : addressParts,
         style: 'addressText',
         alignment: opts.alignment,
         margin: [0, 0, 0, 2]
       });
     } else if (phone) {
       companyInfoStack.push({
-        text: phone,
+        text: opts.showPostalPhoneLabels ? `Ph.no : ${phone}` : phone,
         style: 'addressText',
         alignment: opts.alignment,
         margin: [0, 0, 0, 2]

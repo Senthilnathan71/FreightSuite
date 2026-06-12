@@ -80,19 +80,28 @@
     const taxConfig = (data.taxDisplayConfig as any) || {};
     const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
     const isNonJobInvoice = isNonJobPdfInvoice(data);
+    const billingAddressForHeader =
+      printData?.BillingAddress ||
+      data.invoice?.customerAddress ||
+      '';
+    const estimatedBillingAddressLines = Math.ceil(String(billingAddressForHeader).length / 58);
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
     const baseTopMargin = 150;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIRNLine = isIndiaInvoice ? 14 : 0;
+    const extraTopMarginForCustomerTaxLine = Math.min(
+      Math.max(0, estimatedBillingAddressLines - 2) * 8,
+      24
+    ) + (!isIndiaInvoice ? 16 : 0);
     const extraTopMarginForIndiaFields =
       isIndiaInvoice
         ? ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
         : 0;
-    const extraTopMarginForVATLine = !isIndiaInvoice ? 8 : 0;
+    const extraTopMarginForVATLine = 0;
     const extraTopMarginForNonJobFields = isNonJobInvoice
       ? 24 + (printData?.InvoiceDueDate ? 12 : 0)
       : 0;
-    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForIRNLine + extraTopMarginForVATLine + extraTopMarginForNonJobFields;
+    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForIRNLine + extraTopMarginForCustomerTaxLine + extraTopMarginForVATLine + extraTopMarginForNonJobFields;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
       ? [
@@ -239,9 +248,9 @@
     const branchName = branch?.branchName || (branch as any)?.BranchName || '';
     const branchCode = (branch as any)?.branchCode || (branch as any)?.BranchCode || '';
     const branchNameCode = branchName
-      ? `${branchName}${branchCode ? ` - ${branchCode}` : ''}`
+      ? `${branchName}${!isIndiaInvoice && branchCode ? ` - ${branchCode}` : ''}`
       : '';
-    const cityCountry = joinNonEmpty([addressLine2, isIndiaInvoice ? (branchNameCode || cityName) : cityName], ', ');
+    const cityCountry = joinNonEmpty([addressLine2, isIndiaInvoice ? (branchName || cityName) : (branchNameCode || cityName)], ', ');
     if (cityCountry) {
       companyInfoStack.push({
         text: cityCountry,
@@ -269,16 +278,18 @@
         margin: [0, 0, 0, 6]
       });
     }
+
     const phone = branch?.phoneNumber || company?.phoneNumber;
-    if (phone) {
+    if (isIndiaInvoice || phone) {
       companyInfoStack.push({
-        text: `Phone No : ${phone}`,
+        text: `Phone No : ${phone || ''}`,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
       });
     }
 
+    
     const registrationNo = (
       isIndiaInvoice
         ? data.companyGstCode
@@ -370,6 +381,14 @@
     printData?.BilledTo || invoice?.customerName || '';
   const billingAddress =
     printData?.BillingAddress || invoice?.customerAddress || '';
+  const customerTaxNo =
+    printData?.GST_VAT ||
+    printData?.customerGstVat ||
+    printData?.CustomerGSTVAT ||
+    printData?.CustomerTaxNo ||
+    invoice?.customerGstVat ||
+    (invoice as any)?.GST_VAT ||
+    '';
 
   const leftStack: any[] = [
     {
@@ -411,16 +430,14 @@
   //   });
   // }
 
- if (isIndiaInvoice) {
-    leftStack.push({
-      columns: [
-         { text: customerTaxLabel, width: 40, style: 'labelBold', noWrap: true },
-        { text: ':', width: COLON_WIDTH, alignment: 'center' },
-        { text: printData?.customerGstVat || invoice?.customerGstVat || '', width: '*'}
-      ],
-      margin: [0, 6, 0, 0]
-    });
-  }
+  leftStack.push({
+    columns: [
+      { text: customerTaxLabel, width: 40, style: 'labelBold', noWrap: true },
+      { text: ':', width: COLON_WIDTH, alignment: 'center', margin: [0, 1, 0, 0] },
+      { text: customerTaxNo, width: '*', margin: [4, 1, 0, 0] }
+    ],
+    margin: [0, 6, 0, 0]
+  });
 
   // -----------------------------
   // Right side - Invoice Details
@@ -502,16 +519,6 @@
         margin: [0, 0, 0, 7]
       });
     }
-  } else {
-    // VAT Number - show the label even when the value is empty
-    rightStack.push({
-      columns: [
-        { text: String(customerTaxLabel), width: RIGHT_LABEL_WIDTH, bold: true, noWrap: true },
-        { text: ':', width: COLON_WIDTH, alignment: 'center' },
-        { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*', margin: [4, 0, 0, 0] }
-      ],
-      margin: [0, 0, 0, 4]
-    });
   }
 
   // 🔥 Remove bottom margin from the LAST row automatically
@@ -541,24 +548,24 @@
   // -----------------------------
   // Bottom Line (No Extra Space)
   // -----------------------------
-  // const bottomLine = {
-  //   canvas: [
-  //     {
-  //       type: 'line',
-  //       x1: PAGE_LEFT,
-  //       y1: 0,
-  //       x2: PAGE_RIGHT,
-  //       y2: 0,
-  //       lineWidth: 0.1
-  //     }
-  //   ],
-  //   margin: [0, 2, 0, 3]
-  // };
+  const bottomLine = {
+    canvas: [
+      {
+        type: 'line',
+        x1: PAGE_LEFT,
+        y1: 0,
+        x2: PAGE_RIGHT,
+        y2: 0,
+        lineWidth: 0.5
+      }
+    ],
+    margin: [0, isIndiaInvoice ? 6 : 2, 0, 3]
+  };
 
   return {
     stack: [
       twoColumnLayout,
-      // bottomLine
+      bottomLine
     ],
     margin: [0, 0, 0, 4]
   };
@@ -634,7 +641,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
 
   const rightTable = {
     table: {
-      widths: [116, 6, '*'],
+      widths: [110, 6, '*'],
       body: rightRows.map(([label, value]) => [
         { text: label, style: 'labelBold', noWrap: true },
         { text: ':' },
@@ -825,17 +832,6 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
 
   return {
     stack: [
-      {
-        canvas: [{
-          type: 'line',
-          x1: PAGE_LEFT,
-          y1: 0,
-          x2: PAGE_RIGHT,
-          y2: 0,
-          lineWidth: 0.5
-        }],
-        margin: [0, 1, 0, 4]
-      },
       detailsTable
     ],
     margin: [0, 0, 0, 0]
@@ -1274,17 +1270,17 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
           style: 'labelBold'
         },
         {
-          width: 0,
+          width: 6,
           text: ':',
-         
+          alignment: 'center'
         },
         {
           width: '*',
           text: amountInWords,
+          margin: [4, 0, 0, 0],
           // italics: true 
         }
-      ],
-      columnGap: 5
+      ]
     };
   }
 
@@ -1301,18 +1297,19 @@ function buildRemarks(remarks: string): any {
     margin: [0, 2, 0, 2],
     columns: [
       {
-        width: 90,
+        width: 88,
         text: 'Remarks',
         style: 'labelBold'
       },
       {
-        width: 10,
+        width: 6,
         text: ':',
         alignment: 'center'
       },
       {
         width: '*',
-        text: remarks
+        text: remarks,
+        margin: [4, 0, 0, 0]
       }
     ]
   };
@@ -1330,18 +1327,19 @@ function buildContainerDetails(data: InvoicePdfData): any {
     margin: [0, 2, 0, 2],
     columns: [
       {
-        width: 90,
-        text: 'Container No / Type',
+        width: 88,
+        text: 'Cont No. / Type',
         style: 'labelBold'
       },
       {
-        width: 10,
+        width: 6,
         text: ':',
         alignment: 'center'
       },
       {
         width: '*',
-        text: containerValue
+        text: containerValue,
+        margin: [4, 0, 0, 0]
       }
     ]
   };

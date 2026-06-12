@@ -61,12 +61,11 @@ function buildHeader(data: InvoicePdfData, isIndiaInvoice: boolean): any {
   const branch: any = data.branch || {};
   const companyName = company.companyName || (company as any).CompanyName || 'Company Name';
   const postalCode = branch.postalCode || (branch as any).ZipCode || company.postalCode || '';
-  const phone = branch.phoneNumber || (branch as any).Phone || company.phoneNumber || '';
-  const branchName = branch.branchName || branch.BranchName || 'Company Branch';
-  const branchCode = branch.branchCode || branch.BranchCode || '';
-  const branchPlace = `${branchName}${branchCode ? ` - ${branchCode}` : ''}`;
+  const phone = branch.phoneNumber || (branch as any).Phone || '';
+  const branchName = String(branch.branchName || branch.BranchName || 'Company Branch').trim();
+  const branchPlace = branchName;
   const addressLine = `${branch.addressLine1 || company.addressLine1 || ''}${branch.addressLine2 ? `, ${branch.addressLine2}` : ''}`;
-  const branchPostalLine = `${branchPlace}${postalCode ? ` Postal Code : ${postalCode}` : ''}`;
+  const branchPostalLine = `${branchPlace}${postalCode ? `, Postal Code : ${postalCode}` : ''}`;
   const companyTaxLabel = isIndiaInvoice ? 'GST No' : 'VAT No';
   const companyTaxValue = isIndiaInvoice
     ? ((branch as any).taxRegistrationNo || (branch as any).TaxRegistrationNo || (company as any).GST_VAT || '')
@@ -84,7 +83,7 @@ function buildHeader(data: InvoicePdfData, isIndiaInvoice: boolean): any {
                 { text: companyName, alignment: 'right', bold: true, fontSize: 16, color: '#000', margin: [0, 0, 0, 7] },
                 { text: addressLine, alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
                 { text: branchPostalLine, alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
-                { text: phone ? `Phone No : ${phone}` : '', alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
+                { text: `Phone No : ${phone || ''}`, alignment: 'right', fontSize: 11, color: '#000', margin: [0, 0, 0, 6] },
                 { text: `${companyTaxLabel} : ${companyTaxValue}`, alignment: 'right', fontSize: 11, color: '#000' }
               ],
               margin: [0, 0, 0, 0]
@@ -173,12 +172,12 @@ function buildInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean): any {
     {
       text: billedTo,
       fontSize: 10,
-      margin: [40, 0, 0, 4]
+      margin: [24, 0, 0, 4]
     },
     {
       text: billingAddress,
       fontSize: 10,
-      margin: [40, 0, 0, 6],
+      margin: [24, 0, 0, 6],
       lineHeight: 1.25
     },
     {
@@ -333,19 +332,15 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
     margin: [-10, 8, -10, 8]
   };
 
-  if (isIndiaPdfInvoice(data, taxConfig)) {
-    return {
-      stack: [
-        {
-          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 575, y2: 0, lineWidth: 0.5 }],
-          margin: [-10, -4, -10, 8]
-        },
-        chargesTable
-      ]
-    };
-  }
-
-  return chargesTable;
+  return {
+    stack: [
+      {
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 575, y2: 0, lineWidth: 0.5 }],
+        margin: [-10, 2, -10, 2]
+      },
+      chargesTable
+    ]
+  };
 }
 
 function buildAmountInWords(data: InvoicePdfData): any {
