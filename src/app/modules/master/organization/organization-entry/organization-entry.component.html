@@ -961,18 +961,18 @@
             aria-label="PAN" style="border-bottom: 2px solid sandybrown;"/>
       
           <!-- 13th Digit -->
-          <input type="text" [id]="'thirteenthDigit_' + branchIndex" maxlength="1"
+          <input type="text" maxlength="1" formControlName="CustBranchGSTDigit13"
             class="custom-input-field sm gstin-editable text-center digit-13" (input)="generateGST(branchIndex)"
-            [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 12)" aria-label="13th Digit" style="border-bottom: 2px solid #ff00cc;" />
+            aria-label="13th Digit" style="border-bottom: 2px solid #ff00cc;" />
       
           <!-- 14th Digit -->
           <input type="text" class="custom-input-field sm gstin-fixed digit-14" value="Z" disabled tabindex="-1"
             aria-label="14th Digit" style="border-bottom: 2px solid purple;"/>
       
           <!-- 15th Digit -->
-          <input type="text" [id]="'fifteenthDigit_' + branchIndex" maxlength="1"
+          <input type="text" maxlength="1" formControlName="CustBranchGSTDigit15"
             class="custom-input-field sm gstin-editable text-center digit-15" (input)="generateGST(branchIndex)"
-            aria-label="15th Digit" [value]="parseGST(getBranchFormGroup(branch).get('CustBranchGSTIN')?.value, 14)" style="border-bottom: 2px solid #b92b27;"/>
+            aria-label="15th Digit" style="border-bottom: 2px solid #b92b27;"/>
       
           <label class="input-label  mt-1">GSTIN</label>
       
