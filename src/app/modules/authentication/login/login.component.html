@@ -18,7 +18,7 @@
                     <h1>Sign In to blufin</h1>
                 </div>
 
-                <form class="login-form" id="loginform" [formGroup]="loginform">
+                <form class="login-form" id="loginform" [formGroup]="loginform" (ngSubmit)="login()">
                     <div class="custom-form-group login-field login-icon-field">
                         <span class="login-field-icon" id="basic-addon1"><i class="ti-email"></i></span>
                         <input type="text" formControlName="email" id="email" class="form-control"
@@ -77,7 +77,7 @@
                         <a (click)="showRecoverForm()" href="javascript:void(0)" id="to-recover">Forgot Password?</a>
                     </div>
 
-                    <button class="btn btn-info" type="button" (click)="login()" [disabled]="loginform.invalid">
+                    <button class="btn btn-info" type="submit">
                         Login
                     </button>
 
@@ -175,7 +175,7 @@
             </p>
             <div class="d-flex gap-2">
                 <button class="btn btn-outline-secondary flex-fill" (click)="cancelForceLogin()">Cancel</button>
-                <button class="btn btn-warning flex-fill" (click)="forceLogin()">
+                <button #forceLoginBtn class="btn btn-warning flex-fill" (click)="forceLogin()">
                     <i-feather name="log-in" class="feather-sm me-1"></i-feather>
                     Force Login
                 </button>

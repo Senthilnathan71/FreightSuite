@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { StorageMap } from '@ngx-pwa/local-storage';
@@ -528,6 +528,15 @@ export class LoginComponent implements OnInit {
   resendCountdown = 0;
   private pendingLoginParams: any = null;
   private resendInterval: ReturnType<typeof setInterval> | null = null;
+
+  // Auto-focus the "Force Login" button when the "Already Logged In" modal appears.
+  // Uses a setter because the modal is rendered with @if, so the element only exists once activeSessionInfo is set.
+  @ViewChild('forceLoginBtn') set forceLoginBtn(btn: ElementRef<HTMLButtonElement> | undefined) {
+    if (btn) {
+      setTimeout(() => btn.nativeElement.focus());
+    }
+  }
+
   private unsubscribe$ = new Subject<void>();
   constructor(
     private appService: AppService,
@@ -617,6 +626,8 @@ export class LoginComponent implements OnInit {
 
   login() {
     if (this.loginform.invalid) {
+      this.loginform.markAllAsTouched();
+      this.appSettingService.showWarning(this.getValidationWarning());
       return;
     }
 
@@ -648,6 +659,16 @@ export class LoginComponent implements OnInit {
       // fallback if browser doesn't support
       this.doLogin('Unknown location', null, null);
     }
+  }
+
+
+  private getValidationWarning(): string {
+    const f = this.loginform;
+    if (f.get('email')?.hasError('required')) return 'Please enter your email address';
+    if (f.get('email')?.hasError('pattern')) return 'Please enter a valid email address';
+    if (f.get('password')?.hasError('required')) return 'Please enter your password';
+    if (f.get('yearMasterSid')?.invalid) return 'Please select a financial year';
+    return 'Please fill all required fields correctly';
   }
 
 
