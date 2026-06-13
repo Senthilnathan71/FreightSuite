@@ -586,12 +586,12 @@
         </div>
 
         <div style="width: 100%; overflow-x: auto; margin-top: 8px">
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
             <thead>
               <tr>
-                <th style="border: 1px solid black; padding: 2px 8px; font-weight: bolder; text-align: center; width: 20px; border-left: none;"><strong>S.No.</strong></th>
-                <th style="border: 1px solid black; padding: 2px 8px; font-weight: bolder; text-align: center;"><strong>Particulars</strong></th>
-                <th *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>HSN/SAC</strong></th>
+                <th style="border: 1px solid black; padding: 2px 4px; font-weight: bolder; text-align: center; width: 42px; border-left: none; white-space: nowrap;"><strong>S.No.</strong></th>
+                <th style="border: 1px solid black; padding: 2px 6px; font-weight: bolder; text-align: center; width: 34%;"><strong>Narration</strong></th>
+                <th *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 4px; text-align: center; font-weight: bolder; width: 70px; white-space: nowrap;"><strong>HSN/SAC</strong></th>
                 <th style="border: 1px solid black; padding: 2px 8px; text-align: left; font-weight: bolder;"><strong>Curr.</strong></th>
                 <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>No. of Unit</strong></th>
                 <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>Rate</strong></th>
@@ -623,9 +623,9 @@
             </thead>
             <tbody>
               <tr *ngFor="let detail of invoicePrintData?.voucherDetails">
-                <td style="border: 1px solid black; padding: 2px 8px; border-left: none; text-align: center;">{{ detail.Sno }}</td>
-                <td style="border: 1px solid black; padding: 2px 8px">{{ detail.ChargeDescription }}</td>
-                <td *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 8px">{{ detail.HSSACCode }}</td>
+                <td style="border: 1px solid black; padding: 2px 4px; width: 42px; border-left: none; text-align: center; white-space: nowrap;">{{ detail.Sno }}</td>
+                <td style="border: 1px solid black; padding: 2px 6px; width: 34%; white-space: normal; overflow-wrap: anywhere; word-break: break-word;">{{ detail.Narration }}</td>
+                <td *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 4px; text-align: center; width: 70px; white-space: nowrap;">{{ detail.HSSACCode }}</td>
                 <td style="border: 1px solid black; padding: 2px 8px">{{ detail.CurrencyCode }}</td>
                 <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.NumberOfUnit }}</td>
                 <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.Rate }}</td>

@@ -285,7 +285,7 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
 
   const headers: any[] = [
     tableHeader('S.No.'),
-    tableHeader('Particulars'),
+    tableHeader('Narration'),
     ...(showHsnSac ? [tableHeader('HSN/SAC')] : []),
     tableHeader('Curr.'),
     tableHeader('No. of Unit'),
@@ -299,7 +299,7 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
 
   const rows = (printData.voucherDetails || data.charges || []).map((detail: any, index: number) => [
     cell(detail.Sno || detail.sno || index + 1, 'center'),
-    cell(detail.ChargeDescription || detail.chargeName || ''),
+    narrationCell(detail.Narration || printData.Narration || printData.Remarks || detail.chargeName || ''),
     ...(showHsnSac ? [cell(detail.HSSACCode || detail.hsnSacCode || '')] : []),
     cell(detail.CurrencyCode || detail.currencyCode || ''),
     cell(detail.NumberOfUnit || detail.qty || '1.000', 'right'),
@@ -520,6 +520,20 @@ function cell(text: any, alignment: 'left' | 'center' | 'right' = 'left'): any {
   return { text: text ?? '', alignment, fontSize: 7 };
 }
 
+function narrationCell(text: any): any {
+  return {
+    text: softenLongTokens(text),
+    alignment: 'left',
+    fontSize: 7,
+    noWrap: false,
+    lineHeight: 1.1
+  };
+}
+
+function softenLongTokens(text: any): string {
+  return String(text ?? '').replace(/(\S{22})(?=\S)/g, '$1 ');
+}
+
 function amountCell(value: any): any {
   const text = value === null || value === undefined || value === '' ? '' : formatNumberWithCommas(Number(value) || 0);
   return cell(text, 'right');
@@ -556,6 +570,21 @@ function buildChargeTableWidths(showHsnSac: boolean, taxConfig: any, showForeign
       ...buildTaxColumnWidths(taxColumnCount, true),
       42,
       42
+    ];
+  }
+
+  if (showHsnSac && !showForeign && taxColumnCount >= 4) {
+    return [
+      20,
+      '*',
+      38,
+      24,
+      34,
+      30,
+      30,
+      42,
+      ...buildTaxColumnWidths(taxColumnCount, true),
+      46
     ];
   }
 
