@@ -20,7 +20,7 @@ export function generateQuotationDocument(
           y: 14,
           w: pageSize.width - 28,
           h: pageSize.height - 28,
-          lineWidth: 1,
+          lineWidth: 0.5,
           lineColor: '#000'
         }
       ]
@@ -52,21 +52,19 @@ function buildHeader(data: QuotationPdfData): any {
   const companyAlignment: 'left' | 'center' | 'right' = settings.companyAlignment || 'center';
 
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = [
-    branch?.addressLine2 || company?.addressLine2 || '',
-    branch?.cityName || company?.city || '',
-    (branch?.postalCode || company?.postalCode) ? `Postal Code : ${branch?.postalCode || company?.postalCode}` : '',
-    (branch?.phoneNumber || company?.phoneNumber) ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}` : ''
-  ]
-    .filter(Boolean)
-    .join(', ');
+  const detailLine2 = buildHeaderDetailLine([
+    { value: branch?.addressLine2 || company?.addressLine2 || '' },
+    { value: branch?.cityName || company?.city || '' },
+    { label: 'Postal Code : ', value: branch?.postalCode || company?.postalCode || '' },
+    { label: 'Ph.no : ', value: branch?.phoneNumber || company?.phoneNumber || '' }
+  ]);
 
   const companyDetails = {
     stack: [
       { text: (company?.companyName || 'XXXX COMPANY NAME').toUpperCase(), bold: true, fontSize: 14, alignment: companyAlignment },
       { text: branch?.branchName || 'XXXX BRANCH NAME', bold: true, fontSize: 11, alignment: companyAlignment, margin: [0, 1, 0, 0] },
       { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] }
+      { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0], noWrap: true }
     ],
     margin: [0, 0, 0, 0]
   };
@@ -74,7 +72,7 @@ function buildHeader(data: QuotationPdfData): any {
   return {
     columns: [
       {
-        width: '*',
+        width: getHeaderColumnWidth('left', logoPosition, companyPosition),
         stack: [
           logoPosition === 'left'
             ? buildHeaderLogo(data.logo, 'left')
@@ -85,7 +83,7 @@ function buildHeader(data: QuotationPdfData): any {
         ]
       },
       {
-        width: '*',
+        width: getHeaderColumnWidth('center', logoPosition, companyPosition),
         stack: [
           logoPosition === 'center'
             ? buildHeaderLogo(data.logo, 'center')
@@ -96,7 +94,7 @@ function buildHeader(data: QuotationPdfData): any {
         ]
       },
       {
-        width: '*',
+        width: getHeaderColumnWidth('right', logoPosition, companyPosition),
         stack: [
           logoPosition === 'right'
             ? buildHeaderLogo(data.logo, 'right')
@@ -111,6 +109,28 @@ function buildHeader(data: QuotationPdfData): any {
   };
 }
 
+function buildHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
+  return parts
+    .filter(part => !!part.value)
+    .flatMap((part, index) => [
+      ...(index > 0 ? [{ text: ', ' }] : []),
+      ...(part.label ? [{ text: part.label, bold: true }] : []),
+      { text: part.value }
+    ]);
+}
+
+function getHeaderColumnWidth(
+  column: 'left' | 'center' | 'right',
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return column === 'center' ? '*' : 110;
+  }
+
+  return '*';
+}
+
 function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
   if (!logo) {
     return { text: '' };
@@ -120,7 +140,7 @@ function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' 
     image: logo,
     fit: [60, 60],
     alignment,
-    margin: [4, 0, 0, 0]
+    margin: alignment === 'left' ? [14, 0, 0, 0] : [4, 0, 0, 0]
   };
 }
 
@@ -131,7 +151,7 @@ function buildTitle(title: string): any {
       body: [[{ text: title, bold: true, alignment: 'center', fontSize: 15, margin: [0, 2, 0, 2] }]]
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 ? 1 : 0),
+      hLineWidth: (i: number) => (i === 0 ? 0.5 : 0),
       vLineWidth: () => 0,
       hLineColor: () => '#000'
     },
@@ -150,7 +170,7 @@ function buildCustomerInfo(data: QuotationPdfData, isContract: boolean): any {
         stack: [
           { text: 'To', bold: true, margin: [0, 0, 0, 2] },
           { text: q.customerName || '', margin: [14, 0, 0, 1], bold: true },
-          { text: q.customerAddress || '', margin: [14, 0, 0, 0] }
+          { text: q.customerAddress || '', margin: [14, 0, 0, 0], bold: true }
         ]
       },
       {
@@ -164,15 +184,15 @@ function buildCustomerInfo(data: QuotationPdfData, isContract: boolean): any {
       }
     ],
     columnGap: 4,
-    margin: [8, 5, 8, 0]
+    margin: [8, 5, 8, 10]
   };
 }
 
 function infoLine(label: string, value: string): any {
   return {
     columns: [
-      { text: label, bold: true, width: 92 },
-      { text: ':', width: 8 },
+      { text: label, bold: true, width: 72 },
+      { text: ':', width: 5 },
       { text: value || '', width: '*' }
     ],
     margin: [52, 0, 0, 0]
@@ -182,10 +202,12 @@ function infoLine(label: string, value: string): any {
 function buildGreeting(): any {
   return {
     stack: [
-      { text: 'Dear Sir/Mam,', bold: true, margin: [10, 4, 0, 2] },
+      { text: 'Dear Sir/Mam,', bold: true, margin: [10, 4, 0, 4] },
       {
         text: 'Thank you very much for the opportunity to quote for your esteemed organization.\nWe are pleased to submit our best rates as outlined below.',
-        margin: [10, 0, 0, 6]
+        bold: false,
+        fontSize: 9,
+        margin: [20, 0, 0, 6]
       }
     ]
   };
@@ -207,12 +229,12 @@ function buildRouteSections(data: QuotationPdfData): any[] {
       table: {
         widths: ['20%', '80%'],
         body: [[
-          { text: deptName, bold: true, margin: [10, 1, 0, 2] },
-          { text: routeLabel, bold: true, alignment: 'right', margin: [0, 1, 14, 2] }
+          { text: deptName, bold: false, margin: [10, 1, 0, 2] },
+          { text: routeLabel, bold: false, alignment: 'right', margin: [0, 1, 14, 2] }
         ]]
       },
       layout: {
-        hLineWidth: () => 1,
+        hLineWidth: () => 0.5,
         vLineWidth: () => 0,
         hLineColor: () => '#000'
       },
@@ -226,12 +248,12 @@ function buildRouteSections(data: QuotationPdfData): any[] {
 
       blocks.push({
         columns: [
-          { text: [{ text: 'Carrier : ', bold: true }, carrier?.carrierName || ''], width: '25%', margin: [10, 2, 0, 2] },
+          { text: [{ text: 'Carrier : ', bold: false }, carrier?.carrierName || ''], width: '25%', margin: [10, 2, 0, 2] },
           showCargoSummary
-            ? { text: [{ text: 'Cargo Type : ', bold: true }, getRoutePrintCargoTypeSummary(route, data)], width: '25%', margin: [0, 2, 0, 2] }
+            ? { text: [{ text: 'Cargo Type : ', bold: false }, getRoutePrintCargoTypeSummary(route, data)], width: '25%', margin: [0, 2, 0, 2] }
             : { text: '', width: '25%', margin: [0, 2, 0, 2] },
-          { text: [{ text: 'Valid From : ', bold: true }, formatDate(route.effDate)], width: '25%', margin: [0, 2, 0, 2] },
-          { text: [{ text: 'Valid To : ', bold: true }, formatDate(route.expDate)], width: '25%', alignment: 'right', margin: [0, 2, 10, 2] }
+          { text: [{ text: 'Valid From : ', bold: false }, formatDate(route.effDate)], width: '25%', margin: [0, 2, 0, 2] },
+          { text: [{ text: 'Valid To : ', bold: false }, formatDate(route.expDate)], width: '25%', alignment: 'right', margin: [0, 2, 10, 2] }
         ],
         columnGap: 0
       });
@@ -254,16 +276,16 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
   const cargoDetails = getRoutePrintCargoDetails(route, data);
   const widths = showQuantity ? ['33%', '33%', '34%'] : ['50%', '50%'];
   const body: any[] = [[
-    { text: 'Cargo Type', bold: true, alignment: 'left' },
-    { text: 'Container Type', bold: true, alignment: 'left' },
-    ...(showQuantity ? [{ text: 'No Of Container', bold: true, alignment: 'center' }] : [])
+    { text: 'Cargo Type', bold: false, alignment: 'left' },
+    { text: 'Container Type', bold: false, alignment: 'left' },
+    ...(showQuantity ? [{ text: 'No of Container', bold: false, alignment: 'center' }] : [])
   ]];
 
   cargoDetails.forEach((cargo: any) => {
     body.push([
       { text: cargo?.cargoType || '-', alignment: 'left' },
       { text: cargo?.containerType || '-', alignment: 'left' },
-      ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'center' }] : [])
+      ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'right' }] : [])
     ]);
   });
 
@@ -274,8 +296,8 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
       body
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: () => 1,
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
       hLineColor: () => '#000',
       vLineColor: () => '#000',
       paddingLeft: () => 5,
@@ -283,24 +305,24 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
       paddingTop: () => 2,
       paddingBottom: () => 2
     },
-    margin: [55, 0, 55, 4]
+    margin: [55, 8, 55, 4]
   };
 }
 
 function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
   const header: any[] = [
-    { text: 'Charge', bold: true, alignment: 'center' },
-    { text: 'Unit', bold: true, alignment: 'center' },
-    { text: 'Qty.', bold: true, alignment: 'center' },
-    { text: 'Curr.', bold: true, alignment: 'center' }
+    { text: 'Charge', bold: false, alignment: 'center' },
+    { text: 'Unit', bold: false, alignment: 'center' },
+    { text: 'Qty.', bold: false, alignment: 'center' },
+    { text: 'Curr.', bold: false, alignment: 'center' }
   ];
   if (showAgreedRate) {
-    header.push({ text: 'Ex Rate', bold: true, alignment: 'center' });
+    header.push({ text: 'Ex Rate', bold: false, alignment: 'center' });
   }
-  header.push({ text: 'Rate', bold: true, alignment: 'center' });
-  header.push({ text: 'Amt', bold: true, alignment: 'center' });
+  header.push({ text: 'Rate', bold: false, alignment: 'center' });
+  header.push({ text: 'Amt', bold: false, alignment: 'center' });
   if (showAgreedRate) {
-    header.push({ text: 'Local Amt', bold: true, alignment: 'center' });
+    header.push({ text: 'Local Amt', bold: false, alignment: 'center' });
   }
 
   const body: any[] = [header];
@@ -333,10 +355,10 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
       body
     },
     layout: {
-      hLineWidth: () => 1,
+      hLineWidth: () => 0.5,
       vLineWidth: (i: number, node: any) => {
         if (i === 0 || i === node.table.widths.length) return 0;
-        return 1;
+        return 0.5;
       },
       hLineColor: () => '#000',
       vLineColor: () => '#000',
@@ -368,7 +390,7 @@ function buildTermsSection(data: QuotationPdfData): any {
 
   return {
     stack: [
-      { text: 'Terms and Conditions', bold: true, fontSize: 12, margin: [10, 10, 0, 2] },
+      { text: 'Terms and Conditions', bold: false, fontSize: 12, margin: [10, 10, 0, 2] },
       { ul: termValues, fontSize: 9, margin: [12, 0, 0, 10], lineHeight: 1.4 }
     ]
   };
@@ -377,7 +399,7 @@ function buildTermsSection(data: QuotationPdfData): any {
 function buildClosingMessage(): any {
   return {
     text: 'We kindly look forward to your valuable support regarding the above shipment.',
-    bold: true,
+    bold: false,
     margin: [10, 0, 0, 10]
   };
 }
@@ -385,10 +407,10 @@ function buildClosingMessage(): any {
 function buildSignature(data: QuotationPdfData): any {
   return {
     stack: [
-      { text: 'Best Regards', bold: true, margin: [10, 0, 0, 4] },
+      { text: 'Best Regards', bold: false, margin: [10, 0, 0, 4] },
       {
         columns: [
-          { text: 'Name', bold: true, width: 70 },
+          { text: 'Name', bold: false, width: 70 },
           { text: ':', width: 10 },
           { text: data.userData?.userName || '', width: '*' }
         ],
@@ -396,7 +418,7 @@ function buildSignature(data: QuotationPdfData): any {
       },
       {
         columns: [
-          { text: 'Company', bold: true, width: 70 },
+          { text: 'Company', bold: false, width: 70 },
           { text: ':', width: 10 },
           { text: data.company?.companyName || 'Company Name', width: '*' }
         ],

@@ -3336,7 +3336,7 @@
 
 
  <div style="display:flex; margin-bottom:0.2rem;margin-left:120px;">
-    <p style="margin:0; width:120px; font-weight:bolder;font-size: 16px;">
+    <p style="margin:0; width:125px; font-weight:bolder;font-size: 16px;">
       <strong> {{ selectedItem?.IsContract === 'Y' ? 'Contract No.' : 'Quotation No.' }}</strong>
     </p>
     <p style="margin:0;">:   {{ selectedItem.QuoteNumber }}</p>
@@ -3344,14 +3344,14 @@
 
 
   <div style="display:flex; margin-bottom:0.2rem;margin-left:120px;">
-    <p style="margin:0; width:120px; font-weight:bolder;font-size: 16px;">
+    <p style="margin:0; width:125px; font-weight:bolder;font-size: 16px;">
       <strong>{{ selectedItem?.IsContract === 'Y' ? 'Contract Date' : 'Quotation Date' }}</strong>
     </p>
     <p style="margin:0;">: {{ selectedItem.QuoteDate | formatDate }}</p>
   </div>
 
   <div style="display:flex; margin-bottom:0.2rem;margin-left:120px;">
-    <p style="margin:0; width:120px; font-weight:bolder;font-size: 16px;">
+    <p style="margin:0; width:125px; font-weight:bolder;font-size: 16px;">
       <strong>Reference</strong>
     </p>
     <p style="margin:0;">: {{ selectedItem.CustomerRef || '' }}</p>

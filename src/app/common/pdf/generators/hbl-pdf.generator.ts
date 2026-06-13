@@ -102,16 +102,16 @@ function pickPrintValue(apiData: any, primaryValue: any, proxyValue: any): strin
   return value === null || value === undefined ? '' : String(value);
 }
 
-function lineLayout(): any {
+function lineLayout(padding: number = 4): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.5,
+    vLineWidth: () => 0.5,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
-    paddingLeft: () => 4,
-    paddingRight: () => 4,
-    paddingTop: () => 4,
-    paddingBottom: () => 4,
+    paddingLeft: () => padding,
+    paddingRight: () => padding,
+    paddingTop: () => padding,
+    paddingBottom: () => padding,
   };
 }
 
@@ -136,7 +136,7 @@ export function generateHblDocument(data: HblPdfData): any {
                 y: 10,
                 w: pageSize.width - 20,
                 h: pageSize.height - 20,
-                lineWidth: 1,
+                lineWidth: 0.5,
                 lineColor: '#000',
               },
             ],
@@ -170,10 +170,14 @@ export function generateHblDocument(data: HblPdfData): any {
                       body: [[{ text: 'Bill of Lading No.', bold: true }, { text: `: ${data.billNo || ''}` }]],
                     },
                     layout: {
-                      hLineWidth: (i: number) => (i === 1 ? 1 : 0),
+                      hLineWidth: (i: number) => (i === 1 ? 0.5 : 0),
                       vLineWidth: () => 0,
                       paddingLeft: () => 0,
+                      paddingRight: () => 0,
+                      paddingTop: () => 0,
+                      paddingBottom: () => 0,
                     },
+                    margin: [-4, -4, -4, 0],
                   },
                   { text: 'Delivery Agent & Ref.', bold: true, margin: [0, 2, 0, 2] },
                   { text: data.deliveryAgent || '', margin: [20, 0, 0, 0] },
@@ -210,7 +214,7 @@ export function generateHblDocument(data: HblPdfData): any {
                         minHeight: 60,
                       }]],
                     },
-                    layout: lineLayout(),
+                    layout: lineLayout(0),
                     margin: [0, 0, 0, 0],
                   },
                   {
@@ -227,7 +231,7 @@ export function generateHblDocument(data: HblPdfData): any {
                         minHeight: 60,
                       }]],
                     },
-                    layout: lineLayout(),
+                    layout: lineLayout(0),
                     margin: [0, 0, 0, 0],
                   },
                 ],
@@ -248,11 +252,15 @@ export function generateHblDocument(data: HblPdfData): any {
           ],
         },
         layout: {
-          hLineWidth: () => 1,
+          hLineWidth: () => 0.5,
           vLineWidth: (i: number, node: any) => {
             if (i === 0 || i === node.table.widths.length) return 0;
-            return 1;
+            return 0.5;
           },
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 0,
         },
         margin: [0, 0, 0, 0],
       },
@@ -268,10 +276,10 @@ export function generateHblDocument(data: HblPdfData): any {
           ]],
         },
         layout: {
-          hLineWidth: (i: number) => (i === 0 ? 0 : 1),
+          hLineWidth: (i: number) => (i === 0 ? 0 : 0.5),
           vLineWidth: (i: number, node: any) => {
             if (i === 0 || i === node.table.widths.length) return 0;
-            return 1;
+            return 0.5;
           },
         },
         margin: [0, 0, 0, 0],
@@ -288,10 +296,10 @@ export function generateHblDocument(data: HblPdfData): any {
           ]],
         },
         layout: {
-          hLineWidth: (i: number) => (i === 0 ? 0 : 1),
+          hLineWidth: (i: number) => (i === 0 ? 0 : 0.5),
           vLineWidth: (i: number, node: any) => {
             if (i === 0 || i === node.table.widths.length) return 0;
-            return 1;
+            return 0.5;
           },
         },
         margin: [0, 0, 0, 6],
@@ -323,10 +331,10 @@ export function generateHblDocument(data: HblPdfData): any {
           ],
         },
         layout: {
-          hLineWidth: () => 1,
+          hLineWidth: () => 0.5,
           vLineWidth: (i: number, node: any) => {
             if (i === 0 || i === node.table.widths.length) return 0;
-            return 1;
+            return 0.5;
           },
         },
         margin: [0, 0, 0, 0],
@@ -350,10 +358,10 @@ function buildFixedBottomSection(data: HblPdfData, declarationText: string): any
           ]],
         },
         layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0 : 1),
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0 : 0.5),
           vLineWidth: (i: number, node: any) => {
             if (i === 0 || i === node.table.widths.length) return 0;
-            return 1;
+            return 0.5;
           },
         },
       },
@@ -367,10 +375,10 @@ function buildFixedBottomSection(data: HblPdfData, declarationText: string): any
           ]],
         },
         layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0 : 1),
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0 : 0.5),
           vLineWidth: (i: number, node: any) => {
             if (i === 0 || i === node.table.widths.length) return 0;
-            return 1;
+            return 0.5;
           },
         },
       },
@@ -389,10 +397,10 @@ function buildFixedBottomSection(data: HblPdfData, declarationText: string): any
           ]],
         },
         layout: {
-          hLineWidth: () => 1,
+          hLineWidth: () => 0.5,
           vLineWidth: (i: number, node: any) => {
             if (i === 0 || i === node.table.widths.length) return 0;
-            return 1;
+            return 0.5;
           },
         },
         margin: [0, 0, 0, 12],

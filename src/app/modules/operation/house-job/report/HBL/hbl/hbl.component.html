@@ -214,14 +214,8 @@
           </thead>
           <tbody>
             <tr *ngFor="let rate of containerMappedProducts">
-              <td style="border: 1px solid black; padding: 2px 8px;border-left: none;">{{ rate?.ContainerNo }}
-                <span *ngIf="getContainerTypeName(housejobData?.masterJob?.containers?.[0]?.ContainerType)">
-                  ({{ getContainerTypeName(housejobData?.masterJob?.containers?.[0]?.ContainerType) }})
-                </span>
-                / {{ housejobData?.masterJob?.containers?.[0]?.LineSeal}}/ {{ housejobData?.Cargo?.[0]?.MarksAndNumber }}
-              </td>
-              <td style="border: 1px solid black; padding: 2px 8px;">{{ rate?.ExternlQty }} / {{
-                housejobData?.Cargo?.[0]?.CommodityDescription }} / {{ rate?.ExternaPkg }}</td>
+              <td style="border: 1px solid black; padding: 2px 8px;border-left: none;">{{ getContainerMarksDisplay(rate) }}</td>
+              <td style="border: 1px solid black; padding: 2px 8px;">{{ getPackageDisplay(rate) }}</td>
               <td style="border: 1px solid black; padding: 2px 8px; text-align:right;">{{ rate.GrossWeight |
                 number:'1.3-3' }}</td>
               <td style="border: 1px solid black; padding: 2px 8px; text-align:right;border-right: none;">{{ rate.Volume

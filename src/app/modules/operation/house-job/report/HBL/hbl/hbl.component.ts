@@ -207,6 +207,35 @@ export class HblComponent {
     return containerType?.ContainerName || containerType?.ContainerType || '';
   }
 
+  joinPrintParts(parts: any[], separator: string = ' / '): string {
+    return parts
+      .map((part) => (part ?? '').toString().trim())
+      .filter(Boolean)
+      .join(separator);
+  }
+
+  getContainerMarksDisplay(rate: any): string {
+    const containerType = this.getContainerTypeName(this.housejobData?.masterJob?.containers?.[0]?.ContainerType);
+    const containerNo = this.joinPrintParts([
+      rate?.ContainerNo,
+      containerType ? `(${containerType})` : '',
+    ], ' ');
+
+    return this.joinPrintParts([
+      containerNo,
+      this.housejobData?.masterJob?.containers?.[0]?.LineSeal,
+      this.housejobData?.Cargo?.[0]?.MarksAndNumber,
+    ]);
+  }
+
+  getPackageDisplay(rate: any): string {
+    return this.joinPrintParts([
+      rate?.ExternlQty,
+      this.housejobData?.Cargo?.[0]?.CommodityDescription,
+      rate?.ExternaPkg,
+    ]);
+  }
+
   async downloadPDF() {
     if (this.selectedReport === 'HBLDraft') {
       await this.generateAndDownloadPdf();

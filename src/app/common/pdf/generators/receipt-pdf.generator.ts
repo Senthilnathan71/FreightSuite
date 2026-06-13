@@ -3,6 +3,8 @@ import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf
 import { ReceiptPdfData } from '../interfaces/pdf-document.interfaces';
 import { PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS, getPdfStyles } from '../styles/pdf-styles';
 
+const RECEIPT_LINE_WIDTH = 0.5;
+
 function toNumber(value: any): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -79,12 +81,12 @@ function buildCompanyHeader(data: ReceiptPdfData): any {
   const postalCode = branch?.postalCode || company?.postalCode || '';
   const phone = branch?.phoneNumber || company?.phoneNumber || '';
 
-  const cityLine = joinNonEmpty([
-    branch?.addressLine2 || company?.addressLine2,
-    city,
-    postalCode ? `Postal Code : ${postalCode}` : '',
-    phone ? `Ph.no : ${phone}` : ''
-  ], ', ');
+  const cityLine = buildHeaderDetailLine([
+    { value: branch?.addressLine2 || company?.addressLine2 || '' },
+    { value: city },
+    { label: 'Postal Code : ', value: postalCode },
+    { label: 'Ph.no : ', value: phone }
+  ]);
 
   const companyInfoStack: any[] = [
     {
@@ -110,7 +112,8 @@ function buildCompanyHeader(data: ReceiptPdfData): any {
       text: cityLine,
       fontSize: 9,
       alignment: printSettings.companyAlignment,
-      margin: [0, 1, 0, 0]
+      margin: [0, 1, 0, 6],
+      noWrap: true
     }
   ];
 
@@ -135,22 +138,43 @@ function buildCompanyHeader(data: ReceiptPdfData): any {
     stack: [
       {
         table: {
-          widths: ['33%', '34%', '33%'],
+          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
           body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
         },
         layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 1 : 0),
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? RECEIPT_LINE_WIDTH : 0),
           vLineWidth: () => 0,
           hLineColor: () => '#000000',
           paddingLeft: () => 0,
           paddingRight: () => 0,
           paddingTop: () => 0,
-          paddingBottom: () => 2
+          paddingBottom: () => 6
         },
         margin: [0, 5, 0, 5]
       }
     ]
   };
+}
+
+function buildHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
+  return parts
+    .filter(part => !!part.value)
+    .flatMap((part, index) => [
+      ...(index > 0 ? [{ text: ', ' }] : []),
+      ...(part.label ? [{ text: part.label, bold: true }] : []),
+      { text: part.value }
+    ]);
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: ReceiptPdfData): any {
@@ -161,7 +185,7 @@ function buildTitle(data: ReceiptPdfData): any {
     alignment: 'center',
     bold: true,
     fontSize: 12,
-    margin: [0, 8, 0, 15]
+    margin: [0, 0, 0, 8]
   };
 }
 
@@ -205,9 +229,6 @@ function buildInfoSection(data: ReceiptPdfData): any {
     leftStack.push(infoRow('Received From', r.partyName || ''));
     if (r.partyAddress) {
       leftStack.push(valueOnlyRow(r.partyAddress));
-    }
-    if (r.headerLedgerDisplay) {
-      leftStack.push(infoRow('Ledger', r.headerLedgerDisplay || ''));
     }
   }
 
@@ -271,11 +292,12 @@ return {
     paddingRight: () => 0,
     paddingTop: () => 4,
     paddingBottom: () => 4,
+    hLineWidth: () => RECEIPT_LINE_WIDTH,
     vLineWidth: (i: number, node: any) => {
       if (i === 0 || i === node.table.widths.length) {
         return 0; 
       }
-      return 1; 
+      return RECEIPT_LINE_WIDTH; 
     }
   },
   margin: [-10, 0, -10, 8]
@@ -343,7 +365,7 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
   if (isIndia) totalRow.push({ text: '', style: 'tableCellBoldSmall', alignment: 'right', margin: [0, 0, 2, 0] });
 
   return [
-    { text: 'Remittance Details', style: 'sectionTitle', margin: [-3, 7, 0, 2] },
+    { text: 'Remittance Details', fontSize: 10, bold: false, margin: [-3, 7, 0, 2] },
     {
       table: {
         headerRows: 1,
@@ -357,11 +379,12 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
     paddingRight: () => 0,
     paddingTop: () => 2,
     paddingBottom: () => 2,
+    hLineWidth: () => RECEIPT_LINE_WIDTH,
     vLineWidth: (i: number, node: any) => {
       if (i === 0 || i === node.table.widths.length) {
         return 0; 
       }
-      return 1; 
+      return RECEIPT_LINE_WIDTH; 
     }
   },
       margin: [-10, 0, -10, 8]
@@ -397,14 +420,14 @@ export function generateReceiptDocument(data: ReceiptPdfData): any {
     pageMargins: resolvedPageMargins,
     header: () => ({
       stack: [buildCompanyHeader(data)],
-      margin: [10, 10, 10, 4]
+      margin: [10, 10, 10, 0]
     }),
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
-        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 }
+        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: RECEIPT_LINE_WIDTH },
+        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: RECEIPT_LINE_WIDTH },
+        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: RECEIPT_LINE_WIDTH },
+        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: RECEIPT_LINE_WIDTH }
       ]
     }),
     content: [

@@ -61,48 +61,52 @@
 
                     <!-- LEFT COLUMN -->
                     <div style="width:48%;">
-                        <div style="display:flex; ">
-                            <div style="width:130px;font-weight: bolder;"><strong>Received From</strong></div>
-                            <div>: {{ receiptPrintData?.PartyName }}</div>
+                        <div style="display:flex; align-items:flex-start;">
+                            <div style="width:120px;font-weight: bolder;"><strong>Received From</strong></div>
+                            <div style="width:12px; text-align:center;">:</div>
+                            <div style="flex:1; line-height:1.5;">
+                                <div>{{ receiptPrintData?.PartyName }}</div>
+                                <div>{{ receiptPrintData?.PartyAddress }}</div>
+                            </div>
                         </div>
 
-                        <div style="display:flex; ">
-                            <div style="width:130px;"></div>
-                            <div style="width:12px;">&nbsp;</div>
-                            <div style="flex:1;">{{ receiptPrintData?.PartyAddress }}</div>
+                        <div style="display:flex; align-items:flex-start;">
+                            <div style="width:120px;font-weight: bolder;"><strong>Receipt No.</strong></div>
+                            <div style="width:12px; text-align:center;">:</div>
+                            <div style="flex:1;">{{ receiptPrintData?.VoucherNumber }}</div>
                         </div>
 
-                        <div style="display:flex; ">
-                            <div style="width:130px;font-weight: bolder;"><strong>Receipt No.</strong></div>
-                            <div>: {{ receiptPrintData?.VoucherNumber }}</div>
-                        </div>
-
-                        <div style="display:flex; ">
-                            <div style="width:130px;font-weight: bolder;"><strong>Bank</strong></div>
-                            <div>: {{ getBankName(receiptPrintData?.BankCOA) }}</div>
+                        <div style="display:flex; align-items:flex-start;">
+                            <div style="width:120px;font-weight: bolder;"><strong>Bank</strong></div>
+                            <div style="width:12px; text-align:center;">:</div>
+                            <div style="flex:1;">{{ getBankName(receiptPrintData?.BankCOA) }}</div>
                         </div>
 
                     </div>
 
                     <!-- RIGHT COLUMN -->
                     <div style="width:48%; text-align:left;">
-                        <div style="display:flex; ">
-                            <div style="width:130px;font-weight: bolder;"><strong>Receipt Date</strong></div>
-                            <div>: {{ receiptPrintData?.VoucherDate | formatDate }}</div>
+                        <div style="display:flex; align-items:flex-start;">
+                            <div style="width:120px;font-weight: bolder;"><strong>Receipt Date</strong></div>
+                            <div style="width:12px; text-align:center;">:</div>
+                            <div style="flex:1;">{{ receiptPrintData?.VoucherDate | formatDate }}</div>
                         </div>
 
-                        <div style="display:flex; ">
-                            <div style="width:130px;font-weight: bolder;"><strong>Currency</strong></div>
-                            <div>: {{ receiptPrintData?.CurrencyCode }}</div>
+                        <div style="display:flex; align-items:flex-start;">
+                            <div style="width:120px;font-weight: bolder;"><strong>Currency</strong></div>
+                            <div style="width:12px; text-align:center;">:</div>
+                            <div style="flex:1;">{{ receiptPrintData?.CurrencyCode }}</div>
                         </div>
 
-                        <div style="display:flex; ">
-                            <div style="width:130px;font-weight: bolder;"><strong>Ex. Rate</strong></div>
-                            <div>: {{ receiptPrintData?.ExchangeRate | number:'1.3-3' }}</div>
+                        <div style="display:flex; align-items:flex-start;">
+                            <div style="width:120px;font-weight: bolder;"><strong>Ex. Rate</strong></div>
+                            <div style="width:12px; text-align:center;">:</div>
+                            <div style="flex:1;">{{ receiptPrintData?.ExchangeRate | number:'1.3-3' }}</div>
                         </div>
-                           <div style="display:flex; ">
-                            <div style="width:130px;font-weight: bolder;"><strong>Payment Mode</strong></div>
-                            <div>: {{ receiptPrintData?.InstrumentMode}} / {{ receiptPrintData?.InstrumentNumber}} / {{ receiptPrintData?.InstrumentDate | formatDate }}</div>
+                           <div style="display:flex; align-items:flex-start;">
+                            <div style="width:120px;font-weight: bolder;"><strong>Payment Mode</strong></div>
+                            <div style="width:12px; text-align:center;">:</div>
+                            <div style="flex:1;">{{ receiptPrintData?.InstrumentMode}} / {{ receiptPrintData?.InstrumentNumber}} / {{ receiptPrintData?.InstrumentDate | formatDate }}</div>
                         </div>
                     </div>
 
@@ -119,12 +123,12 @@
                         <th
                             style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:30%;">
                             <strong style="font-weight: bolder;">Description</strong></th>
-                        <th style="border:1px solid black; padding:4px; text-align:center; width:5%;"><strong
+                        <th style="border:1px solid black; padding:4px; text-align:center; width:4%;"><strong
                                 style="font-weight: bolder;">Curr.</strong></th>
-                        <th style="border:1px solid black; padding:4px; text-align:center; width:5%;"><strong
+                        <th style="border:1px solid black; padding:4px; text-align:center; width:6%;"><strong
                                 style="font-weight: bolder;">Ex.Rate</strong></th>
                         <th
-                            style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:8%;">
+                            style="border:1px solid black; padding:4px; text-align:center; width:12%;">
                             <strong style="font-weight: bolder;">Amount</strong></th>
                         <th
                             style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:12%;">
@@ -144,7 +148,7 @@
                         <td style="border:1px solid black; padding:4px; text-align:right;">
                             {{item?.ExchangeRate | number:'1.3-3'}}
                         </td>
-                        <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+                        <td style="border:1px solid black; padding:4px; text-align:right;">
                             {{item?.Amount | number:'1.2-2'}}
                         </td>
                         <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
@@ -170,7 +174,7 @@
 ">
                     <!-- Label -->
                     <div style="
-    width: 170px;
+    width: 165px;
     font-weight: bolder;
     white-space: nowrap;
   ">
