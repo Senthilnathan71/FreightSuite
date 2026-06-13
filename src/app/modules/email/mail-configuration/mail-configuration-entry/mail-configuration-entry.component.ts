@@ -1036,14 +1036,22 @@ export class MailConfigurationEntryComponent implements OnInit {
   }
 
   navigateBack(): void {
+    this.router.navigate([this.getDashboardLandingRoute()]);
+  }
+
+  private getDashboardLandingRoute(): string {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
 
-    if (salespersonFlag === '1' || salespersonFlag === 'Y') {
-      this.router.navigate(['/dashboard/sales']);
-    } else {
-      this.router.navigate(['/dashboard']);
+    if (userProfile?.userType?.code === 'salesManager') {
+      return '/dashboard/sales-manager';
     }
+
+    if (salespersonFlag === '1' || salespersonFlag === 'Y') {
+      return '/dashboard/sales';
+    }
+
+    return '/dashboard';
   }
 
   get activeCount(): number {
