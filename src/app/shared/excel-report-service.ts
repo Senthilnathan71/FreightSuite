@@ -4,6 +4,9 @@ import * as XLSX from 'xlsx';
 // styled exporter below so the plain `xlsx` path stays unchanged.
 import * as XLSXStyle from 'xlsx-js-style';
 import * as FileSaver from 'file-saver';
+// Shared, reusable styling for the styled (coloured) exporter — palette, formats, borders
+// and the per-row-kind cell-style builder all live here so the theme is editable in one place.
+import { buildCellStyle } from './excel-report-style';
 
 export interface ExcelHeader {
   key: string;
@@ -480,9 +483,7 @@ export class ExcelExportService {
       ws['!cols'] = columnWidths.map((w) => ({ wch: w }));
     }
 
-    // --- Cell styling ---
-    const thin = { style: 'thin', color: { rgb: 'D7DEE8' } };
-    const allBorders = { top: thin, bottom: thin, left: thin, right: thin };
+    // --- Cell styling (palette / formats / per-row-kind styles live in excel-report-style.ts) ---
     const range = XLSXStyle.utils.decode_range(ws['!ref']);
     for (let R = range.s.r; R <= range.e.r; R++) {
       const kind = rowKind[R] || 'data';
@@ -491,65 +492,17 @@ export class ExcelExportService {
         if (!ws[ref]) ws[ref] = { t: 's', v: '' };
         const cell = ws[ref];
         const meta = cellMeta[R]?.[C];
-        const isNumeric = cell.t === 'n';
 
-        const s: any = { font: {}, alignment: {}, border: allBorders };
-
-        if (kind === 'company') {
-          s.font = { bold: true, sz: 14 };
-          s.alignment = { horizontal: 'center', vertical: 'center' };
-          s.border = undefined;
-        } else if (kind === 'title') {
-          s.font = { bold: true, sz: 12, color: { rgb: '116897' } };
-          s.alignment = { horizontal: 'center', vertical: 'center' };
-          s.border = undefined;
-        } else if (kind === 'info') {
-          s.font = { sz: 10 };
-          s.alignment = { horizontal: 'left' };
-          s.border = undefined;
-        } else if (kind === 'note') {
-          s.font = { italic: true, sz: 9, color: { rgb: '666666' } };
-          s.alignment = { horizontal: 'left', wrapText: true };
-          s.border = undefined;
-        } else if (kind === 'header') {
-          s.font = { bold: true, color: { rgb: 'FFFFFF' } };
-          s.fill = { patternType: 'solid', fgColor: { rgb: '116897' } };
-          s.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
-        } else if (kind === 'section') {
-          s.font = { bold: true, color: { rgb: '1B3A5C' } };
-          s.fill = { patternType: 'solid', fgColor: { rgb: 'E9EEF5' } };
-          s.alignment = { horizontal: 'left', vertical: 'center' };
-        } else if (kind === 'grandTotal') {
-          s.font = { bold: true };
-          s.fill = { patternType: 'solid', fgColor: { rgb: 'DCE6F2' } };
-        } else if (kind === 'total') {
-          s.font = { bold: true };
-          s.fill = { patternType: 'solid', fgColor: { rgb: 'F2F2F2' } };
-        }
-
-        // Per-cell fill override (e.g. On Account amber tint)
-        if (meta?.fillColor) {
-          s.fill = { patternType: 'solid', fgColor: { rgb: this.hexToRgb(meta.fillColor) } };
-        }
-
-        // Numeric format + right align
-        if (isNumeric && kind !== 'company' && kind !== 'title') {
-          cell.z = '#,##0.00';
-          s.alignment = { ...s.alignment, horizontal: 'right' };
-        } else if (meta?.alignment?.horizontal) {
-          // honour an explicit per-cell alignment (e.g. right-aligned band totals)
-          s.alignment = { ...s.alignment, horizontal: meta.alignment.horizontal };
-        }
-
+        const { s, z } = buildCellStyle(kind, {
+          isNumeric: cell.t === 'n',
+          fillColor: meta?.fillColor,
+          alignment: meta?.alignment,
+        });
+        if (z) cell.z = z;
         cell.s = s;
       }
     }
 
     return { Sheets: { [sheetName]: ws }, SheetNames: [sheetName] };
-  }
-
-  private hexToRgb(hex: string): string {
-    const h = String(hex || '').replace('#', '').toUpperCase();
-    return /^[0-9A-F]{6}$/.test(h) ? h : 'FFFFFF';
   }
 }
