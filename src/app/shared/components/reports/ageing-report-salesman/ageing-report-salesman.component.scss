@@ -1,0 +1,212 @@
+// Customer Ageing (Salesman-wise).
+// Design-system blue header (#116897), shaded per-customer band, neutral palette, placeholder
+// pills for empty salesteam / On Account, an expandable department breakdown, and a paginated
+// preview (one .print-a4 page per chunk). Aggregates live in the band, never in the Outstanding
+// column, so the column always sums to the grand total.
+
+$ds-blue: #116897;
+
+// Space between the stacked A4 preview pages.
+.report-page {
+  margin-bottom: 8mm;
+
+  .hdr-fields {
+    margin: 0.6rem 0 0.4rem 0;
+    font-size: 12px;
+  }
+
+  .page-num {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+}
+
+.salesman-ageing {
+  border-color: #d6dde6;
+
+  th,
+  td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  // --- Header (design-system blue). Repeated on each page. ---
+  thead .head-row th {
+    background: $ds-blue;
+    color: #ffffff;
+    font-weight: 600;
+    border-color: #0d527a;
+    padding: 0.35rem 0.5rem;
+  }
+
+  // --- Per-customer band ---
+  tr.cust-band > td {
+    background: #eef2f7;
+    border-top: 2px solid $ds-blue;
+    padding: 0.3rem 0.55rem;
+  }
+
+  .cust-name {
+    font-weight: 700;
+    color: #000;
+    font-size: 0.82rem;
+  }
+
+  // Band metrics: compact single line — grey label + bold value, thin vertical dividers between.
+  // Constant labels + fixed-width right-aligned values keep each metric at the SAME x-position
+  // across every band (the group is right-anchored to the fixed table width).
+  .cust-summary {
+    display: inline-flex;
+    align-items: center;
+    color: #44525f;
+    font-size: 0.76rem;
+
+    .metric {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.45rem;
+      white-space: nowrap;
+      padding: 0 0.85rem;
+    }
+
+    // Thin vertical divider between adjacent metrics.
+    .metric + .metric {
+      border-left: 1px solid #cdd6e0;
+    }
+
+    .metric-label {
+      color: #6b7280;
+    }
+
+    .metric-val {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: #1b3a5c;
+      text-align: right;
+    }
+
+    // Fixed value widths -> numbers (and the labels before them) line up across every band.
+    .metric-total .metric-val {
+      width: 100px;
+    }
+
+    .metric-days .metric-val {
+      width: 44px;
+    }
+
+    .metric-limit .metric-val {
+      width: 110px;
+    }
+  }
+
+  .os-btn {
+    border: 1px solid #cdd6e0;
+    background: #fff;
+    line-height: 1;
+    margin-left: 0.6rem;
+  }
+
+  // --- Leaf rows (tight, so a page's worth of rows fits one A4 card like the PDF) ---
+  tr.leaf-row > td {
+    padding: 0.18rem 0.5rem;
+  }
+
+  tr.leaf-row.on-account > td {
+    background: #fcf6ec;
+  }
+
+  .on-acc-cell {
+    color: #6b7280;
+  }
+
+  // --- Currency code cell (compact, uppercase) ---
+  .cur-cell {
+    font-size: 0.72rem;
+    color: #44525f;
+    text-transform: uppercase;
+  }
+
+  // --- Expandable "N Departments" chip ---
+  .dept-chip {
+    border: 1px solid #cfddef;
+    background: #f1f6fc;
+    color: $ds-blue;
+    border-radius: 10px;
+    padding: 0.02rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+    cursor: pointer;
+
+    i {
+      margin-right: 0.2rem;
+    }
+
+    &:hover {
+      background: #e4eefb;
+    }
+  }
+
+  // --- Department breakdown child rows ---
+  tr.dept-child > td {
+    background: #fafbfd;
+    color: #55616e;
+    font-size: 0.72rem;
+    padding: 0.15rem 0.5rem;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  .dept-child-name {
+    padding-left: 1.1rem;
+    font-style: italic;
+  }
+
+  // --- Placeholder pills ---
+  .pill {
+    display: inline-block;
+    padding: 0.05rem 0.45rem;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .pill-unassigned {
+    background: #eceef1;
+    color: #6b7280;
+    border: 1px solid #d6dade;
+  }
+
+  .pill-onaccount {
+    background: #fbeccd;
+    color: #92600b;
+    border: 1px solid #f0d8a8;
+  }
+
+  // --- Grand total ---
+  tr.grand-total > td {
+    border-top: 2px solid $ds-blue;
+    background: #e7ecf2;
+  }
+}
+
+// Keep header / band / tints when printing (Print uses the live DOM; PDF is built by pdfMake).
+@media print {
+  .salesman-ageing {
+    thead .head-row th,
+    tr.cust-band > td,
+    tr.leaf-row.on-account > td,
+    tr.dept-child > td,
+    tr.grand-total > td,
+    .pill,
+    .dept-chip {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+}

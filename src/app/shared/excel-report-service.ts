@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
+// Drop-in fork of the SheetJS API that supports cell styling (.s) — used only by the
+// styled exporter below so the plain `xlsx` path stays unchanged.
+import * as XLSXStyle from 'xlsx-js-style';
 import * as FileSaver from 'file-saver';
 
 export interface ExcelHeader {
@@ -22,6 +25,12 @@ export interface ExcelExportConfig {
  */
 export interface ExcelCell {
   value: string | number;
+  /**
+   * Raw numeric value for the styled Excel exporter. When provided the cell is written as a
+   * real number with a #,##0.00 format (right-aligned + summable). `value` stays the display
+   * string used by the PDF / plain-Excel paths.
+   */
+  num?: number;
   colspan?: number;
   rowspan?: number;
   border?: [boolean, boolean, boolean, boolean];
@@ -57,6 +66,8 @@ export interface ComplexReportExportConfig {
   fileName: string;
   sheetName?: string;
   reportHeader: ReportHeaderConfig;
+  /** When true the report modal routes the Excel export through the styled (coloured) exporter. */
+  styled?: boolean;
   showFooterNote?: boolean;
   tableHeaders: ExcelHeader[];
   includeTableHeaders?: boolean;
@@ -348,5 +359,197 @@ export class ExcelExportService {
     });
   }
 
+  // ===================================================================
+  // Styled complex-report export (xlsx-js-style) — coloured header,
+  // banded sections, bold totals, borders and REAL numeric cells.
+  // Opt-in via ComplexReportExportConfig.styled; the plain path is untouched.
+  // ===================================================================
 
+  exportComplexReportStyled(config: ComplexReportExportConfig): void {
+    const blob = this.buildComplexReportStyledBlob(config);
+    FileSaver.saveAs(blob, `${config.fileName}-${new Date().getTime()}.xlsx`);
+  }
+
+  buildComplexReportStyledBlob(config: ComplexReportExportConfig): Blob {
+    const wb = this.buildStyledComplexWorkbook(config);
+    const buf: Uint8Array = XLSXStyle.write(wb, { bookType: 'xlsx', type: 'array' });
+    return new Blob([buf], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+  }
+
+  private buildStyledComplexWorkbook(config: ComplexReportExportConfig): any {
+    const {
+      fileName,
+      sheetName = (fileName || 'Report').replace(/[^a-zA-Z0-9]/g, '').slice(0, 31),
+      reportHeader,
+      tableHeaders,
+      includeTableHeaders = true,
+      rows,
+      columnWidths,
+      notes,
+    } = config;
+
+    const totalCols = Math.max(1, tableHeaders.length);
+    const aoa: any[][] = [];
+    const merges: XLSX.Range[] = [];
+    const cellMeta: (ExcelCell | undefined)[][] = []; // per (r,c) source cell (fill/num/align)
+    const rowKind: string[] = [];
+
+    const pushMetaRow = (kind: string, metaCells: (ExcelCell | undefined)[]) => {
+      rowKind.push(kind);
+      const filled = metaCells.slice(0, totalCols);
+      while (filled.length < totalCols) filled.push(undefined);
+      cellMeta.push(filled);
+    };
+    const fullMerge = () =>
+      merges.push({
+        s: { r: aoa.length - 1, c: 0 },
+        e: { r: aoa.length - 1, c: totalCols - 1 },
+      });
+
+    // --- Title block ---
+    aoa.push([reportHeader.companyName || '']);
+    fullMerge();
+    pushMetaRow('company', []);
+
+    aoa.push([reportHeader.reportTitle || '']);
+    fullMerge();
+    pushMetaRow('title', []);
+
+    aoa.push([]);
+    pushMetaRow('blank', []);
+
+    if (reportHeader.additionalInfo?.length) {
+      for (const info of reportHeader.additionalInfo) {
+        aoa.push([`${info.label} : ${info.value}`]);
+        fullMerge();
+        pushMetaRow('info', []);
+      }
+    }
+
+    // --- Table header ---
+    if (includeTableHeaders) {
+      aoa.push(tableHeaders.map((h) => h.label));
+      pushMetaRow('header', []);
+    }
+
+    // --- Data rows ---
+    for (const row of rows) {
+      const rowValues: any[] = [];
+      const metaCells: (ExcelCell | undefined)[] = [];
+      let colIndex = 0;
+      for (const cell of row.cells) {
+        const num = Number(cell.num);
+        const isNum = cell.num !== undefined && cell.num !== null && isFinite(num);
+        rowValues.push(isNum ? num : (cell.value ?? ''));
+        metaCells[colIndex] = cell;
+        if (cell.colspan && cell.colspan > 1) {
+          merges.push({
+            s: { r: aoa.length, c: colIndex },
+            e: { r: aoa.length, c: colIndex + cell.colspan - 1 },
+          });
+          for (let i = 1; i < cell.colspan; i++) {
+            rowValues.push('');
+            metaCells[colIndex + i] = cell; // share style across the merged span
+          }
+          colIndex += cell.colspan;
+        } else {
+          colIndex++;
+        }
+      }
+      while (rowValues.length < totalCols) rowValues.push('');
+      aoa.push(rowValues);
+      pushMetaRow(row.style || 'data', metaCells);
+    }
+
+    // --- Notes ---
+    if (notes?.length) {
+      aoa.push([]);
+      pushMetaRow('blank', []);
+      for (const n of notes) {
+        aoa.push([n]);
+        fullMerge();
+        pushMetaRow('note', []);
+      }
+    }
+
+    const ws: any = XLSXStyle.utils.aoa_to_sheet(aoa);
+    ws['!merges'] = merges;
+    if (columnWidths?.length) {
+      ws['!cols'] = columnWidths.map((w) => ({ wch: w }));
+    }
+
+    // --- Cell styling ---
+    const thin = { style: 'thin', color: { rgb: 'D7DEE8' } };
+    const allBorders = { top: thin, bottom: thin, left: thin, right: thin };
+    const range = XLSXStyle.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r; R <= range.e.r; R++) {
+      const kind = rowKind[R] || 'data';
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const ref = XLSXStyle.utils.encode_cell({ r: R, c: C });
+        if (!ws[ref]) ws[ref] = { t: 's', v: '' };
+        const cell = ws[ref];
+        const meta = cellMeta[R]?.[C];
+        const isNumeric = cell.t === 'n';
+
+        const s: any = { font: {}, alignment: {}, border: allBorders };
+
+        if (kind === 'company') {
+          s.font = { bold: true, sz: 14 };
+          s.alignment = { horizontal: 'center', vertical: 'center' };
+          s.border = undefined;
+        } else if (kind === 'title') {
+          s.font = { bold: true, sz: 12, color: { rgb: '116897' } };
+          s.alignment = { horizontal: 'center', vertical: 'center' };
+          s.border = undefined;
+        } else if (kind === 'info') {
+          s.font = { sz: 10 };
+          s.alignment = { horizontal: 'left' };
+          s.border = undefined;
+        } else if (kind === 'note') {
+          s.font = { italic: true, sz: 9, color: { rgb: '666666' } };
+          s.alignment = { horizontal: 'left', wrapText: true };
+          s.border = undefined;
+        } else if (kind === 'header') {
+          s.font = { bold: true, color: { rgb: 'FFFFFF' } };
+          s.fill = { patternType: 'solid', fgColor: { rgb: '116897' } };
+          s.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
+        } else if (kind === 'section') {
+          s.font = { bold: true, color: { rgb: '1B3A5C' } };
+          s.fill = { patternType: 'solid', fgColor: { rgb: 'E9EEF5' } };
+          s.alignment = { horizontal: 'left', vertical: 'center' };
+        } else if (kind === 'grandTotal') {
+          s.font = { bold: true };
+          s.fill = { patternType: 'solid', fgColor: { rgb: 'DCE6F2' } };
+        } else if (kind === 'total') {
+          s.font = { bold: true };
+          s.fill = { patternType: 'solid', fgColor: { rgb: 'F2F2F2' } };
+        }
+
+        // Per-cell fill override (e.g. On Account amber tint)
+        if (meta?.fillColor) {
+          s.fill = { patternType: 'solid', fgColor: { rgb: this.hexToRgb(meta.fillColor) } };
+        }
+
+        // Numeric format + right align
+        if (isNumeric && kind !== 'company' && kind !== 'title') {
+          cell.z = '#,##0.00';
+          s.alignment = { ...s.alignment, horizontal: 'right' };
+        } else if (meta?.alignment?.horizontal) {
+          // honour an explicit per-cell alignment (e.g. right-aligned band totals)
+          s.alignment = { ...s.alignment, horizontal: meta.alignment.horizontal };
+        }
+
+        cell.s = s;
+      }
+    }
+
+    return { Sheets: { [sheetName]: ws }, SheetNames: [sheetName] };
+  }
+
+  private hexToRgb(hex: string): string {
+    const h = String(hex || '').replace('#', '').toUpperCase();
+    return /^[0-9A-F]{6}$/.test(h) ? h : 'FFFFFF';
+  }
 }

@@ -1,0 +1,187 @@
+@if (rows.length === 0) {
+  <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <app-print-header></app-print-header>
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+      Customer Ageing (Salesman-wise) on {{ fullData?.concludedUpto | formatDate }}
+    </h4>
+    <p class="text-center py-3">No outstanding found for the given criteria.</p>
+    <app-print-footer></app-print-footer>
+  </div>
+}
+
+@for (page of pages; track $index) {
+  <div
+    [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'"
+    class="report-page">
+
+    <app-print-header></app-print-header>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+      Customer Ageing (Salesman-wise) on {{ fullData?.concludedUpto | formatDate }}
+    </h4>
+
+    <!-- Header Fields -->
+    <div class="hdr-fields">
+      <div class="d-flex align-items-center">
+        <strong style="width: 100px;">To Date</strong>
+        <span class="ms-1">: {{ fullData?.concludedUpto | formatDate }}</span>
+      </div>
+      <div class="d-flex align-items-center">
+        <strong style="width: 100px;">Branch</strong>
+        <span class="ms-1">: {{ fullData?.branchInvolvedText }}</span>
+      </div>
+      <div class="d-flex align-items-center">
+        <strong style="width: 100px;">Ledger</strong>
+        <span class="ms-1">: {{ fullData?.LedgerName }}</span>
+      </div>
+      @if (singleCurrency && singleCurrencyCode) {
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px;">Currency</strong>
+          <span class="ms-1">: {{ singleCurrencyCode }}</span>
+        </div>
+      }
+    </div>
+
+    <table class="table tablebordered table-sm salesman-ageing" style="margin: 0; font-size: 11px;">
+      <thead>
+        <tr class="head-row">
+          @if (!singleBranch) { <th>Branch</th> }
+          <th>Salesperson</th>
+          <th>Department</th>
+          @if (!singleCurrency) { <th>Cur</th> }
+          <th class="text-end">OS Local</th>
+          <th class="text-end">OS Curr</th>
+          @for (label of bucketLabels; track $index) {
+            <th class="text-end">{{ label }}</th>
+          }
+          <th class="text-end">On Acc Local</th>
+          <th class="text-end">On Acc Curr</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (item of page; track $index) {
+          @switch (item.kind) {
+
+            <!-- Customer band -->
+            @case ('band') {
+              <tr class="cust-band">
+                <td [attr.colspan]="colCount">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <span class="cust-name">{{ item.row.customerName }}</span>
+                    <span class="cust-summary">
+                      <span class="metric metric-total">
+                        <span class="metric-label">Total (Local)</span>
+                        <span class="metric-val">{{ item.row.customerTotalLocal | number:'1.2-2' }}</span>
+                      </span>
+                      <span class="metric metric-days">
+                        <span class="metric-label">Credit Days</span>
+                        <span class="metric-val">{{ item.row.CreditDays || 0 }}</span>
+                      </span>
+                      <span class="metric metric-limit">
+                        <span class="metric-label">Credit Limit</span>
+                        <span class="metric-val">{{ item.row.CreditLimit || 0 | number:'1.2-2' }}</span>
+                      </span>
+                      <button
+                        type="button"
+                        class="btn btn-sm py-0 px-1 os-btn"
+                        title="Open Outstanding Report"
+                        (click)="openOutstandingReportForParty(item.row)">
+                        <i class="fas fa-file-invoice-dollar text-info"></i>
+                      </button>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            }
+
+            <!-- Salesperson (leaf) row -->
+            @case ('leaf') {
+              <tr class="leaf-row" [class.on-account]="item.row.isOnAccount" [class.expandable]="hasBreakdown(item.row)">
+                @if (!singleBranch) { <td>{{ branchLabel(item.row) }}</td> }
+
+                <td>
+                  @if (item.row.isUnassigned) {
+                    <span class="pill pill-unassigned">Unassigned</span>
+                  } @else {
+                    {{ spLabel(item.row) }}
+                  }
+                </td>
+
+                <td>
+                  @if (item.row.isOnAccount) {
+                    <span class="pill pill-onaccount"
+                      title="Unallocated = department-less vouchers not tied to a job (Non-Job invoices, Journal Vouchers, Receipts/Payments). OS Local is the net of all of them; On Acc is the Advances + JV portion.">Unallocated</span>
+                  } @else if (hasBreakdown(item.row)) {
+                    <button type="button" class="dept-chip" (click)="toggle(item.row)"
+                      [attr.aria-expanded]="item.row.expanded">
+                      <i class="fas" [ngClass]="item.row.expanded ? 'fa-caret-down' : 'fa-caret-right'"></i>
+                      {{ item.row.departmentCount }} Departments
+                    </button>
+                  } @else {
+                    {{ item.row.departmentText }}
+                  }
+                </td>
+
+                @if (!singleCurrency) { <td class="cur-cell">{{ item.row.currencyCode }}</td> }
+                <td class="text-end num">{{ showAmounts(item.row) ? fmt(item.row.outstandingLocal) : '' }}</td>
+                <td class="text-end num">{{ showAmounts(item.row) ? fmt(item.row.outstandingCurr) : '' }}</td>
+                @for (label of bucketLabels; track $index) {
+                  <td class="text-end num">{{ showAmounts(item.row) ? fmt(item.row.buckets[label]) : '' }}</td>
+                }
+                <td class="text-end num on-acc-cell">{{ showAmounts(item.row) ? fmt(item.row.onAccountLocal) : '' }}</td>
+                <td class="text-end num on-acc-cell">{{ showAmounts(item.row) ? fmt(item.row.onAccountCurr) : '' }}</td>
+              </tr>
+            }
+
+            <!-- Department breakdown child row -->
+            @case ('child') {
+              <tr class="dept-child">
+                @if (!singleBranch) { <td></td> }
+                <td></td>
+                <td class="dept-child-name">↳ {{ item.dept.departmentName }}</td>
+                @if (!singleCurrency) { <td></td> }
+                <td class="text-end num">{{ fmt(item.dept.outstandingLocal) }}</td>
+                <td class="text-end num">{{ fmt(item.dept.outstandingCurr) }}</td>
+                @for (label of bucketLabels; track $index) {
+                  <td class="text-end num">{{ fmt(item.dept.buckets[label]) }}</td>
+                }
+                <td class="text-end num on-acc-cell">{{ fmt(item.dept.onAccountLocal) }}</td>
+                <td class="text-end num on-acc-cell">{{ fmt(item.dept.onAccountCurr) }}</td>
+              </tr>
+            }
+
+            <!-- Grand total -->
+            @case ('grand') {
+              <tr class="grand-total fw-bold">
+                <td [attr.colspan]="identitySpan" class="text-end">Grand Total</td>
+                <td class="text-end">{{ fullData?.grandTotalLocal | number:'1.2-2' }}</td>
+                <td class="text-end"></td>
+                @for (label of bucketLabels; track $index) {
+                  <td class="text-end">{{ (fullData?.overallBucketTotals[label] || 0) | number:'1.2-2' }}</td>
+                }
+                <td class="text-end">{{ fullData?.overallOnAccountLocal || 0 | number:'1.2-2' }}</td>
+                <td class="text-end"></td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </table>
+
+    @if ($last) {
+      <div class="pt-2 notes">
+        Note:
+        <ul>
+          <li>Outstanding is grouped by the customer's salesteam. A salesperson's departments are listed beneath the salesperson (click <strong>N Departments</strong> to collapse). The customer total sits in the band, so summing the <strong>OS Local</strong> column equals the Grand Total.</li>
+          <li><strong>OS Curr</strong> and the ageing buckets are in the transaction currency; <strong>OS Local</strong> is the local-currency equivalent (rows are split per currency, and OS Local is what reconciles to the Grand Total).</li>
+          <li><strong>Unallocated</strong> row = department-less vouchers not tied to a job (Non-Job invoices, Journal Vouchers, Receipts/Payments), not attributed to a salesperson. OS Local is the net of all of them; <strong>On Acc Local</strong> / <strong>On Acc Curr</strong> show the <strong>Advances + JV</strong> portion (in local and transaction currency).</li>
+          <li>A <strong>Unassigned</strong> salesperson means no matching salesteam record exists.</li>
+        </ul>
+      </div>
+    }
+
+    <app-print-footer></app-print-footer>
+    <div class="page-num text-end">Page {{ $index + 1 }} of {{ pages.length }}</div>
+  </div>
+}

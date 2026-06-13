@@ -577,7 +577,12 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
 
       // Check if it's a ComplexReportExportConfig (has reportHeader and rows properties)
       if (excelData && excelData.reportHeader && excelData.rows) {
-        this.excelReportService.exportComplexReport(excelData);
+        if (excelData.styled) {
+          // Coloured/styled export (xlsx-js-style) — opted in by the component's getExcelData()
+          this.excelReportService.exportComplexReportStyled(excelData);
+        } else {
+          this.excelReportService.exportComplexReport(excelData);
+        }
         console.log('Excel export completed successfully (complex report)');
         this.spinner.hide();
         return;
@@ -759,6 +764,11 @@ private formatLabel(key: string): string {
 }
 
 private buildExcelAttachmentBlob(excelData: any, filename: string): Blob {
+  if (excelData?.styled && excelData?.reportHeader && excelData?.rows) {
+    // Coloured/styled export (xlsx-js-style) for email attachments.
+    return this.excelReportService.buildComplexReportStyledBlob(excelData);
+  }
+
   if (excelData?.reportHeader && excelData?.rows) {
     return this.buildComplexExcelBlob(excelData, filename);
   }

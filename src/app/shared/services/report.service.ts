@@ -344,6 +344,34 @@ export class ReportService {
   ): Promise<NgbModalRef> {
     const config = this.reportRegistry.getReportConfig(reportDetails.ReportName);
 
+    // Resolve any component override BEFORE opening the modal.
+    // The modal kicks off loadReport() right after it opens; if the override were imported
+    // AFTER opening, a slow first-time chunk download would lose the race against the data
+    // fetch and the DEFAULT component would render the data — e.g. the classic Ageing
+    // component receiving salesman-grouped data, which shows the Grand Total but no rows on
+    // the first open (it works on the second open only because the chunk is then cached).
+    // Importing first lets us set the override synchronously, before any rendering happens.
+    let overrideComponent: any = undefined;
+    let useColumnView = false;
+
+    if (
+      reportDetails.ReportName === 'ageing-report' &&
+      (payload?.Salesman === true || payload?.Salesman === 'true' || payload?.Salesman === 'Y')
+    ) {
+      const { AgeingReportSalesmanComponent } = await import(
+        '../components/reports/ageing-report-salesman/ageing-report-salesman.component'
+      );
+      overrideComponent = AgeingReportSalesmanComponent;
+    } else if (options?.columnView) {
+      // New ("column customizable") view: render the data through the generic column-managed
+      // table instead of the report's hardcoded component. Data fetching is unchanged.
+      const { GenericTableReportComponent } = await import(
+        '../components/reports/generic-table-report/generic-table-report.component'
+      );
+      overrideComponent = GenericTableReportComponent;
+      useColumnView = true;
+    }
+
     // Import GenericReportModalComponent dynamically to avoid circular dependencies
     const { GenericReportModalComponent } = await import(
       '../components/report-modal/report-modal.component'
@@ -360,20 +388,15 @@ export class ReportService {
         : 'report-modal-portrait'
     });
 
-    // Pass input data
+    // Pass input data + any override synchronously, before the modal's loadReport() renders
+    // the component (its first render happens a tick later, after the data fetch resolves).
     modalRef.componentInstance.reportId = reportDetails.ReportName;
     modalRef.componentInstance.entityId = entityId;
     modalRef.componentInstance.payload = payload;
     modalRef.componentInstance.reportHeader = reportDetails;
-
-    // New ("column customizable") view: render the data through the generic column-managed
-    // table instead of the report's hardcoded component. Data fetching is unchanged.
-    if (options?.columnView) {
-      const { GenericTableReportComponent } = await import(
-        '../components/reports/generic-table-report/generic-table-report.component'
-      );
-      modalRef.componentInstance.componentOverride = GenericTableReportComponent;
-      modalRef.componentInstance.useColumnView = true;
+    if (overrideComponent) {
+      modalRef.componentInstance.componentOverride = overrideComponent;
+      modalRef.componentInstance.useColumnView = useColumnView;
     }
 
     return modalRef;

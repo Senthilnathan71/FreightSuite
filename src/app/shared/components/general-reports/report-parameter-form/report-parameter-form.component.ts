@@ -156,6 +156,37 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
 
     // Setup cascading listeners after form is built
     this.setupCascadingListeners();
+
+    // Ageing Report: Salesman view is local-only, so lock CurrencyWise off when it is on.
+    this.setupSalesmanCurrencyLock();
+  }
+
+  /**
+   * Ageing Report only: when "Salesman" is ticked, force "CurrencyWise" to false and disable it
+   * (the salesman view works in local amounts); when unticked, re-enable it (value stays false).
+   * Guarded by the presence of BOTH controls — that pair is unique to the Ageing Report, so this
+   * works regardless of whether the host binds [reportKey].
+   */
+  private setupSalesmanCurrencyLock(): void {
+    const salesman = this.parameterForm.get('Salesman');
+    const currencyWise = this.parameterForm.get('CurrencyWise');
+    if (!salesman || !currencyWise) return;
+
+    const apply = (ticked: boolean) => {
+      if (ticked) {
+        currencyWise.setValue(false, { emitEvent: false });
+        currencyWise.disable({ emitEvent: false });
+      } else {
+        currencyWise.enable({ emitEvent: false });
+      }
+    };
+
+    apply(!!salesman.value); // initial state
+
+    const sub = salesman.valueChanges
+      .pipe(distinctUntilChanged())
+      .subscribe((value) => apply(!!value));
+    this.subscriptions.add(sub);
   }
 
   /**
