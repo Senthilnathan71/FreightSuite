@@ -1096,8 +1096,8 @@ export class MasterService {
     );
   }
 
-  getTariffById(TariffHeaderSid: number) {
-    return this.http.get<{ data: any }>(`tariff/fetch/${TariffHeaderSid}`).pipe(
+  getTariffById(payload: any) {
+    return this.http.post<{ data: any }>(`tariff/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2075,8 +2075,8 @@ getFieldConfiguration() {
     )
   }
 
-  getTandCById(TermsAndConditionsMasterSid) {
-    return this.http.get<{ data: any }>(`terms-and-conditions/fetch/${TermsAndConditionsMasterSid}`).pipe(
+  getTandCById(payload: any) {
+    return this.http.post<{ data: any }>(`terms-and-conditions/fetch`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2288,8 +2288,8 @@ getFieldConfiguration() {
     )
   }
 
-  getSailingScheduleById(VoyageMasterHeaderSid) {
-    return this.http.get<{ data: any }>(`voyage/fetch/${VoyageMasterHeaderSid}`).pipe(
+  getSailingScheduleById(payload: any) {
+    return this.http.post<{ data: any }>(`voyage/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -4525,8 +4525,8 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
     )
   }
 
-  fetchStdChargeById(StdRateHeaderSid) {
-    return this.http.get<{ data: any }>(`standard-charge/fetch/${StdRateHeaderSid}`).pipe(
+  fetchStdChargeById(payload: any) {
+    return this.http.post<{ data: any }>(`standard-charge/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -4595,8 +4595,8 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
     );
   }
 
-  getPreCustomerEventById(id: number) {
-    return this.http.get<{ data: any }>(`pre-customer-event-master/fetch/${id}`).pipe(
+  getPreCustomerEventById(payload:any) {
+    return this.http.post<{ data: any }>(`pre-customer-event-master/fetch`,payload).pipe(
       map((resp) => resp)
     );
   }

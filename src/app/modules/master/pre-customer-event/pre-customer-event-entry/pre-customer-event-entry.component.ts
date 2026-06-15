@@ -169,10 +169,15 @@ export class PreCustomerEventEntryComponent implements OnInit {
   }
 
   loadEvent(id: number): void {
-    this.masterService.getPreCustomerEventById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      PreCustomerEventSid: id
+    }
+    this.masterService.getPreCustomerEventById(payload).subscribe({
       next: (resp: any) => {
         if (!resp?.status) {
-          this.appSettingService.showError(resp?.message || 'Failed to load event');
+          this.appSettingService.showError(resp?.message || 'Access denied.');
           return;
         }
         const data = resp.data;

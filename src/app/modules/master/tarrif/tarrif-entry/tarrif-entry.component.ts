@@ -576,9 +576,17 @@ this.tariffDetailsForm.get('detailContainerType')?.valueChanges.subscribe(() => 
   this.modalRef.hidden.subscribe(() => { this.isDetailModalOpen = false; });
 }
   loadTariff(TariffHeaderSid: number) {
-  this.masterServ.getTariffById(TariffHeaderSid).subscribe(
-    (resp) => {
-      if (!resp?.data) return;
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      TariffHeaderSid: TariffHeaderSid,
+      CompanyMasterSid: CompanyMasterSid
+    }
+  this.masterServ.getTariffById(payload).subscribe(
+    (resp: any) => {
+       if (!resp.status) {
+      this.appSettingService.showError(resp.message || 'Access denied.');
+      return;
+    }
 
       const data = resp.data;
       this.tariffData = data;
