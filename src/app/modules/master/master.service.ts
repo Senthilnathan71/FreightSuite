@@ -2810,16 +2810,8 @@ getFieldConfiguration() {
     );
   }
 
-  getAuthorityById(AuthorityMasterSid: number, CompanyMasterSid?: number, BranchMasterSid?: number) {
-    const params: any = {};
-    if (CompanyMasterSid) {
-      params.CompanyMasterSid = CompanyMasterSid;
-    }
-    if (BranchMasterSid) {
-      params.BranchMasterSid = BranchMasterSid;
-    }
-
-    return this.http.get<{ data: any }>(`authority/fetch/${AuthorityMasterSid}`, { params }).pipe(
+  getAuthorityById(payload: any) {
+    return this.http.post<{ data: any }>(`authority/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;
