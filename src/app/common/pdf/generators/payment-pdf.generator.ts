@@ -22,18 +22,27 @@ function buildCompanyHeader(data: PaymentPdfData): any {
   const postalCode = branch?.postalCode || company?.postalCode || '';
   const phone = branch?.phoneNumber || company?.phoneNumber || '';
 
-  const cityLine = joinNonEmpty([
-    branch?.addressLine2 || company?.addressLine2,
-    city,
-    postalCode ? `Postal Code : ${postalCode}` : '',
-    phone ? `Ph.no : ${phone}` : ''
-  ], ', ');
+  const cityLine: any[] = [];
+  const appendText = (text: string | any[]) => {
+    if (cityLine.length) cityLine.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      cityLine.push(...text);
+    } else {
+      cityLine.push({ text });
+    }
+  };
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
+
+  if (addressLine2) appendText(addressLine2);
+  if (city) appendText(city);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
 
   const companyInfoStack: any[] = [
     { text: (company?.companyName || '').toUpperCase(), fontSize: 14, bold: true, alignment: printSettings.companyAlignment },
     { text: branch?.branchName || '', fontSize: 11, bold: true, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
     { text: branch?.addressLine1 || company?.addressLine1 || '', fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: cityLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] }
+    { text: cityLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 2, 0, 4] }
   ];
 
   const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
@@ -57,17 +66,17 @@ function buildCompanyHeader(data: PaymentPdfData): any {
     stack: [
       {
         table: {
-          widths: ['33%', '34%', '33%'],
+          widths: ['25%', '50%', '25%'],
           body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
         },
         layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 1 : 0),
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0.25 : 0),
           vLineWidth: () => 0,
           hLineColor: () => '#000000',
           paddingLeft: () => 0,
           paddingRight: () => 0,
           paddingTop: () => 0,
-          paddingBottom: () => 2
+          paddingBottom: () => 14
         },
         margin: [0, 5, 0, 5]
       }
@@ -83,7 +92,7 @@ function buildTitle(data: PaymentPdfData): any {
     alignment: 'center',
     bold: true,
     fontSize: 12,
-    margin: [0, 8, 0, 15]
+    margin: [0, 0, 0, 12]
   };
 }
 
@@ -123,10 +132,10 @@ function buildInfoSection(data: PaymentPdfData): any {
       leftStack.push(valueOnlyRow(p.partyAddress));
     }
 
-    rightStack.push(infoRow('Bank', p.bankName || '', 50));
-    rightStack.push(infoRow('Bank Ref.', joinNonEmpty([p.instrumentMode, p.instrumentNumber, p.instrumentDate ? formatDate(p.instrumentDate) : ''], ' / '), 50));
-    rightStack.push(infoRow('Currency', p.currencyCode || '', 50));
-    rightStack.push(infoRow('Ex. Rate', formatNumberWithCommas(toNumber(p.exchangeRate), 3), 50));
+    rightStack.push(infoRow('Bank', p.bankName || '', 45));
+    rightStack.push(infoRow('Bank Ref.', joinNonEmpty([p.instrumentMode, p.instrumentNumber, p.instrumentDate ? formatDate(p.instrumentDate) : ''], ' / '), 45));
+    rightStack.push(infoRow('Currency', p.currencyCode || '', 45));
+    rightStack.push(infoRow('Ex. Rate', formatNumberWithCommas(toNumber(p.exchangeRate), 3), 45));
   } else {
     leftStack.push(infoRow('Paid From', p.paidFrom || ''));
     leftStack.push(infoRow('Paid To', p.paidTo || ''));
@@ -140,8 +149,8 @@ function buildInfoSection(data: PaymentPdfData): any {
 
   return {
     columns: [
-      { width: 'auto', stack: leftStack },
-      { width: 'auto', stack: rightStack }
+      { width: 240, stack: leftStack },
+      { width: 200, stack: rightStack }
     ],
     columnGap: 10,
     margin: [55, 0, 0, 6]
@@ -188,22 +197,22 @@ function buildDetailsTable(data: PaymentPdfData): any {
       paddingRight: () => 0,
       paddingTop: () => 4,
       paddingBottom: () => 4,
-      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1)
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25)
     },
     margin: [-10, 0, -10, 8]
   };
 }
 
 function buildAmountInWords(data: PaymentPdfData): any {
-  const labelWidth = data.paymentType === 'bank' ? 110 : 100;
-
   return {
     columns: [
-      { text: 'Amount in Words', style: 'labelBold', width: labelWidth },
+      { text: '', width: 0 },
+      { text: 'Amount in Words', style: 'labelBold', width: 120, noWrap: true },
       { text: ':', width: 8 },
       { text: data.amountInWords || '', width: '*' }
     ],
-    margin: data.paymentType === 'bank' ? [15, 0, 10, 8] : [25, 0, 10, 8]
+    margin: [5, 0, 10, 8]
   };
 }
 
@@ -249,7 +258,7 @@ function buildRemittanceSection(data: PaymentPdfData): any[] {
   ];
 
   return [
-    { text: 'Remittance Details', style: 'sectionTitle', margin: [0, 4, 0, 4] },
+    { text: 'Remittance Details', style: 'sectionTitle', fontSize: 10, margin: [0, 4, 0, 4] },
     {
       table: {
         headerRows: 1,
@@ -262,7 +271,8 @@ function buildRemittanceSection(data: PaymentPdfData): any[] {
         paddingRight: () => 0,
         paddingTop: () => 4,
         paddingBottom: () => 4,
-        vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1)
+        hLineWidth: () => 0.25,
+        vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25)
       },
       margin: [-10, 0, -10, 8]
     }
@@ -285,11 +295,11 @@ export function generatePaymentDocument(data: PaymentPdfData): any {
   const resolvedPageMargins = configuredMargins
     ? [
         configuredMargins[0] ?? 20,
-        Math.max(configuredMargins[1] ?? 82, 82),
+        Math.max(configuredMargins[1] ?? 95, 95),
         configuredMargins[2] ?? 20,
         configuredMargins[3] ?? 55
       ]
-    : [20, 82, 20, 55];
+    : [20, 95, 20, 55];
 
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -301,10 +311,10 @@ export function generatePaymentDocument(data: PaymentPdfData): any {
     }),
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
-        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 }
+        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 }
       ]
     }),
     content: [
