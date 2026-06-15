@@ -386,9 +386,9 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'statement-ledger-report',
-        title: 'Statment of Accounts',
+        title: 'Statement of Accounts',
         component: StatementReportComponent,
-        filenameTemplate: 'Statemnt_of_Accounts_Report_{LedgerName}_{date}',
+        filenameTemplate: 'Statement_of_Accounts_Report_{LedgerName}_{date}',
         module: 'accounts-report',
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',

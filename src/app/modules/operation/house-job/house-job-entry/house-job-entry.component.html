@@ -504,7 +504,7 @@
                       [class.filled]="!!houseJobForm.get('CustomerAddress')?.value">
                       <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address" class="ng-select"
                         formControlName="CustomerAddress" placeholder="" (change)="onCustomerBranchChange($event)"
-                        appendTo="body">
+                        appendTo="body" style="width:270px">
                       </ng-select>
                       <label for="text-input" class="input-label">Customer Address <span
                           class="text-danger">*</span></label>
