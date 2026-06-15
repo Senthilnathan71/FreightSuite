@@ -8,7 +8,7 @@
   <!-- Filter / parameter summary -->
   <div class="generic-report__params" *ngIf="paramSummary.length">
     <div class="generic-report__param" *ngFor="let p of paramSummary">
-      <strong>{{ p.label }}</strong>&nbsp;: {{ p.value }}
+      <strong class="text-black fw-bold">{{ p.label }}</strong>&nbsp;: <span class="text-black">{{ p.value }}</span> 
     </div>
   </div>
 
@@ -82,6 +82,7 @@
       [config]="tableConfig"
       [data]="rows"
       [allowScroll]="false"
+      (sortChange)="onSortChange($event)"
       (columnOrderChange)="onColumnOrderChange($event)"
       (columnVisibilityChange)="onColumnVisibilityChange($event)"
     >
