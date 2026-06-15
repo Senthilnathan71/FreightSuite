@@ -328,16 +328,16 @@ onCountryChange(): void {
   if (isIndia) {
     this.getStatesByCountryId();
   }
-    this.autoSelectCurrency();
+    this.autoSelectCurrency(true);
 }
 
-private autoSelectCurrency(): void {
+private autoSelectCurrency(force = false): void {
   const countryId = this.customerForm.get('CountryMasterSid')?.value;
   const currencyControl = this.customerForm.get('CurrencyMasterSid');
   const currentCurrencyId = currencyControl?.value;
   
-  if (!countryId || !this.countryList || !this.currencyList) return;
-  if (currentCurrencyId !== null && currentCurrencyId !== undefined && currentCurrencyId !== '') return;
+  if (!countryId || !this.countryList) return;
+  if (!force && currentCurrencyId !== null && currentCurrencyId !== undefined && currentCurrencyId !== '') return;
   
   // Find the selected country
   const selectedCountry = this.countryList.find((c: any) => c.CountryMasterSid == countryId);
@@ -563,9 +563,9 @@ private normalizeStatus(value: string): 'A' | 'S' {
   this.dropdownStore.loadStates().subscribe(() => {
 
     // Auto-set country ONLY for NEW record
-    if (!this.isEditMode) {
+    if (!this.isEditMode && !this.CustomerMasterSid && this.customerForm) {
 
-      const loginCountryId = this.userData?.countryMaster?.CountryMasterSid;
+      const loginCountryId = this.appSettingService.getCurrentCompanyInfo()?.CountryMasterSid;
 
       if (loginCountryId) {
         console.log("Auto setting user country:", loginCountryId);
@@ -669,6 +669,13 @@ this.mps.init().subscribe();
         this.getAllSpCustomerBranch();
         // Load sales team data in edit mode
         this.loadCustomerSalesTeamData();
+      } else {
+        const loginCountryId = this.appSettingService.getCurrentCompanyInfo()?.CountryMasterSid;
+        if (loginCountryId) {
+          this.customerForm.get('CountryMasterSid')?.setValue(loginCountryId);
+          this.getStatesByCountryId();
+          this.autoSelectCurrency(true);
+        }
       }
     });
      this.customerForm.get('CompanyType')?.valueChanges

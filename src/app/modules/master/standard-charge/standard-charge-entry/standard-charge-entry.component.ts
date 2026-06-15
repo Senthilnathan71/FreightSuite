@@ -368,11 +368,19 @@ export class StandardChargeEntryComponent implements OnInit,OnDestroy, HasUnsave
 
   loadStandardChargeById(id: number) {
     this.spinner.show();
-    this.masterService.fetchStdChargeById(id).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      StdRateHeaderSid: id
+    }
+    this.masterService.fetchStdChargeById(payload).subscribe({
       next: (res: any) => {
+        if (!res.status) {
+      this.appSettingService.showError(res.message || 'Access denied.');
+      return;
+    }
         const data = res.data;
 
-        if (!data) return;
         this.standardChargeData = data;
         const header = data;
         const details = data.StdTariffDetails || [];
