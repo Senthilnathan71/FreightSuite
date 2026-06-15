@@ -972,11 +972,140 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
 
   uploadPDF() {
-    this.modalService.open(MasterDocumentUploadComponent, {
+    const modalRef = this.modalService.open(MasterDocumentUploadComponent, {
       size: 'xl',
       backdrop: 'static',
       centered: true,
     });
+
+    modalRef.result.then(
+      (billOfLadingData: any) => {
+        if (billOfLadingData) {
+          this.applyBillOfLadingToMasterJob(billOfLadingData);
+        }
+      },
+      () => {}
+    );
+  }
+
+  private applyBillOfLadingToMasterJob(data: any): void {
+    const polPort = this.findPortFromBillOfLadingValue(data?.portOfLoading);
+    const podPort = this.findPortFromBillOfLadingValue(data?.portOfDischarge);
+    const missingPorts: string[] = [];
+
+    if (data?.portOfLoading && !polPort) {
+      missingPorts.push(`Port of Loading "${data.portOfLoading}"`);
+    }
+    if (data?.portOfDischarge && !podPort) {
+      missingPorts.push(`Port of Discharge "${data.portOfDischarge}"`);
+    }
+
+    if (missingPorts.length) {
+      this.toastr.error(`${missingPorts.join(', ')} not found in port dropdown. Please correct the PDF extracted value or select the port manually.`);
+      return;
+    }
+
+    const patchValue: any = {
+      MBLNo: data?.blNumber || this.masterJobForm.get('MBLNo')?.value,
+      MBLDate: this.parseBillOfLadingDate(data?.dateOfIssue) || this.masterJobForm.get('MBLDate')?.value,
+      FreightPPCC: this.normalizeBillOfLadingFreightTerms(data?.freightTerms) || this.masterJobForm.get('FreightPPCC')?.value,
+      CommodityDescription: data?.cargoDescription || data?.cargoDetails || this.masterJobForm.get('CommodityDescription')?.value,
+      GrossWeight: this.parseBillNumber(data?.grossWeight) || this.masterJobForm.get('GrossWeight')?.value,
+      Volume: this.parseBillNumber(data?.measurement) || this.masterJobForm.get('Volume')?.value,
+      NoOfPkg: this.parseBillNumber(data?.numberOfPackages) || this.masterJobForm.get('NoOfPkg')?.value,
+    };
+
+    if (polPort) {
+      patchValue.POL = polPort.PortMasterSid;
+    }
+    if (podPort) {
+      patchValue.POD = podPort.PortMasterSid;
+      patchValue.FPD = podPort.PortMasterSid;
+    }
+
+    this.masterJobForm.patchValue(patchValue);
+
+    if (polPort) {
+      this.handlePOLChange(polPort);
+    }
+    if (podPort) {
+      this.handlePODChange(podPort);
+    }
+
+    this.masterJobForm.markAsDirty();
+    this.toastr.success('Bill of Lading data loaded. Review the fields and click Save to update the Master Job.');
+  }
+
+  private normalizeBillOfLadingFreightTerms(value: any): string {
+    const normalizedValue = this.normalizeBillOfLadingLookupText(value);
+    if (!normalizedValue) {
+      return '';
+    }
+
+    if (normalizedValue.includes('COLLECT')) {
+      return 'Collect';
+    }
+
+    if (normalizedValue.includes('PREPAID')) {
+      return 'Prepaid';
+    }
+
+    return '';
+  }
+
+  private findPortFromBillOfLadingValue(value: string): any {
+    const normalizedValue = this.normalizeBillOfLadingLookupText(value);
+    if (!normalizedValue || !this.portList?.length) {
+      return null;
+    }
+
+    return this.portList.find(port => {
+      const code = this.normalizeBillOfLadingLookupText(port?.PortCode);
+      const name = this.normalizeBillOfLadingLookupText(port?.PortName);
+      const unCode = this.normalizeBillOfLadingLookupText(port?.UNLOCODE || port?.UnLocode || port?.UNCode);
+      return code === normalizedValue ||
+        unCode === normalizedValue ||
+        name === normalizedValue ||
+        normalizedValue.includes(code) ||
+        normalizedValue.includes(name) ||
+        name.startsWith(normalizedValue);
+    }) || null;
+  }
+
+  private normalizeBillOfLadingLookupText(value: any): string {
+    return String(value || '')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '');
+  }
+
+  private parseBillOfLadingDate(value: any): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value;
+    }
+
+    const text = String(value).trim();
+    const ddMmYyyy = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (ddMmYyyy) {
+      const parsed = new Date(Number(ddMmYyyy[3]), Number(ddMmYyyy[2]) - 1, Number(ddMmYyyy[1]));
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    const parsed = new Date(text);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private parseBillNumber(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const match = String(value).replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+    return match ? Number(match[0]) : null;
   }
 
   uploadManifest() {

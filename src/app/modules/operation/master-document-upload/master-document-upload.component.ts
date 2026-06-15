@@ -421,7 +421,7 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
   private populateForm(data: BillOfLadingData): void {
     this.billOfLadingForm.patchValue({
       blNumber: data.blNumber || '',
-      dateOfIssue: data.dateOfIssue || '',
+      dateOfIssue: this.toDateInputValue(data.dateOfIssue),
       placeOfIssue: data.placeOfIssue || '',
       shipper: data.shipper || '',
       shipperAddress: data.shipperAddress || '',
@@ -443,6 +443,27 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
       consolNumber: data.consolNumber || '',
       freightTerms: data.freightTerms || ''
     });
+  }
+
+  private toDateInputValue(value: string | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    const text = String(value).trim();
+    const ddMmYyyy = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (ddMmYyyy) {
+      const day = ddMmYyyy[1].padStart(2, '0');
+      const month = ddMmYyyy[2].padStart(2, '0');
+      return `${ddMmYyyy[3]}-${month}-${day}`;
+    }
+
+    const yyyyMmDd = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (yyyyMmDd) {
+      return `${yyyyMmDd[1]}-${yyyyMmDd[2].padStart(2, '0')}-${yyyyMmDd[3].padStart(2, '0')}`;
+    }
+
+    return '';
   }
 
   private testConnection(): void {
@@ -467,9 +488,7 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
       
       // Emit the final form data to parent component
       this.documentProcessed.emit(formData);
-      
-      // Here you would typically send the data to your backend for B/L creation
-      alert('Form submitted successfully! Check console for data.');
+      this.activeModal.close(formData);
     } else {
       this.markFormGroupTouched(this.billOfLadingForm);
       this.uploadError = 'Please fill in all required fields';
@@ -581,7 +600,7 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
     }
   }
   getRoundedConfidence(confidence: number): number {
-    return Math.round(confidence * 100);
+    return Math.round(confidence);
   }
 
 closeModal(): void {

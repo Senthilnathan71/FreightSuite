@@ -36,6 +36,7 @@ import html2pdf from 'html2pdf.js';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { BookingUploadComponent } from '../../booking/booking-upload/booking-upload.component';
+import { MasterDocumentUploadComponent } from '../../master-document-upload/master-document-upload.component';
 import { BookingData } from '../../booking/excel-parser.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
@@ -6133,7 +6134,160 @@ ${this.userData['userName']}`;
   }
 
   openUploadModal() {
-    this.uploadModal.openModal(this.uploadModal.uploadModalTemplate);
+    const modalRef = this.modalService.open(MasterDocumentUploadComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      centered: true,
+    });
+
+    modalRef.result.then(
+      (billOfLadingData: any) => {
+        if (billOfLadingData) {
+          this.applyBillOfLadingToHouseJob(billOfLadingData);
+        }
+      },
+      () => {}
+    );
+  }
+
+  private applyBillOfLadingToHouseJob(data: any): void {
+    const polPort = this.findPortFromBillOfLadingValue(data?.portOfLoading);
+    const podPort = this.findPortFromBillOfLadingValue(data?.portOfDischarge);
+    const missingPorts: string[] = [];
+
+    if (data?.portOfLoading && !polPort) {
+      missingPorts.push(`Port of Loading "${data.portOfLoading}"`);
+    }
+    if (data?.portOfDischarge && !podPort) {
+      missingPorts.push(`Port of Discharge "${data.portOfDischarge}"`);
+    }
+
+    if (missingPorts.length) {
+      this.appSettingService.showError(`${missingPorts.join(', ')} not found in port dropdown. Please correct the PDF extracted value or select the port manually.`);
+      return;
+    }
+
+    const vesselVoyage = this.splitBillOfLadingVesselVoyage(data?.vesselVoyage);
+    const patchValue: any = {
+      HBLNo: data?.blNumber || this.houseJobForm.get('HBLNo')?.value,
+      HBLDate: this.parseBillOfLadingDate(data?.dateOfIssue) || this.houseJobForm.get('HBLDate')?.value,
+      ShipperName: data?.shipper || this.houseJobForm.get('ShipperName')?.value,
+      ShipperAddress: data?.shipperAddress || this.houseJobForm.get('ShipperAddress')?.value,
+      ConsigneeName: data?.consignee || this.houseJobForm.get('ConsigneeName')?.value,
+      ConsigneeAddress: data?.consigneeAddress || this.houseJobForm.get('ConsigneeAddress')?.value,
+      Notify: data?.notifyParty || this.houseJobForm.get('Notify')?.value,
+      FreightTerms: data?.freightTerms || this.houseJobForm.get('FreightTerms')?.value,
+      VesselName: vesselVoyage.vesselName || this.houseJobForm.get('VesselName')?.value,
+      VoyageNo: vesselVoyage.voyageNo || this.houseJobForm.get('VoyageNo')?.value,
+    };
+
+    if (polPort) {
+      patchValue.POL = polPort.PortCode;
+    }
+    if (podPort) {
+      patchValue.POD = podPort.PortCode;
+      patchValue.FPD = podPort.PortCode;
+    }
+
+    this.houseJobForm.patchValue(patchValue);
+
+    if (polPort) {
+      this.handlePOLChange(polPort, false);
+    }
+    if (podPort) {
+      this.handlePODChange(podPort, false);
+    }
+
+    this.patchBillOfLadingCargo(data);
+    this.houseJobForm.markAsDirty();
+    this.appSettingService.showSuccess('Bill of Lading data loaded. Review the fields and click Save to update the House Job.');
+  }
+
+  private patchBillOfLadingCargo(data: any): void {
+    if (!this.houseJobCargos?.length) {
+      const cargoGroup = this.createCargoGroup();
+      this.houseJobCargos.push(cargoGroup);
+      this.cargoForm = cargoGroup;
+      this.houseJobCargoActiveIndex = 0;
+    }
+
+    const firstCargo = this.houseJobCargos.at(0) as FormGroup;
+    firstCargo.patchValue({
+      CommodityDescription: data?.cargoDescription || data?.cargoDetails || firstCargo.get('CommodityDescription')?.value,
+      NoOfPackage: this.parseBillNumber(data?.numberOfPackages) || firstCargo.get('NoOfPackage')?.value,
+      GrossWeight: this.parseBillNumber(data?.grossWeight) || firstCargo.get('GrossWeight')?.value,
+      Volume: this.parseBillNumber(data?.measurement) || firstCargo.get('Volume')?.value,
+      FreightTerms: data?.freightTerms || firstCargo.get('FreightTerms')?.value,
+    });
+  }
+
+  private findPortFromBillOfLadingValue(value: string): any {
+    const normalizedValue = this.normalizeBillOfLadingLookupText(value);
+    if (!normalizedValue || !this.portList?.length) {
+      return null;
+    }
+
+    return this.portList.find(port => {
+      const code = this.normalizeBillOfLadingLookupText(port?.PortCode);
+      const name = this.normalizeBillOfLadingLookupText(port?.PortName);
+      const unCode = this.normalizeBillOfLadingLookupText(port?.UNLOCODE || port?.UnLocode || port?.UNCode);
+      return code === normalizedValue ||
+        unCode === normalizedValue ||
+        name === normalizedValue ||
+        normalizedValue.includes(code) ||
+        normalizedValue.includes(name) ||
+        name.startsWith(normalizedValue);
+    }) || null;
+  }
+
+  private normalizeBillOfLadingLookupText(value: any): string {
+    return String(value || '')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '');
+  }
+
+  private parseBillOfLadingDate(value: any): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value;
+    }
+
+    const text = String(value).trim();
+    const ddMmYyyy = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (ddMmYyyy) {
+      const parsed = new Date(Number(ddMmYyyy[3]), Number(ddMmYyyy[2]) - 1, Number(ddMmYyyy[1]));
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    const parsed = new Date(text);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private parseBillNumber(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const match = String(value).replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+    return match ? Number(match[0]) : null;
+  }
+
+  private splitBillOfLadingVesselVoyage(value: any): { vesselName: string; voyageNo: string } {
+    const text = String(value || '').trim();
+    if (!text) {
+      return { vesselName: '', voyageNo: '' };
+    }
+
+    const parts = text.split(/[/-]/).map(part => part.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      return { vesselName: parts[0], voyageNo: parts.slice(1).join('/') };
+    }
+
+    return { vesselName: text, voyageNo: '' };
   }
 
 
