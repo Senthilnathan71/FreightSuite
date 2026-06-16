@@ -143,7 +143,7 @@
               <div>: {{ invoicePrintData?.InvoiceDate | formatDate }}</div>
             </div> -->
             <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder">
+              <div style="width: 130px; font-weight: bolder">
                 <strong *ngIf="currentCompanyCountryCode === 'in'">GST No.</strong>
                 <strong *ngIf="currentCompanyCountryCode !== 'in'">VAT No.</strong>
               </div>
@@ -195,31 +195,31 @@
 
         <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
            <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder"><strong>ETD</strong></div>
+            <div style="width: 130px; font-weight: bolder"><strong>ETD</strong></div>
             <div>: {{ invoicePrintData?.ETD | formatDate }}</div>
           </div>
           <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder"><strong>ETA</strong></div>
+            <div style="width: 130px; font-weight: bolder"><strong>ETA</strong></div>
             <div>: {{ invoicePrintData?.ETA | formatDate }}</div>
           </div>
           <div style="display: flex" *ngIf="invoicePrintData?.IsServiceJob !== 'Y' && invoicePrintData?.JobType !== 'Agent'">
-            <div style="width: 180px; font-weight: bolder"><strong>{{ isSeaDepartment() ? 'HBL' : 'HAWB' }}</strong></div>
+            <div style="width: 130px; font-weight: bolder"><strong>{{ isSeaDepartment() ? 'HBL' : 'HAWB' }}</strong></div>
             <div>: {{ invoicePrintData?.HBLNo }}</div>
           </div>
           <div style="display: flex" *ngIf="invoicePrintData?.IsServiceJob !== 'Y'">
-            <div style="width: 180px; font-weight: bolder"><strong>{{ isSeaDepartment() ? 'MBL' : 'MAWB' }}</strong></div>
+            <div style="width: 130px; font-weight: bolder"><strong>{{ isSeaDepartment() ? 'MBL' : 'MAWB' }}</strong></div>
             <div>: {{ invoicePrintData?.MBLNo }}</div>
           </div>
           <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder"><strong>Job No.</strong></div>
+            <div style="width: 130px; font-weight: bolder"><strong>Job No.</strong></div>
             <div *ngIf="invoicePrintData?.MasterJobNumber">: {{ invoicePrintData?.MasterJobNumber }}</div>
           </div>
           <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder"><strong>Freight Terms</strong></div>
+            <div style="width: 130px; font-weight: bolder"><strong>Freight Terms</strong></div>
             <div>: {{ invoicePrintData?.FreightTerms }}</div>
           </div>
           <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder"><strong>Booking No.</strong></div>
+            <div style="width: 130px; font-weight: bolder"><strong>Booking No.</strong></div>
             <div>: {{ invoicePrintData?.BookingNumber }}</div>
           </div>
           <!-- <div style="display: flex">

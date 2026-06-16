@@ -18,10 +18,10 @@ export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
     pageMargins: data.config?.pageMargins || [20, topMargin, 20, 42],
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
-        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
-        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 }
       ]
     }),
     header: () => ({
@@ -33,7 +33,7 @@ export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
       margin: [20, 10, 20, 0]
     }),
     content: [
-      horizontalLine(1, [0, 0, 0, 4]),
+      horizontalLine(0.1, [0, 0, 0, 4]),
       buildShipmentDetails(data),
       buildChargesTable(data),
       buildAmountInWords(data),
@@ -136,7 +136,7 @@ function buildHeader(data: InvoicePdfData): any {
         layout: 'noBorders',
         margin: [0, 5, 0, 3]
       },
-      horizontalLine(1.5, [0, 0, 0, 6])
+      horizontalLine(0.1, [0, 0, 0, 6])
     ]
   };
 }
@@ -213,7 +213,7 @@ function buildBillingInfo(data: InvoicePdfData): any {
   ];
 
   const rightStack = [
-    labelRow(isIndiaInvoice ? 'GST No.' : 'VAT No.', printData.GST_VAT || invoice.customerGstVat || '', 180, [0, 0, 0, 0])
+    labelRow(isIndiaInvoice ? 'GST No.' : 'VAT No.', printData.GST_VAT || invoice.customerGstVat || '', 78, [0, 0, 0, 0])
   ];
 
   return {
@@ -256,7 +256,7 @@ function buildShipmentDetails(data: InvoicePdfData): any {
     ['Booking No.', printData.BookingNumber || invoice.bookingNo]
   ];
 
-  const rightStack = rightItems.map(([label, value]) => labelRow(label, value || '', 88, [0, 2, 0, 2]));
+  const rightStack = rightItems.map(([label, value]) => labelRow(label, value || '', 70, [0, 2, 0, 2]));
   rightStack.push(buildCargoTable(data));
 
   return {
@@ -282,7 +282,7 @@ function buildCargoTable(data: InvoicePdfData): any {
       widths: [30, '*', 55, 55],
       body: [
         [
-          { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
+          { text: 'Pkg', style: 'tableHeader', alignment: 'right' },
           { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' },
           { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
           { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' }
@@ -295,7 +295,7 @@ function buildCargoTable(data: InvoicePdfData): any {
         ]
       ]
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
+    layout: thinLineTableLayout(),
     margin: [0, 4, 0, 0]
   };
 }
@@ -341,7 +341,7 @@ function buildChargesTable(data: InvoicePdfData): any {
       widths: buildChargeWidths(taxConfig),
       body
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
+    layout: thinLineTableLayout(),
     margin: [0, 0, 0, 2]
   };
 }
@@ -352,7 +352,7 @@ function buildAmountInWords(data: InvoicePdfData): any {
   const amountText = amount
     ? [{ text: amount }, { text: ' (VAT Not Included)', bold: true }]
     : '';
-  return buildLabeledText('Amount In Words', amountText, 88);
+  return buildLabeledText('Amount In Words', amountText, 100);
 }
 
 function buildBankDetails(data: InvoicePdfData): any[] {
@@ -374,7 +374,7 @@ function buildBankDetails(data: InvoicePdfData): any[] {
       buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),
       {
         table: { headerRows: 1, widths: [110, ...banks.map(() => '*')], body: rows, dontBreakRows: true },
-        layout: PDF_TABLE_LAYOUTS.bordered,
+        layout: thinLineTableLayout(),
         margin: [0, 0, 0, 5]
       }
     ],
@@ -431,7 +431,7 @@ function labelRow(label: string, value: any, labelWidth = 88, margin: number[] =
   };
 }
 
-function buildLabeledText(label: string, value: any, labelWidth = 88): any {
+function buildLabeledText(label: string, value: any, labelWidth = 100): any {
   return {
     margin: [0, 2, 0, 2],
     columns: [
@@ -468,6 +468,14 @@ function horizontalLine(lineWidth: number, margin: number[]): any {
   return {
     canvas: [{ type: 'line', x1: -10, y1: 0, x2: 565, y2: 0, lineWidth }],
     margin
+  };
+}
+
+function thinLineTableLayout(): any {
+  return {
+    ...PDF_TABLE_LAYOUTS.bordered,
+    hLineWidth: () => 0.1,
+    vLineWidth: () => 0.1
   };
 }
 

@@ -17,7 +17,6 @@
     </div>
 </div>
 
-
 <div class="modal-body">
      <div
       style="width:300mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box;  color:#000; page-break-after:always; display:flex; flex-direction:column; position: relative;font-size:14px;">
@@ -126,7 +125,7 @@
             <div style="overflow-x:auto; margin-top:5px;">
                 <table
                     style="width:100%; border-collapse:collapse;  border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
-                    <thead style="background-color:#f8f9fa;">
+                    <thead>
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Container No.</strong>
@@ -200,7 +199,7 @@
             <!-- Profit Summary Table -->
             <div style="overflow-x:auto; margin-top:5px;">
                 <table style="width:100%; border-collapse:collapse;  border:1px solid black;">
-                    <thead style="background-color:#f8f9fa;">
+                    <thead>
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Charge</strong>
@@ -253,7 +252,7 @@
             <!-- Cost/Revenue Charges Table -->
             <div style="overflow-x:auto; margin-top:5px;">
                 <table style="width:100%; border-collapse:collapse;  border:1px solid black;">
-                    <thead style="background-color:#f8f9fa;">
+                    <thead>
                         <tr>
                              <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;" rowspan="2">
                                 <strong>Screen</strong>
@@ -380,33 +379,33 @@
                         </ng-container>
                         <tr>
                             <td colspan="5"
-                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder;">
                                 Grand Total
                             </td>
                             <td
-                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder;">
                                 {{ getGrandChargeColumnTotal('RevenueRate') | number:'1.2-2' }}
                             </td>
                             <td
-                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder;">
                                 {{ getGrandChargeColumnTotal('RevenueLocalAmount') | number:'1.2-2' }}
                             </td>
                             <td
-                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder;">
                                 {{ getGrandActualRevenueLocalTotal() | number:'1.2-2' }}
                             </td>
-                            <td style="border:1px solid black; padding:4px 8px; background-color:#dfeffb;"></td>
-                            <td style="border:1px solid black; padding:4px 8px; background-color:#dfeffb;"></td>
+                            <td style="border:1px solid black; padding:4px 8px;"></td>
+                            <td style="border:1px solid black; padding:4px 8px;"></td>
                             <td
-                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder;">
                                 {{ getGrandChargeColumnTotal('CostRate') | number:'1.2-2' }}
                             </td>
                             <td
-                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder;">
                                 {{ getGrandChargeColumnTotal('CostLocalAmount') | number:'1.2-2' }}
                             </td>
                             <td
-                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder;">
                                 {{ getGrandActualCostLocalTotal() | number:'1.2-2' }}
                             </td>
                         </tr>
@@ -542,3 +541,4 @@
         </footer>
     </div>
 </div>
+

@@ -122,7 +122,7 @@ function buildTitle(data: JobCardPdfData): any {
       body: [[{ text: data.reportTitle, bold: true, alignment: 'center', fontSize: 10, margin: [0, 4, 0, 4] }]]
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 ? 1 : 0),
+      hLineWidth: (i: number) => (i === 0 ? 0.25 : 0),
       vLineWidth: () => 0,
       hLineColor: () => '#000'
     },
@@ -366,18 +366,18 @@ function buildCostRevenueTable(data: JobCardPdfData): any {
         ],
         ...data.costRevenueCharges.map((item) => buildChargeDetailRow(item)),
         [
-          { text: 'TOTAL', style: 'tableCellBold', alignment: 'right', colSpan: 5 },
-          {},
-          {},
-          {},
-          {},
-          buildNumberCell(totals.revenueLocalAmount, 2, true),
-          buildNumberCell(totals.actualRevenueLocalAmount, 2, true),
-          {},
-          {},
-          {},
-          buildNumberCell(totals.costLocalAmount, 2, true),
-          buildNumberCell(totals.actualCostLocalAmount, 2, true)
+          noFillCell({ text: 'TOTAL', style: 'tableCellBold', alignment: 'right', colSpan: 5 }),
+          noFillCell({}),
+          noFillCell({}),
+          noFillCell({}),
+          noFillCell({}),
+          noFillCell(buildNumberCell(totals.revenueLocalAmount, 2, true)),
+          noFillCell(buildNumberCell(totals.actualRevenueLocalAmount, 2, true)),
+          noFillCell({}),
+          noFillCell({}),
+          noFillCell({}),
+          noFillCell(buildNumberCell(totals.costLocalAmount, 2, true)),
+          noFillCell(buildNumberCell(totals.actualCostLocalAmount, 2, true))
         ]
       ]
     },
@@ -466,10 +466,17 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
   };
 }
 
+function noFillCell(cell: any): any {
+  return {
+    ...cell,
+    fillColor: '#FFFFFF'
+  };
+}
+
 function boxedLayout(padding: number, sidePadding: number): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => padding,
@@ -481,8 +488,8 @@ function boxedLayout(padding: number, sidePadding: number): any {
 
 function borderedLayout(): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => 3,

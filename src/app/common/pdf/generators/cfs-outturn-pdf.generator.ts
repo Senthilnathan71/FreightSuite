@@ -92,7 +92,7 @@ export function generateCfsOutturnDocument(data: CfsOutturnPdfData): any {
         y: 14,
         w: pageSize.width - 28,
         h: pageSize.height - 28,
-        lineWidth: 1,
+        lineWidth: 0.25,
         lineColor: '#000'
       }]
     }),
@@ -164,7 +164,7 @@ function buildHeader(data: CfsOutturnPdfData): any {
             y1: 0,
             x2: 812,
             y2: 0,
-            lineWidth: 1,
+            lineWidth: 0.25,
             lineColor: '#000'
           }
         ],
@@ -247,7 +247,7 @@ function buildKeyValueRow(label: string, value?: string, labelWidth = 90): any {
 function removeLeftRightBorderLayout() {
   return {
     hLineWidth: function () {
-      return 0.5; // keep top & bottom lines
+      return 0.25; // keep top & bottom lines
     },
     vLineWidth: function (i, node) {
       // ❌ remove only left & right outer borders
@@ -255,7 +255,7 @@ function removeLeftRightBorderLayout() {
         return 0;
       }
       // ✅ keep inner vertical lines
-      return 0.5;
+      return 0.25;
     },
     hLineColor: () => '#000',
     vLineColor: () => '#000',
@@ -289,17 +289,17 @@ function buildOutturnTable(page: CfsOutturnPage): any {
       ]
     },
     buildTextCell(item.landedMarks || '', false, 'center'),
-    buildNumberCell(item.manifest, 0, false, 'center'),
-    buildNumberCell(item.outturn, 0, false, 'center'),
+    buildNumberCell(item.manifest, 0),
+    buildNumberCell(item.outturn, 0),
     buildNumberCell(item.weight, 3),
     buildNumberCell(item.cbm, 3),
     typeof item.surplus === 'number'
-      ? buildNumberCell(item.surplus, 0, false, 'center')
+      ? buildNumberCell(item.surplus, 0)
       : buildTextCell(String(item.surplus || ''), false, 'center'),
     typeof item.short === 'number'
-      ? buildNumberCell(item.short, 0, false, 'center')
+      ? buildNumberCell(item.short, 0)
       : buildTextCell(String(item.short || ''), false, 'center'),
-    buildNumberCell(item.damaged, 0, false, 'center'),
+    buildNumberCell(item.damaged, 0),
     buildTextCell(item.damagedRemarks || ''),
     buildTextCell(item.warehouseLocation || '', false, 'center'),
     buildTextCell(item.jobType || '', false, 'center')
@@ -309,14 +309,14 @@ function buildOutturnTable(page: CfsOutturnPage): any {
     { text: 'Total', colSpan: 3, style: 'tableCellBold', alignment: 'right' },
     {},
     {},
-    buildNumberCell(page.totals.manifest, 0, true, 'center'),
-    buildNumberCell(page.totals.outturn, 0, true, 'center'),
+    buildNumberCell(page.totals.manifest, 0, true),
+    buildNumberCell(page.totals.outturn, 0, true),
     buildNumberCell(page.totals.weight, 3, true),
     buildNumberCell(page.totals.cbm, 3, true),
-    buildNumberCell(page.totals.surplus, 0, true, 'center'),
-    buildNumberCell(page.totals.short, 0, true, 'center'),
+    buildNumberCell(page.totals.surplus, 0, true),
+    buildNumberCell(page.totals.short, 0, true),
     buildTextCell('', true, 'center'),
-    buildNumberCell(page.totals.damaged, 0, true, 'center'),
+    buildNumberCell(page.totals.damaged, 0, true),
     buildTextCell('', true, 'center'),
     buildTextCell('', true, 'center'),
   ]);
@@ -362,8 +362,8 @@ function buildNumberCell(
 
 function borderedLayout(): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => 3,

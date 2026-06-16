@@ -308,17 +308,17 @@ export function generateHblDocument(data: HblPdfData): any {
       {
         table: {
           headerRows: 1,
-          widths: ['32%', '*', '14%', '14%'],
+          widths: ['38%', '38%', '12%', '12%'],
           body: [
             [
-              { text: 'Container No. / Seal No./ Marks&No.', bold: true, alignment: 'center' },
-              { text: 'No. of Pkg / Description / Shipping Unit', bold: true, alignment: 'center' },
+              { text: 'Container No. / Seal No./ Marks&No.', bold: true, alignment: 'left' },
+              { text: 'No. of Pkg / Description / Shipping Unit', bold: true, alignment: 'left' },
               { text: 'Gross Wt.', bold: true, alignment: 'center' },
               { text: 'Volume', bold: true, alignment: 'center' },
             ],
             ...data.containers.map((container) => [
-              container.containerInfo || '',
-              container.packageInfo || '',
+              { text: container.containerInfo || '', alignment: 'left' },
+              { text: container.packageInfo || '', alignment: 'left' },
               { text: fmtNum(container.grossWeight, 3), alignment: 'right' },
               { text: fmtNum(container.volume, 3), alignment: 'right' },
             ]),
@@ -487,7 +487,7 @@ export function transformHblApiData(
     portOfLoading: apiData?.POL || '',
     jobNo: apiData?.HBLNo || '',
     jobRef: apiData?.Others?.[0]?.CustomerRefNo || '',
-    vesselVoyage: cleanJoin([apiData?.VesselName, apiData?.VoyageNo], ' '),
+    vesselVoyage: cleanJoin([apiData?.VesselName, apiData?.VoyageNo], ' / '),
     portOfDischarge: apiData?.POD || '',
     placeOfDelivery: apiData?.Others?.[0]?.DeliveryPlace || '',
     noOfBill: (apiData?.masterJob?.NoofOriginal ?? '').toString(),
