@@ -16,7 +16,7 @@ export function generateCargoManifestDocument(data: any): any {
           y: 10,
           w: pageSize.width - 20,
           h: pageSize.height - 20,
-          lineWidth: 1,
+          lineWidth: 0.25,
           lineColor: '#000'
         }
       ]
@@ -88,12 +88,8 @@ function buildFirstPage(data: any, isSeaMode: boolean, reportTitle: string): any
           }
         ]]
       },
-      layout: {
-        ...simpleBorderLayout(),
-        // hLineWidth: () => 1,
-        // vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1)
-      },
-      margin: [0, -1, 0, 0]
+      layout: simpleBorderWithoutTopLayout(),
+      margin: [0, 0, 0, 0]
     },
     {
       table: {
@@ -122,12 +118,8 @@ function buildFirstPage(data: any, isSeaMode: boolean, reportTitle: string): any
           }
         ]]
       },
-      layout: {
-        ...simpleBorderLayout(),
-        // hLineWidth: () => 1,
-        // vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1)
-      },
-      margin: [0, -1, 0, 8]
+      layout: simpleBorderWithoutTopLayout(),
+      margin: [0, 0, 0, 8]
     }
   ];
 
@@ -356,7 +348,7 @@ function buildHeader(data: any): any {
         layout: 'noBorders'
       },
       {
-        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 805, y2: 0, lineWidth: 1 }],
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 805, y2: 0, lineWidth: 0.1 }],
         margin: [0, 5, 0, 0]
       }
     ],
@@ -399,17 +391,24 @@ function infoLine(label: string, value: any, labelWidth = 80): any {
 
 function simpleBorderLayout(): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.1,
+    vLineWidth: () => 0.1,
     hLineColor: () => '#000',
     vLineColor: () => '#000'
   };
 }
 
+function simpleBorderWithoutTopLayout(): any {
+  return {
+    ...simpleBorderLayout(),
+    hLineWidth: (i: number) => (i === 0 ? 0 : 0.1)
+  };
+}
+
 function tableBorderLayout(): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.1,
+    vLineWidth: () => 0.1,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingLeft: () => 3,

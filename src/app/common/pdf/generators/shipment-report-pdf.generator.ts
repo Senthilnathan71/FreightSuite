@@ -26,7 +26,7 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
               y1: 0,
               x2: pageSize.width - 30,
               y2: 0,
-              lineWidth: 1,
+              lineWidth: 0.25,
               lineColor: '#000'
             }
           ],
@@ -43,7 +43,7 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
           y: 14,
           w: pageSize.width - 28,
           h: pageSize.height - 28,
-          lineWidth: 1,
+          lineWidth: 0.25,
           lineColor: '#000'
         }
       ]
@@ -159,8 +159,8 @@ function buildPartySection(data: ShipmentReportPdfData): any {
       ]
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: () => 1,
+      hLineWidth: () => 0.25,
+      vLineWidth: () => 0.25,
       hLineColor: () => '#000',
       vLineColor: () => '#000',
       paddingTop: () => 5,
@@ -215,8 +215,8 @@ function buildShipmentInfoSection(data: ShipmentReportPdfData): any {
       ]]
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: () => 1,
+      hLineWidth: () => 0.25,
+      vLineWidth: () => 0.25,
       hLineColor: () => '#000',
       vLineColor: () => '#000',
       paddingTop: () => 4,
@@ -429,8 +429,8 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
 
 function borderedLayout(): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => 3,

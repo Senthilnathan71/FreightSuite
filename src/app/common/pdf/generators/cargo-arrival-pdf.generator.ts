@@ -28,7 +28,7 @@ export function generateCargoArrivalDocument(data: CargoArrivalPdfData): any {
           y: 14,
           w: pageSize.width - 28,
           h: pageSize.height - 28,
-          lineWidth: 1,
+          lineWidth: 0.25,
           lineColor: '#000',
         },
       ],
@@ -60,13 +60,13 @@ function topBottomBorderLayout() {
   return {
     hLineWidth: function (i: number, node: any) {
       // Top border
-      if (i === 0) return 1;
+      if (i === 0) return 0.25;
 
       // Middle border (between rows)
-      if (i === 1) return 1;
+      if (i === 1) return 0.25;
 
       // Bottom border
-      if (i === node.table.body.length) return 1;
+      if (i === node.table.body.length) return 0.25;
 
       return 0;
     },
@@ -89,15 +89,29 @@ function buildHeader(data: CargoArrivalPdfData): any {
   const companyPosition = 'center' as 'left' | 'center' | 'right';
   const companyAlignment = 'center' as 'left' | 'center' | 'right';
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = [
-    branch?.addressLine2 || company?.addressLine2 || '',
-    branch?.cityName || branch?.cityMaster?.cityName || company?.city || '',
-    branch?.phoneNumber || company?.phoneNumber
-      ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}`
-      : '',
-  ]
-    .filter(Boolean)
-    .join(', ');
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
+  const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || company?.postalCode || '';
+  const phoneNumber = branch?.phoneNumber || company?.phoneNumber || '';
+  const detailLine2: any[] = [
+    joinNonEmpty([addressLine2, cityName], ', '),
+  ];
+
+  if (postalCode) {
+    detailLine2.push(
+      detailLine2[0] ? ', ' : '',
+      { text: 'Postal Code : ', bold: true },
+      postalCode,
+    );
+  }
+
+  if (phoneNumber) {
+    detailLine2.push(
+      detailLine2.length > 1 || detailLine2[0] ? ', ' : '',
+      { text: 'Ph.no : ', bold: true },
+      phoneNumber,
+    );
+  }
 
   const companyDetails = {
     stack: [
@@ -122,8 +136,9 @@ function buildHeader(data: CargoArrivalPdfData): any {
       },
       {
         text: detailLine2,
-        fontSize: 9,
+        fontSize: 8.5,
         alignment: companyAlignment,
+        noWrap: true,
         margin: [0, 1, 0, 0],
       },
     ],
@@ -132,7 +147,7 @@ function buildHeader(data: CargoArrivalPdfData): any {
   return {
     columns: [
       {
-        width: '*',
+        width: 90,
         stack: [
           logoPosition === 'left' ? buildHeaderLogo(data.logo, 'left') : { text: '' },
           companyPosition === 'left' ? companyDetails : { text: '' },
@@ -146,7 +161,7 @@ function buildHeader(data: CargoArrivalPdfData): any {
         ],
       },
       {
-        width: '*',
+        width: 90,
         stack: [
           logoPosition === 'right' ? buildHeaderLogo(data.logo, 'right') : { text: '' },
           companyPosition === 'right' ? companyDetails : { text: '' },
@@ -190,7 +205,7 @@ function buildTitle(data: CargoArrivalPdfData): any {
       ],
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 ? 1 : 0),
+      hLineWidth: (i: number) => (i === 0 ? 0.25 : 0),
       vLineWidth: () => 0,
       hLineColor: () => '#000',
     },
@@ -315,7 +330,7 @@ function buildReleaseSection(data: CargoArrivalPdfData): any {
             y1: 0,
             x2: 565,
             y2: 0,
-            lineWidth: 1,
+            lineWidth: 0.25,
           },
         ],
       },
@@ -363,8 +378,8 @@ function buildRoutingSection(data: CargoArrivalPdfData): any {
         },
         layout: {
           hLineWidth: function (i: number, node: any) {
-            if (i === 0) return 1; // top
-            if (i === node.table.body.length) return 1; // bottom
+            if (i === 0) return 0.25; // top
+            if (i === node.table.body.length) return 0.25; // bottom
             return 0;
           },
           vLineWidth: function () {
@@ -572,8 +587,8 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
 
 function boxedLayout(padding: number, sidePadding: number): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => padding,
@@ -585,8 +600,8 @@ function boxedLayout(padding: number, sidePadding: number): any {
 
 function borderedLayout(): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => 3,
@@ -598,12 +613,12 @@ function borderedLayout(): any {
 
 function borderedLayout1(): any {
   return {
-    hLineWidth: () => 1,
+    hLineWidth: () => 0.25,
 
     vLineWidth: function (i: number, node: any) {
       if (i === 0) return 0;
       if (i === node.table.widths.length) return 0;
-      return 1;
+      return 0.25;
     },
 
     hLineColor: () => '#000',

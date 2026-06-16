@@ -176,7 +176,7 @@
 ">
         <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
           <strong style="font-weight: bolder;">Vessel / Voyage No.</strong><br />
-          {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
+          {{ housejobData?.VesselName }}{{ housejobData?.VesselName && housejobData?.VoyageNo ? ' / ' : '' }}{{ housejobData?.VoyageNo }}
         </div>
 
         <div style="width:25%; text-align:center; padding:5px;">

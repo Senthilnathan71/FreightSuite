@@ -30,7 +30,7 @@ export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
           y: 14,
           w: pageSize.width - 28,
           h: pageSize.height - 28,
-          lineWidth: 1,
+          lineWidth: 0.5,
           lineColor: '#000',
         },
       ],
@@ -64,31 +64,45 @@ function buildHeader(data: DeliveryOrderPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = [
-    branch?.addressLine2 || company?.addressLine2 || '',
-    branch?.cityName || branch?.cityMaster?.cityName || company?.city || '',
-    branch?.phoneNumber || company?.phoneNumber
-      ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}`
-      : '',
-  ]
-    .filter(Boolean)
-    .join(', ');
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
+  const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || company?.postalCode || '';
+  const phoneNumber = branch?.phoneNumber || company?.phoneNumber || '';
+  const detailLine2: any[] = [
+    joinNonEmpty([addressLine2, cityName], ', '),
+  ];
+
+  if (postalCode) {
+    detailLine2.push(
+      detailLine2[0] ? ', ' : '',
+      { text: 'Postal Code : ', bold: true },
+      postalCode,
+    );
+  }
+
+  if (phoneNumber) {
+    detailLine2.push(
+      detailLine2.length > 1 || detailLine2[0] ? ', ' : '',
+      { text: 'Ph.no : ', bold: true },
+      phoneNumber,
+    );
+  }
 
   return {
     table: {
-      widths: [75, '*'],
+      widths: [90, '*', 90],
       body: [
         [
           {
             border: [false, false, false, false],
-            alignment: 'center',
-            margin: [0, 4, 0, 4],
+            alignment: 'left',
+            margin: [10, 4, 0, 4],
             stack: [
               data.logo
                 ? {
                     image: data.logo,
-                    fit: [55, 55],
-                    alignment: 'center',
+                    fit: [70, 70],
+                    alignment: 'left',
                   }
                 : { text: '' },
             ],
@@ -99,30 +113,35 @@ function buildHeader(data: DeliveryOrderPdfData): any {
               {
                 text: (company?.companyName || '').toUpperCase(),
                 bold: true,
-                fontSize: 12,
-                alignment: 'right',
+                fontSize: 14,
+                alignment: 'center',
               },
               {
                 text: branch?.branchName || '',
                 bold: true,
-                fontSize: 9,
-                alignment: 'right',
+                fontSize: 11,
+                alignment: 'center',
                 margin: [0, 2, 0, 0],
               },
               {
                 text: detailLine1,
                 fontSize: 9,
-                alignment: 'right',
+                alignment: 'center',
                 margin: [0, 2, 0, 0],
               },
               {
                 text: detailLine2,
-                fontSize: 9,
-                alignment: 'right',
+                fontSize: 8.5,
+                alignment: 'center',
+                noWrap: true,
                 margin: [0, 2, 0, 0],
               },
             ],
-            margin: [0, 6, 20, 0],
+            margin: [0, 8, 0, 0],
+          },
+          {
+            border: [false, false, false, false],
+            text: '',
           },
         ],
       ],
@@ -149,7 +168,7 @@ function buildTitle(data: DeliveryOrderPdfData): any {
       ],
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 || i === 1 ? 1 : 0),
+      hLineWidth: (i: number) => (i === 0 || i === 1 ? 0.5 : 0),
       vLineWidth: () => 0,
       hLineColor: () => '#000',
     },
@@ -248,7 +267,7 @@ function buildPartySection(data: DeliveryOrderPdfData): any {
     },
     layout: {
       hLineWidth: (i: number, node: any) =>
-        i === 0 || i === node.table.body.length ? 1 : 0,
+        i === 0 || i === node.table.body.length ? 0.5 : 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000',
       paddingLeft: () => 5,
@@ -295,7 +314,7 @@ function buildNotifySection(data: DeliveryOrderPdfData): any {
     },
     layout: {
       hLineWidth: (i: number, node: any) =>
-        i === 0 || i === node.table.body.length ? 1 : 0,
+        i === 0 || i === node.table.body.length ? 0.5 : 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000',
       paddingLeft: () => 5,
@@ -341,7 +360,7 @@ function buildOtherInfoSection(data: DeliveryOrderPdfData): any {
     },
     layout: {
       hLineWidth: (i: number, node: any) =>
-        i === 0 || i === node.table.body.length ? 1 : 0,
+        i === 0 || i === node.table.body.length ? 0.5 : 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000',
       paddingTop: () => 2,
@@ -447,7 +466,7 @@ function buildDescriptionSection(data: DeliveryOrderPdfData): any {
     },
     layout: {
       hLineWidth: (i: number, node: any) =>
-        i === 0 || i === node.table.body.length ? 1 : 0,
+        i === 0 || i === node.table.body.length ? 0.5 : 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000',
       paddingTop: () => 2,
@@ -506,6 +525,7 @@ function buildAmountInWords(data: DeliveryOrderPdfData): any {
         width: 120,
         text: 'Amount in Words',
         style: 'label',
+        fontSize: 9,
         margin: [15, 0, 0, 0],
       },
       { width: 10, text: ':' },
@@ -522,7 +542,7 @@ function buildAmountInWords(data: DeliveryOrderPdfData): any {
 function buildTermsSection(data: DeliveryOrderPdfData): any {
   return {
     stack: [
-      { text: 'Terms and Conditions', style: 'label', margin: [15, 0, 0, 4] },
+      { text: 'Terms and Conditions', style: 'label', fontSize: 9, margin: [15, 0, 0, 4] },
       {
         ul: (data.terms || []).map((term) => ({
           text: term,
@@ -542,13 +562,13 @@ function buildAgentOnlySection(data: DeliveryOrderPdfData): any {
       {
         text: `FOR ${data.company?.companyName || 'Company Name'} (${data.branch?.branchName || 'Company Branch'})`,
         bold: true,
-        fontSize: 10,
+        fontSize: 8.5,
         alignment: 'right',
       },
       {
         text: '(AS AGENTS ONLY)',
         bold: true,
-        fontSize: 10,
+        fontSize: 8.5,
         alignment: 'right',
       },
     ],
@@ -621,8 +641,8 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
 function topBorderLayout(): any {
   return {
     hLineWidth: (i: number, node: any) => {
-      if (i === 0) return 1; // top border
-      if (i === node.table.body.length) return 1; // bottom border
+      if (i === 0) return 0.5; // top border
+      if (i === node.table.body.length) return 0.5; // bottom border
       return 0;
     },
     vLineWidth: () => 0, // no vertical lines
@@ -637,9 +657,9 @@ function topBorderLayout(): any {
 
 function edgeOpenTableLayout(): any {
   return {
-    hLineWidth: () => 1,
+    hLineWidth: () => 0.5,
     vLineWidth: (i: number, node: any) =>
-      i === 0 || i === node.table.widths.length ? 0 : 1,
+      i === 0 || i === node.table.widths.length ? 0 : 0.5,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => 3,
@@ -655,7 +675,7 @@ function getDeliveryOrderStyles(): any {
     subTitle: { fontSize: 12, bold: true },
     label: { fontSize: 10.5, bold: true },
     value: { fontSize: 10.5 },
-    valueBold: { fontSize: 10.5, bold: true },
+    valueBold: { fontSize: 9, bold: true },
     releaseValue: { fontSize: 10.5, bold: true },
     sectionLabel: { fontSize: 11, bold: true },
     tableHeader: {
@@ -665,7 +685,7 @@ function getDeliveryOrderStyles(): any {
     },
     tableCell: { fontSize: 9 },
     tableCellBold: { fontSize: 9, bold: true },
-    termsItem: { fontSize: 9.5 },
+    termsItem: { fontSize: 8.5 },
   };
 }
 
@@ -681,20 +701,20 @@ function buildFooter(
         text: `Printed By : ${data.userData?.userName || ''}`,
         alignment: 'left',
         width: 120,
-        fontSize: 8,
+        fontSize: 7,
       },
       {
         text: 'This document is computer-generated and does not require a signature.',
         alignment: 'center',
         width: '*',
-        fontSize: 8,
+        fontSize: 7,
         noWrap: true,
       },
       {
         text: `Printed On : ${formatDate(new Date())}`,
         alignment: 'right',
         width: 120,
-        fontSize: 8,
+        fontSize: 7,
       },
       {
         text:
@@ -703,7 +723,7 @@ function buildFooter(
             : '',
         alignment: 'right',
         width: 60,
-        fontSize: 8,
+        fontSize: 7,
       },
     ],
   };

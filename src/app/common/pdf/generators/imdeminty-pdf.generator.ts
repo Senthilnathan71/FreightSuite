@@ -69,16 +69,16 @@ function buildImdemintyHeader(data: ImdemintyPdfData): any {
       {
         stack: [
           companyName
-            ? { text: companyName, style: 'companyName', alignment: 'center', margin: [0, 0, 0, 2] }
+            ? { text: companyName, style: 'companyName', fontSize: 14, alignment: 'center', margin: [0, 0, 0, 2] }
             : { text: '' },
           branchName
-            ? { text: branchName, style: 'branchName', alignment: 'center', margin: [0, 0, 0, 2] }
+            ? { text: branchName, style: 'branchName', fontSize: 10, alignment: 'center', margin: [0, 0, 0, 2] }
             : { text: '' },
           addressLine1
-            ? { text: addressLine1, style: 'addressText', alignment: 'center', margin: [0, 0, 0, 2] }
+            ? { text: addressLine1, style: 'addressText', fontSize: 8, alignment: 'center', margin: [0, 0, 0, 2] }
             : { text: '' },
           lineTwoParts.length
-            ? { text: lineTwoParts, style: 'addressText', alignment: 'center' }
+            ? { text: lineTwoParts, style: 'addressText', fontSize: 8, alignment: 'center' }
             : { text: '' }
         ]
       },
@@ -96,7 +96,7 @@ function buildImdemintyHeader(data: ImdemintyPdfData): any {
           body: [[{ text: '', border: [false, false, false, true] }]]
         },
         layout: {
-          hLineWidth: () => 1,
+          hLineWidth: () => 0.25,
           vLineWidth: () => 0,
           hLineColor: () => '#000000',
           paddingLeft: () => 0,
@@ -129,7 +129,7 @@ export function generateImdemintyDocument(data: ImdemintyPdfData): any {
           y: 12,
           w: pageSize.width - 24,
           h: pageSize.height - 24,
-          lineWidth: 1,
+          lineWidth: 0.25,
           lineColor: '#000000'
         }
       ]
@@ -160,11 +160,30 @@ function buildIndemnityPage(data: ImdemintyPdfData, containerNo: string, isLast:
 
 function buildTitle(): any {
   return {
-    text: 'LETTER OF INDEMNITY',
-    style: 'documentTitle',
-    alignment: 'center',
-    bold: true,
-    margin: [0, 6, 0, 10]
+    stack: [
+      {
+        canvas: [
+          {
+            type: 'line',
+            x1: 0,
+            y1: 0,
+            x2: 555,
+            y2: 0,
+            lineWidth: 0.25,
+            lineColor: '#000000'
+          }
+        ],
+        margin: [0, 0, 0, 6]
+      },
+      {
+        text: 'LETTER OF INDEMNITY',
+        style: 'documentTitle',
+        fontSize: 13,
+        alignment: 'center',
+        bold: true
+      }
+    ],
+    margin: [0, 0, 0, 10]
   };
 }
 
@@ -172,7 +191,7 @@ function buildGreeting(): any {
   return {
     text: 'Dear Sir,',
     bold: true,
-    fontSize: 11,
+    fontSize: 10,
     margin: [0, 0, 0, 8]
   };
 }
@@ -200,7 +219,7 @@ function buildVesselDetails(data: ImdemintyPdfData, containerNo: string): any {
         }
       ]]
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
+    layout: outerBorderLayout(),
     margin: [0, 0, 0, 10]
   };
 }
@@ -209,7 +228,7 @@ function buildIntroParagraph(): any {
   return {
     text: 'We should advise that according to the bill of lading, the details of the following consignment are as follows:',
     bold: true,
-    fontSize: 10,
+    fontSize: 8,
     margin: [0, 0, 0, 4]
   };
 }
@@ -218,7 +237,7 @@ function buildOutturnParagraph(): any {
   return {
     text: 'However, we have found that the cargo outturned with the following details:',
     bold: true,
-    fontSize: 10,
+    fontSize: 8,
     margin: [0, 2, 0, 4]
   };
 }
@@ -231,18 +250,18 @@ function buildConsignmentTable(firstHeaderLabel: string, data: ImdemintyPdfData)
       widths: ['20%', '40%', '40%'],
       body: [
         [
-          { text: firstHeaderLabel, style: 'tableHeader', alignment: 'center' },
-          { text: 'Marks and Numbers', style: 'tableHeader', alignment: 'center' },
-          { text: 'Goods Description', style: 'tableHeader', alignment: 'center' }
+          { text: firstHeaderLabel, style: 'tableHeader', fontSize: 9, alignment: 'center' },
+          { text: 'Marks and Numbers', style: 'tableHeader', fontSize: 9, alignment: 'center' },
+          { text: 'Goods Description', style: 'tableHeader', fontSize: 9, alignment: 'center' }
         ],
         [
-          { text: houseJob.hblNo || '', style: 'tableCell', alignment: 'center' },
-          { text: houseJob.marksAndNumbers || '', style: 'tableCell' },
-          { text: houseJob.goodsDescription || '', style: 'tableCell' }
+          { text: houseJob.hblNo || '', style: 'tableCell', fontSize: 9, alignment: 'center' },
+          { text: houseJob.marksAndNumbers || '', style: 'tableCell', fontSize: 9 },
+          { text: houseJob.goodsDescription || '', style: 'tableCell', fontSize: 9 }
         ]
       ]
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
+    layout: thinBorderedLayout(),
     margin: [0, 0, 0, 6]
   };
 }
@@ -250,7 +269,7 @@ function buildConsignmentTable(firstHeaderLabel: string, data: ImdemintyPdfData)
 function buildBodyParagraph(): any {
   return {
     text: INDEMNITY_BODY,
-    fontSize: 9,
+    fontSize: 7.5,
     lineHeight: 1.4,
     margin: [0, 8, 0, 0]
   };
@@ -259,11 +278,28 @@ function buildBodyParagraph(): any {
 function buildKeyValueRow(label: string, value: string, labelWidth = 95): any {
   return {
     columns: [
-      { text: label, bold: true, width: labelWidth },
-      { text: ':', width: 8 },
-      { text: value || '', width: '*' }
+      { text: label, bold: true, width: labelWidth, fontSize: 9 },
+      { text: ':', width: 8, fontSize: 9 },
+      { text: value || '', width: '*', fontSize: 9 }
     ],
     margin: [0, 0, 0, 3]
+  };
+}
+
+function thinBorderedLayout(): any {
+  return {
+    ...PDF_TABLE_LAYOUTS.bordered,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25
+  };
+}
+
+function outerBorderLayout(): any {
+  return {
+    ...PDF_TABLE_LAYOUTS.bordered,
+    hLineWidth: () => 0.25,
+    vLineWidth: (i: number, node: any) =>
+      i === 0 || i === node.table.widths.length ? 0.25 : 0
   };
 }
 
