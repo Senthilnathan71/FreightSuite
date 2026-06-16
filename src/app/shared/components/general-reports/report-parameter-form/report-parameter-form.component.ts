@@ -51,6 +51,7 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   @Input() loading: boolean = false;
   @Input() module: 'accounts' | 'operation' = 'accounts';
   @Input() companyId!: number;
+  @Input() branchId!: number;
   @Input() reportKey: string = '';
   @Input() reportDisplayName: string = '';
   @Output() onGenerate = new EventEmitter<any>();
@@ -415,7 +416,7 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     this.reportService.executeParameterQuery(
       this.module,
       param.ReportMasterDetailSid,
-      { companyId: this.companyId }
+      { companyId: this.companyId , branchId : this.branchId }
     ).pipe(
       finalize(() => this.loadingDropdowns.set(param.ParameterName, false))
     ).subscribe({

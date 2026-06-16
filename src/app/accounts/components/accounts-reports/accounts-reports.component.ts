@@ -52,7 +52,9 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
   allowedReportSids: Set<number> | null = null;
 
   currentCompany : any;
+  currentBranch : any;
   companyId = 1;
+  branchId : any;
   private isUAECompany = false;
   private customsDutyLabel = 'Customs Duty Invoice';
   filteredParameters: any[] = [];
@@ -74,8 +76,12 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo()
     if (this.currentCompany) {
       this.companyId = this.currentCompany?.CompanyMasterSid;
+    }
+    if(this.currentBranch){
+      this.branchId = this.currentBranch?.BranchMasterSid
     }
     const country = this.appSettingService.getCurrentCompanyCountry();
     this.isUAECompany = String(country?.countryCode || '').toLowerCase() === 'ae';
