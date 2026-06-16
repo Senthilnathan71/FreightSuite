@@ -46,6 +46,7 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
   chartMasterSid: number;
   isEditMode: boolean = false;
   currencyList: any[] = [];
+  branchList: any[] = [];
   currentCompany: any;
   currentBranch: any;
   MenuMasterSid: any;
@@ -105,7 +106,7 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
     { id: 19, name: 'Sy Dr' },
     { id: 20, name: 'TDS Payable' },
     { id: 21, name: 'TDS Receivable' },
-
+    { id: 22, name: 'Inter Branch' },
   ];
 
   CurrencyLookupConfig = {
@@ -141,6 +142,7 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
     this.mps.init().subscribe();
     this.initForm();
     this.getCurrencies();
+    this.getBranches();
     this.setupFormListeners();
     
     this.activatedRoute.paramMap.subscribe(params => {
@@ -183,7 +185,8 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
       Status: ['Active'],
       SubledgerName: ['N'],
       JobNoRequire: ['N'],
-      HSNRequire: ['N']
+      HSNRequire: ['N'],
+      InterBranchLocation: [null]
     });
   }
 
@@ -214,6 +217,18 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
         this.chartForm.get('SubGroupName')?.setValue('');
       }
     });
+
+    // Inter Branch ledger: show + require InterBranchLocation only when LedgerType = 'Inter Branch'
+    this.chartForm.get('LedgerType')!.valueChanges.subscribe((ledgerType: string) => {
+      const ctrl = this.chartForm.get('InterBranchLocation');
+      if (ledgerType === 'Inter Branch') {
+        ctrl?.setValidators([Validators.required]);
+      } else {
+        ctrl?.clearValidators();
+        ctrl?.setValue(null);
+      }
+      ctrl?.updateValueAndValidity();
+    });
   }
 
   // Field visibility methods
@@ -230,6 +245,19 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
   shouldShowLedgerFields(): boolean {
     const ledgerCategory = this.chartForm.get('LedgerCategory')?.value;
     return ledgerCategory === 'Ledger';
+  }
+
+  shouldShowInterBranch(): boolean {
+    return this.chartForm.get('LedgerType')?.value === 'Inter Branch';
+  }
+
+  getBranches(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) return;
+    this.masterServ.getBranchesByCompanyId(companyId).subscribe(
+      (branches: any[]) => { this.branchList = branches || []; },
+      () => { this.branchList = []; }
+    );
   }
 
   updateReportType(category: string) {
@@ -372,6 +400,7 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
             SubledgerName: resp.data.SubledgerName === 'Y' ? 'Y' : 'N',
             JobNoRequire: resp.data.JobNoRequire === 'Y' ? 'Y' : 'N',
             HSNRequire: resp.data.HSNRequire === 'Y' ? 'Y' : 'N',
+            InterBranchLocation: resp.data.InterBranchLocation ?? null,
           });
 
           // Load groups and subgroups for existing record after form is patched

@@ -1464,6 +1464,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       PAYMENT: '/accounts/payment/entry',
       JV: '/accounts/journal-voucher/entry',
       'JOURNAL VOUCHER': '/accounts/journal-voucher/entry',
+      IJV: '/accounts/journal-voucher/entry',
+      'INTER BRANCH JOURNAL VOUCHER': '/accounts/journal-voucher/entry',
       RJV: '/accounts/reverse-voucher/entry',
       'REVERSAL JOURNAL VOUCHER': '/accounts/reverse-voucher/entry',
       CRN: '/operation/credit-note/entry',

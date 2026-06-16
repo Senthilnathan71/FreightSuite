@@ -1,0 +1,177 @@
+<div class="inter-branch-tab p-2">
+  <!-- Header: Enable Inter Branch switch + (when on) allocation summary -->
+  <div class="ib-header d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+    <div class="form-check form-switch m-0 d-flex align-items-center">
+      <input
+        type="checkbox"
+        role="switch"
+        id="multiBranchSwitch"
+        class="form-check-input"
+        [checked]="multiBranch"
+        [disabled]="isPosted"
+        (change)="onToggle($any($event.target).checked)"
+      />
+      <label class="form-check-label fw-semibold ms-2" for="multiBranchSwitch">Enable Inter Branch</label>
+    </div>
+
+    <div *ngIf="multiBranch" class="ib-summary d-flex align-items-center gap-2">
+      <span class="ib-alloc-pill" [class.exceeds]="exceedsSource">
+        <i class="fas fa-layer-group me-1"></i>
+        Allocated ({{ partyCurrency?.currencyCode }}):
+        <span class="fw-bold ms-1">{{ totalAllocated | number: digitsInfo }}</span>
+        <span class="ms-1 opacity-75">/ {{ sourceAmount | number: digitsInfo }}</span>
+      </span>
+      <span *ngIf="exceedsSource" class="text-danger small fw-semibold">
+        <i class="fas fa-exclamation-triangle me-1"></i>
+        Exceeds the {{ mode | lowercase }} amount
+      </span>
+    </div>
+  </div>
+
+  <!-- Explanation (shown before enabling) -->
+  <div *ngIf="!multiBranch" class="ib-explainer">
+    <div class="ib-explainer-icon"><i class="fas fa-code-branch"></i></div>
+    <div class="ib-explainer-body">
+      <h6 class="ib-explainer-title">Allocate this {{ mode | lowercase }} across branches</h6>
+      <p class="ib-explainer-text">
+        Collected the full {{ mode | lowercase }} in <strong>this branch</strong>, but part of it settles
+        outstanding owned by <strong>other branches</strong>? Turn on Inter Branch to split it across those
+        owning branches — no separate vouchers needed.
+      </p>
+      <ul class="ib-points">
+        <li>
+          <i class="fas fa-check-circle"></i>
+          <span>Allocate an amount to each <strong>owning branch</strong> — the total can't exceed the {{ mode | lowercase }} amount.</span>
+        </li>
+        <li>
+          <i class="fas fa-check-circle"></i>
+          <span>Each branch's outstanding loads into the <strong>Voucher Matching</strong> tab to match; any remainder books as advance there.</span>
+        </li>
+        <li>
+          <i class="fas fa-check-circle"></i>
+          <span>On posting, a <strong>Source JV</strong> (this branch) and a <strong>Mirror JV</strong> per owning branch are created automatically.</span>
+        </li>
+      </ul>
+      <div class="ib-hint">
+        <i class="fas fa-toggle-on"></i>
+        <span>Switch on <strong>Enable Inter Branch</strong> above to get started.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Allocation content (shown once enabled) -->
+  <ng-container *ngIf="multiBranch">
+    <!-- Add owning branch -->
+    <div class="d-flex align-items-end gap-2 mb-2" *ngIf="!isPosted">
+      <div class="custom-form-group custom-form-group-select mb-0" [class.filled]="!!selectedBranchSid" style="min-width: 240px">
+        <ng-select
+          class="ng-select"
+          [items]="availableBranches"
+          bindLabel="branchName"
+          bindValue="BranchMasterSid"
+          placeholder=""
+          [(ngModel)]="selectedBranchSid"
+          [ngModelOptions]="{ standalone: true }"
+        ></ng-select>
+        <label class="input-label">Owning Branch</label>
+      </div>
+      <button type="button" class="btn btn-info btn-sm" (click)="addSelectedBranch()">
+        <i class="fas fa-plus me-1"></i> Add
+      </button>
+    </div>
+
+    <!-- Allocation grid -->
+    <div class="table-responsive ib-grid">
+      <table class="table table-sm table-hover align-middle mb-1">
+        <thead>
+          <tr class="bg-info text-center">
+            <th class="bg-transparent text-light" style="width: 3%"></th>
+            <th class="bg-transparent text-light text-start">Owning Branch</th>
+            <th class="bg-transparent text-light">Curr.</th>
+            <th class="bg-transparent text-light">Amount</th>
+            <th class="bg-transparent text-light">Local Amt</th>
+            <th class="bg-transparent text-light">Matched</th>
+            <th class="bg-transparent text-light">Advance</th>
+            <th class="bg-transparent text-light">Source JV</th>
+            <th class="bg-transparent text-light">Mirror JV</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows; let i = index" [formGroup]="$any(row)">
+            <td class="text-center">
+              <button
+                type="button"
+                class="btn btn-sm text-danger py-0 px-1"
+                (click)="removeBranch(i)"
+                [disabled]="isPosted"
+                title="Remove branch"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+            <td class="text-start fw-semibold">{{ branchName(i) }}</td>
+            <td class="text-center">{{ row.get('CurrencyCode')?.value }}</td>
+            <td style="max-width: 130px">
+              <input
+                type="text"
+                class="form-control form-control-sm text-end"
+                formControlName="Amount"
+                [readonly]="isPosted"
+                DecimalPrecision
+                [DecimalPrecisionBefore]="9"
+                [DecimalPrecisionAfter]="amountDecimals"
+                (input)="onAmountChange(i)"
+                (blur)="onAmountChange(i)"
+              />
+            </td>
+            <td class="text-end">{{ row.get('LocalAmount')?.value | number: localDigitsInfo }}</td>
+            <td class="text-end">{{ row.get('MatchedAmount')?.value | number: digitsInfo }}</td>
+            <td class="text-end">{{ row.get('AdvanceAmount')?.value | number: digitsInfo }}</td>
+            <td class="text-center">
+              <ng-container *ngIf="row.get('SourceJV')?.value as srcJv">
+                <a
+                  *ngIf="row.get('SourceJVSid')?.value"
+                  [routerLink]="['/accounts/journal-voucher/entry', row.get('SourceJVSid')?.value]"
+                  class="voucher-number-link fw-semibold"
+                  >{{ srcJv }}</a
+                >
+                <span *ngIf="!row.get('SourceJVSid')?.value" class="fw-semibold">{{ srcJv }}</span>
+                <i
+                  class="fas fa-copy ms-1"
+                  style="cursor: pointer; color: #1976d2; font-size: 12px"
+                  title="Copy Source JV"
+                  (click)="copy(srcJv)"
+                ></i>
+              </ng-container>
+              <span *ngIf="!row.get('SourceJV')?.value" class="text-muted">—</span>
+            </td>
+            <td class="text-center">
+              <ng-container *ngIf="row.get('InterBranchJV')?.value as mirrorJv">
+                <span class="fw-semibold">{{ mirrorJv }}</span>
+                <i
+                  class="fas fa-copy ms-1"
+                  style="cursor: pointer; color: #1976d2; font-size: 12px"
+                  title="Copy Mirror JV"
+                  (click)="copy(mirrorJv)"
+                ></i>
+              </ng-container>
+              <span *ngIf="!row.get('InterBranchJV')?.value" class="text-muted">—</span>
+            </td>
+          </tr>
+          <tr *ngIf="rows.length === 0">
+            <td colspan="9" class="ib-empty text-center text-muted py-3">
+              <i class="fas fa-inbox d-block mb-1"></i>
+              Add an owning branch and enter the amount to allocate.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ib-note">
+      <i class="fas fa-info-circle me-1"></i>
+      Adding a branch loads that branch's outstanding for the party into the
+      <strong>Voucher Matching</strong> tab. Matched ≤ Amount; the remainder books as advance in that branch.
+    </div>
+  </ng-container>
+</div>

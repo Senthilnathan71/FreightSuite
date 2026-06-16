@@ -93,6 +93,7 @@ currentBranch: any;
 		{ id : 9 , code : 'RJV'},
 		{ id : 10 , code : 'VM'},
 		{ id : 11 , code : "NIN"},
+		{ id : 12 , code : 'IJV'},
 	]
 
 	typeOptions = ['Cash', 'Bank', 'Others'];
@@ -201,6 +202,7 @@ hasAnyDropdownPermission(): boolean {
 
 		this.documentForm.get('DocumentTypeCode')?.valueChanges.subscribe((code) => {
 			this.applyTypeFieldState(code);
+			this.handleReverseVoucherPosting({ DocumentTypeCode: code });
 		});
 	}
 
@@ -539,7 +541,8 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 		const code = documentType.code || documentType.DocumentTypeCode;
 		const autoPostCtrl = this.documentForm.get('IsAutoPosting');
 
-		const reverseTypes = ['CRN', 'VRN', 'RJV'];
+		// IJV (inter-branch JV) must auto-post, like the reversal types.
+		const reverseTypes = ['CRN', 'VRN', 'RJV', 'IJV'];
 
 		if (reverseTypes.includes(code)) {
 			autoPostCtrl?.setValue('Y', { emitEvent: false });

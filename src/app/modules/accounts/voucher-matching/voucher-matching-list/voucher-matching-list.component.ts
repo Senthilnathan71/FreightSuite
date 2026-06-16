@@ -94,9 +94,14 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   }
 
   protected config: ListComponentConfig = {
-    storageKey: '',
+    // A real key (was '') — the empty key persisted under localStorage[''], which restored a
+    // stale sortColumn on every load and overrode the date default (and collided with other lists).
+    storageKey: 'voucher-matching-list',
     defaultPageSize: 10,
-    defaultSortColumn: 'VoucherMatchingHeaderSid',
+    // Sort by matching date (newest first) to match the server order. The list is
+    // server-paginated but the page is re-sorted client-side via applySorting(), so this
+    // must align with the backend orderBy or the visible page ignores the date.
+    defaultSortColumn: 'VoucherMatchingDate',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3

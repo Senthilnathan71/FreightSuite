@@ -245,6 +245,15 @@
                                 <label class="input-label">Ledger Type</label>
                             </div>
                         </aside>
+                        <aside class="col-md-4" *ngIf="shouldShowInterBranch()">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!chartForm.get('InterBranchLocation')?.value">
+                                <ng-select formControlName="InterBranchLocation" [items]="branchList"
+                                    bindLabel="branchName" bindValue="BranchMasterSid" >
+                                </ng-select>
+                                <label class="input-label">Inter-Branch Location <span class="text-danger">*</span></label>
+                            </div>
+                        </aside>
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!chartForm.get('ReportType')?.value">

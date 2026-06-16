@@ -90,6 +90,8 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { InterBranchTabComponent } from '../../inter-branch/inter-branch-tab.component';
+import { InterBranchService } from '../../inter-branch/inter-branch.service';
 import { TdsHelperService } from '../../services/tds-helper.service';
 
 /**
@@ -121,7 +123,8 @@ import { TdsHelperService } from '../../services/tds-helper.service';
     RouterModule,
     NgbTooltipModule,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    InterBranchTabComponent,
   ],
   templateUrl: './payment-entry.component.html',
   styleUrl: './payment-entry.component.scss',
@@ -321,18 +324,27 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   @ViewChild('matchingSentinel') matchingSentinel!: ElementRef;
   @ViewChild('matchingScrollContainer') matchingScrollContainer!: ElementRef;
   private matchingObserver!: IntersectionObserver;
-  private matchingSkip = 0;
   private readonly MATCHING_BATCH_SIZE = 30;
-  hasMoreMatchingData = false;
   isLoadingMatching = false;
   private currentSearchPayload: any = null;
+
+  // Per-branch matching pagination — one cursor per tab (source branch + each owning/inter-branch).
+  // Single source of truth: one endpoint + loadMatchingData(branchSid) + this cursor map.
+  matchingCursors = new Map<number, {
+    branchSid: number; branchName: string; isSource: boolean;
+    skip: number; hasMore: boolean; includeFullyPaid: boolean;
+    take: number; partyLedgerSid?: number; stagedMatches?: any[];
+  }>();
+  /** BranchMasterSid of the matching tab currently shown (null until the source cursor is seeded). */
+  activeMatchingBranchSid: number | null = null;
 
   // Tabs configuration
   tabs = [
     { name: 'Detail', icon: 'fas fa-address-card' },
     { name: 'Voucher Matching', icon: 'fas fa-code-branch' },
-    // { name: 'Interbranch', icon: 'fas fa-flag-checkered' },
+    { name: 'Inter Branch', icon: 'fas fa-flag-checkered' },
   ];
+  interBranchBranches: any[] = [];
 
   CrDr = [
     { id: 1, name: 'Cr', value: 'C' },
@@ -415,7 +427,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private operationService: OperationService,
     private taxCalculationService: TaxCalculationService,
     private voucherActionGuard: VoucherActionGuardService,
-    public tdsHelper: TdsHelperService
+    public tdsHelper: TdsHelperService,
+    private interBranchService: InterBranchService
   ) {}
 
   copyDocumentNumber(controlName: string, label: string, event?: Event): void {
@@ -499,6 +512,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // is always populated before patchValues runs.
     this.loadAllLookups().subscribe(() => {
       if (this.headerId) {
+        this.loadInterBranchAllocations(this.headerId); // fire in parallel with the payment fetch
         this.loadPayment(this.headerId);
       } else {
         if (this.isCopiedPayment && this.copiedPaymentData) {
@@ -557,7 +571,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.matchingObserver?.disconnect();
       this.matchingObserver = new IntersectionObserver(
         (entries) => {
-          if (entries[0].isIntersecting) this.loadMatchingData();
+          if (entries[0].isIntersecting) this.loadMatchingData(this.activeMatchingBranchSid);
         },
         { root: this.matchingScrollContainer?.nativeElement, threshold: 0.1 }
       );
@@ -706,7 +720,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.paymentForm = this.fb.group({
       VoucherNumber: [{ value: '', disabled: true }], // Payment Number
       VoucherDate: [defaultVoucherDate], // Payment Date
-      MultiBranch: [{ value: false, disabled: true }],
+      MultiBranch: [false],
       CashOrBank: ['B'],      // B - Bank / C - Cash
       BankCOA: [null, [Validators.required]], // Bank COA or Cash COA
       CurrencyMasterSid: [companyCurrency || null],
@@ -1031,60 +1045,129 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
         this.voucherMatchings.clear();
         this.updateDetailAmountsFromMatching();
+        // Party changed → owning outstanding is party-scoped, so drop owning tabs/rows too.
+        this.matchingCursors.clear(); // source cursor re-seeded below
       }
     }
 
-    // Reset pagination and clear existing data
-    this.matchingSkip = 0;
-    this.hasMoreMatchingData = true;
+    // Reset to the source-branch tab; owning tabs are added via the Inter Branch tab.
     this.currentSearchPayload = payload;
+    const sourceSid = this.currentBranch?.BranchMasterSid;
+    this.seedSourceMatchingCursor(form.IncludeFullyPaid);
+    this.activeMatchingBranchSid = sourceSid ?? null;
 
     this.spinner.show();
-    this.loadMatchingData();
+    this.loadMatchingData(sourceSid);
   }
 
-  loadMatchingData() {
-    if (this.isLoadingMatching || !this.hasMoreMatchingData || !this.currentSearchPayload) return;
+  /** Seed (or reset) the source-branch matching cursor — the default tab. */
+  private seedSourceMatchingCursor(includeFullyPaid: boolean): void {
+    const sid = this.currentBranch?.BranchMasterSid;
+    if (sid == null) return;
+    this.matchingCursors.set(sid, {
+      branchSid: sid,
+      branchName: this.currentBranch?.branchName || this.currentBranch?.BranchName || 'Source Branch',
+      isSource: true,
+      skip: 0,
+      hasMore: true,
+      includeFullyPaid: !!includeFullyPaid,
+      take: this.MATCHING_BATCH_SIZE,
+    });
+  }
+
+  /**
+   * Ensure a source-branch tab exists and is active (idempotent). Used on edit-load and owning-add,
+   * where `searchOutstanding` hasn't seeded the source cursor; `hasMore:false` so pre-loaded saved
+   * matches don't auto-paginate until the user explicitly searches.
+   */
+  private ensureSourceMatchingTab(): void {
+    const sid = this.currentBranch?.BranchMasterSid;
+    if (sid == null) return;
+    if (!this.matchingCursors.has(sid)) {
+      this.matchingCursors.set(sid, {
+        branchSid: sid,
+        branchName: this.currentBranch?.branchName || this.currentBranch?.BranchName || 'Source Branch',
+        isSource: true,
+        skip: 0,
+        hasMore: false,
+        includeFullyPaid: false,
+        take: this.MATCHING_BATCH_SIZE,
+      });
+    }
+    if (this.activeMatchingBranchSid == null) this.activeMatchingBranchSid = sid;
+  }
+
+  /**
+   * Load the next page of outstanding for ONE branch tab (source or owning). Single source of truth:
+   * the source tab uses the party/invoice/house search criteria; owning tabs always fetch the party's
+   * outstanding in that branch. Rows are tagged with allotmentBranchSid for owning branches.
+   */
+  loadMatchingData(branchSid: number | null = this.activeMatchingBranchSid) {
+    if (branchSid == null) return;
+    const cursor = this.matchingCursors.get(branchSid);
+    if (!cursor || !cursor.hasMore || this.isLoadingMatching) return;
+    // Source tab needs the party/invoice/house search criteria; owning tabs build their own payload
+    // (so they still load on edit, where no source search has run and currentSearchPayload is null).
+    if (cursor.isSource && !this.currentSearchPayload) return;
     this.isLoadingMatching = true;
 
-    const paginatedPayload = {
-      ...this.currentSearchPayload,
-      Skip: this.matchingSkip,
-      Take: this.MATCHING_BATCH_SIZE,
-    };
+    const payload = cursor.isSource
+      ? { ...this.currentSearchPayload, BranchMasterSid: branchSid, Skip: cursor.skip, Take: cursor.take }
+      : {
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: branchSid,
+          LedgerMasterSid: cursor.partyLedgerSid ?? this.paymentForm.get('PartyMasterSid')?.value,
+          IncludeFullyPaid: cursor.includeFullyPaid,
+          LedgerType: 'Sy Cr',
+          Skip: cursor.skip,
+          Take: cursor.take,
+        };
 
-    this.accountService.getPaymentOutstanding(paginatedPayload).subscribe({
+    const wasFirstPage = cursor.skip === 0;
+    this.accountService.getPaymentOutstanding(payload).subscribe({
       next: (res) => {
         const data = Array.isArray(res) ? res : [];
         if (data.length > 0) {
-          if (this.matchingSkip === 0) {
+          if (cursor.isSource && wasFirstPage) {
             this.patchHeaderValue(data);
           }
-          this.appendMatchingRows(data);
-          this.matchingSkip += data.length;
-          this.hasMoreMatchingData = data.length >= this.MATCHING_BATCH_SIZE;
+          const rows = cursor.isSource
+            ? data
+            : data.map((t: any) => ({
+                ...t,
+                allotmentBranchSid: branchSid,
+                BranchName: t.BranchName || t.branchName || cursor.branchName,
+              }));
+          this.appendMatchingRows(rows);
+          cursor.skip += data.length;
+          cursor.hasMore = data.length >= cursor.take;
+          if (!cursor.isSource) {
+            if (cursor.stagedMatches?.length) {
+              this.applyStagedMatches(branchSid, cursor.stagedMatches);
+              cursor.stagedMatches = undefined;
+            }
+            this.recomputeInterBranchMemo();
+          }
         } else {
-          if (this.matchingSkip === 0) {
+          if (cursor.isSource && wasFirstPage) {
             const searchType = this.searchOutstandingForm.get('SearchType')?.value;
-            this.appSettingService.showWarning(
-              `No outstanding found for this ${searchType}.`
-            );
+            this.appSettingService.showWarning(`No outstanding found for this ${searchType}.`);
             // For Party search: still apply the party to the header so the user
             // can proceed with a manual entry without a matching record.
             if (searchType === 'Party') {
-              const branchSid = this.searchOutstandingForm.get('CustomerBranchSid')?.getRawValue();
-              const party = this.partyList.find((p: any) => p.CustomerBranchSid === branchSid)
+              const custBranchSid = this.searchOutstandingForm.get('CustomerBranchSid')?.getRawValue();
+              const party = this.partyList.find((p: any) => p.CustomerBranchSid === custBranchSid)
                 ?? this.selectedPartyItemForSearch;
               if (party) {
                 this.onPartyChange(party, true);
               }
             }
           }
-          this.hasMoreMatchingData = false;
+          cursor.hasMore = false;
         }
         this.isLoadingMatching = false;
         this.spinner.hide();
-        if (this.hasMoreMatchingData) {
+        if (this.activeMatchingBranchSid === branchSid && cursor.hasMore) {
           setTimeout(() => this.reobserveMatchingSentinel(), 100);
         }
       },
@@ -1093,6 +1176,56 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.spinner.hide();
       },
     });
+  }
+
+  /** Matching tabs in display order (source first, then owning branches by insertion order). */
+  get matchingTabs() {
+    return [...this.matchingCursors.values()];
+  }
+
+  /** Show the tab strip only when inter-branch is active with at least one owning branch added. */
+  get showMatchingTabs(): boolean {
+    return (this.interBranches?.length ?? 0) > 0;
+  }
+
+  /** True when the given matching row belongs to the active tab (source = untagged rows). */
+  rowBelongsToActiveTab(control: AbstractControl): boolean {
+    const branchSid = this.activeMatchingBranchSid;
+    if (branchSid == null) return true;
+    const cursor = this.matchingCursors.get(branchSid);
+    const tag = control.get('allotmentBranchSid')?.value ?? null;
+    return cursor?.isSource ? tag == null : tag === branchSid;
+  }
+
+  /** Switch the visible matching tab; lazy-load its first page if not yet fetched. */
+  selectMatchingTab(branchSid: number): void {
+    this.activeMatchingBranchSid = branchSid;
+    const cursor = this.matchingCursors.get(branchSid);
+    const hasRows = this.voucherMatchings.controls.some(
+      (c) => (c.get('allotmentBranchSid')?.value ?? null) === (cursor?.isSource ? null : branchSid),
+    );
+    if (cursor && !hasRows && cursor.hasMore) {
+      this.spinner.show();
+      this.loadMatchingData(branchSid);
+    } else {
+      setTimeout(() => this.reobserveMatchingSentinel(), 50);
+    }
+  }
+
+  /** Re-tick previously staged owning-branch matches after their rows are (re)loaded (edit mode). */
+  private applyStagedMatches(branchSid: number, stagedMatches: any[]): void {
+    const byTxn = new Map(stagedMatches.map((m) => [m.VoucherTransactionSid, m]));
+    this.voucherMatchings.controls
+      .filter((c) => c.get('allotmentBranchSid')?.value === branchSid)
+      .forEach((c) => {
+        const m = byTxn.get(c.get('VoucherTransactionSid')?.value);
+        if (!m) return;
+        c.get('matchCurr')?.setValue(m.MatchingCurrency ?? c.get('matchCurr')?.value, { emitEvent: false });
+        c.get('matchCurrAmt')?.setValue(toNumber(m.MatchingAmount), { emitEvent: false });
+        c.get('matchLocalAmt')?.setValue(toNumber(m.MatchingLocalAmount), { emitEvent: false });
+        c.get('matchPartyAmt')?.setValue(toNumber(m.PartyAmount ?? m.MatchingAmount), { emitEvent: false });
+        c.get('isTicked')?.setValue(true, { emitEvent: false });
+      });
   }
 
   /**
@@ -1124,6 +1257,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         VoucherDetailSid: [tx.VoucherDetailSid],
         LedgerMasterSid: [tx.LedgerMasterSid],
         COAMasterSid: [tx.COAMasterSid],
+        branchName: [tx.BranchName || tx.branchName || ''],
+        // null = source-branch row (normal payment matching); set = owning (inter-branch) row
+        allotmentBranchSid: [tx.allotmentBranchSid ?? null],
 
         voucherNo: [
           tx.VoucherHeader?.VoucherNumber || tx.VoucherNumber || tx.voucherNo,
@@ -1395,7 +1531,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
-    const matchingHappened = (this.voucherMatchings.getRawValue() || []).some(mt => toNumber(mt.matchCurrAmt) || toNumber(mt.matchLocalAmt));
+    const matchingHappened = (this.voucherMatchings.getRawValue() || []).filter(mt => !mt.allotmentBranchSid).some(mt => toNumber(mt.matchCurrAmt) || toNumber(mt.matchLocalAmt));
     if(matchingHappened && toNumber(this.getTotalMatchPartyAmt()) < 0) {
       this.appSettingService.showError(
         'Please make sure the matching amount is greater or equal to zero.'
@@ -1443,7 +1579,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       }
     }
 
-    const voucherMatching = this.voucherMatchings.getRawValue().map((vm) => ({
+    const voucherMatching = this.voucherMatchings.getRawValue()
+      .filter((vm) => !vm.allotmentBranchSid) // owning-branch rows are staged via inter-branch, not matched on the source payment
+      .map((vm) => ({
       MatchingDetailSid: vm.MatchingDetailSid,
       VoucherHeaderSid: vm.VoucherHeaderSid,
       VoucherDetailSid: vm.VoucherDetailSid,
@@ -1554,7 +1692,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             this.appSettingService.showSuccess(resp.message);
             if (resolve) resolve(true);
             this.spinner.hide();
-            this.loadPayment(this.headerId);
+            // Stage inter-branch first, THEN reload — so the reload's getAllocations sees the staged rows.
+            this.stageInterBranchIfNeeded(this.headerId, () => this.loadPayment(this.headerId));
           } else {
             this.appSettingService.showError(resp.message);
             if (resolve) resolve(false);
@@ -1581,9 +1720,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             this.spinner.hide();
             this.isDirty = false;
             if (resolve) resolve(true);
-            if (this.headerId) {
-              this.router.navigate(['accounts/payment/entry', this.headerId]);
-            }
+            // Stage inter-branch first, THEN navigate/reload — avoids the reload racing the stage POST.
+            this.stageInterBranchIfNeeded(this.headerId, () => {
+              if (this.headerId) {
+                this.router.navigate(['accounts/payment/entry', this.headerId]);
+              }
+            });
           } else {
             this.appSettingService.showError(resp.message);
             if (resolve) resolve(false);
@@ -1688,6 +1830,13 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       if (result.status) {
         this.appSettingService.showSuccess(result.message);
         this.paymentData.PostStatus = 'P';
+        // Posting created the Source JV (JV①) + mirror JVs (JV②). Reload the inter-branch tab so their
+        // voucher numbers surface on the allocation grid (getAllocations returns them once posted).
+        // Strip the pre-post owning rows/cursors first so the posted reload doesn't duplicate them.
+        if (this.paymentForm.get('MultiBranch')?.value && this.headerId) {
+          this.removeOwningBranchMatchingRows();
+          this.loadInterBranchAllocations(this.headerId);
+        }
         if (notFromSubmit) {
           this.loadPayment(this.headerId);
         }
@@ -2817,7 +2966,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     bankCtrl?.patchValue({
       Narration:
         cashOrBank === 'Bank'
-          ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}from ${bankPartyName ? bankPartyName + '' : ''}`
+          ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}to ${bankPartyName ? bankPartyName + '' : ''}`
           : this.r['Narration']?.value || '',
     });
   }
@@ -3191,8 +3340,70 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.paymentForm.get('voucherMatchings') as FormArray;
   }
 
+  /**
+   * Source-branch matching rows only (owning/inter-branch rows excluded).
+   * Source-payment LOGIC (party/bank amount sync, validations, save payload, getTotalMatchPartyAmt)
+   * must use this — owning-branch ticks flow into stageAllocations().matches instead, NOT into the
+   * source payment's own matching.
+   */
+  get sourceMatchings(): AbstractControl[] {
+    return this.voucherMatchings.controls.filter((c) => !c.get('allotmentBranchSid')?.value);
+  }
+
+  /**
+   * Matching rows of the currently active tab (source tab → untagged rows; owning tab → that branch's
+   * rows). DISPLAY totals (footer "Net" row + the "Matching" summary box) use this so each tab shows
+   * its own totals; defaults to source rows before a tab is selected.
+   */
+  get activeTabMatchings(): AbstractControl[] {
+    if (this.activeMatchingBranchSid == null) return this.sourceMatchings;
+    return this.voucherMatchings.controls.filter((c) => this.rowBelongsToActiveTab(c));
+  }
+
+  /** Per-branch matched party totals (Dr/Cr/Net of matchPartyAmt) — one entry per matching tab. */
+  get matchingTotalsByBranch(): Array<{ branchSid: number; branchName: string; dr: number; cr: number; net: number }> {
+    const rows = this.voucherMatchings.getRawValue();
+    return this.matchingTabs.map((tab) => {
+      const branchRows = rows.filter((r) =>
+        tab.isSource ? r.allotmentBranchSid == null : r.allotmentBranchSid === tab.branchSid,
+      );
+      const dr = branchRows.filter((r) => r.drCr === 'Dr').reduce((t, r) => t + (Number(r.matchPartyAmt) || 0), 0);
+      const cr = branchRows.filter((r) => r.drCr === 'Cr').reduce((t, r) => t + (Number(r.matchPartyAmt) || 0), 0);
+      return { branchSid: tab.branchSid, branchName: tab.branchName, dr, cr, net: cr - dr };
+    });
+  }
+
+  /** Overall matched party totals across ALL branches (sum of the per-branch rows). */
+  get matchingOverallTotal(): { dr: number; cr: number; net: number } {
+    const t = this.matchingTotalsByBranch.reduce((acc, b) => ({ dr: acc.dr + b.dr, cr: acc.cr + b.cr }), { dr: 0, cr: 0 });
+    return { dr: t.dr, cr: t.cr, net: t.cr - t.dr };
+  }
+
+  /** Matched party total for the active branch tab (branch-wise) — shown alongside the branch pills. */
+  get activeBranchMatchingTotal(): { branchName: string; dr: number; cr: number; net: number } {
+    return (
+      this.matchingTotalsByBranch.find((b) => b.branchSid === this.activeMatchingBranchSid) ?? {
+        branchName: '',
+        dr: 0,
+        cr: 0,
+        net: 0,
+      }
+    );
+  }
+
+  /** Remove only source-branch rows, preserving owning (inter-branch) rows (used on edit-load). */
+  private clearSourceMatchingRows(): void {
+    for (let i = this.voucherMatchings.length - 1; i >= 0; i--) {
+      if (!this.voucherMatchings.at(i).get('allotmentBranchSid')?.value) {
+        this.voucherMatchings.removeAt(i);
+      }
+    }
+  }
+
   patchOutstandingFormArray(transactions: any[]) {
-    this.voucherMatchings.clear();
+    // Clear only source rows — owning (inter-branch) rows are loaded separately and must survive.
+    this.clearSourceMatchingRows();
+    this.ensureSourceMatchingTab(); // edit-load: make the source tab exist + active
     const searchType = this.searchOutstandingForm.get('SearchType')?.value;
 
     transactions.forEach((tx) => {
@@ -3210,6 +3421,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         VoucherDetailSid: [tx.VoucherDetailSid],
         LedgerMasterSid: [tx.LedgerMasterSid],
         COAMasterSid: [tx.COAMasterSid],
+        branchName: [tx.BranchName || tx.branchName || ''],
+        allotmentBranchSid: [tx.allotmentBranchSid ?? null], // source rows on edit-load
 
         // Voucher Info
         voucherNo: [
@@ -3352,6 +3565,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (recalPartyAmt) {
       this.calculatePartyAmount(index);
     }
+    // Manual matched-amount edits on an owning-branch row refresh its inter-branch memo.
+    if (this.voucherMatchings.at(index)?.get('allotmentBranchSid')?.value) {
+      this.recomputeInterBranchMemo();
+    }
   }
 
   recalculateAllMatchingPartyAmounts() {
@@ -3408,7 +3625,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalCurrAmt() {
-    return this.voucherMatchings.controls
+    return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('currAmt')?.value || 0);
@@ -3419,7 +3636,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalLocalAmt() {
-    return this.voucherMatchings.controls
+    return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('localAmt')?.value || 0);
@@ -3430,7 +3647,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalOSCurrAmt() {
-    return this.voucherMatchings.controls
+    return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('osCurrAmt')?.value || 0);
@@ -3441,7 +3658,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalOSLocalAmount() {
-    return this.voucherMatchings.controls
+    return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('osLocalAmt')?.value || 0);
@@ -3452,7 +3669,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalMatchCurrAmt() {
-    const totalMatchCurrAmt = this.voucherMatchings.controls.reduce(
+    const totalMatchCurrAmt = this.activeTabMatchings.reduce(
       (total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('matchCurrAmt')?.value || 0);
@@ -3479,7 +3696,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalMatchLocalAmt() {
-    return this.voucherMatchings.controls
+    return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('matchLocalAmt')?.value || 0);
@@ -3490,7 +3707,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalMatchPartyAmt() {
-    return this.voucherMatchings.controls
+    return this.sourceMatchings
+      .reduce((total, control) => {
+        if (control.get('drCr')?.value === 'Cr') {
+          return total + Number(control.get('matchPartyAmt')?.value || 0);
+        }
+        return total - Number(control.get('matchPartyAmt')?.value || 0);
+      }, 0)
+      .toFixed(2);
+  }
+
+  /** Active-tab matched party total — DISPLAY only (the "Matching" box + footer Net); source logic uses getTotalMatchPartyAmt. */
+  getTabTotalMatchPartyAmt() {
+    return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
           return total + Number(control.get('matchPartyAmt')?.value || 0);
@@ -3501,25 +3730,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   getTotalTdsAmt() {
-    return this.voucherMatchings.controls
+    return this.activeTabMatchings
       .reduce(
         (total, control) => total + Number(control.get('tdsAmt')?.value || 0),
         0
       )
-      .toFixed(2);
-  }
-
-  getDrMatchPartyAmt() {
-    return this.voucherMatchings.controls
-      .filter(c => c.get('drCr')?.value === 'Dr')
-      .reduce((t, c) => t + Number(c.get('matchPartyAmt')?.value || 0), 0)
-      .toFixed(2);
-  }
-
-  getCrMatchPartyAmt() {
-    return this.voucherMatchings.controls
-      .filter(c => c.get('drCr')?.value === 'Cr')
-      .reduce((t, c) => t + Number(c.get('matchPartyAmt')?.value || 0), 0)
       .toFixed(2);
   }
 
@@ -3900,24 +4115,245 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
   }
 
-  toggleMultiBranch(event: any): void {
-    const ctrl = this.paymentForm.get('MultiBranch');
-    const element = event.target as HTMLInputElement;
-    if (event instanceof KeyboardEvent && event.key === 'Enter') {
-      element.checked = !element.checked;
-    }
-    ctrl.setValue(element.checked);
-    if (element.checked) {
-      // Only add interBranch tab if not already present
-      if (!this.tabs.find((t) => t.name === 'Interbranch')) {
-        this.tabs.push({ name: 'Interbranch', icon: 'fas fa-flag-checkered' });
-      }
-      // Do not auto-populate interBranches; only add rows when user clicks "Add"
+  // ── Inter Branch (multi-branch) ──
+  get interBranchSourceAmount(): number {
+    return Math.max(this.totalCredits || 0, this.totalDebits || 0);
+  }
+
+  get interBranchPartyCurrency(): { CurrencyMasterSid: number; currencyCode: string } {
+    return {
+      CurrencyMasterSid: this.paymentForm.get('CurrencyMasterSid')?.value,
+      currencyCode: this.paymentForm.get('CurrencyCode')?.getRawValue(),
+    };
+  }
+
+  onMultiBranchToggle(on: boolean): void {
+    this.paymentForm.get('MultiBranch')?.setValue(on);
+    if (on) {
+      if (!this.interBranchBranches.length) this.loadInterBranchBranches();
     } else {
-      // Remove interBranch tab and clear form array
-      this.tabs = this.tabs.filter((t) => t.name !== 'Interbranch');
       this.interBranches.clear();
+      this.removeOwningBranchMatchingRows();
     }
+  }
+
+  private loadInterBranchBranches(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) return;
+    this.masterService.getBranchesByCompanyId(companyId).subscribe(
+      (branches: any[]) => { this.interBranchBranches = branches || []; },
+      () => { this.interBranchBranches = []; },
+    );
+  }
+
+  /** On edit, load the staged inter-branch allocations back into the tab + re-surface owning rows. */
+  private loadInterBranchAllocations(headerId: number): void {
+    if (!headerId) return;
+    this.interBranchService.getAllocations(headerId).subscribe(
+      (allocations: any[]) => {
+        this.interBranches.clear();
+        if (!allocations || !allocations.length) return;
+        if (!this.interBranchBranches.length) this.loadInterBranchBranches();
+        this.paymentForm.get('MultiBranch')?.setValue(true);
+        this.ensureSourceMatchingTab(); // edit: source tab alongside the owning tabs
+        allocations.forEach((a) => {
+          this.interBranches.push(
+            this.fb.group({
+              BranchMasterSid: [a.AllotmentBranchSid],
+              BranchName: [a.allotmentBranch?.branchName || ''],
+              CurrencyMasterSid: [a.sourceVoucher?.CurrencyMasterSid ?? this.paymentForm.get('CurrencyMasterSid')?.value],
+              CurrencyCode: [a.sourceVoucher?.CurrencyCode || this.paymentForm.get('CurrencyCode')?.getRawValue()],
+              ExchangeRate: [Number(a.sourceVoucher?.ExchangeRate) || this.paymentForm.get('ExchangeRate')?.value || 1],
+              Amount: [Number(a.CurrencyAmount) || 0],
+              LocalAmount: [Number(a.LocalAmount) || 0],
+              MatchedAmount: [{ value: 0, disabled: true }],
+              AdvanceAmount: [{ value: Number(a.CurrencyAmount) || 0, disabled: true }],
+              InterBranchJV: [a.mirrorJV?.VoucherNumber || ''],
+              SourceJV: [a.sourceJV?.VoucherNumber || ''],
+              SourceJVSid: [a.SourceJVHeaderSid || null],
+            }),
+          );
+
+          if (a.posted) {
+            // Posted: render the owning branch's matched invoices straight from VoucherMatching
+            // (a.matches are full rows) — fully-matched invoices are excluded from the outstanding fetch.
+            this.renderPostedOwningMatches(a.AllotmentBranchSid, a.allotmentBranch?.branchName || '', a.matches || []);
+          } else {
+            // Draft: seed the owning tab cursor + fetch the outstanding, then re-tick the staged matches.
+            // Party ledger comes from the source voucher (timing-independent of the header fetch); large
+            // take loads all rows in one page so every staged match resurfaces.
+            const partyLedgerSid = a.sourceVoucher?.PartyMasterSid ?? this.paymentForm.get('PartyMasterSid')?.value;
+            if (partyLedgerSid) {
+              this.matchingCursors.set(a.AllotmentBranchSid, {
+                branchSid: a.AllotmentBranchSid,
+                branchName: a.allotmentBranch?.branchName || '',
+                isSource: false,
+                skip: 0,
+                hasMore: true,
+                includeFullyPaid: true,
+                take: 100000,
+                partyLedgerSid,
+                stagedMatches: a.matches || [],
+              });
+              this.loadMatchingData(a.AllotmentBranchSid);
+            }
+          }
+        });
+      },
+      () => {},
+    );
+  }
+
+  /**
+   * Posted edit: render an owning branch's matched invoices directly (from VoucherMatching, supplied by
+   * getAllocations as full rows) and re-tick them. No outstanding fetch — the matched invoices are fully
+   * paid and excluded from it. The owning cursor is seeded with hasMore=false (nothing left to paginate).
+   */
+  private renderPostedOwningMatches(branchSid: number, branchName: string, matches: any[]): void {
+    this.matchingCursors.set(branchSid, {
+      branchSid,
+      branchName,
+      isSource: false,
+      skip: 0,
+      hasMore: false,
+      includeFullyPaid: true,
+      take: this.MATCHING_BATCH_SIZE,
+    });
+    if (!matches.length) return;
+    const rows = matches.map((m) => ({ ...m, allotmentBranchSid: branchSid, BranchName: m.BranchName || branchName }));
+    this.appendMatchingRows(rows);
+    this.applyStagedMatches(branchSid, matches);
+    // Posted voucher → these owning rows are read-only (consistent with the disabled source rows).
+    this.voucherMatchings.controls
+      .filter((c) => c.get('allotmentBranchSid')?.value === branchSid)
+      .forEach((c) => c.disable({ emitEvent: false }));
+    this.recomputeInterBranchMemo();
+  }
+
+  onOwningBranchAdded(branchSid: number): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const partyLedgerSid = this.paymentForm.get('PartyMasterSid')?.value;
+    if (!companyId || !partyLedgerSid) {
+      this.appSettingService.showWarning('Select the party before adding an inter-branch allocation.');
+      return;
+    }
+    this.ensureSourceMatchingTab(); // guarantee the source tab sits alongside the new owning tab
+    const branchName = (this.interBranchBranches || []).find((b) => b.BranchMasterSid === branchSid)?.branchName || '';
+    this.matchingCursors.set(branchSid, {
+      branchSid,
+      branchName,
+      isSource: false,
+      skip: 0,
+      hasMore: true,
+      includeFullyPaid: false,
+      take: this.MATCHING_BATCH_SIZE,
+      partyLedgerSid,
+    });
+    this.activeMatchingBranchSid = branchSid; // focus the newly added branch's tab
+    this.spinner.show();
+    this.loadMatchingData(branchSid);
+  }
+
+  onOwningBranchRemoved(branchSid: number): void {
+    this.removeOwningBranchMatchingRows(branchSid);
+  }
+
+  onInterBranchAllocationsChanged(): void {
+    this.recomputeInterBranchMemo();
+  }
+
+  /** Strip owning-branch rows + drop their tab cursors (one branch, or all when no arg). */
+  private removeOwningBranchMatchingRows(branchSid?: number): void {
+    if (branchSid) {
+      this.matchingCursors.delete(branchSid);
+    } else {
+      for (const sid of [...this.matchingCursors.keys()]) {
+        if (!this.matchingCursors.get(sid)?.isSource) this.matchingCursors.delete(sid);
+      }
+    }
+    // Strip the owning-branch rows from the shared matching grid (all, or just this branch's).
+    for (let i = this.voucherMatchings.length - 1; i >= 0; i--) {
+      const sid = this.voucherMatchings.at(i).get('allotmentBranchSid')?.value;
+      if (branchSid ? sid === branchSid : sid != null) {
+        this.voucherMatchings.removeAt(i);
+      }
+    }
+    // If the active tab was removed, fall back to the source tab.
+    if (this.activeMatchingBranchSid != null && !this.matchingCursors.has(this.activeMatchingBranchSid)) {
+      this.activeMatchingBranchSid = [...this.matchingCursors.values()].find((c) => c.isSource)?.branchSid ?? null;
+    }
+    this.recomputeInterBranchMemo();
+    setTimeout(() => this.reobserveMatchingSentinel(), 50);
+  }
+
+  private recomputeInterBranchMemo(): void {
+    const rows = this.voucherMatchings.getRawValue();
+    this.interBranches.controls.forEach((row) => {
+      const sid = row.get('BranchMasterSid')?.value;
+      const amount = Number(row.get('Amount')?.value) || 0;
+      const matched = rows
+        .filter((vm) => vm.allotmentBranchSid === sid)
+        .reduce((s, vm) => s + (Number(vm.matchPartyAmt) || 0), 0);
+      const matchedRounded = Math.round(matched * 100) / 100;
+      row.get('MatchedAmount')?.setValue(matchedRounded, { emitEvent: false });
+      row.get('AdvanceAmount')?.setValue(Math.max(Math.round((amount - matchedRounded) * 100) / 100, 0), { emitEvent: false });
+    });
+  }
+
+  private buildInterBranchAllocations(): any[] {
+    const rows = this.voucherMatchings.getRawValue();
+    return this.interBranches.controls.map((row) => {
+      const sid = row.get('BranchMasterSid')?.value;
+      const matches = rows
+        .filter((vm) => vm.allotmentBranchSid === sid && (toNumber(vm.matchCurrAmt) || toNumber(vm.matchLocalAmt)))
+        .map((vm) => ({
+          VoucherHeaderSid: vm.VoucherHeaderSid,
+          VoucherDetailSid: vm.VoucherDetailSid,
+          VoucherTransactionSid: vm.VoucherTransactionSid,
+          VoucherType: vm.voucherType,
+          BranchName: vm.branchName,
+          CurrencyCode: vm.curr,
+          ExchangeRate: toNumber(vm.exRate) || 1,
+          DrCr: vm.drCr === 'Cr' ? 'C' : 'D',
+          Amount: toNumber(vm.currAmt),
+          LocalAmount: toNumber(vm.localAmt),
+          MatchingAmount: toNumber(vm.matchCurrAmt),
+          MatchingLocalAmount: toNumber(vm.matchLocalAmt),
+          PartyAmount: toNumber(vm.matchPartyAmt),
+          MatchingCurrency: vm.matchCurr ?? null,
+        }));
+      return {
+        AllotmentBranchSid: sid,
+        CurrencyAmount: Number(row.get('Amount')?.value) || 0,
+        LocalAmount: Number(row.get('LocalAmount')?.value) || 0,
+        matches,
+      };
+    });
+  }
+
+  /** After the payment is saved, persist its inter-branch allocations + matches. */
+  stageInterBranchIfNeeded(headerId: number, done?: () => void): void {
+    const on = this.paymentForm.get('MultiBranch')?.value;
+    if (!(on === true || on === 'Y') || !headerId) { done?.(); return; }
+    const allocations = this.buildInterBranchAllocations();
+    if (!allocations.length) { done?.(); return; }
+    this.interBranchService
+      .stageAllocations({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        VoucherHeaderSid: headerId,
+        CreatedBy: this.userData?.userEmail,
+        CurrencyCode: this.paymentForm.get('CurrencyCode')?.getRawValue(),
+        ExchangeRate: Number(this.paymentForm.get('ExchangeRate')?.value) || 1,
+        allocations,
+      })
+      .subscribe({
+        next: () => done?.(),
+        error: () => {
+          this.appSettingService.showError('Failed to stage inter-branch allocations');
+          done?.();
+        },
+      });
   }
   
   private bankFieldsBackup: any = null;
@@ -5090,6 +5526,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   onTickMatch(index: number, event: any) {
     const checked = event.target.checked;
     const row = this.voucherMatchings.at(index) as FormGroup;
+    const isOwningRow = !!row.get('allotmentBranchSid')?.value;
 
     if (!checked) {
       row.patchValue({
@@ -5099,7 +5536,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         matchLocalAmt: null,
         matchPartyAmt: null,
       });
-      this.updateDetailAmountsFromMatching();
+      row.get('isTicked')?.setValue(false);
+      isOwningRow ? this.recomputeInterBranchMemo() : this.updateDetailAmountsFromMatching();
       return;
     }
 
@@ -5119,7 +5557,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     });
     this.calculatePartyAmount(index);
     row.get('isTicked')?.setValue(checked);
-    this.updateDetailAmountsFromMatching();
+    isOwningRow ? this.recomputeInterBranchMemo() : this.updateDetailAmountsFromMatching();
 
     // this.calculateLocalAmountForMatchRow(index);
   }
