@@ -54,6 +54,8 @@ import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delive
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoice/performa-invoice.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 
 
@@ -86,7 +88,9 @@ import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoic
     NgxSpinnerModule,
     NgbDropdownModule,
     PreventMultiClickDirective,
-    TimeAgoPipe
+    TimeAgoPipe,
+    FormStateGuardDirective,
+    ElementStateGuardDirective
   ],
   templateUrl: './service-job-entry.component.html',
   styleUrl: './service-job-entry.component.scss',
