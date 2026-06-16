@@ -494,26 +494,38 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
 
   getDropdownDisplayFields(paramName: string): string[] {
     const keys = this.getDropdownKeys(paramName);
-    if (!keys.length) return ['value', 'label'];
+    if (!keys.length) return ['label'];
 
-    const codeKey = this.findFieldByPattern(keys, /code/i);
-    const nameKey = this.findFieldByPattern(keys, /(name|label)/i);
+    const visibleKeys = keys.filter(key => !/^value$/i.test(key));
+    if (!visibleKeys.length) return ['label'];
+
+    const codeKey = this.findFieldByPattern(visibleKeys, /code/i);
+    const nameKey = this.findFieldByPattern(visibleKeys, /(name|label)/i);
+
+    const preferredFieldKeys = visibleKeys.filter(key =>
+      /(name|label|group|code)/i.test(key),
+    );
+
+    if (preferredFieldKeys.length >= 2) {
+      return preferredFieldKeys.slice(0, 2);
+    }
 
     if (codeKey && nameKey && codeKey !== nameKey) {
       return [codeKey, nameKey];
     }
 
-    if (keys.length >= 2) {
-      return [keys[0], keys[1]];
+    if (visibleKeys.length >= 2) {
+      return [visibleKeys[0], visibleKeys[1]];
     }
 
-    return [keys[0]];
+    return [visibleKeys[0]];
   }
 
   getDropdownDisplayLabels(paramName: string): string[] {
     const fields = this.getDropdownDisplayFields(paramName);
     return fields.map(field => {
       if (/code/i.test(field)) return 'Code';
+      if (/group/i.test(field)) return 'Sub Group Name';
       if (/(name|label)/i.test(field)) return 'Name';
       return this.toTitleCaseFromKey(field);
     });

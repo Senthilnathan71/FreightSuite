@@ -46,9 +46,9 @@
                         <th class="bg-transparent text-light text-center">Origin Agent</th>
                         <th class="bg-transparent text-light text-center">Destination Agent</th>
                         <th class="bg-transparent text-light text-center">Origin Port</th>
-                        <th class="bg-transparent text-light text-center">Destination Port</th>
                         <th class="bg-transparent text-light text-center">Load Port</th>
                         <th class="bg-transparent text-light text-center">Discharge Port</th>
+                        <th class="bg-transparent text-light text-center">Destination Port</th>
                         <th class="bg-transparent text-light text-center">ETA</th>
                         <th class="bg-transparent text-light text-center">ETD</th>
                         <th class="bg-transparent text-light text-center">ATA</th>
@@ -77,13 +77,13 @@
                             <td>{{ item.OriginAgent }}</td>
                             <td>{{ item.DestinationAgent }}</td>
                             <td>{{ item.POO }}</td>
-                            <td>{{ item.POD }}</td>
                             <td>{{ item.POL }}</td>
+                            <td>{{ item.POD }}</td>
                             <td>{{ item.FPD }}</td>
-                            <td>{{ item.ETA | date:'shortDate' }}</td>
-                            <td>{{ item.ETD | date:'shortDate' }}</td>
-                            <td>{{ item.ATA | date:'shortDate' }}</td>
-                            <td>{{ item.ATD | date:'shortDate' }}</td>
+                            <td>{{ item.ETA | formatDate }}</td>
+                            <td>{{ item.ETD | formatDate }}</td>
+                            <td>{{ item.ATA | formatDate }}</td>
+                            <td>{{ item.ATD | formatDate }}</td>
                             <td colspan="3"></td>
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.pSale | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.pCost | number:'1.2-2' }}</td>
@@ -106,8 +106,10 @@
                             <td>{{hj.OriginAgent}}</td>
                             <td>{{hj.DestinationAgent}}</td>
                             <td>{{hj.POO}}</td>
+                            <td>{{hj.POL}}</td>
+                            <td>{{hj.POD}}</td>
                             <td>{{hj.FPD}}</td>
-                            <td colspan="6"></td>
+                            <td colspan="4"></td>
                             <td>{{hj.ModeOfTransport}}</td>
                             <td>{{hj.salesPerson}}</td>
                             <td>{{hj.PPCC}}</td>
