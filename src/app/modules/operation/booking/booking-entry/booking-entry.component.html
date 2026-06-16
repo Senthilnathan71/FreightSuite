@@ -103,7 +103,7 @@
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
           [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
           (click)="onSubmit()"  
-          [disabled]="(!mps.can('update') && isEditMode) || isSaving || !isHBLNoValid()|| (isEditMode && isSuspended)" >
+          [disabled]="!canSaveBooking()" >
     <i class="fas fa-save me-1"></i>
     <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
     <span *ngIf="hasUnsavedChanges()"

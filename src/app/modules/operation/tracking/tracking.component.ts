@@ -134,6 +134,88 @@ export class TrackingComponent implements OnInit, OnDestroy {
     return 'Booking No';
   }
 
+  transportMode(tracking: any): string {
+    const info = tracking?.shipmentInfo || {};
+    const mode = String(info.transportMode || info.departmentType || info.movementType || '').toUpperCase();
+    if (mode.includes('AIR')) return 'AIR';
+    if (mode.includes('SEA')) return 'SEA';
+    if (mode.includes('ROAD') || mode.includes('TRANSPORT')) return 'ROAD';
+    return mode || 'SEA';
+  }
+
+  isAirShipment(tracking: any): boolean {
+    return this.transportMode(tracking) === 'AIR';
+  }
+
+  isSeaShipment(tracking: any): boolean {
+    return this.transportMode(tracking) === 'SEA';
+  }
+
+  hblLabel(tracking: any): string {
+    return this.isAirShipment(tracking) ? 'HAWB' : 'HBL / HAWB';
+  }
+
+  mblLabel(tracking: any): string {
+    return this.isAirShipment(tracking) ? 'MAWB' : 'MBL / MAWB';
+  }
+
+  scheduleLabel(tracking: any): string {
+    return this.isAirShipment(tracking) ? 'Airline / Flight' : 'Vessel / Voyage';
+  }
+
+  showContainerSection(tracking: any): boolean {
+    return !this.isAirShipment(tracking) && this.containerCount(tracking) > 0;
+  }
+
+  voyageLegs(tracking: any): any[] {
+    return (tracking?.shipmentInfo?.voyageLegs || [])
+      .filter((leg: any) => this.hasDisplayValue(leg?.vesselVoyage || leg?.vesselName || leg?.voyageNo || leg?.etd || leg?.eta));
+  }
+
+  isMultiLegSchedule(tracking: any): boolean {
+    return this.voyageLegs(tracking).length > 1;
+  }
+
+  transhipmentLegRoute(leg: any): string {
+    return [leg?.pol, leg?.pod].filter((value) => this.hasDisplayValue(value)).join(' -> ') || 'Route pending';
+  }
+
+  transhipmentLegSchedule(leg: any): string {
+    const etd = this.formatDisplayDate(leg?.etd);
+    const eta = this.formatDisplayDate(leg?.eta);
+    return [etd !== '-' ? `ETD ${etd}` : '', eta !== '-' ? `ETA ${eta}` : '']
+      .filter(Boolean)
+      .join(' / ') || 'Schedule pending';
+  }
+
+  transhipmentLegEtd(leg: any): string {
+    return this.formatDisplayDate(leg?.etd);
+  }
+
+  transhipmentLegEta(leg: any): string {
+    return this.formatDisplayDate(leg?.eta);
+  }
+
+  transhipmentLegTitle(leg: any, index: number, isLast: boolean): string {
+    if (leg?.legType) {
+      return leg.legType;
+    }
+
+    if (index === 0) {
+      return 'First Leg';
+    }
+
+    return isLast ? 'Final Leg' : `Leg ${index + 1}`;
+  }
+
+  transhipmentLegVessel(leg: any): string {
+    return this.displayValue(leg?.vesselVoyage || [leg?.vesselName, leg?.voyageNo].filter(Boolean).join(' / '));
+  }
+
+  trackByVoyageLeg(index: number, leg: any): string {
+    return `${leg?.sequence || index}-${leg?.vesselVoyage || leg?.pol || 'leg'}`;
+  }
+
   routeLabel(point: any, index?: number): string {
     if (!point) {
       return ['Origin', 'POL', 'POD', 'Final Destination'][index || 0] || '-';
@@ -147,6 +229,11 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   routePoints(tracking: any): Array<{ label: string; role: string }> {
+    const legRoute = this.transhipmentRoutePoints(tracking);
+    if (legRoute.length) {
+      return legRoute;
+    }
+
     const route = tracking?.routeInfo?.route || [];
     const origin = tracking?.routeInfo?.origin || route[0];
     const pol = tracking?.routeInfo?.pol || route[1];
@@ -159,6 +246,27 @@ export class TrackingComponent implements OnInit, OnDestroy {
       { label: this.routeLabel(pod, 2), role: 'POD' },
       { label: this.routeLabel(finalDestination, 3), role: 'Final' },
     ];
+  }
+
+  private transhipmentRoutePoints(tracking: any): Array<{ label: string; role: string }> {
+    const legs = this.voyageLegs(tracking);
+    if (legs.length < 2) {
+      return [];
+    }
+
+    const firstLeg = legs[0];
+    const finalLeg = legs[legs.length - 1];
+    const points = [
+      { label: this.displayValue(firstLeg?.pol), role: 'Origin' },
+      { label: this.displayValue(firstLeg?.pod), role: 'First POD' },
+      { label: this.displayValue(finalLeg?.pol), role: 'Final POL' },
+      { label: this.displayValue(finalLeg?.pod), role: 'Final' },
+    ];
+
+    return points.map((point, index) => ({
+      label: this.hasDisplayValue(point.label) ? point.label : this.routeLabel(null, index),
+      role: point.role,
+    }));
   }
 
   routeProgressIndex(tracking: any): number {
@@ -303,12 +411,12 @@ export class TrackingComponent implements OnInit, OnDestroy {
       },
       {
         key: 'hbl',
-        label: 'HBL / HAWB',
+        label: this.hblLabel(tracking),
         value: this.shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo'),
       },
       {
         key: 'mbl',
-        label: 'MBL / MAWB',
+        label: this.mblLabel(tracking),
         value: this.shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo'),
       },
       {
@@ -387,12 +495,14 @@ export class TrackingComponent implements OnInit, OnDestroy {
         value: this.movementOverviewValue(tracking),
         meta: this.displayValue(info.customerName, 'Customer pending'),
       },
-      {
-        key: 'container',
-        label: 'Container Summary',
-        value: containerCount ? `${containerCount} container${containerCount === 1 ? '' : 's'}` : '-',
-        meta: `${containerCount} container${containerCount === 1 ? '' : 's'} linked.`,
-      },
+      ...(this.showContainerSection(tracking)
+        ? [{
+            key: 'container',
+            label: 'Container Summary',
+            value: `${containerCount} container${containerCount === 1 ? '' : 's'}`,
+            meta: `${containerCount} container${containerCount === 1 ? '' : 's'} linked.`,
+          }]
+        : []),
     ];
 
     const headerValues = this.shipmentDetailCards(tracking).map((card) => card.value);
@@ -442,7 +552,7 @@ export class TrackingComponent implements OnInit, OnDestroy {
 
   hasVoyageSchedule(tracking: any): boolean {
     const info = tracking?.shipmentInfo || {};
-    return [info.vesselVoyage, info.vesselName, info.voyageNo, info.etd, info.eta, info.atd, info.ata]
+    return this.voyageLegs(tracking).length > 0 || [info.vesselVoyage, info.vesselName, info.voyageNo, info.etd, info.eta, info.atd, info.ata]
       .some((value) => this.hasDisplayValue(value));
   }
 
@@ -482,7 +592,7 @@ export class TrackingComponent implements OnInit, OnDestroy {
   scheduleLegLabel(tracking: any): string {
     const legs = tracking?.shipmentInfo?.voyageLegs || [];
     if (legs.length > 1) {
-      return `${legs.length} connected voyage legs`;
+      return `${legs.length} connected ${this.isAirShipment(tracking) ? 'flight' : 'voyage'} legs`;
     }
 
     return 'Connected schedule';

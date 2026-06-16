@@ -91,9 +91,23 @@
         </article>
       </section>
 
-      <section class="voyage-schedule" *ngIf="hasVoyageSchedule(tracking)" aria-label="Vessel schedule">
+      <section class="voyage-schedule multi-leg-schedule" *ngIf="isMultiLegSchedule(tracking)" aria-label="Transhipment vessel schedule">
+        <ng-container *ngFor="let leg of voyageLegs(tracking); let last = last; trackBy: trackByVoyageLeg">
+          <article class="schedule-card vessel-card leg-card">
+            <span>{{ leg.legType || ('Leg ' + leg.sequence) }}</span>
+            <strong>{{ transhipmentLegVessel(leg) }}</strong>
+            <small>{{ transhipmentLegRoute(leg) }}</small>
+            <small>{{ transhipmentLegSchedule(leg) }}</small>
+          </article>
+          <div class="schedule-connector" *ngIf="!last" aria-hidden="true">
+            <span></span>
+          </div>
+        </ng-container>
+      </section>
+
+      <section class="voyage-schedule" *ngIf="hasVoyageSchedule(tracking) && !isMultiLegSchedule(tracking)" aria-label="Vessel schedule">
         <article class="schedule-card vessel-card">
-          <span>Vessel / Voyage</span>
+          <span>{{ scheduleLabel(tracking) }}</span>
           <strong>{{ vesselVoyageValue(tracking) }}</strong>
           <small>{{ scheduleLegLabel(tracking) }}</small>
         </article>
@@ -116,7 +130,7 @@
       </section>
 
       <section class="mobile-stat-strip">
-        <div><strong>{{ containerCount(tracking) }}</strong><span>Containers</span></div>
+        <div *ngIf="showContainerSection(tracking)"><strong>{{ containerCount(tracking) }}</strong><span>Containers</span></div>
         <div><strong>{{ completedMilestoneCount(tracking) }}</strong><span>Milestones done</span></div>
         <div><strong>{{ totalWeight(tracking) }}</strong><span>Weight</span></div>
       </section>
@@ -172,7 +186,7 @@
           </ng-template>
         </li>
 
-        <li [ngbNavItem]="3">
+        <li [ngbNavItem]="3" *ngIf="showContainerSection(tracking)">
           <button ngbNavLink>Containers</button>
           <ng-template ngbNavContent>
             <section class="tab-body container-grid" *ngIf="tracking.containers?.length; else noContainers">
