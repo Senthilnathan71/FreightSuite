@@ -904,12 +904,8 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       }
 
       const partyAmount = toNumber(row.get('PartyAmount')?.value);
-      const exchangeRate = toNumber(
-        row.get('ExchangeRate')?.value ||
-        this.invoiceForm.get('ExchangeRate')?.value ||
-        1
-      ) || 1;
-      const taxAmount = (toNumber(row.get('TaxAmount1')?.value) + toNumber(row.get('TaxAmount2')?.value)) / exchangeRate;
+      const headerExchangeRate = toNumber(this.invoiceForm.get('ExchangeRate')?.value || 1) || 1;
+      const taxAmount = (toNumber(row.get('TaxAmount1')?.value) + toNumber(row.get('TaxAmount2')?.value)) / headerExchangeRate;
       const rowTotal = partyAmount + taxAmount;
 
       return row.get('DrCr')?.value === 'D' ? sum - rowTotal : sum + rowTotal;
