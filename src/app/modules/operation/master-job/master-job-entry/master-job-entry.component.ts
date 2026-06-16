@@ -76,6 +76,8 @@ import { ProofOfDeliveryMasterPrintComponent } from '../reports/proof-of-deliver
 import { InsertMilestoneByMasterJobPayload } from '../../services/shipment-milestone.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -110,7 +112,8 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
     NgbTooltip,
     DecimalPrecisionDirective,
     CustomsComponent,
-
+    FormStateGuardDirective,
+    ElementStateGuardDirective
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],

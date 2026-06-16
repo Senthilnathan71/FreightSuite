@@ -134,6 +134,8 @@ type BookingEmailType = 'booking' | 'cro' | 'barcode' | 'barcode-no-company';
     NgxBarcode6Module,
     PrintFooterComponent,
     PrintHeaderComponent,
+    FormStateGuardDirective,
+    ElementStateGuardDirective,
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],

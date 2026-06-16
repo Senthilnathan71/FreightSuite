@@ -2532,8 +2532,8 @@ getFieldConfiguration() {
     );
   }
 
-  getFfUserById(UserMasterSid: number) {
-    return this.http.get<{ data: any }>(`ff-user/fetch/${UserMasterSid}`).pipe(
+  getFfUserById(payload: any) {
+    return this.http.post<{ data: any }>(`ff-user/fetch`,payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

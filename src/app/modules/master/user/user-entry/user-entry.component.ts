@@ -548,7 +548,12 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
 
   // Load Data for Edit Mode
   loadUserData(UserMasterSid: number) {
-    this.masterService.getFfUserById(UserMasterSid).subscribe(
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      UserMasterSid: UserMasterSid,
+      CompanyMasterSid: CompanyMasterSid,
+    }
+    this.masterService.getFfUserById(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.userData = resp.data;
@@ -656,7 +661,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
           this.captureInitialFormState();
 
         } else {
-          this.appSettingService.showError('Error Loading User Data');
+          this.appSettingService.showError('Access denied.');
         }
       },
       (error) => {

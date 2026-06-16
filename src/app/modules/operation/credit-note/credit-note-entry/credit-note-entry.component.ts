@@ -3694,8 +3694,13 @@ export class CreditNoteEntryComponent {
   }
 
   fetchSalesmanName(UserMasterSid: number) {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      UserMasterSid: UserMasterSid,
+      CompanyMasterSid: CompanyMasterSid,
+    }
     if (!UserMasterSid || UserMasterSid === undefined) return;
-    this.masterService.getFfUserById(UserMasterSid).subscribe({
+    this.masterService.getFfUserById(payload).subscribe({
       next: (resp: any) => {
         if (resp.status) {
           this.salesmanName = resp.data?.userName;

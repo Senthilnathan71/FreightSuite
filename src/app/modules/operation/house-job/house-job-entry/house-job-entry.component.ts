@@ -134,6 +134,8 @@ type Html2PdfOptions = {
     MultiSelectComponent,
     RouterModule,
     TimeAgoPipe,
+    ElementStateGuardDirective,
+    FormStateGuardDirective,
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],

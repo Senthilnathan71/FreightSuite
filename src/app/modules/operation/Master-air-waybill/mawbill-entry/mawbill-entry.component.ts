@@ -64,6 +64,8 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { JobCardComponent } from '../../master-job/reports/job-card/job-card.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -95,7 +97,9 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
      NgxSpinnerModule,
      SearchableDropdown,
      NgbTooltip,
-     DecimalPrecisionDirective
+     DecimalPrecisionDirective,
+     FormStateGuardDirective,
+     ElementStateGuardDirective
   ],
    templateUrl: './mawbill-entry.component.html',
   styleUrl: './mawbill-entry.component.scss',
