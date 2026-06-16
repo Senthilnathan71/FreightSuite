@@ -2451,60 +2451,68 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   // Update the form state
   this.errorLogger();
   this.bookingForm.updateValueAndValidity();
-       if (!this.validateAllForms()) {
+       if (!this.isTranshipmentMode && !this.validateAllForms()) {
       this.isSaving = false;
       if (resolve) resolve(false);
     return;
   }
-  const polControl = this.bookingForm.get('POL');
-  const podControl = this.bookingForm.get('POD');
-  const polSid = polControl?.value;
-  const podSid = podControl?.value;
+  if (this.isTranshipmentMode) {
+    if (!this.validateTranshipmentManualFields()) {
+      this.isSaving = false;
+      if (resolve) resolve(false);
+      return;
+    }
+  } else {
+    const polControl = this.bookingForm.get('POL');
+    const podControl = this.bookingForm.get('POD');
+    const polSid = polControl?.value;
+    const podSid = podControl?.value;
 
-    if (!polSid || !podSid) {
-      polControl?.markAsTouched();
-      podControl?.markAsTouched();
-      this.appSettingService.showWarning('Please select POL and POD.');
+      if (!polSid || !podSid) {
+        polControl?.markAsTouched();
+        podControl?.markAsTouched();
+        this.appSettingService.showWarning('Please select POL and POD.');
+        this.isSaving = false;
+        if (resolve) resolve(false);
+        return;
+      }
+
+      if (polSid && podSid && polSid === podSid) {
+        this.toastr.warning('POL and POD cannot be the same');
+        this.setControlError(podControl, 'samePort', true);
+        this.setControlError(polControl, 'samePort', true);
+        this.isSaving = false;
+        if (resolve) resolve(false);
+        return;
+      } 
+      if (this.bookingForm.invalid) {
+        this.bookingForm.markAllAsTouched();
+        this.bookingForm.updateValueAndValidity();
+        this.appSettingService.showWarning('Please fill all required fields correctly.');
+        this.isSaving = false;
+        if (resolve) resolve(false);
+        return;
+      }
+
+      if (this.selectedTab === 'CRO' && this.croForm.invalid) {
+      this.croForm.markAllAsTouched();
+      this.croForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all required fields in CRO tab correctly.');
       this.isSaving = false;
       if (resolve) resolve(false);
       return;
     }
 
-    if (polSid && podSid && polSid === podSid) {
-      this.toastr.warning('POL and POD cannot be the same');
-      this.setControlError(podControl, 'samePort', true);
-      this.setControlError(polControl, 'samePort', true);
-      this.isSaving = false;
-      if (resolve) resolve(false);
-      return;
-    } 
-    if (this.bookingForm.invalid) {
-      this.bookingForm.markAllAsTouched();
-      this.bookingForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all required fields correctly.');
+    const isRateValid = this.costEntryComponent?.validateRateArray?.();
+    if (isRateValid === false) {
+      this.selectedTab = 'Rate';
       this.isSaving = false;
       if (resolve) resolve(false);
       return;
     }
-
-    if (this.selectedTab === 'CRO' && this.croForm.invalid) {
-    this.croForm.markAllAsTouched();
-    this.croForm.updateValueAndValidity();
-    this.appSettingService.showWarning('Please fill all required fields in CRO tab correctly.');
-    this.isSaving = false;
-    if (resolve) resolve(false);
-    return;
   }
 
-  const isRateValid = this.costEntryComponent?.validateRateArray?.();
-  if (isRateValid === false) {
-    this.selectedTab = 'Rate';
-    this.isSaving = false;
-    if (resolve) resolve(false);
-    return;
-  }
-
-    const creditOk = await this.validateCreditBeforeSave();
+    const creditOk = this.isTranshipmentMode ? true : await this.validateCreditBeforeSave();
     if (!creditOk) {
       const proceed = await this.commonModalService.confirm(
         `${this.lastCreditValidationMessage || 'Credit validation failed.'}\n\nDo you want to save this booking anyway?`,
@@ -7117,40 +7125,97 @@ public getProductRowErrors(product: AbstractControl | null): string[] {
 }
 
 get isTranshipmentMode(): boolean {
-  return this.b['JobType']?.value === 'Transhipment';
+  return String(this.b['JobType']?.value || '').trim().toLowerCase() === 'transhipment';
+}
+
+private get transhipmentEditableBookingControls(): string[] {
+  return ['VesselName', 'isVesselFreeText', 'VoyageNo', 'isVoyageFreeText', 'ETA', 'ETD'];
+}
+
+private isTranshipmentSuspended(): boolean {
+  const statusValue = String(this.b['status']?.value || '').trim().toLowerCase();
+  return statusValue === 'suspended' || this.bookingData?.status === 'S';
+}
+
+private hasTranshipmentVesselVoyage(): boolean {
+  return !!String(this.b['VesselName']?.value || '').trim()
+    && !!String(this.b['VoyageNo']?.value || '').trim();
+}
+
+public canSaveBooking(): boolean {
+  if ((!this.mps.can('update') && this.isEditMode) || this.isSaving || (this.isEditMode && this.isSuspended)) {
+    return false;
+  }
+
+  if (this.isTranshipmentMode) {
+    return this.hasTranshipmentVesselVoyage();
+  }
+
+  return this.isHBLNoValid();
+}
+
+private validateTranshipmentManualFields(): boolean {
+  if (this.hasTranshipmentVesselVoyage()) {
+    return true;
+  }
+
+  this.b['VesselName']?.markAsTouched();
+  this.b['VoyageNo']?.markAsTouched();
+  this.selectedTab = 'Shipment';
+  this.appSettingService.showWarning('Please enter Vessel and Voyage.');
+  return false;
 }
 
 private applyTranshipmentRestrictions(): void {
-  if (this.isTranshipmentMode) {
-    // Disable all booking form controls except vessel/voyage details
-    Object.keys(this.bookingForm.controls).forEach(key => {
-      if (!['VesselName', 'VoyageNo', 'ETA', 'ETD'].includes(key)) {
-        this.bookingForm.get(key)?.disable();
+  if (!this.isTranshipmentMode) {
+    return;
+  }
+
+  this.b['isVesselFreeText']?.setValue(true, { emitEvent: false });
+  this.b['isVoyageFreeText']?.setValue(true, { emitEvent: false });
+
+  const canEditTranshipmentFields = !this.isTranshipmentSuspended();
+
+  Object.keys(this.bookingForm.controls).forEach(key => {
+    const control = this.bookingForm.get(key);
+    if (this.transhipmentEditableBookingControls.includes(key) && canEditTranshipmentFields) {
+      control?.enable({ emitEvent: false });
+    } else {
+      control?.disable({ emitEvent: false });
+    }
+  });
+
+  Object.keys(this.cargoForm.controls).forEach(key => {
+    this.cargoForm.get(key)?.disable({ emitEvent: false });
+  });
+
+  Object.keys(this.otherForm.controls).forEach(key => {
+    this.otherForm.get(key)?.disable({ emitEvent: false });
+  });
+
+  Object.keys(this.croForm.controls).forEach(key => {
+    this.croForm.get(key)?.disable({ emitEvent: false });
+  });
+
+  this.bookingCargo.controls.forEach((cargoGroup: FormGroup) => {
+    Object.keys(cargoGroup.controls).forEach(key => {
+      if (key !== 'bookingProducts') {
+        cargoGroup.get(key)?.disable({ emitEvent: false });
       }
     });
 
-    // Disable all cargo form controls
-    Object.keys(this.cargoForm.controls).forEach(key => {
-      this.cargoForm.get(key)?.disable();
-    });
-
-    // Disable all other form controls
-    Object.keys(this.otherForm.controls).forEach(key => {
-      this.otherForm.get(key)?.disable();
-    });
-
-    // Disable all CRO form controls
-    Object.keys(this.croForm.controls).forEach(key => {
-      this.croForm.get(key)?.disable();
-    });
-
-    // Disable all product controls
-    this.bookingProducts.controls.forEach((product: FormGroup) => {
+    (cargoGroup.get('bookingProducts') as FormArray)?.controls.forEach((product: FormGroup) => {
       Object.keys(product.controls).forEach(key => {
-        product.get(key)?.disable();
+        product.get(key)?.disable({ emitEvent: false });
       });
     });
-  }
+  });
+
+  this.bookingProducts.controls.forEach((product: FormGroup) => {
+    Object.keys(product.controls).forEach(key => {
+      product.get(key)?.disable({ emitEvent: false });
+    });
+  });
 }
 
 toggleProductInputType(formGroup: AbstractControl, mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
