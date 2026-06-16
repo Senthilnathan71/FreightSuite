@@ -17,6 +17,7 @@ import {
   TableColumn,
   TableConfig,
   ColumnVisibilityState,
+  TableSortConfig,
 } from '../../../interfaces/table.interface';
 import { REPORT_DATA } from '../../../services/report.service';
 import { ReportColumnLayoutService } from '../../../services/report-column-layout.service';
@@ -73,6 +74,8 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
 
   rows: any[] = [];
   tableConfig: TableConfig = { columns: [] };
+  private allRows: any[] = [];
+  private currentSort: TableSortConfig = { column: '', direction: 'none' };
   /** Title shown above the table (from the Classic report when available). */
   displayTitle = 'Report';
   /** Parameter / filter summary shown under the title (e.g. From Date, To Date, Branch). */
@@ -130,14 +133,15 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
     this.allColumns = headers.map((h) => this.makeColumn(h.key, h.label));
 
     if (Array.isArray(cfg?.rows)) {
-      this.rows = cfg.rows
+      this.allRows = cfg.rows
         .filter((r: any) => r && Array.isArray(r.cells) && r.style !== 'section' && r.style !== 'header')
         .map((r: any) => this.excelRowToObject(r, headers));
     } else if (Array.isArray(cfg?.data)) {
-      this.rows = cfg.data;
+      this.allRows = [...cfg.data];
     } else {
-      this.rows = [];
+      this.allRows = [];
     }
+    this.rows = [...this.allRows];
   }
 
   /** Fallback: derive columns/rows directly from the injected report payload. */
@@ -151,7 +155,8 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
 
     // Append a styled totals row (e.g. ledger / VAT) so it matches the Classic report.
     const totalsRow = override?.totals ? this.buildTotalsRow(dataRows, override) : null;
-    this.rows = totalsRow ? [...dataRows, totalsRow] : dataRows;
+    this.allRows = totalsRow ? [...dataRows, totalsRow] : [...dataRows];
+    this.rows = [...this.allRows];
   }
 
   /** Convert a Classic ExcelRow (cells, possibly with colspans) into a key->value object. */
@@ -183,6 +188,11 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
   onColumnVisibilityChange(visibility: ColumnVisibilityState): void {
     this.currentVisibility = { ...visibility };
     this.save$.next();
+  }
+
+  onSortChange(sort: TableSortConfig): void {
+    this.currentSort = { ...sort };
+    this.applySort();
   }
 
   /** Reset to the default layout (all columns visible, derived order) and clear storage. */
@@ -350,7 +360,7 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
       key,
       label,
       sortable: true,
-      filterable: false,
+      filterable: true,
       visible: true,
       // Format date-like values for display (e.g. ISO timestamps -> locale date).
       customRenderer: (value: any) => this.displayValue(value),
@@ -410,11 +420,95 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
       columns: orderedColumns,
       showColumnToggle: false, // our own "Columns" panel replaces the built-in dropdown
       dragAndDrop: true, // header drag still works and stays in sync with the panel
-      showFilters: false,
+      showFilters: true,
       showPagination: false,
       emptyMessage: 'No records found',
       rowClass: (r: any) => (r?.__isTotalRow ? 'gtr-total-row' : ''),
     };
+  }
+
+  private applySort(): void {
+    if (!this.currentSort.column || this.currentSort.direction === 'none') {
+      this.rows = [...this.allRows];
+      return;
+    }
+
+    const regularRows = this.allRows.filter((row) => !row?.__isTotalRow);
+    const totalRows = this.allRows.filter((row) => row?.__isTotalRow);
+    const directionMultiplier = this.currentSort.direction === 'asc' ? 1 : -1;
+
+    const sortedRows = [...regularRows].sort((leftRow, rightRow) => {
+      const leftValue = leftRow?.[this.currentSort.column];
+      const rightValue = rightRow?.[this.currentSort.column];
+      return this.compareValues(leftValue, rightValue) * directionMultiplier;
+    });
+
+    this.rows = [...sortedRows, ...totalRows];
+  }
+
+  private compareValues(leftValue: any, rightValue: any): number {
+    if (leftValue === rightValue) return 0;
+    if (leftValue === null || leftValue === undefined || leftValue === '') return 1;
+    if (rightValue === null || rightValue === undefined || rightValue === '') return -1;
+
+    const leftNumber = this.toSortableNumber(leftValue);
+    const rightNumber = this.toSortableNumber(rightValue);
+    if (leftNumber !== null && rightNumber !== null) {
+      return leftNumber - rightNumber;
+    }
+
+    const leftDate = this.toSortableDate(leftValue);
+    const rightDate = this.toSortableDate(rightValue);
+    if (leftDate !== null && rightDate !== null) {
+      return leftDate - rightDate;
+    }
+
+    return String(leftValue).localeCompare(String(rightValue), undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    });
+  }
+
+  private toSortableNumber(value: any): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const normalized = value.replace(/,/g, '').trim();
+    if (!normalized || !/^-?\d+(\.\d+)?$/.test(normalized)) {
+      return null;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private toSortableDate(value: any): number | null {
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.getTime();
+    }
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const isoDate = new Date(value);
+    if (!isNaN(isoDate.getTime()) && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+      return isoDate.getTime();
+    }
+
+    const ddmmyyyy = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!ddmmyyyy) {
+      return null;
+    }
+
+    const [, day, month, year] = ddmmyyyy;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return !isNaN(parsed.getTime()) ? parsed.getTime() : null;
   }
 
   /** Apply the current order/visibility to the table and persist immediately. */

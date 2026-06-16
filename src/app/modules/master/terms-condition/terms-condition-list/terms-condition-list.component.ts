@@ -132,7 +132,16 @@ export class TermsConditionListComponent extends BaseListComponent implements On
     protected searchItems(): Observable<any> {
         this.tableLoading = true;
         this.spinner.show();
-        return this.masterService.getAllTandC();
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+        return this.masterService.searchTandC({
+            search: this.filterValue?.trim(),
+            page: Number(this.page),
+            pageSize: Number(this.pageSize),
+            activeCompanyId: CompanyMasterSid,
+            activeBranchId: this.currentBranch?.BranchMasterSid,
+            sortColumn: this.sortColumn,
+            sortDirection: this.sortDirection
+        });
     }
 
     protected getSearchParams(): SearchParams {
@@ -150,43 +159,23 @@ export class TermsConditionListComponent extends BaseListComponent implements On
     protected processSearchResults(response: any): void {
         this.tableLoading = false;
         this.spinner.hide();
-        if (response.status) {
-            const rawData = response.data ?? [];
-            const formatted = rawData.map(item => ({
+        if (response?.status) {
+            const rawData = Array.isArray(response.data?.items)
+                ? response.data.items
+                : (Array.isArray(response.data) ? response.data : []);
+
+            this.allItems = rawData.map(item => ({
                 ...item,
                 branchName: this.getBranchName(item),
                 menuName: this.getMenuName(item),
                 departmentName: this.getDepartmentName(item),
                 pol: Array.isArray(item.POL) && item.POL.length ? item.POL[0] : '-',
-    pod: Array.isArray(item.POD) && item.POD.length ? item.POD[0] : '-',
+                pod: Array.isArray(item.POD) && item.POD.length ? item.POD[0] : '-',
                 status: item.status === 'A' ? 'Active' : 'Suspended'
             }));
 
-            const searchText = this.filterValue.trim().toLowerCase();
-            const filtered = !searchText
-                ? formatted
-                : formatted.filter(item =>
-                    (item.branchName || '').toLowerCase().includes(searchText) ||
-                    (item.menuName || '').toLowerCase().includes(searchText) ||
-                    (item.departmentName || '').toLowerCase().includes(searchText) ||
-                    (item.status || '').toLowerCase().includes(searchText)
-                );
-
-            filtered.sort((a, b) => {
-                let valueA = a[this.sortColumn] ?? '';
-                let valueB = b[this.sortColumn] ?? '';
-                valueA = typeof valueA === 'number' ? valueA : valueA.toString().toLowerCase();
-                valueB = typeof valueB === 'number' ? valueB : valueB.toString().toLowerCase();
-
-                if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
-                if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            this.totalLengthOfCollection = filtered.length;
-            const start = (this.page - 1) * this.pageSize;
-            const end = start + this.pageSize;
-            this.allItems = filtered.slice(start, end);
+            this.totalLengthOfCollection = response.data?.totalCount ?? this.allItems.length;
+            this.applySorting();
             this.updateHeaderActionState();
         } else {
             this.appSettingService.showError('Error searching Terms and Conditions.');
@@ -485,7 +474,9 @@ export class TermsConditionListComponent extends BaseListComponent implements On
         if (departments.length > 0) {
             const names = departments
                 .map((department: any) => {
-                    const nestedName = department?.departmentName || department?.DepartmentMaster?.departmentName;
+                    const nestedName = department?.departmentName
+                        || department?.department?.departmentName
+                        || department?.DepartmentMaster?.departmentName;
                     if (nestedName) return nestedName;
                     const sid = department?.DepartmentMasterSid ?? department?.departmentId;
                     return this.departmentNameMap.get(Number(sid)) || '';

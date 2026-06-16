@@ -267,11 +267,14 @@ auditLogs: any[] = []; // Stores audit logs
   }
 
   loadAuthorityData() {
-    this.masterService.getAuthorityById(
-      this.AuthorityMasterSid,
-      this.currentCompany?.CompanyMasterSid,
-      this.currentBranch?.BranchMasterSid
-    ).subscribe({
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      BranchMasterSid: BranchMasterSid,
+      AuthorityMasterSid: this.AuthorityMasterSid
+    };
+    this.masterService.getAuthorityById(payload).subscribe({
       next :(resp: any) => {
         if(resp.status){
           this.authorityData = resp.data;
@@ -300,7 +303,7 @@ auditLogs: any[] = []; // Stores audit logs
           this.updateFilteredAuthorisers();
           this.setInitialFormSnapshot();
         } else {
-          this.appSettingService.showError("Error fetching authority");
+          this.appSettingService.showError("Access denied.");
           console.error(resp.message);
         }
       },

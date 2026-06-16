@@ -1601,6 +1601,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
     if (seedDefaultRoute) {
       this.addQuoteRoute();
     }
+    this.updateCustomerTypeValidators(this.quotationForm.get('LeadOrCustomer')?.value);
     this.quotationForm.get('EnquirySid')?.disable();
     this.quoteRoutes.controls.forEach((route, index) => {
       route.get('PODSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
@@ -1659,19 +1660,27 @@ private mapQuotationCargoForBooking(cargo: any): any {
     });
     this.cusBranchList = [];
 
+    this.updateCustomerTypeValidators(isCustomer);
+  }
+
+  private updateCustomerTypeValidators(isCustomer: boolean) {
     const preCustomerControl = this.quotationForm.get('PreCustomerMasterSid');
     const customerControl = this.quotationForm.get('CustomerMasterSid');
+    const customerBranchControl = this.quotationForm.get('CustomerBranchSid');
 
     if (isCustomer) {
       customerControl?.setValidators(Validators.required);
+      customerBranchControl?.setValidators(Validators.required);
       preCustomerControl?.clearValidators();
     } else {
       preCustomerControl?.setValidators(Validators.required);
       customerControl?.clearValidators();
+      customerBranchControl?.clearValidators();
     }
 
-    customerControl?.updateValueAndValidity();
-    preCustomerControl?.updateValueAndValidity();
+    customerControl?.updateValueAndValidity({ emitEvent: false });
+    customerBranchControl?.updateValueAndValidity({ emitEvent: false });
+    preCustomerControl?.updateValueAndValidity({ emitEvent: false });
   }
 
   onSelectionChange(selectedItem: any) {

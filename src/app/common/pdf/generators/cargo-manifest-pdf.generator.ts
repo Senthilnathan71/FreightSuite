@@ -201,10 +201,10 @@ function buildPageOneContainerTable(data: any): any {
     c?.ContainerNumber || '',
     c?.LineSeal || '',
     getContainerSize(data, c?.ContainerType),
-    number3(getTareWeight(data, c?.ContainerType)),
-    number3(c?.GrossWeight),
-    number3(c?.Volume),
-    c?.NoOfPkg ?? 0
+    { text: number3(getTareWeight(data, c?.ContainerType)), alignment: 'right' },
+    { text: number3(c?.GrossWeight), alignment: 'right' },
+    { text: number3(c?.Volume), alignment: 'right' },
+    { text: String(c?.NoOfPkg ?? 0), alignment: 'right' }
   ]));
 
   rows.push([

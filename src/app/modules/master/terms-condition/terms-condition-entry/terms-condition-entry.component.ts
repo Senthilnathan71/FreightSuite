@@ -517,7 +517,14 @@ export class TermsConditionEntryComponent implements OnInit, HasUnsavedChanges {
     }
 
     loadTermsAndConditions() {
-        this.masterService.getTandCById(this.TermsAndConditionsMasterSid).subscribe(
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+        const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+        const payload = {
+            CompanyMasterSid: CompanyMasterSid,
+            BranchMasterSid: BranchMasterSid,
+            TermsAndConditionsMasterSid: this.TermsAndConditionsMasterSid
+        };
+        this.masterService.getTandCById(payload).subscribe(
             (resp: any) => {
                 if (resp.status) {
                     const response = resp.data;
@@ -554,6 +561,8 @@ export class TermsConditionEntryComponent implements OnInit, HasUnsavedChanges {
                     ['MenuMasterSid', 'BranchMasterSid', 'departmentId', 'Carrier', 'POL', 'POD']
                         .forEach(ctrl => this.termsAndConditionForm.get(ctrl)?.disable({ emitEvent: false }));
                 }
+                } else {
+                    this.appSettingService.showError('Access denied.');
                 }
             }
         );

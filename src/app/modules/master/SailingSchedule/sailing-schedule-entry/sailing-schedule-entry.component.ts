@@ -400,8 +400,14 @@ private ensurePolPodDisplay() {
 
     loadScheduleData() {
         if (!this.VoyageMasterHeaderSid) return;
-
-        this.masterService.getSailingScheduleById(this.VoyageMasterHeaderSid).subscribe(
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+        const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+        const payload = {
+            VoyageMasterHeaderSid: this.VoyageMasterHeaderSid,
+            CompanyMasterSid: CompanyMasterSid,
+            BranchMasterSid: BranchMasterSid
+        };
+        this.masterService.getSailingScheduleById(payload).subscribe(
             (resp: any) => {
                 if (resp.status) {
                     this.sailHeadData = resp.data;
@@ -415,7 +421,7 @@ private ensurePolPodDisplay() {
                     this.patchFormData(scheduleData);
                 }
             } else {
-                this.appSettingService.showError('Error Loading Sailing Schedule');
+                this.appSettingService.showError('Access denied.');
             }
         },
         (error) => {
