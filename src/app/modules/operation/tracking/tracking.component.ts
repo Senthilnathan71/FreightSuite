@@ -16,6 +16,20 @@ interface TrackingMilestone {
   remarks?: string | null;
 }
 
+interface OverviewCard {
+  key: string;
+  label: string;
+  value: string;
+  meta: string;
+  primary?: boolean;
+}
+
+interface DetailCard {
+  key: string;
+  label: string;
+  value: string;
+}
+
 @Component({
   selector: 'app-tracking',
   standalone: true,
@@ -275,6 +289,43 @@ export class TrackingComponent implements OnInit, OnDestroy {
     return this.displayValue(value);
   }
 
+  shipmentDetailCards(tracking: any): DetailCard[] {
+    const rawCards: DetailCard[] = [
+      {
+        key: 'booking',
+        label: 'Booking No',
+        value: this.shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo'),
+      },
+      {
+        key: 'job',
+        label: 'Job No',
+        value: this.shipmentInfoValue(tracking, 'jobNumber', 'jobNo'),
+      },
+      {
+        key: 'hbl',
+        label: 'HBL / HAWB',
+        value: this.shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo'),
+      },
+      {
+        key: 'mbl',
+        label: 'MBL / MAWB',
+        value: this.shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo'),
+      },
+      {
+        key: 'department',
+        label: 'Department',
+        value: this.displayValue(tracking?.shipmentInfo?.department),
+      },
+      {
+        key: 'jobType',
+        label: 'Job Type',
+        value: this.shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement'),
+      },
+    ];
+
+    return this.uniqueValueCards(rawCards);
+  }
+
   searchedReferenceValue(tracking: any): string {
     const type = this.activeSearchType();
 
@@ -307,6 +358,218 @@ export class TrackingComponent implements OnInit, OnDestroy {
     return this.displayValue(container?.containerNo, 'Pending container assignment');
   }
 
+  overviewCards(tracking: any): OverviewCard[] {
+    const info = tracking?.shipmentInfo || {};
+    const containerCount = this.containerCount(tracking);
+    const rawCards: OverviewCard[] = [
+      {
+        key: 'shipmentStatus',
+        label: 'Shipment Status',
+        value: this.displayValue(tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || info.shipmentStatus, 'Pending'),
+        meta: this.currentStatusDate(tracking),
+        primary: true,
+      },
+      {
+        key: 'routeStage',
+        label: 'Current Route Stage',
+        value: this.currentRouteStageValue(tracking),
+        meta: this.currentRouteStageMeta(tracking),
+      },
+      {
+        key: 'milestoneProgress',
+        label: 'Milestone Progress',
+        value: this.milestoneProgressValue(tracking),
+        meta: this.milestoneProgressMeta(tracking),
+      },
+      {
+        key: 'movement',
+        label: 'Movement',
+        value: this.movementOverviewValue(tracking),
+        meta: this.displayValue(info.customerName, 'Customer pending'),
+      },
+      {
+        key: 'container',
+        label: 'Container Summary',
+        value: containerCount ? `${containerCount} container${containerCount === 1 ? '' : 's'}` : '-',
+        meta: `${containerCount} container${containerCount === 1 ? '' : 's'} linked.`,
+      },
+    ];
+
+    const headerValues = this.shipmentDetailCards(tracking).map((card) => card.value);
+    return this.uniqueOverviewCards(rawCards, headerValues);
+  }
+
+  currentRouteStageValue(tracking: any): string {
+    const point = this.routePoints(tracking)[this.routeProgressIndex(tracking)];
+    return this.displayValue(point?.label);
+  }
+
+  currentRouteStageMeta(tracking: any): string {
+    const point = this.routePoints(tracking)[this.routeProgressIndex(tracking)];
+    return this.displayValue(point?.role, 'Route stage');
+  }
+
+  milestoneProgressValue(tracking: any): string {
+    const total = tracking?.milestones?.length || 0;
+    const completed = this.completedMilestoneCount(tracking);
+    return total ? `${completed} / ${total}` : '-';
+  }
+
+  milestoneProgressMeta(tracking: any): string {
+    const total = tracking?.milestones?.length || 0;
+    if (!total) {
+      return 'Milestone updates pending';
+    }
+
+    const completed = this.completedMilestoneCount(tracking);
+    return `${completed} milestone${completed === 1 ? '' : 's'} completed or active`;
+  }
+
+  movementOverviewValue(tracking: any): string {
+    const department = this.displayValue(tracking?.shipmentInfo?.department, '');
+    const jobType = this.shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement');
+    const values = [department, jobType].filter((value) => this.hasDisplayValue(value));
+    return this.joinUnique(values);
+  }
+
+  trackByDetailCard(index: number, card: DetailCard): string {
+    return card?.key || `${index}`;
+  }
+
+  trackByOverviewCard(index: number, card: OverviewCard): string {
+    return card?.key || `${index}`;
+  }
+
+  hasVoyageSchedule(tracking: any): boolean {
+    const info = tracking?.shipmentInfo || {};
+    return [info.vesselVoyage, info.vesselName, info.voyageNo, info.etd, info.eta, info.atd, info.ata]
+      .some((value) => this.hasDisplayValue(value));
+  }
+
+  vesselVoyageValue(tracking: any): string {
+    const info = tracking?.shipmentInfo || {};
+    return this.displayValue(info.vesselVoyage || [info.vesselName, info.voyageNo].filter(Boolean).join(' / '));
+  }
+
+  departureDateLabel(tracking: any): string {
+    return 'ETD';
+  }
+
+  departureDateValue(tracking: any): string {
+    const info = tracking?.shipmentInfo || {};
+    return this.formatDisplayDate(info.etd || info.atd);
+  }
+
+  departureDateMeta(tracking: any): string {
+    const info = tracking?.shipmentInfo || {};
+    return info.atd ? `ATD ${this.formatDisplayDate(info.atd)}` : 'Estimated departure';
+  }
+
+  arrivalDateLabel(tracking: any): string {
+    return 'ETA';
+  }
+
+  arrivalDateValue(tracking: any): string {
+    const info = tracking?.shipmentInfo || {};
+    return this.formatDisplayDate(info.eta || info.ata);
+  }
+
+  arrivalDateMeta(tracking: any): string {
+    const info = tracking?.shipmentInfo || {};
+    return info.ata ? `ATA ${this.formatDisplayDate(info.ata)}` : 'Estimated arrival';
+  }
+
+  scheduleLegLabel(tracking: any): string {
+    const legs = tracking?.shipmentInfo?.voyageLegs || [];
+    if (legs.length > 1) {
+      return `${legs.length} connected voyage legs`;
+    }
+
+    return 'Connected schedule';
+  }
+
+  private uniqueOverviewCards(cards: OverviewCard[], excludedValues: string[] = []): OverviewCard[] {
+    const seenValues = new Set<string>(excludedValues.map((value) => this.normalizeCardValue(value)).filter(Boolean));
+
+    return cards.filter((card) => {
+      const value = this.displayValue(card?.value, '').trim();
+      if (!value || value === '-' || value.toLowerCase().includes('pending container assignment')) {
+        return false;
+      }
+
+      const normalized = this.normalizeCardValue(value);
+      if (seenValues.has(normalized)) {
+        return false;
+      }
+
+      seenValues.add(normalized);
+      return true;
+    });
+  }
+
+  private uniqueValueCards<T extends { value: string }>(cards: T[]): T[] {
+    const seenValues = new Set<string>();
+
+    return cards.filter((card) => {
+      const value = this.displayValue(card?.value, '').trim();
+      if (!value || value === '-') {
+        return false;
+      }
+
+      const normalized = this.normalizeCardValue(value);
+      if (seenValues.has(normalized)) {
+        return false;
+      }
+
+      seenValues.add(normalized);
+      return true;
+    });
+  }
+
+  private normalizeCardValue(value: any): string {
+    return this.displayValue(value, '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
+  }
+
+  private joinUnique(values: any[], separator = ' / '): string {
+    const seen = new Set<string>();
+    const items = values
+      .map((value) => this.displayValue(value, '').trim())
+      .filter((value) => {
+        if (!value || value === '-') {
+          return false;
+        }
+
+        const normalized = this.normalizeCardValue(value);
+        if (seen.has(normalized)) {
+          return false;
+        }
+
+        seen.add(normalized);
+        return true;
+      });
+
+    return items.join(separator) || '-';
+  }
+
+  private hasDisplayValue(value: any): boolean {
+    const display = this.displayValue(value, '').trim();
+    return !!display && display !== '-' && !display.toLowerCase().includes('pending');
+  }
+
+  private voyageLegSummary(info: any): string {
+    const legs = info?.voyageLegs || [];
+    if (legs.length > 1) {
+      return `${legs.length} voyage legs`;
+    }
+
+    return [this.formatDisplayDate(info?.etd), this.formatDisplayDate(info?.eta)]
+      .filter((value) => value !== '-')
+      .join(' to ') || 'Schedule pending';
+  }
+
   milestoneTitle(milestone: any): string {
     return this.displayValue(milestone?.title || milestone?.eventName, 'Milestone');
   }
@@ -332,6 +595,23 @@ export class TrackingComponent implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
+    });
+  }
+
+  private formatDisplayDate(value: any, fallback = '-'): string {
+    if (!value) {
+      return fallback;
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return this.displayValue(value, fallback);
+    }
+
+    return parsed.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
     });
   }
 

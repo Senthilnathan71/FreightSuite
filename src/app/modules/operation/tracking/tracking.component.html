@@ -4,7 +4,7 @@
       <i class="fas fa-arrow-left"></i>
     </button>
     <div>
-      <span class="eyebrow">Track &amp; Trace</span>
+     
       <h1>Track your shipment</h1>
     </div>
   </header>
@@ -68,12 +68,10 @@
       </aside>
 
       <div class="shipment-detail-grid">
-        <div><span>Booking No</span><strong>{{ shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') }}</strong></div>
-        <div><span>Job No</span><strong>{{ shipmentInfoValue(tracking, 'jobNumber', 'jobNo') }}</strong></div>
-        <div><span>HBL / HAWB</span><strong>{{ shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') }}</strong></div>
-        <div><span>MBL / MAWB</span><strong>{{ shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') }}</strong></div>
-        <div><span>Department</span><strong>{{ displayValue(tracking.shipmentInfo?.department) }}</strong></div>
-        <div><span>Job Type</span><strong>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</strong></div>
+        <div *ngFor="let card of shipmentDetailCards(tracking); trackBy: trackByDetailCard">
+          <span>{{ card.label }}</span>
+          <strong>{{ card.value }}</strong>
+        </div>
       </div>
 
       <section class="journey-flow" aria-label="Shipment journey">
@@ -93,6 +91,30 @@
         </article>
       </section>
 
+      <section class="voyage-schedule" *ngIf="hasVoyageSchedule(tracking)" aria-label="Vessel schedule">
+        <article class="schedule-card vessel-card">
+          <span>Vessel / Voyage</span>
+          <strong>{{ vesselVoyageValue(tracking) }}</strong>
+          <small>{{ scheduleLegLabel(tracking) }}</small>
+        </article>
+        <div class="schedule-connector" aria-hidden="true">
+          <span></span>
+        </div>
+        <article class="schedule-card">
+          <span>{{ departureDateLabel(tracking) }}</span>
+          <strong>{{ departureDateValue(tracking) }}</strong>
+          <small>{{ departureDateMeta(tracking) }}</small>
+        </article>
+        <div class="schedule-connector" aria-hidden="true">
+          <span></span>
+        </div>
+        <article class="schedule-card">
+          <span>{{ arrivalDateLabel(tracking) }}</span>
+          <strong>{{ arrivalDateValue(tracking) }}</strong>
+          <small>{{ arrivalDateMeta(tracking) }}</small>
+        </article>
+      </section>
+
       <section class="mobile-stat-strip">
         <div><strong>{{ containerCount(tracking) }}</strong><span>Containers</span></div>
         <div><strong>{{ completedMilestoneCount(tracking) }}</strong><span>Milestones done</span></div>
@@ -105,67 +127,16 @@
         <li [ngbNavItem]="1">
           <button ngbNavLink>Overview</button>
           <ng-template ngbNavContent>
-            <section class="tab-body overview-ticker" [class.paused]="isPaused">
+            <section class="tab-body overview-ticker" *ngIf="overviewCards(tracking).length; else noOverview">
               <div class="overview-track">
-                <article class="insight-panel primary">
-                  <span>Searched {{ activeSearchType() }}</span>
-                  <strong>{{ searchedReferenceValue(tracking) }}</strong>
-                  <p>{{ displayValue(tracking.summary?.searchedReference, searchText) }}</p>
-                </article>
-                <article class="insight-panel">
-                  <span>Booking No</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') }}</strong>
-                  <p>{{ displayValue(tracking.shipmentInfo?.customerName, 'Customer pending') }}</p>
-                </article>
-                <article class="insight-panel">
-                  <span>HBL / HAWB</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') }}</strong>
-                  <p>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</p>
-                </article>
-                <article class="insight-panel">
-                  <span>MBL / MAWB</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') }}</strong>
-                  <p>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName', 'voyageNo') }}</p>
-                </article>
-                <article class="insight-panel">
-                  <span>Job No</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'jobNumber', 'jobNo') }}</strong>
-                  <p>{{ displayValue(tracking.shipmentInfo?.department, 'Department pending') }}</p>
-                </article>
-                <article class="insight-panel">
-                  <span>Container No</span>
-                  <strong>{{ overviewContainerNo(tracking) }}</strong>
-                  <p>{{ containerCount(tracking) }} container{{ containerCount(tracking) === 1 ? '' : 's' }} linked.</p>
-                </article>
-                <article class="insight-panel primary ticker-clone" aria-hidden="true">
-                  <span>Searched {{ activeSearchType() }}</span>
-                  <strong>{{ searchedReferenceValue(tracking) }}</strong>
-                  <p>{{ displayValue(tracking.summary?.searchedReference, searchText) }}</p>
-                </article>
-                <article class="insight-panel ticker-clone" aria-hidden="true">
-                  <span>Booking No</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') }}</strong>
-                  <p>{{ displayValue(tracking.shipmentInfo?.customerName, 'Customer pending') }}</p>
-                </article>
-                <article class="insight-panel ticker-clone" aria-hidden="true">
-                  <span>HBL / HAWB</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') }}</strong>
-                  <p>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</p>
-                </article>
-                <article class="insight-panel ticker-clone" aria-hidden="true">
-                  <span>MBL / MAWB</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') }}</strong>
-                  <p>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName', 'voyageNo') }}</p>
-                </article>
-                <article class="insight-panel ticker-clone" aria-hidden="true">
-                  <span>Job No</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'jobNumber', 'jobNo') }}</strong>
-                  <p>{{ displayValue(tracking.shipmentInfo?.department, 'Department pending') }}</p>
-                </article>
-                <article class="insight-panel ticker-clone" aria-hidden="true">
-                  <span>Container No</span>
-                  <strong>{{ overviewContainerNo(tracking) }}</strong>
-                  <p>{{ containerCount(tracking) }} container{{ containerCount(tracking) === 1 ? '' : 's' }} linked.</p>
+                <article
+                  class="insight-panel"
+                  *ngFor="let card of overviewCards(tracking); trackBy: trackByOverviewCard"
+                  [class.primary]="card.primary"
+                >
+                  <span>{{ card.label }}</span>
+                  <strong>{{ card.value }}</strong>
+                  <p>{{ card.meta }}</p>
                 </article>
               </div>
             </section>
@@ -251,6 +222,14 @@
     <i class="fas fa-stream"></i>
     <strong>No milestones available</strong>
     <span>Milestone updates are pending for this shipment.</span>
+  </section>
+</ng-template>
+
+<ng-template #noOverview>
+  <section class="tab-body empty-inline">
+    <i class="fas fa-list-check"></i>
+    <strong>Overview details pending</strong>
+    <span>Status, route, milestone, vessel, schedule, and cargo summaries appear here when tracking data is available.</span>
   </section>
 </ng-template>
 
