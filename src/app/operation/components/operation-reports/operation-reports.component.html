@@ -47,20 +47,14 @@
           <button type="button" class="view-mode-switch__btn"
             [class.is-active]="viewMode === 'NEW'"
             (click)="setViewMode('NEW')" title="Customizable columns — show/hide & reorder">
-            <i class="mdi mdi-table-cog view-mode-switch__icon"></i>
-            <span class="view-mode-switch__copy">
-              <span class="view-mode-switch__title">New View</span>
-              <span class="view-mode-switch__hint">Custom columns and reorder</span>
-            </span>
+            <i class="mdi mdi-table-cog"></i>
+            <span>New View</span>
           </button>
           <button type="button" class="view-mode-switch__btn"
             [class.is-active]="viewMode === 'CLASSIC'"
             (click)="setViewMode('CLASSIC')" title="Standard fixed-layout report">
-            <i class="mdi mdi-file-document-outline view-mode-switch__icon"></i>
-            <span class="view-mode-switch__copy">
-              <span class="view-mode-switch__title">Classic</span>
-              <span class="view-mode-switch__hint">Standard fixed layout</span>
-            </span>
+            <i class="mdi mdi-file-document-outline"></i>
+            <span>Classic</span>
           </button>
         </div>
       </div>
