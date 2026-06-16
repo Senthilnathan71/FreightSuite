@@ -256,6 +256,15 @@ export class TrackingComponent implements OnInit, OnDestroy {
     return total ? `${total.toLocaleString(undefined, { maximumFractionDigits: 2 })}kg` : '-';
   }
 
+  formatMeasure(value: any, unit: string): string {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      return '-';
+    }
+
+    return `${parsed.toLocaleString(undefined, { maximumFractionDigits: 3 })} ${unit}`;
+  }
+
   currentStatusDate(tracking: any): string {
     return this.formatDisplayDateTime(tracking?.currentStatus?.eventDate || tracking?.summary?.lastUpdated, 'Date pending');
   }

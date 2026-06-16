@@ -108,34 +108,64 @@
             <section class="tab-body overview-ticker" [class.paused]="isPaused">
               <div class="overview-track">
                 <article class="insight-panel primary">
-                  <span>Shipment status</span>
-                  <strong>{{ displayValue(tracking.currentStatus?.label || tracking.currentStatus?.eventName, 'Pending') }}</strong>
-                  <p>{{ displayValue(tracking.currentStatus?.description || tracking.currentStatus?.remarks, 'Latest shipment update is pending.') }}</p>
+                  <span>Searched {{ activeSearchType() }}</span>
+                  <strong>{{ searchedReferenceValue(tracking) }}</strong>
+                  <p>{{ displayValue(tracking.summary?.searchedReference, searchText) }}</p>
                 </article>
                 <article class="insight-panel">
-                  <span>Vessel / Voyage</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName') }}</strong>
+                  <span>Booking No</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') }}</strong>
+                  <p>{{ displayValue(tracking.shipmentInfo?.customerName, 'Customer pending') }}</p>
+                </article>
+                <article class="insight-panel">
+                  <span>HBL / HAWB</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') }}</strong>
                   <p>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</p>
                 </article>
                 <article class="insight-panel">
-                  <span>Milestone progress</span>
-                  <strong>{{ completedMilestoneCount(tracking) }} / {{ tracking.milestones?.length || 0 }}</strong>
-                  <p>{{ completedMilestoneCount(tracking) }} milestones completed or active.</p>
+                  <span>MBL / MAWB</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') }}</strong>
+                  <p>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName', 'voyageNo') }}</p>
+                </article>
+                <article class="insight-panel">
+                  <span>Job No</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'jobNumber', 'jobNo') }}</strong>
+                  <p>{{ displayValue(tracking.shipmentInfo?.department, 'Department pending') }}</p>
+                </article>
+                <article class="insight-panel">
+                  <span>Container No</span>
+                  <strong>{{ overviewContainerNo(tracking) }}</strong>
+                  <p>{{ containerCount(tracking) }} container{{ containerCount(tracking) === 1 ? '' : 's' }} linked.</p>
                 </article>
                 <article class="insight-panel primary ticker-clone" aria-hidden="true">
-                  <span>Shipment status</span>
-                  <strong>{{ displayValue(tracking.currentStatus?.label || tracking.currentStatus?.eventName, 'Pending') }}</strong>
-                  <p>{{ displayValue(tracking.currentStatus?.description || tracking.currentStatus?.remarks, 'Latest shipment update is pending.') }}</p>
+                  <span>Searched {{ activeSearchType() }}</span>
+                  <strong>{{ searchedReferenceValue(tracking) }}</strong>
+                  <p>{{ displayValue(tracking.summary?.searchedReference, searchText) }}</p>
                 </article>
                 <article class="insight-panel ticker-clone" aria-hidden="true">
-                  <span>Vessel / Voyage</span>
-                  <strong>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName') }}</strong>
+                  <span>Booking No</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') }}</strong>
+                  <p>{{ displayValue(tracking.shipmentInfo?.customerName, 'Customer pending') }}</p>
+                </article>
+                <article class="insight-panel ticker-clone" aria-hidden="true">
+                  <span>HBL / HAWB</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') }}</strong>
                   <p>{{ shipmentInfoValue(tracking, 'jobType', 'movementType', 'movement') }}</p>
                 </article>
                 <article class="insight-panel ticker-clone" aria-hidden="true">
-                  <span>Milestone progress</span>
-                  <strong>{{ completedMilestoneCount(tracking) }} / {{ tracking.milestones?.length || 0 }}</strong>
-                  <p>{{ completedMilestoneCount(tracking) }} milestones completed or active.</p>
+                  <span>MBL / MAWB</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') }}</strong>
+                  <p>{{ shipmentInfoValue(tracking, 'vesselVoyage', 'vesselName', 'voyageNo') }}</p>
+                </article>
+                <article class="insight-panel ticker-clone" aria-hidden="true">
+                  <span>Job No</span>
+                  <strong>{{ shipmentInfoValue(tracking, 'jobNumber', 'jobNo') }}</strong>
+                  <p>{{ displayValue(tracking.shipmentInfo?.department, 'Department pending') }}</p>
+                </article>
+                <article class="insight-panel ticker-clone" aria-hidden="true">
+                  <span>Container No</span>
+                  <strong>{{ overviewContainerNo(tracking) }}</strong>
+                  <p>{{ containerCount(tracking) }} container{{ containerCount(tracking) === 1 ? '' : 's' }} linked.</p>
                 </article>
               </div>
             </section>
@@ -179,8 +209,11 @@
                 <span>Container</span>
                 <strong>{{ displayValue(container.containerNo) }}</strong>
                 <div><small>Type</small><b>{{ displayValue(container.containerType) }}</b></div>
+                <div><small>HBL / HAWB</small><b>{{ displayValue(container.hblNo) }}</b></div>
                 <div><small>Seal No</small><b>{{ displayValue(container.sealNo || container.customsSealNo) }}</b></div>
-                <div><small>Weight / Volume</small><b>{{ displayValue(container.weight) }} / {{ displayValue(container.volume) }}</b></div>
+                <div><small>Commodities</small><b>{{ displayValue(container.commodityCount) }}</b></div>
+                <div><small>Packages</small><b>{{ displayValue(container.packageCount) }}</b></div>
+                <div><small>Weight / Volume</small><b>{{ formatMeasure(container.weight, 'kg') }} / {{ formatMeasure(container.volume, 'cbm') }}</b></div>
               </article>
             </section>
           </ng-template>
@@ -235,7 +268,5 @@
     <span>Shipment documents are shown when they are available for this tracking reference.</span>
   </div>
 </ng-template>
-
-
 
 
