@@ -38,6 +38,8 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -65,7 +67,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     PreventMultiClickDirective,
     NgbDropdownModule,
     SearchableDropdown,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './tarrif-entry.component.html',
   styleUrl: './tarrif-entry.component.scss',

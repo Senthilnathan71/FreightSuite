@@ -22,6 +22,8 @@ import { getDefaultTodayDate } from 'src/app/common/helper';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
    selector: 'app-hawb-stock-entry',
@@ -33,7 +35,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     ReactiveFormsModule,
     NgbDatepickerModule,
     DatePipe,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
    templateUrl: './hawb-stock-entry.component.html',
   styleUrl: './hawb-stock-entry.component.scss',

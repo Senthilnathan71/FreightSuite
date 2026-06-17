@@ -38,6 +38,8 @@ import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
 	selector: 'app-company-entry',
@@ -61,7 +63,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
 		NgbAccordionModule,
 		NgbDropdownModule,
 		SearchableDropdown,
-		DialCodeDropdownComponent
+		DialCodeDropdownComponent,
+		ElementStateGuardDirective,
+		FormStateGuardDirective
 	],
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'

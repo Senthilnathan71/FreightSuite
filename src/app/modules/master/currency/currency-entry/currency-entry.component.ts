@@ -24,6 +24,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-currency-entry',
@@ -37,7 +39,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     NgbDropdownModule,
     SearchableDropdown,
     OnlyTextDirective,
-    TextWithNumbersDirective
+    TextWithNumbersDirective,
+    FormStateGuardDirective,
+    ElementStateGuardDirective
   ],
   templateUrl: './currency-entry.component.html',
   styleUrls: ['./currency-entry.component.scss']

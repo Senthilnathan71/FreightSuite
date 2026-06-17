@@ -22,6 +22,8 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-uom-view',
@@ -35,7 +37,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     ReactiveFormsModule,
     DatePipe,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './uom-view.component.html',
   styleUrl: './uom-view.component.scss'

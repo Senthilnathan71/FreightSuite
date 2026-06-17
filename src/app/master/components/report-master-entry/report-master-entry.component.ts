@@ -17,11 +17,13 @@ import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-report-master-entry',
   standalone: true,
-  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, MultiSelectComponent, DetailsComponent, NgbDropdownModule],
+  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, MultiSelectComponent, DetailsComponent, NgbDropdownModule,ElementStateGuardDirective,FormStateGuardDirective],
   templateUrl: './report-master-entry.component.html',
   styleUrls: ['./report-master-entry.component.scss']
 })
