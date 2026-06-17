@@ -483,7 +483,7 @@
                       <table class="table table-hover table-sm mb-0">
                         <thead class="table-header-booking">
                           <tr class="align-middle bg-info">
-                            <th rowspan="2" *ngIf="!isEditMode" class="text-center bg-transparent text-light"
+                            <th rowspan="2" *ngIf="showDetailDeleteColumn" class="text-center bg-transparent text-light"
                               style="min-width: 30px"></th>
                             <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px">
                               Sno.
@@ -584,7 +584,7 @@
                           <ng-container *ngFor="let row of details.controls; let i = index">
                             <tr [formGroupName]="i">
                               <!-- Delete Button -->
-                              <td *ngIf="!isEditMode">
+                              <td *ngIf="showDetailDeleteColumn">
                                 <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>

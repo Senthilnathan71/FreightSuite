@@ -60,4 +60,12 @@ export class InvoiceService {
         );
     }
 
+    deleteInvoiceDetail(voucherDetailSid: number, payload: any) {
+        return this.http.patch<{ status: boolean; message: string; data: any }>(`invoice/detail/delete/${voucherDetailSid}`, payload).pipe(
+            map((resp) => {
+                return resp;
+            })
+        );
+    }
+
 }

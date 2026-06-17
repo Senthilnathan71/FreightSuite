@@ -75,6 +75,7 @@ import { Menu } from 'angular-feather/icons';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { InvoiceService } from '../../services/invoice.service';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
@@ -163,6 +164,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   isViewMode: boolean = false;
   get isEditMode() {
     return !!this.headerId && !this.isViewMode;
+  }
+
+  // Detail "delete" action column: visible whenever the invoice is editable
+  // (create + edit), hidden at posting time / read-only / view mode.
+  get showDetailDeleteColumn(): boolean {
+    return !this.isViewMode && !this.isPosted && !this.isReadOnly;
   }
 
   auditLogs: any[] = []; // Stores audit logs
@@ -405,6 +412,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private pdfFileSaveService: PdfFileSaveService,
     private emailTriggerService: EmailTriggerService,
     private voucherActionGuard: VoucherActionGuardService,
+    private confirmService: ModalService,
   ) {}
 
   copyInvoiceNumber(event?: Event): void {
@@ -2006,13 +2014,63 @@ isSeaDepartment(): boolean {
     );
     return department?.departmentName || '-';
   }
-  removeDetailRow(index: number) {
+  async removeDetailRow(index: number) {
     if (this.showBlockedAction(this.getDetailMutationBlockedReason())) return;
 
+    const row = this.details.at(index) as FormGroup;
+    const voucherDetailSid = row?.get('VoucherDetailSid')?.value;
+
+    // Unsaved row → remove locally only (no API; its charge link is created on save).
+    if (!voucherDetailSid) {
+      this.spliceDetailRow(index);
+      return;
+    }
+
+    // Saved row → confirm, then delete server-side (soft-delete + un-link the charge).
+    const confirmed = await this.confirmService.confirm(
+      'Are you sure you want to delete this charge line? This cannot be undone.',
+      'Delete Charge Line',
+      'Delete',
+    );
+    if (!confirmed) return;
+
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      UpdatedBy: this.currUserEmail,
+    };
+
+    this.invoiceService.deleteInvoiceDetail(Number(voucherDetailSid), payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status) {
+          this.dropDetailFromBaseline(Number(voucherDetailSid));
+          this.spliceDetailRow(index);
+          this.toastr.success('Charge line deleted.');
+        } else {
+          this.appSettingService.showError(resp?.message || 'Failed to delete charge line.');
+        }
+      },
+      error: () => this.appSettingService.showError('Failed to delete charge line.'),
+    });
+  }
+
+  private spliceDetailRow(index: number) {
     if (this.details.length > index) this.details.removeAt(index);
     if (this._originalHSSACValues.length > index) this._originalHSSACValues.splice(index, 1);
     this.invoiceForm.updateValueAndValidity();
     this.recalculateAllRows();
+  }
+
+  /**
+   * Drop the just-deleted (already persisted) detail from the unsaved-changes baseline so the
+   * guard doesn't flag this server-side deletion, while preserving any genuine pending edits.
+   */
+  private dropDetailFromBaseline(voucherDetailSid: number) {
+    const details = this.initialFormValue?.voucherDetails;
+    if (!Array.isArray(details)) return;
+    this.initialFormValue.voucherDetails = details.filter(
+      (d: any) => Number(d?.VoucherDetailSid) !== Number(voucherDetailSid),
+    );
   }
 
   onDetailChange(index: number, field?: string) {

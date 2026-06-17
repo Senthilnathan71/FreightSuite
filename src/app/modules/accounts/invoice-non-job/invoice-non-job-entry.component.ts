@@ -132,6 +132,7 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
         nonJobPdfFileSaveService,
       emailTriggerService,
       voucherActionGuard,
+      nonJobConfirmService,
     );
   }
 
