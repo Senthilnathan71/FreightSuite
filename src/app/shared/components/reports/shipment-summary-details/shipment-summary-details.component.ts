@@ -331,7 +331,7 @@ getFilteredCustomerType(customerType: string[]): string {
   }
 
   getProfitPercent(item: any): string {
-    return `${this.calculateProfitMetrics(item).profitPercent.toFixed(3)}%`;
+    return `${this.calculateProfitMetrics(item).profitPercent.toFixed(3)}`;
   }
 
 }

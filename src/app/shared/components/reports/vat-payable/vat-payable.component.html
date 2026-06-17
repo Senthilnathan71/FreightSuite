@@ -48,15 +48,15 @@
                         <td class="text-end">{{item.taxableAmt | number:'1.2-2' }}</td>
                         <td class="text-end">{{item.taxAmt | number:'1.2-2' }}</td>
                     </tr>
-                    <tr class="fw-bold bg-light">
+                    <tr class="fw-bold bg-light" >
                         <td colspan="6" class="text-end">Total</td>
                     
                         <td class="text-end">
-                            {{ getTotalTaxableAmt() | number:'1.2-2' }}
+                            {{ fullData?.totalTaxableAmt | number:'1.2-2' }}
                         </td>
                     
                         <td class="text-end">
-                            {{ getTotalTaxAmt() | number:'1.2-2' }}
+                            {{ fullData?.totalTaxAmt | number:'1.2-2' }}
                         </td>
                     </tr>
                 </tbody>

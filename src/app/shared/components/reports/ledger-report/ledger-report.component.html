@@ -55,6 +55,7 @@
                         <th class="bg-transparent text-light text-center">Voucher No</th>
                         <th class="bg-transparent text-light text-center">Voucher Date</th>
                         <th class="bg-transparent text-light text-center">Type</th>
+                        <th class="bg-transparent text-light text-center">Party Name</th>
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th>
                         <th class="bg-transparent text-light">HBL No</th>
@@ -87,6 +88,8 @@
                         </td>
                         <td>
                         </td>
+                        <td>
+                        </td>
                         <td></td>
                         <td class="text-end">
                             {{fullData?.openingBalance | number:"1.2-2"}}
@@ -103,6 +106,7 @@
                         <td></td>
                         <td>{{item?.HouseJobNumber}}</td>
                         <td>{{item?.deptname}}</td> -->
+                        <td>{{item?.partyname}}</td>
                         <td>{{item?.naration}}</td>
                         <!-- <td>{{item?.salesmanSid}}</td> -->
                         <td class="text-center">{{item?.drCr}}</td>
@@ -119,7 +123,7 @@
                     </tr>
 
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
-                        <td colspan="7" class="text-end">TOTAL</td>
+                        <td colspan="8" class="text-end">TOTAL</td>
                         <!-- Total Local Amount (originalCurrencyAmount) -->
                         <td style="text-align: right;"> {{ getLocalTotal(fullData?.transactions) | number:'1.2-2' }}
                         </td>
@@ -153,7 +157,7 @@
                     </tr>
 
                     <tr *ngIf="(!fullData?.transactions || fullData.transactions.length === 0) && (!fullData?.openingBalance || fullData?.openingBalance === 0)">
-                        <td colspan="9" class="text-center fw-bold py-1">
+                        <td colspan="10" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>
@@ -165,7 +169,7 @@
             <div class="pt-2">
                 Note :
                 <ul>
-                    <li>This ledger report includes only posted voucher transactions.</li>
+                    <li>This ledger report includes only Posted Vouchers.</li>
                 </ul>
             </div>
         </div>

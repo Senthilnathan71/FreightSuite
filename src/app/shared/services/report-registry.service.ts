@@ -1141,7 +1141,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'do-issue-list',
-        title: 'Do_Issue_List',
+        title: 'Do Issue List',
         component: DoIssueListComponent,
         filenameTemplate: 'Do_Issue_List_{date}',
         module: 'accounts-report',
@@ -1173,7 +1173,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'shipment-summary-details',
-        title: 'House_Summary_Details',
+        title: 'House Summary Details',
         component: ShipmentSummaryDetailsComponent,
         filenameTemplate: 'Shipment_Summary_Details_{date}',
         module: 'accounts-report',
@@ -1205,7 +1205,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'unbilled-cost-report',
-        title: 'Unbilled_cost_report',
+        title: 'Unbilled Cost',
         component: UnbilledCostReportComponent,
         filenameTemplate: 'Unbilled_cost_report_{date}',
         module: 'accounts-report',
@@ -1236,7 +1236,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'unbilled-revenue-report',
-        title: 'Unbilled_Revenue_report',
+        title: 'Unbilled Revenue',
         component: UnbilledRevenueReportComponent,
         filenameTemplate: 'Unbilled_Revenue_report_{date}',
         module: 'accounts-report',
@@ -1267,7 +1267,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'house-job-loss-report',
-        title: 'House_Job_Loss_Report',
+        title: 'House Job Loss',
         component: HouseJobLossReportComponent,
         filenameTemplate: 'House_Job_Loss_Report_{date}',
         module: 'accounts-report',
@@ -1298,7 +1298,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'profit-summary',
-        title: 'Profit_Summary_Report',
+        title: 'Profit Summary',
         component: ProfitSummaryComponent,
         filenameTemplate: 'Profit_Summary_Report_{date}',
         module: 'accounts-report',
@@ -1330,7 +1330,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'lost-customer-report',
-        title: 'Lost_Customer_Report',
+        title: 'Lost Customer',
         component: LostCustomerReportComponent,
         filenameTemplate: 'Lost_Customer_Report_{date}',
         module: 'accounts-report',
@@ -1361,7 +1361,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'destination-report',
-        title: 'Destination_Report',
+        title: 'Destination Report',
         component: DestinationReportComponent,
         filenameTemplate: 'Destination_Report_{date}',
         module: 'accounts-report',
@@ -1392,7 +1392,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'export-job-volume-teu-report',
-        title: 'Export_Job_Volume_TEU_Report',
+        title: 'Export Job Volume TEU',
         component: ExportJobVolumeTeuReportComponent,
         filenameTemplate: 'Export_Job_Volume_TEU_Report_{date}',
         module: 'accounts-report',
@@ -1423,7 +1423,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'comprehensive-management',
-        title: 'Comprehensive_Management_Report',
+        title: 'Comprehensive Management',
         component: ComprehensiveManagementReportComponent,
         filenameTemplate: 'Comprehensive_Management_Report_{date}',
         module: 'accounts-report',
@@ -1454,7 +1454,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'tradelane-profitability',
-        title: 'Tradelane_Profitability_Report',
+        title: 'Tradelane Profitability',
         component: TradelaneProfitabilityComponent,
         filenameTemplate: 'Tradelane_Profitability_Report_{date}',
         module: 'accounts-report',
