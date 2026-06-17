@@ -24,6 +24,8 @@ import { Search } from 'angular-feather/icons';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-authority-entry',
@@ -40,7 +42,9 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     NgbModalModule,
     MultiSelectComponent,
     NgbDropdownModule,
-    SearchableDropdown
+    SearchableDropdown,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './authority-entry.component.html',
   styleUrls: ['./authority-entry.component.scss']

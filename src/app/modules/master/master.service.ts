@@ -1500,8 +1500,8 @@ getFieldConfiguration() {
   }
 
 
-  getDivisionById(DivisionMasterSid: number) {
-    return this.http.get<{ data: Division }>(`division/fetch/${DivisionMasterSid}`).pipe(
+  getDivisionById(payload: any) {
+    return this.http.post<{ data: Division }>(`division/fetch`,payload).pipe(
       map((resp) => {
         let response = resp.data;
         return response;

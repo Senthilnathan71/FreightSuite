@@ -26,6 +26,8 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { Subject, debounceTime, finalize, takeUntil } from 'rxjs';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -46,7 +48,9 @@ interface IWindow extends Window {
     NgbDropdownModule,
     DecimalPrecisionDirective,
     OnlyNumbersDirective,
-    CommonEntryHeaderComponent
+    CommonEntryHeaderComponent,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'

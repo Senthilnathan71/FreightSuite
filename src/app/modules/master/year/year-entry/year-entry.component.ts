@@ -28,6 +28,8 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-year-entry',
@@ -44,7 +46,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     DatePipe,
     NgbDatepickerModule,
     PreventMultiClickDirective,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './year-entry.component.html',
   styleUrl: './year-entry.component.scss',

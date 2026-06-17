@@ -22,6 +22,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
 	selector: 'app-doctype',
@@ -34,7 +36,9 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 		OnlyNumbersDirective,
 		TextWithNumbersDirective,
 		NgbDropdownModule,
-		SearchableDropdown
+		SearchableDropdown,
+		ElementStateGuardDirective,
+		FormStateGuardDirective
 	],
 	templateUrl: 'doctype.component.html',
 	styleUrl: './doctype.component.scss'

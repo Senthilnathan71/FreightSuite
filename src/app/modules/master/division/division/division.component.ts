@@ -611,6 +611,11 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   }
 
   updateDivisionById(DivisionMasterSid: number, content: any) {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const payload = {
+      CompanyMasterSid: CompanyMasterSid,
+      DivisionMasterSid: DivisionMasterSid
+    }
     this.isEditMode = true;
     this.DivisionMasterSid = DivisionMasterSid;
     this.divisionForm.reset();
@@ -623,10 +628,13 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
     });
     this.divisionForm.disable();
     this.masterService
-      .getDivisionById(DivisionMasterSid)
+      .getDivisionById(payload)
       .pipe(take(1))
       .subscribe({
         next: (division: any) => {
+          if (!division?.status) {
+            this.appSettingService.showError('Access denied.');
+          }
           this.divisionData = division;
           this.divisionForm.patchValue({
             DivisionName: division.DivisionName,

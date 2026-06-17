@@ -24,6 +24,8 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -37,7 +39,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     PreventMultiClickDirective,
     NgbDropdownModule,
     SearchableDropdown,
-    MultiSelectComponent 
+    MultiSelectComponent,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './milestone-entry.component.html',
   styleUrls: ['./milestone-entry.component.scss']

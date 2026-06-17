@@ -34,6 +34,8 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { TDS_DEDUCTEE_TYPES } from 'src/app/common/tds-deductee-types';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -52,7 +54,9 @@ import { TDS_DEDUCTEE_TYPES } from 'src/app/common/tds-deductee-types';
         DecimalPrecisionDirective,
         CustomDatePipe,
         NgbDropdownModule,
-        SearchableDropdown
+        SearchableDropdown,
+        ElementStateGuardDirective,
+        FormStateGuardDirective
     ],
     templateUrl: './tds-set-entry.component.html',
     styleUrl: './tds-set-entry.component.scss',

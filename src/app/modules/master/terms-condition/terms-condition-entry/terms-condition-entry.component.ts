@@ -23,6 +23,8 @@ import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/s
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -39,7 +41,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
         DatePipe,
         PreventMultiClickDirective,
         SearchableDropdown,
-        NgbDropdownModule
+        NgbDropdownModule,
+        ElementStateGuardDirective,
+        FormStateGuardDirective
     ],
     templateUrl: './terms-condition-entry.component.html',
     styleUrl: './terms-condition-entry.component.scss'
