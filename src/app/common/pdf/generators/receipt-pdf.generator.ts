@@ -332,14 +332,15 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
   ];
   const widths: any[] = data.receiptType === 'bank'
     ? (isIndia
-        ? ['24%', '10%', '14%', '7%', '17%', '18%', '10%']
-        : ['27%', '11%', '16%', '8%', '19%', '19%'])
+        ? ['15%', '7%', '10%', '5%', '10%', '10%', '8%', '35%']
+        : ['17%', '7%', '11%', '5%', '10%', '10%', '40%'])
     : (isIndia
-        ? ['22%', '13%', '15%', '7%', '15%', '15%', '13%']
-        : ['22%', '13%', '15%', '7%', '21.5%', '21.5%']);
+        ? ['15%', '7%', '10%', '5%', '10%', '10%', '8%', '35%']
+        : ['17%', '7%', '11%', '5%', '10%', '10%', '40%']);
   if (isIndia) {
     header.push({ text: 'TDS Amount', style: 'tableHeaderSmall', alignment: 'center' });
   }
+  header.push({ text: 'Narration', style: 'tableHeaderSmall', alignment: 'center' });
 
   const bodyRows = rows.map((r) => {
     const row: any[] = [
@@ -351,6 +352,13 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
       { text: formatNumberWithCommas(toNumber(r.matchingLocalAmount), 2), style: 'tableCellSmall', alignment: 'right',margin: [0, 0, 2, 0] }
     ];
     if (isIndia) row.push({ text: '', style: 'tableCellSmall', alignment: 'right' });
+    row.push({
+      text: r.narration || '',
+      style: 'tableCellSmall',
+      alignment: 'left',
+      noWrap: false,
+      margin: [4, 0, 4, 0]
+    });
     return row;
   });
 
@@ -363,6 +371,7 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
     { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingLocalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] }
   ];
   if (isIndia) totalRow.push({ text: '', style: 'tableCellBoldSmall', alignment: 'right', margin: [0, 0, 2, 0] });
+  totalRow.push({ text: '', style: 'tableCellSmall', margin: [4, 0, 4, 0] });
 
   return [
     { text: 'Remittance Details', fontSize: 10, bold: false, margin: [-3, 7, 0, 2] },
@@ -375,10 +384,10 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
        layout: {
     ...PDF_TABLE_LAYOUTS.bordered,
 
-    paddingLeft: () => 0,
-    paddingRight: () => 0,
-    paddingTop: () => 2,
-    paddingBottom: () => 2,
+    paddingLeft: () => 2,
+    paddingRight: () => 2,
+    paddingTop: () => 3,
+    paddingBottom: () => 3,
     hLineWidth: () => RECEIPT_LINE_WIDTH,
     vLineWidth: (i: number, node: any) => {
       if (i === 0 || i === node.table.widths.length) {
@@ -510,7 +519,8 @@ export function transformReceiptApiData(
     currencyCode: m?.CurrencyCode || '',
     matchingAmount: toNumber(m?.MatchingAmount),
     matchingLocalAmount: toNumber(m?.MatchingLocalAmount),
-    tdsAmount: toNumber(m?.TDSAmount)
+    tdsAmount: toNumber(m?.TDSAmount),
+    narration: m?.Narration || apiData?.VoucherDetail?.[0]?.Narration || apiData?.Narration || ''
   }));
 
   const totalMatchingAmount = voucherMatchings.reduce((sum: number, item: any) => sum + toNumber(item.matchingAmount), 0);

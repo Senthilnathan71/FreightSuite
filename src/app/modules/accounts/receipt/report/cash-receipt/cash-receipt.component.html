@@ -136,16 +136,17 @@
         <h3 *ngIf="receiptPrintData?.voucherMatchings?.length > 0 && receiptPrintData?.PostStatus === 'P'" style="text-align:start;margin-top:15px;margin-bottom:0px;padding-left:17px;font-weight: bolder;font-size: 16px;"><strong>Remittance Details</strong></h3>
 
         <!-- Remittance Table -->
-        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0 && receiptPrintData?.PostStatus === 'P'" style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 15px; ">
+        <table  *ngIf="receiptPrintData?.voucherMatchings?.length > 0 && receiptPrintData?.PostStatus === 'P'" style="width:100%; border-collapse:collapse; margin:10px 0; font-size: 15px; table-layout:fixed;">
             <tbody>
                 <tr>
-                    <th style="width:22%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; border-left:none"><strong>Voucher No.</strong></th>
-                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; "><strong>INV Type</strong></th>
-                    <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; "><strong>Voucher Date</strong></th>
+                    <th style="width:19%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; border-left:none"><strong>Voucher No.</strong></th>
+                    <th style="width:9%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; "><strong>INV Type</strong></th>
+                    <th style="width:12%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; "><strong>Voucher Date</strong></th>
                     <th style="width:7%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;" ><strong>Curr.</strong></th>
-                    <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;"><strong>Curr. Amt</strong></th>
-                    <th style="width:15%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; border-right: none; "><strong>Local Amount</strong></th>
-                    <th style="width:13%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; border-right:none "*ngIf="currentUserCountry === 'india'"><strong>TDS Amount</strong></th>
+                    <th style="width:10%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;"><strong>Curr. Amt</strong></th>
+                    <th style="width:11%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;"><strong>Local Amount</strong></th>
+                    <th style="width:10%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;" *ngIf="currentUserCountry === 'india'"><strong>TDS Amount</strong></th>
+                    <th style="width:32%; border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder; border-right:none;"><strong>Narration</strong></th>
                 </tr>
                 <tr *ngFor="let voucher of receiptPrintData?.voucherMatchings">
                     <td style="border:1px solid black; padding:2px 8px;text-align:start;border-left:none">{{voucher?.VoucherNumber}}</td>
@@ -153,14 +154,16 @@
                     <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.VoucherDate | formatDate}}</td>
                     <td style="border:1px solid black; padding:2px 8px;text-align:center;">{{voucher?.CurrencyCode}}</td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.MatchingAmount | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right: none;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right:none"*ngIf="currentUserCountry === 'india'"></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right;" *ngIf="currentUserCountry === 'india'"></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:left; border-right:none; white-space:normal; word-break:break-word;">{{voucher?.Narration || (receiptPrintData?.VoucherDetail?.length ? receiptPrintData.VoucherDetail[0]?.Narration : receiptPrintData?.Narration)}}</td>
                 </tr>
                 <tr>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right;border-left:none" colspan="4"><strong>Total</strong></td>
                     <td style="border:1px solid black; padding:2px 8px; text-align:right; font-weight: bolder;"><strong>{{getTotalMatchingAmount() | number:'1.2-2'}}</strong></td>
-                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right: none; font-weight: bolder;"><strong>{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</strong></td>
-                    <td style="border:1px solid black; padding:2px 8px; font-weight: bolder; text-align:right;border-right:none"*ngIf="currentUserCountry === 'india'"></td>
+                    <td style="border:1px solid black; padding:2px 8px; text-align:right; font-weight: bolder;"><strong>{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</strong></td>
+                    <td style="border:1px solid black; padding:2px 8px; font-weight: bolder; text-align:right;" *ngIf="currentUserCountry === 'india'"></td>
+                    <td style="border:1px solid black; padding:2px 8px; border-right:none;"></td>
                 </tr>
             </tbody>
         </table>

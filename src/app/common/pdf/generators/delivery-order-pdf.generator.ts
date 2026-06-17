@@ -54,7 +54,7 @@ export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
       buildFooter(data, currentPage, pageCount),
     styles: getDeliveryOrderStyles(),
     defaultStyle: {
-      fontSize: 10,
+      fontSize: 9,
       color: '#000',
     },
   };
@@ -75,7 +75,7 @@ function buildHeader(data: DeliveryOrderPdfData): any {
   if (postalCode) {
     detailLine2.push(
       detailLine2[0] ? ', ' : '',
-      { text: 'Postal Code : ', bold: true },
+      { text: 'Postal Code : ' },
       postalCode,
     );
   }
@@ -83,7 +83,7 @@ function buildHeader(data: DeliveryOrderPdfData): any {
   if (phoneNumber) {
     detailLine2.push(
       detailLine2.length > 1 || detailLine2[0] ? ', ' : '',
-      { text: 'Ph.no : ', bold: true },
+      { text: 'Ph.no : ' },
       phoneNumber,
     );
   }
@@ -112,26 +112,24 @@ function buildHeader(data: DeliveryOrderPdfData): any {
             stack: [
               {
                 text: (company?.companyName || '').toUpperCase(),
-                bold: true,
-                fontSize: 14,
+                fontSize: 13,
                 alignment: 'center',
               },
               {
                 text: branch?.branchName || '',
-                bold: true,
-                fontSize: 11,
+                fontSize: 10,
                 alignment: 'center',
                 margin: [0, 2, 0, 0],
               },
               {
                 text: detailLine1,
-                fontSize: 9,
+                fontSize: 8.5,
                 alignment: 'center',
                 margin: [0, 2, 0, 0],
               },
               {
                 text: detailLine2,
-                fontSize: 8.5,
+                fontSize: 8,
                 alignment: 'center',
                 noWrap: true,
                 margin: [0, 2, 0, 0],
@@ -159,9 +157,8 @@ function buildTitle(data: DeliveryOrderPdfData): any {
         [
           {
             text: data.reportTitle,
-            bold: true,
             alignment: 'center',
-            fontSize: 12,
+            fontSize: 11,
             margin: [0, 4, 0, 4],
           },
         ],
@@ -525,7 +522,7 @@ function buildAmountInWords(data: DeliveryOrderPdfData): any {
         width: 120,
         text: 'Amount in Words',
         style: 'label',
-        fontSize: 9,
+        fontSize: 8.5,
         margin: [15, 0, 0, 0],
       },
       { width: 10, text: ':' },
@@ -561,14 +558,12 @@ function buildAgentOnlySection(data: DeliveryOrderPdfData): any {
     stack: [
       {
         text: `FOR ${data.company?.companyName || 'Company Name'} (${data.branch?.branchName || 'Company Branch'})`,
-        bold: true,
-        fontSize: 8.5,
+        fontSize: 8,
         alignment: 'right',
       },
       {
         text: '(AS AGENTS ONLY)',
-        bold: true,
-        fontSize: 8.5,
+        fontSize: 8,
         alignment: 'right',
       },
     ],
@@ -672,20 +667,19 @@ function edgeOpenTableLayout(): any {
 function getDeliveryOrderStyles(): any {
   return {
     ...getPdfStyles(),
-    subTitle: { fontSize: 12, bold: true },
-    label: { fontSize: 10.5, bold: true },
-    value: { fontSize: 10.5 },
-    valueBold: { fontSize: 9, bold: true },
-    releaseValue: { fontSize: 10.5, bold: true },
-    sectionLabel: { fontSize: 11, bold: true },
+    subTitle: { fontSize: 11 },
+    label: { fontSize: 9.5 },
+    value: { fontSize: 9.5 },
+    valueBold: { fontSize: 8.5 },
+    releaseValue: { fontSize: 9.5 },
+    sectionLabel: { fontSize: 10 },
     tableHeader: {
-      fontSize: 9,
-      bold: true,
+      fontSize: 8,
       alignment: 'center',
     },
-    tableCell: { fontSize: 9 },
-    tableCellBold: { fontSize: 9, bold: true },
-    termsItem: { fontSize: 8.5 },
+    tableCell: { fontSize: 8 },
+    tableCellBold: { fontSize: 8 },
+    termsItem: { fontSize: 8 },
   };
 }
 
@@ -701,20 +695,20 @@ function buildFooter(
         text: `Printed By : ${data.userData?.userName || ''}`,
         alignment: 'left',
         width: 120,
-        fontSize: 7,
+        fontSize: 6.5,
       },
       {
         text: 'This document is computer-generated and does not require a signature.',
         alignment: 'center',
         width: '*',
-        fontSize: 7,
+        fontSize: 6.5,
         noWrap: true,
       },
       {
         text: `Printed On : ${formatDate(new Date())}`,
         alignment: 'right',
         width: 120,
-        fontSize: 7,
+        fontSize: 6.5,
       },
       {
         text:
@@ -723,7 +717,7 @@ function buildFooter(
             : '',
         alignment: 'right',
         width: 60,
-        fontSize: 7,
+        fontSize: 6.5,
       },
     ],
   };

@@ -18,10 +18,10 @@ export function generatePackingListDocument(data: PackingListPdfData): any {
     background: function (currentPage, pageSize) {
       return {
         canvas: [
-          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
-          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.25 },
+          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 }
         ]
       };
     },
@@ -29,14 +29,15 @@ export function generatePackingListDocument(data: PackingListPdfData): any {
       buildHeader(data.company, data.branch, data.logo, {
         logoWidth: 70,
         logoHeight: 70,
+        showPostalPhoneLabels: true,
         compact: true
       }),
-      buildDivider({ width: 555, margin: [0, 4, 0, 6], thickness: 1 }),
+      buildDivider({ width: 575, margin: [-10, 4, -10, 6], thickness: 0.25 }),
       {
         text: 'Packing List',
         alignment: 'center',
         bold: true,
-        fontSize: 16,
+        fontSize: 14,
         margin: [0, 0, 0, 8]
       },
       {
@@ -72,8 +73,8 @@ buildPartyBlocks(data: PackingListPdfData): any {
       ]]
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1),
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25),
       hLineColor: () => '#000000',
       vLineColor: () => '#000000'
     },
@@ -89,8 +90,8 @@ buildPartyBlocks(data: PackingListPdfData): any {
       ]]
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1),
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25),
       hLineColor: () => '#000000',
       vLineColor: () => '#000000'
     },
@@ -146,8 +147,8 @@ function buildJobDetails(data: PackingListPdfData): any {
       ]]
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1),
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25),
       hLineColor: () => '#000000',
       vLineColor: () => '#000000'
     },
@@ -235,8 +236,8 @@ function buildCommodityTable(data: PackingListPdfData): any {
       body: [headerRow, ...dataRows, totalRow]
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1),
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25),
       hLineColor: () => '#000000',
       vLineColor: () => '#000000',
       paddingLeft: () => 4,
@@ -334,7 +335,7 @@ export function transformPackingListApiData(
       addressLine1: company?.addressLine1 || company?.Address || '',
       addressLine2: company?.addressLine2 || '',
       city: company?.City || company?.city || '',
-      postalCode: company?.postal_code || company?.ZipCode || '',
+      postalCode: company?.postalCode || company?.postal_code || company?.PostalCode || company?.ZipCode || '',
       phoneNumber: company?.phoneNumber || company?.Phone || ''
     },
     branch: {
@@ -342,7 +343,7 @@ export function transformPackingListApiData(
       addressLine1: branch?.addressLine1 || branch?.Address || '',
       addressLine2: branch?.addressLine2 || '',
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
-      postalCode: branch?.postalCode || '',
+      postalCode: branch?.postalCode || branch?.PostalCode || branch?.ZipCode || branch?.postal_code || '',
       phoneNumber: branch?.phoneNumber || '',
       cityMaster: branch?.cityMaster
     },
