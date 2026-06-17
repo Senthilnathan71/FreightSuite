@@ -1,0 +1,23 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ title }}</h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+</div>
+<div class="modal-body">
+  <textarea
+    #ta
+    class="form-control text-expand-textarea"
+    [ngModel]="text"
+    (ngModelChange)="onModelChange($event)"
+    (keydown.enter)="onEnter($event)"
+    [attr.maxlength]="maxLength"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    rows="10"
+  ></textarea>
+  <div class="char-count" [class.limit]="maxLength && length >= maxLength">
+    {{ length }}<ng-container *ngIf="maxLength"> / {{ maxLength }}</ng-container>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-sm btn-primary" (click)="close()">Done</button>
+</div>

@@ -1,0 +1,18 @@
+.text-expand-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 220px;
+  font-size: 0.85rem;
+}
+
+.char-count {
+  margin-top: 6px;
+  text-align: right;
+  font-size: 0.75rem;
+  color: #6c757d;
+
+  &.limit {
+    color: #dc2626;
+    font-weight: 600;
+  }
+}

@@ -87,6 +87,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 import { InterBranchTabComponent } from '../../inter-branch/inter-branch-tab.component';
 import { InterBranchService } from '../../inter-branch/inter-branch.service';
 
@@ -120,6 +121,7 @@ import { InterBranchService } from '../../inter-branch/inter-branch.service';
     NgbTooltipModule,
     ElementStateGuardDirective,
     FormStateGuardDirective,
+    ExpandTextDirective,
     InterBranchTabComponent,
   ],
   templateUrl: './receipt-entry.component.html',
