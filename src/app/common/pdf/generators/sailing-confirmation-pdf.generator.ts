@@ -20,10 +20,10 @@ export function generateSailingConfirmationDocument(data: SailingConfirmationPdf
     background: function (currentPage, pageSize) {
       return {
         canvas: [
-          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
-          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.25 },
+          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 }
         ]
       };
     },
@@ -31,10 +31,12 @@ export function generateSailingConfirmationDocument(data: SailingConfirmationPdf
       buildHeader(data.company, data.branch, data.logo, {
         logoWidth: 70,
         logoHeight: 70,
+        showPostalPhoneLabels: true,
         compact: true
       }),
       buildTitle('Sailing Confirmation', {
         lineWidth: 555,
+        lineThickness: 0.25,
         linePadding: 0,
         margin: [0, 0, 0, 8]
       }),
@@ -81,7 +83,12 @@ function buildSailingDetails(data: SailingConfirmationPdfData): any {
         { stack: buildDetailRows(rightItems, 100), margin: [6, 6, 6, 6] }
       ]]
     },
-    layout: 'bordered',
+    layout: {
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0.25 : 0),
+      hLineColor: () => '#000000',
+      vLineColor: () => '#000000'
+    },
     margin: [0, 0, 0, 2]
   };
 }
@@ -210,7 +217,7 @@ export function transformSailingConfirmationApiData(
       addressLine1: company?.addressLine1 || company?.Address || '',
       addressLine2: company?.addressLine2 || '',
       city: company?.City || company?.city || '',
-      postalCode: company?.postal_code || company?.ZipCode || '',
+      postalCode: company?.postalCode || company?.postal_code || company?.PostalCode || company?.ZipCode || '',
       phoneNumber: company?.phoneNumber || company?.Phone || ''
     },
     branch: {
@@ -218,7 +225,7 @@ export function transformSailingConfirmationApiData(
       addressLine1: branch?.addressLine1 || branch?.Address || '',
       addressLine2: branch?.addressLine2 || '',
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
-      postalCode: branch?.postalCode || '',
+      postalCode: branch?.postalCode || branch?.PostalCode || branch?.ZipCode || branch?.postal_code || '',
       phoneNumber: branch?.phoneNumber || '',
       cityMaster: branch?.cityMaster
     },

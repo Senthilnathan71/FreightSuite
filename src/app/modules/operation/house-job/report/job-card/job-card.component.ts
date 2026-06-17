@@ -13,6 +13,7 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../../operation.service';
+import { saveAs } from 'file-saver';
 
 interface summaryDTO {
   revenue : any[];
@@ -645,7 +646,7 @@ private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: 
     this.spinner.show();
    try {
       const logo = this.pdfMakeService.getReportLogo();
-      this.pdfMakeService.generateJobCardFromApi(
+      const blob = await this.pdfMakeService.generateJobCardBlobFromApi(
         this.housejobData,
         this.currentCompany,
         this.currentBranch,
@@ -653,6 +654,15 @@ private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: 
         logo,
         this.getJobCardPdfOptions()
       );
+
+      if (!blob) {
+        this.appSettingService.showError('No data available to generate PDF');
+        return;
+      }
+
+      const jobNo = this.housejobData?.masterJob?.MasterJobNumber || '';
+      const hblNo = this.housejobData?.HBLNo || '';
+      saveAs(blob, `Job_Card_${jobNo || hblNo || 'Report'}.pdf`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
       const payload = {
         tableName: 'HouseJob',

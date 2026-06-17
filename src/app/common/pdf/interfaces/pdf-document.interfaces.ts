@@ -1113,6 +1113,7 @@ export interface ReceiptMatchingData {
   matchingAmount?: number;
   matchingLocalAmount?: number;
   tdsAmount?: number;
+  narration?: string;
 }
 
 // =====================

@@ -16,6 +16,7 @@ export function buildTitle(
     alignment?: 'left' | 'center' | 'right';
     showLine?: boolean;
     lineWidth?: number;
+    lineThickness?: number;
     margin?: [number, number, number, number];
     linePadding?: number; // 👈 new option
   } = {}
@@ -26,6 +27,7 @@ export function buildTitle(
     alignment = 'center',
     showLine = true,
     lineWidth = 575,
+    lineThickness = 1,
     margin = [0, 0, 0, 10],
     linePadding = 12   // 👈 default left/right spacing
   } = options;
@@ -44,7 +46,7 @@ export function buildTitle(
           y1: 0,
           x2: linePadding + adjustedWidth,
           y2: 0,
-          lineWidth: 1
+          lineWidth: lineThickness
         }
       ],
       margin: [0, 0, 0, 0]
@@ -79,7 +81,7 @@ export function buildTitle(
           y1: 0,
           x2: linePadding + adjustedWidth,
           y2: 0,
-          lineWidth: 1
+          lineWidth: lineThickness
         }
       ],
       margin: [0, 0, 0, 0]

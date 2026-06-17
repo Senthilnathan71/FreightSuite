@@ -22,7 +22,7 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
         y: 14,
         w: pageSize.width - 28,
         h: pageSize.height - 28,
-        lineWidth: 1,
+        lineWidth: 0.25,
         lineColor: '#000'
       }]
     }),
@@ -468,6 +468,7 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
 
 function noFillCell(cell: any): any {
   return {
+    text: '',
     ...cell,
     fillColor: '#FFFFFF'
   };
