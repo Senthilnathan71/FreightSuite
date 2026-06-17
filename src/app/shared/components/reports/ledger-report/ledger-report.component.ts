@@ -143,6 +143,7 @@ getSignedTotal(transactions: any[]): number {
       { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Voucher Date' },
       { key: 'voucherType', label: 'Type' },
+      { key: 'partyname', label: 'Party Name' },
       { key: 'desc', label: 'Narration' },
       { key: 'drCr', label: 'Dr/Cr' },
       { key: 'currency', label: 'Cur' },
@@ -167,6 +168,7 @@ getSignedTotal(transactions: any[]): number {
         { value: '' },
         { value: '' },
         { value: '' },
+        { value: '' },
         { value: this.formatNumber(openingBalance) },
         // { value: '' },
         // { value: '' },
@@ -182,6 +184,7 @@ getSignedTotal(transactions: any[]): number {
         { value: item?.voucherNumber || '' },
         { value: this.formatDate(item?.voucherDate) },
         { value: item?.voucherType || '' , alignment:{horizontal:'center'}},
+        { value: item?.partyname || '' },
         { value: item?.naration || '' },
         { value: item?.drCr || '',alignment:{horizontal:'center'} },
         { value: item?.currencyCode || '' , alignment:{horizontal:'center'} },
@@ -196,7 +199,7 @@ getSignedTotal(transactions: any[]): number {
 
     if (transactions && transactions.length > 0) {
     const totalCells: ExcelCell[] = [
-      { value: 'TOTAL', colspan: 7 , alignment:{horizontal:'right'} },
+      { value: 'TOTAL', colspan: 8 , alignment:{horizontal:'right'} },
       { value: this.formatNumber(this.getLocalTotal(transactions)) },
       // { value: '' },
       // { value: this.formatNumber(this.getSignedTotal(transactions)) },
@@ -228,8 +231,8 @@ getSignedTotal(transactions: any[]): number {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 8, 3, 30, 3, 3, 12, 12, 12],
-      notes: ['This ledger report includes only posted voucher transactions.']
+      columnWidths: [12, 8, 3, 7, 30, 3, 3, 12, 12, 12],
+      notes: ['This ledger report includes only Posted Vouchers.']
     };
   }
 

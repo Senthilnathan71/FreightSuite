@@ -51,20 +51,7 @@ export class VatPayableComponent {
     return this.fullData?.bucketLabels || [];
   }
 
-  getTotalTaxableAmt() {
-    return this.fullData?.data?.outputTax?.reduce(
-      (sum: number, item: any) => sum + (+item.taxableAmt || 0),
-      0
-    );
-  }
-
-  getTotalTaxAmt() {
-    return this.fullData?.data?.outputTax?.reduce(
-      (sum: number, item: any) => sum + (+item.taxAmt || 0),
-      0
-    );
-  }
-
+ 
   getExcelData(): ComplexReportExportConfig {
 
     const tableHeaders: ExcelHeader[] = [
@@ -106,21 +93,11 @@ export class VatPayableComponent {
 
     /* TOTAL ROW */
 
-    const totalTaxable = data.reduce(
-      (sum: number, x: any) => sum + Number(x?.taxableAmt || 0),
-      0
-    );
-
-    const totalTax = data.reduce(
-      (sum: number, x: any) => sum + Number(x?.taxAmt || 0),
-      0
-    );
-
     rows.push({
       cells: [
         { value: 'TOTAL' , alignment:{horizontal:'right'} , colspan:6},
-        { value: this.formatNumber(totalTaxable) },
-        { value: this.formatNumber(totalTax) }
+        { value: this.formatNumber(this.fullData?.totalTaxableAmt) },
+        { value: this.formatNumber(this.fullData?.totalTaxAmt) }
       ],
       style: 'total'
     });

@@ -63,11 +63,11 @@
                         <td colspan="6" class="text-end">Total</td>
                     
                         <td class="text-end">
-                            {{ getTotalTaxableAmt() | number:'1.2-2' }}
+                            {{ fullData?.totalTaxableAmt | number:'1.2-2' }}
                         </td>
                     
                         <td class="text-end">
-                            {{ getTotalTaxAmt() | number:'1.2-2' }}
+                            {{ fullData?.totalTaxAmt | number:'1.2-2' }}
                         </td>
                     </tr>
                 </tbody>
