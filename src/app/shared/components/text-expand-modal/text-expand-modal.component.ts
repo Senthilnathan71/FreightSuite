@@ -1,6 +1,6 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, FormControl } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
@@ -13,7 +13,7 @@ import { ElementStateGuardDirective } from 'src/app/core/Directives/element-stat
 @Component({
   selector: 'app-text-expand-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ElementStateGuardDirective],
+  imports: [CommonModule, ElementStateGuardDirective],
   templateUrl: './text-expand-modal.component.html',
   styleUrl: './text-expand-modal.component.scss',
 })

@@ -6,8 +6,8 @@
   <textarea
     #ta
     class="form-control text-expand-textarea"
-    [ngModel]="text"
-    (ngModelChange)="onModelChange($event)"
+    [value]="text"
+    (input)="onModelChange(ta.value)"
     (keydown.enter)="onEnter($event)"
     [attr.maxlength]="maxLength"
     [placeholder]="placeholder"
