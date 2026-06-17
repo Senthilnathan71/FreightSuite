@@ -11,7 +11,7 @@
     (keydown.enter)="onEnter($event)"
     [attr.maxlength]="maxLength"
     [placeholder]="placeholder"
-    [disabled]="disabled"
+    [disabled]="isDisabled"
     rows="10"
   ></textarea>
   <div class="char-count" [class.limit]="maxLength && length >= maxLength">

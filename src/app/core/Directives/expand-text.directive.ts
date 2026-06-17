@@ -1,4 +1,15 @@
-import { Directive, ElementRef, HostListener, Input, Optional, Self } from '@angular/core';
+import {
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  Input,
+  OnDestroy,
+  Optional,
+  Renderer2,
+  Self,
+} from '@angular/core';
 import { NgControl, FormControl } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TextExpandModalComponent } from 'src/app/shared/components/text-expand-modal/text-expand-modal.component';
@@ -8,27 +19,54 @@ import { TextExpandModalComponent } from 'src/app/shared/components/text-expand-
  * (live two-way bound to the same FormControl) on double-click or double-Enter.
  *
  * Usage: <input formControlName="Narration" maxlength="300" appExpandText="Narration" />
+ *
+ * Works on locked fields too: a natively `disabled` input fires no mouse events,
+ * so when disabled the host is made `pointer-events: none` and the double-click is
+ * caught on the parent (which is not a `formcontrolname` element, so the app's form
+ * guards don't block it). The modal then opens read-only.
  */
 @Directive({
   selector: '[appExpandText]',
   standalone: true,
 })
-export class ExpandTextDirective {
+export class ExpandTextDirective implements AfterViewInit, OnDestroy {
   /** Modal title (falls back to the host placeholder, then 'Edit Text'). */
   @Input('appExpandText') title = '';
   /** Optional explicit max length; defaults to the host's maxlength attribute. */
   @Input() expandMaxLength?: number;
 
   private lastEnterTime = 0;
+  private removeParentListener?: () => void;
 
   constructor(
     private host: ElementRef<HTMLInputElement | HTMLTextAreaElement>,
     @Optional() @Self() private ngControl: NgControl,
     private modalService: NgbModal,
+    private renderer: Renderer2,
   ) {}
+
+  /** Make a disabled host transparent to the pointer so the parent receives the dblclick. */
+  @HostBinding('style.pointerEvents')
+  get hostPointerEvents(): string | null {
+    return this.host.nativeElement.disabled ? 'none' : null;
+  }
+
+  ngAfterViewInit(): void {
+    const parent = this.host.nativeElement.parentElement;
+    if (parent) {
+      this.removeParentListener = this.renderer.listen(parent, 'dblclick', (e: MouseEvent) =>
+        this.onParentDblClick(e),
+      );
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.removeParentListener?.();
+  }
 
   @HostListener('dblclick')
   onDblClick(): void {
+    // Fires for enabled / readonly hosts (disabled hosts are handled via the parent).
     this.open();
   }
 
@@ -48,6 +86,23 @@ export class ExpandTextDirective {
     }
   }
 
+  /** Disabled hosts can't fire their own dblclick; catch it on the parent over the host's box. */
+  private onParentDblClick(event: MouseEvent): void {
+    const el = this.host.nativeElement;
+    if (!el.disabled) {
+      return; // enabled / readonly already handled by the host listener
+    }
+    const r = el.getBoundingClientRect();
+    if (
+      event.clientX >= r.left &&
+      event.clientX <= r.right &&
+      event.clientY >= r.top &&
+      event.clientY <= r.bottom
+    ) {
+      this.open();
+    }
+  }
+
   private open(): void {
     const control = this.ngControl?.control as FormControl | null;
     if (!control) {
@@ -57,6 +112,8 @@ export class ExpandTextDirective {
     const el = this.host.nativeElement;
     const maxAttr = el.getAttribute('maxlength');
     const maxLength = this.expandMaxLength ?? (maxAttr ? +maxAttr : null);
+    // Mirror the host's locked state: native disabled/readonly or a disabled reactive control.
+    const disabled = el.disabled || el.readOnly || !!control.disabled;
 
     const modalRef = this.modalService.open(TextExpandModalComponent, {
       size: 'lg',
@@ -67,6 +124,7 @@ export class ExpandTextDirective {
     modalRef.componentInstance.title = this.title || el.getAttribute('placeholder') || 'Edit Text';
     modalRef.componentInstance.maxLength = maxLength;
     modalRef.componentInstance.placeholder = el.getAttribute('placeholder') || '';
+    modalRef.componentInstance.disabled = disabled;
     // Re-run the host's own (input) handler (e.g. header->detail sync) on each keystroke.
     modalRef.componentInstance.onInput = () =>
       el.dispatchEvent(new Event('input', { bubbles: true }));

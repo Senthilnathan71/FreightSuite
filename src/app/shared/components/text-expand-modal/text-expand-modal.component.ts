@@ -2,6 +2,7 @@ import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnInit } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormControl } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 /**
  * Generic "expand text" modal. Edits a local copy and pushes it to the passed
@@ -12,7 +13,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-text-expand-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ElementStateGuardDirective],
   templateUrl: './text-expand-modal.component.html',
   styleUrl: './text-expand-modal.component.scss',
 })
@@ -22,6 +23,7 @@ export class TextExpandModalComponent implements OnInit, AfterViewInit {
   @Input() maxLength: number | null = null; // null => no char-count cap shown
   @Input() placeholder = '';
   @Input() onInput?: () => void; // fired on each keystroke
+  @Input() disabled = false; // locked state mirrored from the host field (readonly/native/reactive)
 
   @ViewChild('ta') ta?: ElementRef<HTMLTextAreaElement>;
 
@@ -35,15 +37,15 @@ export class TextExpandModalComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     const el = this.ta?.nativeElement;
-    if (el && !this.disabled) {
+    if (el && !this.isDisabled) {
       el.focus();
       const len = el.value.length;
       el.setSelectionRange(len, len); // cursor at end
     }
   }
 
-  get disabled(): boolean {
-    return !!this.control?.disabled;
+  get isDisabled(): boolean {
+    return this.disabled || !!this.control?.disabled;
   }
 
   get length(): number {
@@ -51,8 +53,11 @@ export class TextExpandModalComponent implements OnInit, AfterViewInit {
   }
 
   onModelChange(value: string): void {
+    if (this.isDisabled) {
+      return; // locked field — ignore edits
+    }
     this.text = value;
-    if (this.control && !this.control.disabled) {
+    if (this.control) {
       this.control.setValue(value);
       this.control.markAsDirty();
     }
