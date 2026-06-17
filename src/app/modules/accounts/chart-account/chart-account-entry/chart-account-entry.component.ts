@@ -107,6 +107,8 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
     { id: 20, name: 'TDS Payable' },
     { id: 21, name: 'TDS Receivable' },
     { id: 22, name: 'Inter Branch' },
+    { id: 23, name: 'Cost and Revenue' },
+    { id: 24, name: 'Asset and Liability' },
   ];
 
   CurrencyLookupConfig = {
