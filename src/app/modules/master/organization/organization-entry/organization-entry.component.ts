@@ -2701,6 +2701,11 @@ loadCustomerSalesTeamData() {
     return (this.cusMilePage - 1) * this.cusMilePageSize + pageIndex;
   }
   updateSalesTeamPagination() {
+    const totalPages = Math.max(1, Math.ceil(this.cusSalesteam.length / this.salesTeamPageSize));
+    if (this.salesTeamPage > totalPages) {
+      this.salesTeamPage = totalPages;
+    }
+
     const startIndex = (this.salesTeamPage - 1) * this.salesTeamPageSize;
     const endIndex = startIndex + this.salesTeamPageSize;
     this.slicedSalesTeamList = this.cusSalesteam.controls.slice(startIndex, endIndex);
@@ -2733,7 +2738,7 @@ loadCustomerSalesTeamData() {
       Salesman: [salesmanId, [Validators.required]],
       CSPerson: [csPersonId],
       DocPerson: [docPersonId],
-      branchSid : [branchSid],
+      branchSid : [branchSid, [Validators.required]],
       EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : new Date()],
       status: [data ? (data.status === 'A' ? 'Active' : 'Suspended') : 'Active'],
     });
@@ -2763,6 +2768,7 @@ loadCustomerSalesTeamData() {
 
   onAddSalesTeam() {
     this.cusSalesteam.push(this.createSalesTeamFormGroup());
+    this.salesTeamPage = Math.max(1, Math.ceil(this.cusSalesteam.length / this.salesTeamPageSize));
     this.updateSalesTeamPagination();
 
     // Use setTimeout to prevent blocking the UI thread

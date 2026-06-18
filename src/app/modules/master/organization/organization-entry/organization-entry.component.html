@@ -1837,6 +1837,12 @@
             </tbody>
           </table>
         </div>
+        <div *ngIf="(cusSalesteam?.length || 0) > salesTeamPageSize" class="d-flex justify-content-end mt-1">
+          <ngb-pagination [collectionSize]="cusSalesteam?.length || 0" [(page)]="salesTeamPage"
+            [pageSize]="salesTeamPageSize" [maxSize]="5" [rotate]="true" [ellipses]="false" [boundaryLinks]="true"
+            (pageChange)="updateSalesTeamPagination()" size="sm" class="mb-0">
+          </ngb-pagination>
+        </div>
       </div>
 
 
