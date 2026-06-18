@@ -4212,6 +4212,7 @@ shouldShowAirHousePrintOption(reportName: 'HAWB' | 'HAWB Draft'): boolean {
     this.b['ETA'].setValue('', controlOptions);
     this.b['ETD'].setValue('', controlOptions);
     this.b['MovementType'].setValue(null, controlOptions);
+    this.b['JobType'].enable(controlOptions);
     this.b['JobType'].setValue('', controlOptions);
     this.handleImportExport();
     this.handleCFSOrYard();
@@ -4280,7 +4281,8 @@ shouldShowAirHousePrintOption(reportName: 'HAWB' | 'HAWB Draft'): boolean {
   this.handleHBLNoField(department.ExportImport);
   // Rest of the method remains the same...
   this.autoSetJobType(department);
-  
+  this.applyJobTypeFieldState();
+
   if (this.selectedDepartmentType === "AIR") {
     // Set IncoTerms to CIF
     this.b['IncoTerms']?.setValue('CIF', controlOptions);
@@ -4435,6 +4437,28 @@ private validateTranshipmentPorts(): boolean {
   // Set the JobType value
   this.b['JobType']?.setValue(jobType, { emitEvent: !this.isPatching });
 }
+
+  // Job Type is editable only for LCL Import (so the user can choose Transhipment).
+  // For FCL Export/Import and LCL Export the Job Type is auto-derived and locked.
+  private applyJobTypeFieldState(): void {
+    const jobTypeControl = this.b['JobType'];
+    if (!jobTypeControl) {
+      return;
+    }
+
+    const controlOptions = { emitEvent: !this.isPatching };
+    const segment = this.normalizePortText(this.selectedFCLLCL);
+    const isImport = this.normalizePortText(this.selectedDepartment?.ExportImport) === 'IMPORT';
+    // Job Type is editable only for LCL Import (so Transhipment can be selected).
+    // All other cases (FCL Export/Import, LCL Export, Air Export/Import) are locked.
+    const allowJobTypeEdit = segment === 'LCL' && isImport;
+
+    if (allowJobTypeEdit) {
+      jobTypeControl.enable(controlOptions);
+    } else {
+      jobTypeControl.disable(controlOptions);
+    }
+  }
 
   onRouteChange(): void {
     const polSid = this.b['POL']?.value;

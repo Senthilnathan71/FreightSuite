@@ -2098,6 +2098,8 @@ onETDDateSelect(): void {
       this.masterJobForm.get(key)?.enable({ emitEvent: false });
     });
 
+    this.masterJobForm.get('MasterJobNumber')?.disable({ emitEvent: false });
+
     if (this.isEditMode) {
       this.masterJobForm.get('DepartmentMasterSid')?.disable({ emitEvent: false });
       this.masterJobForm.get('MasterJobDate')?.disable({ emitEvent: false });
