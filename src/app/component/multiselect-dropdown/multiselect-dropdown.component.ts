@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, forwardRef, OnInit, OnChanges, OnDestroy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, AbstractControl, ReactiveFormsModule, FormsModule, FormControl } from '@angular/forms';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'multi-select',
@@ -36,8 +37,13 @@ import { NgSelectModule } from '@ng-select/ng-select';
     }
   `]
 })
-export class MultiSelectComponent implements ControlValueAccessor {
-  @Input() control: AbstractControl | null = null;
+export class MultiSelectComponent implements ControlValueAccessor, OnInit, OnChanges, OnDestroy {
+  // Defaults to an internal control so it is always present. When a consumer binds [control],
+  // Angular overwrites this before ngOnInit (non-CVA path). When used via formControlName/ngModel
+  // no [control] is bound, so this internal control persists and the CVA methods bridge to the parent.
+  // Type stays nullable so `[control]="form.get('x')"` (AbstractControl | null) still type-checks;
+  // ngOnInit re-asserts the non-null invariant.
+  @Input() control: AbstractControl | null = new FormControl<any[]>([]);
   @Input() items: any[] = [];
   @Input() bindLabel: string = 'name';
   @Input() bindValue: string = 'id';
@@ -55,20 +61,38 @@ export class MultiSelectComponent implements ControlValueAccessor {
   public onChange: (value: any[]) => void = () => {};
   public onTouched: () => void = () => {};
 
+  private valueChangesSub?: Subscription;
+  private subscribedControl?: AbstractControl;
+
   ngOnInit() {
     this.filteredItems = Array.isArray(this.items) ? [...this.items] : [];
-    if (!this.control) {
-      this.control = new FormControl([]);
-    }
+    // Null-safety net: a [control]="form.get('x')" that resolves to null would otherwise NPE below.
+    this.control = this.control ?? new FormControl<any[]>([]);
     this.updateInternalValue();
-    this.control.valueChanges.subscribe(value => {
-      this.internalValue = value || [];
-    });
+    this.subscribeToControl();
   }
 
   ngOnChanges() {
     this.filteredItems = Array.isArray(this.items) ? [...this.items] : [];
     this.updateInternalValue();
+    // The bound [control] can change identity (e.g. a parent rebuilds its form) — re-subscribe so
+    // programmatic value updates keep refreshing the displayed selection.
+    if (this.control !== this.subscribedControl) {
+      this.subscribeToControl();
+    }
+  }
+
+  ngOnDestroy() {
+    this.valueChangesSub?.unsubscribe();
+  }
+
+  private subscribeToControl(): void {
+    this.valueChangesSub?.unsubscribe();
+    if (!this.control) return;
+    this.subscribedControl = this.control;
+    this.valueChangesSub = this.control.valueChanges.subscribe(value => {
+      this.internalValue = value || [];
+    });
   }
 
   private updateInternalValue(): void {
@@ -90,6 +114,15 @@ export class MultiSelectComponent implements ControlValueAccessor {
 
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    if (!this.control) return;
+    if (isDisabled) {
+      this.control.disable({ emitEvent: false });
+    } else {
+      this.control.enable({ emitEvent: false });
+    }
   }
 
   onModelChange(value: any[]): void {
