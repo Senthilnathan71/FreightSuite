@@ -1038,14 +1038,31 @@
                   </ng-select>
                 </td>
                 <td class="dofi-min-w-150">
-                  <ng-select
-                    [items]="ledgerList[i]"
-                    bindLabel="SubledgerName"
-                    bindValue="SubledgerMasterSid"
-                    formControlName="LedgerMasterSid"
-                    appendTo="body"
-                    (change)="checkAndUpdateForPartyDetail(i)"
-                  ></ng-select>
+                  <!-- Party control account (Sy Dr) → pick the full party (Subledger · Branch · Address);
+                       any other COA → the plain subledger dropdown. -->
+                  <dofi-searchable-dropdown
+                    *ngIf="isPartyCoaRow(i); else normalSubledger"
+                    [items]="partyList"
+                    formControlName="CustomerBranchSid"
+                    [displayFields]="PartyLedgerLookupConfig.displayFields"
+                    [displayLabels]="PartyLedgerLookupConfig.displayLabels"
+                    [labelFields]="PartyLedgerLookupConfig.labelFields"
+                    bindLabel="CustomerName"
+                    [bindValue]="'CustomerBranchSid'"
+                    [readonly]="isAutoPartyRow(i) || isPosted"
+                    (itemSelected)="onPartyLedgerSelect($event, i)"
+                  >
+                  </dofi-searchable-dropdown>
+                  <ng-template #normalSubledger>
+                    <ng-select
+                      [items]="ledgerList[i]"
+                      bindLabel="SubledgerName"
+                      bindValue="SubledgerMasterSid"
+                      formControlName="LedgerMasterSid"
+                      appendTo="body"
+                      (change)="checkAndUpdateForPartyDetail(i)"
+                    ></ng-select>
+                  </ng-template>
                 </td>
                 <td class="">
                   <ng-select

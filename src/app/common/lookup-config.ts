@@ -4,6 +4,11 @@ export const DROPDOWN_CONFIGS = {
     displayLabels: ['Customer','Branch','Address'],
     labelFields: ['CustomerName']
   },
+  SUBLEDGER_PARTY: {
+    displayFields: ['CustomerName','BranchName','Address'],
+    displayLabels: ['Subledger','Branch','Address'],
+    labelFields: ['CustomerName','BranchName']
+  },
   ZONE: {
     displayFields: ['ZoneName', 'ZoneCode'],
     displayLabels: ['Zone Name', 'Zone Code'],    

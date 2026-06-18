@@ -208,6 +208,10 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
   COALookupConfig = DROPDOWN_CONFIGS.COA_LEDGER;
+  PartyLedgerLookupConfig = DROPDOWN_CONFIGS.SUBLEDGER_PARTY;
+
+  /** COA LedgerType that represents the party control account on this screen (receipt = debtor). */
+  private readonly PARTY_LEDGER_TYPE = 'Sy Dr';
 
   outstandingInvoices: OutstandingInvoice[] = [];
   selectedInvoices: OutstandingInvoice[] = [];
@@ -1911,8 +1915,15 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     // Lock auto-inserted party/bank rows in edit mode
     for (let i = 0; i < this.detailItems.length; i++) {
-      if (this.isAutoPartyRow(i) || this.isAutoBankRow(i)) {
-        ['COAMasterSid', 'LedgerMasterSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
+      const isParty = this.isAutoPartyRow(i);
+      if (isParty || this.isAutoBankRow(i)) {
+        if (isParty) {
+          // The party row's COA is a party control account (Sy Dr) → its picker is fed by the
+          // header's CustomerBranchSid (the branch isn't persisted at detail level).
+          this.detailItems.at(i).get('CustomerBranchSid')?.setValue(
+            this.r['CustomerBranchSid']?.getRawValue(), { emitEvent: false });
+        }
+        ['COAMasterSid', 'LedgerMasterSid', 'CustomerBranchSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
           this.detailItems.at(i).get(field)?.disable({ emitEvent: false });
         });
       }
@@ -1978,6 +1989,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       // Foreign keys
       COAMasterSid: [data?.COAMasterSid || null, [Validators.required]],
       LedgerMasterSid: [data?.LedgerMasterSid || null, [Validators.required]],
+      // UI-only: when the row's COA is the party control account (Sy Dr), the subledger cell
+      // becomes a party picker bound to this branch; header already persists the branch.
+      CustomerBranchSid: [data?.CustomerBranchSid || null],
       DrCr: [data?.DrCr || 'D', Validators.required],
       CurrencyMasterSid: [
         data?.CurrencyMasterSid || this.currentCompany?.CurrencyMasterSid,
@@ -2215,6 +2229,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       Sno: 1,
       COAMasterSid: partyLedger.COAMappedId,
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
+      // Drives the party-picker display on this (party-COA) row.
+      CustomerBranchSid: partyLedger.CustomerBranchSid,
       DrCr: 'C',
       CurrencyMasterSid: headerCurrencyId,
       CurrencyCode: headerCurrencyCode,
@@ -2230,7 +2246,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.detailItems.at(0).get('ExchangeRate')?.disable({ emitEvent : false });
     }
 
-    ['COAMasterSid', 'LedgerMasterSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
+    ['COAMasterSid', 'LedgerMasterSid', 'CustomerBranchSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
       this.detailItems.at(0).get(field)?.disable({ emitEvent: false });
     });
 
@@ -2446,10 +2462,24 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       }
       return;
     }
-    this.fetchLedgerForCOA(coa, detailIndex, isPatching);
-
-    // Resolve full COA object to get JobNoRequire (during patching, coa may be minimal)
+    // Resolve full COA object to get LedgerType/JobNoRequire (during patching, coa may be minimal)
     const fullCoa = this.coaList.find(c => c.COAMasterSid === coa.COAMasterSid) || coa;
+
+    if (this.isScreenPartyCoa(fullCoa)) {
+      // Party control account (Sy Dr) → the subledger cell is the party picker fed from partyList.
+      const ledgerCtrl = (this.detailItems.at(detailIndex) as FormGroup).get('LedgerMasterSid');
+      ledgerCtrl?.setValidators([Validators.required]);
+      if (!isPatching) {
+        this.detailItems.at(detailIndex).patchValue(
+          { LedgerMasterSid: null, CustomerBranchSid: null },
+          { emitEvent: false },
+        );
+      }
+      ledgerCtrl?.updateValueAndValidity({ emitEvent: false });
+    } else {
+      this.fetchLedgerForCOA(coa, detailIndex, isPatching);
+    }
+
     this.applyJobRequireValidation(fullCoa, detailIndex);
 
     // Default currency from COA's LedgerCurrency (allow user to change)
@@ -2461,6 +2491,33 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.handleDetailExchangeRate(coa.LedgerCurrency, detailIndex);
       }
     }
+  }
+
+  /** True when the COA is this screen's party control account (receipt = debtor / Sy Dr). */
+  private isScreenPartyCoa(coa: any): boolean {
+    return coa?.LedgerType?.trim() === this.PARTY_LEDGER_TYPE;
+  }
+
+  /** True when a detail row's chosen COA is the party control account → use the party picker. */
+  isPartyCoaRow(detailIndex: number): boolean {
+    const coaSid = this.detailItems.at(detailIndex)?.get('COAMasterSid')?.getRawValue();
+    const coa = this.coaList.find((c) => c.COAMasterSid === coaSid);
+    return this.isScreenPartyCoa(coa);
+  }
+
+  /**
+   * User picked a party (with branch) from the detail-row party picker.
+   * Store the subledger on the row, then — the first time only — promote the full party
+   * (with its exact branch) to the header via onPartyChange.
+   */
+  onPartyLedgerSelect(party: any, detailIndex: number): void {
+    const row = this.detailItems.at(detailIndex) as FormGroup;
+    row.get('LedgerMasterSid')?.setValue(party?.SubledgerMasterSid ?? null, { emitEvent: false });
+    this.checkAndUpdateForPartyDetail(detailIndex);
+
+    // First-time guard: never override an already-set header party.
+    if (this.r['PartyMasterSid']?.getRawValue()) return;
+    if (party?.CustomerBranchSid) this.onPartyChange(party, true);
   }
 
   /**
