@@ -13,6 +13,8 @@ export interface FooterOptions {
   showDisclaimer?: boolean;
   disclaimerText?: string;
   pageMargins?: [number, number, number, number];
+  /** Terse note lines rendered above the footer row on EVERY page (opt-in). */
+  footerNotes?: string[];
 }
 
 const DEFAULT_FOOTER_OPTIONS: FooterOptions = {
@@ -72,6 +74,22 @@ export function buildFooter(
       alignment: 'right',
       width: opts.showDisclaimer ? '25%' : '50%'
     });
+  }
+
+  // Opt-in: terse legend repeated on every page, above the printed-by/page-number row.
+  if (opts.footerNotes?.length) {
+    return {
+      stack: [
+        {
+          ul: opts.footerNotes.map(n => ({ text: n })),
+          fontSize: 6.5,
+          color: '#444444',
+          margin: [0, 0, 0, 3]
+        },
+        { columns }
+      ],
+      margin: opts.pageMargins
+    };
   }
 
   return {

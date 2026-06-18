@@ -93,6 +93,11 @@ export interface ComplexReportExportConfig {
     columnWidths?: number[];
   }>;
   notes?: string[];
+  /**
+   * PDF only: render `notes` inside the page footer so they repeat on EVERY page
+   * (instead of once at the end of the document). Excel/preview are unaffected.
+   */
+  notesEveryPage?: boolean;
 }
 
 @Injectable({

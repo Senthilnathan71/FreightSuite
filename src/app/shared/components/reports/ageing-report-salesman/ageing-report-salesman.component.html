@@ -34,12 +34,6 @@
         <strong style="width: 100px;">Ledger</strong>
         <span class="ms-1">: {{ fullData?.LedgerName }}</span>
       </div>
-      @if (singleCurrency && singleCurrencyCode) {
-        <div class="d-flex align-items-center">
-          <strong style="width: 100px;">Currency</strong>
-          <span class="ms-1">: {{ singleCurrencyCode }}</span>
-        </div>
-      }
     </div>
 
     <table class="table tablebordered table-sm salesman-ageing" style="margin: 0; font-size: 11px;">
@@ -48,14 +42,11 @@
           @if (!singleBranch) { <th>Branch</th> }
           <th>Salesperson</th>
           <th>Department</th>
-          @if (!singleCurrency) { <th>Cur</th> }
           <th class="text-end">OS Local</th>
-          <th class="text-end">OS Curr</th>
           @for (label of bucketLabels; track $index) {
             <th class="text-end">{{ label }}</th>
           }
           <th class="text-end">On Acc Local</th>
-          <th class="text-end">On Acc Curr</th>
         </tr>
       </thead>
 
@@ -123,14 +114,11 @@
                   }
                 </td>
 
-                @if (!singleCurrency) { <td class="cur-cell">{{ item.row.currencyCode }}</td> }
                 <td class="text-end num">{{ showAmounts(item.row) ? fmt(item.row.outstandingLocal) : '' }}</td>
-                <td class="text-end num">{{ showAmounts(item.row) ? fmt(item.row.outstandingCurr) : '' }}</td>
                 @for (label of bucketLabels; track $index) {
                   <td class="text-end num">{{ showAmounts(item.row) ? fmt(item.row.buckets[label]) : '' }}</td>
                 }
                 <td class="text-end num on-acc-cell">{{ showAmounts(item.row) ? fmt(item.row.onAccountLocal) : '' }}</td>
-                <td class="text-end num on-acc-cell">{{ showAmounts(item.row) ? fmt(item.row.onAccountCurr) : '' }}</td>
               </tr>
             }
 
@@ -140,14 +128,11 @@
                 @if (!singleBranch) { <td></td> }
                 <td></td>
                 <td class="dept-child-name">↳ {{ item.dept.departmentName }}</td>
-                @if (!singleCurrency) { <td></td> }
                 <td class="text-end num">{{ fmt(item.dept.outstandingLocal) }}</td>
-                <td class="text-end num">{{ fmt(item.dept.outstandingCurr) }}</td>
                 @for (label of bucketLabels; track $index) {
                   <td class="text-end num">{{ fmt(item.dept.buckets[label]) }}</td>
                 }
                 <td class="text-end num on-acc-cell">{{ fmt(item.dept.onAccountLocal) }}</td>
-                <td class="text-end num on-acc-cell">{{ fmt(item.dept.onAccountCurr) }}</td>
               </tr>
             }
 
@@ -156,12 +141,10 @@
               <tr class="grand-total fw-bold">
                 <td [attr.colspan]="identitySpan" class="text-end">Grand Total</td>
                 <td class="text-end">{{ fullData?.grandTotalLocal | number:'1.2-2' }}</td>
-                <td class="text-end"></td>
                 @for (label of bucketLabels; track $index) {
                   <td class="text-end">{{ (fullData?.overallBucketTotals[label] || 0) | number:'1.2-2' }}</td>
                 }
                 <td class="text-end">{{ fullData?.overallOnAccountLocal || 0 | number:'1.2-2' }}</td>
-                <td class="text-end"></td>
               </tr>
             }
           }
@@ -169,17 +152,14 @@
       </tbody>
     </table>
 
-    @if ($last) {
-      <div class="pt-2 notes">
-        Note:
-        <ul>
-          <li>Outstanding is grouped by the customer's salesteam. A salesperson's departments are listed beneath the salesperson (click <strong>N Departments</strong> to collapse). The customer total sits in the band, so summing the <strong>OS Local</strong> column equals the Grand Total.</li>
-          <li><strong>OS Curr</strong> and the ageing buckets are in the transaction currency; <strong>OS Local</strong> is the local-currency equivalent (rows are split per currency, and OS Local is what reconciles to the Grand Total).</li>
-          <li><strong>Unallocated</strong> row = department-less vouchers not tied to a job (Non-Job invoices, Journal Vouchers, Receipts/Payments), not attributed to a salesperson. OS Local is the net of all of them; <strong>On Acc Local</strong> / <strong>On Acc Curr</strong> show the <strong>Advances + JV</strong> portion (in local and transaction currency).</li>
-          <li>A <strong>Unassigned</strong> salesperson means no matching salesteam record exists.</li>
-        </ul>
-      </div>
-    }
+    <div class="pt-2 notes">
+      <ul>
+        <li><strong>OS Local</strong> &amp; buckets are in local currency; OS Local sums to the Grand Total.</li>
+        <li><strong>Unallocated</strong> = department-less vouchers (Non-Job INV / JV / Receipt / Payment), no salesperson.</li>
+        <li><strong>On Acc Local</strong> = Advances + JV portion.</li>
+        <li><strong>Unassigned</strong> = no matching salesteam record.</li>
+      </ul>
+    </div>
 
     <app-print-footer></app-print-footer>
     <div class="page-num text-end">Page {{ $index + 1 }} of {{ pages.length }}</div>

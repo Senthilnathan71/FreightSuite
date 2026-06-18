@@ -80,24 +80,14 @@ export class AgeingReportSalesmanComponent implements OnInit {
     return !!this.fullData?.singleBranch;
   }
 
-  /** When all rows share one currency, the Currency column is hidden (shown as a header field). */
-  get singleCurrency(): boolean {
-    return !!this.fullData?.singleCurrency;
-  }
-
-  /** The single currency code (only meaningful when singleCurrency is true). */
-  get singleCurrencyCode(): string {
-    return this.singleCurrency ? this.rows[0]?.currencyCode || '' : '';
-  }
-
-  /** Identity columns before the amounts: [Branch?] + Salesperson + Department + [Cur?]. */
+  /** Identity columns before the amounts: [Branch?] + Salesperson + Department. */
   get identitySpan(): number {
-    return (this.singleBranch ? 0 : 1) + 2 + (this.singleCurrency ? 0 : 1);
+    return (this.singleBranch ? 0 : 1) + 2;
   }
 
-  /** Total leaf columns: identity + OS Local + OS Curr + buckets + On Acc Local + On Acc Curr. */
+  /** Total leaf columns: identity + OS Local + buckets + On Acc Local. */
   get colCount(): number {
-    return this.identitySpan + this.bucketLabels.length + 4;
+    return this.identitySpan + this.bucketLabels.length + 2;
   }
 
   /**
@@ -257,20 +247,15 @@ export class AgeingReportSalesmanComponent implements OnInit {
   getExcelData(): ComplexReportExportConfig {
     const buckets = this.bucketLabels || [];
     const showBranch = !this.singleBranch;
-    const showCurrency = !this.singleCurrency;
-    const identityCount =
-      (showBranch ? 1 : 0) + 2 + (showCurrency ? 1 : 0); // branch?, salesperson, department, cur?
+    const identityCount = (showBranch ? 1 : 0) + 2; // branch?, salesperson, department
 
     const tableHeaders: ExcelHeader[] = [
       ...(showBranch ? [{ key: 'branch', label: 'Branch' }] : []),
       { key: 'salesperson', label: 'Salesperson' },
       { key: 'department', label: 'Department' },
-      ...(showCurrency ? [{ key: 'cur', label: 'Cur' }] : []),
       { key: 'oslocal', label: 'OS Local' },
-      { key: 'oscurr', label: 'OS Curr' },
       ...buckets.map((label: string) => ({ key: label, label })),
       { key: 'onacc', label: 'On Acc Local' },
-      { key: 'onacccurr', label: 'On Acc Curr' },
     ];
     const totalCols = tableHeaders.length;
 
@@ -314,11 +299,8 @@ export class AgeingReportSalesmanComponent implements OnInit {
             ...(showBranch ? [{ value: this.branchLabel(r) }] : []),
             { value: salesperson },
             { value: `${r.departmentCount} Departments` },
-            ...(showCurrency ? [{ value: r.currencyCode || '' }] : []),
-            { value: '' },
             { value: '' },
             ...buckets.map(() => ({ value: '' })),
-            { value: '' },
             { value: '' },
           ],
         });
@@ -330,12 +312,9 @@ export class AgeingReportSalesmanComponent implements OnInit {
               { value: '' },
               // Use a Latin-1 marker (»); pdfmake's Roboto has no U+21B3 arrow glyph -> renders as tofu in the PDF.
               { value: `   » ${d.departmentName}` },
-              ...(showCurrency ? [{ value: '' }] : []),
               amt(d.outstandingLocal),
-              amt(d.outstandingCurr),
               ...buckets.map((label: string) => amt(d.buckets?.[label])),
               amt(d.onAccountLocal),
-              amt(d.onAccountCurr),
             ],
           });
         }
@@ -347,30 +326,23 @@ export class AgeingReportSalesmanComponent implements OnInit {
             ...(showBranch ? [t({ value: this.branchLabel(r) })] : []),
             t({ value: salesperson }),
             t({ value: dept }),
-            ...(showCurrency ? [t({ value: r.currencyCode || '' })] : []),
             t(amt(r.outstandingLocal)),
-            t(amt(r.outstandingCurr)),
             ...buckets.map((label: string) => t(amt(r.buckets?.[label]))),
             t(amt(r.onAccountLocal)),
-            t(amt(r.onAccountCurr)),
           ],
         });
       }
     }
 
     // Grand total — label across identity columns, then OS Local (reconciles) /
-    // OS Curr (blank, mixed currencies) / buckets (local) / On Acc Local (local) /
-    // On Acc Curr (blank, mixed currencies).
+    // buckets (local) / On Acc Local (local).
     const grandCells: ExcelCell[] = [
       { value: 'Grand Total' },
       ...(showBranch ? [{ value: '' }] : []),
       { value: '' },
-      ...(showCurrency ? [{ value: '' }] : []),
       amt(this.fullData?.grandTotalLocal),
-      { value: '' },
       ...buckets.map((label: string) => amt(this.fullData?.overallBucketTotals?.[label])),
       amt(this.fullData?.overallOnAccountLocal),
-      { value: '' },
     ];
     rows.push({ cells: grandCells, style: 'grandTotal' });
 
@@ -385,9 +357,6 @@ export class AgeingReportSalesmanComponent implements OnInit {
           { label: 'To Date', value: this.formatDate(this.fullData?.concludedUpto) },
           { label: 'Branch', value: this.fullData?.branchInvolvedText || '' },
           { label: 'Ledger', value: this.fullData?.LedgerName || '' },
-          ...(this.singleCurrency
-            ? [{ label: 'Currency', value: this.singleCurrencyCode }]
-            : []),
         ],
       },
       tableHeaders,
@@ -396,19 +365,18 @@ export class AgeingReportSalesmanComponent implements OnInit {
         ...(showBranch ? [16] : []),
         20,
         24,
-        ...(showCurrency ? [8] : []),
-        14,
         14,
         ...buckets.map(() => 13),
         14,
-        14,
       ],
       notes: [
-        "Grouped by the customer's salesteam. A salesperson's departments are listed beneath the salesperson; the customer total is in the band, so the OS Local column sums to the Grand Total.",
-        'OS Curr and the ageing buckets are in the transaction currency; OS Local is the local-currency equivalent and is what reconciles to the Grand Total. Rows are split per currency.',
-        '"Unallocated" row = department-less vouchers not tied to a job (Non-Job invoices, Journal Vouchers, Receipts/Payments), not attributed to a salesperson. OS Local is the net of all of them; "On Acc Local"/"On Acc Curr" = the Advances + JV portion (local and transaction currency).',
-        'A blank/"Unassigned" salesperson means no matching salesteam record exists.',
+        'OS Local & buckets are in local currency; OS Local sums to the Grand Total.',
+        'Unallocated = department-less vouchers (Non-Job INV / JV / Receipt / Payment), no salesperson.',
+        'On Acc Local = Advances + JV portion.',
+        'Unassigned = no matching salesteam record.',
       ],
+      // Repeat the terse legend in the PDF footer on every page (not just the last).
+      notesEveryPage: true,
     };
   }
 

@@ -20,6 +20,22 @@ $ds-blue: #116897;
     color: #6b7280;
     margin-top: 4px;
   }
+
+  // Compact per-page legend — terse one-liners, not a paragraph.
+  .notes {
+    font-size: 9px;
+    color: #475569;
+
+    ul {
+      margin: 2px 0 0;
+      padding-left: 16px;
+    }
+
+    li {
+      margin: 0;
+      line-height: 1.35;
+    }
+  }
 }
 
 .salesman-ageing {
@@ -122,13 +138,6 @@ $ds-blue: #116897;
 
   .on-acc-cell {
     color: #6b7280;
-  }
-
-  // --- Currency code cell (compact, uppercase) ---
-  .cur-cell {
-    font-size: 0.72rem;
-    color: #44525f;
-    text-transform: uppercase;
   }
 
   // --- Expandable "N Departments" chip ---

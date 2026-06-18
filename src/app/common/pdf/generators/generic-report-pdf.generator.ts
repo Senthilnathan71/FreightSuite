@@ -541,8 +541,10 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     }
   ];
 
-  // Notes section
-  if (exportConfig.notes?.length) {
+  // Notes section. When `notesEveryPage` is set the notes are rendered in the page
+  // footer instead (repeated on every page), so skip the once-at-end block here.
+  const repeatNotesInFooter = exportConfig.notesEveryPage === true && !!exportConfig.notes?.length;
+  if (exportConfig.notes?.length && !repeatNotesInFooter) {
     const noteItems = exportConfig.notes.map(n => ({ text: n, fontSize: 8, margin: [0, 1, 0, 1] as [number, number, number, number] }));
     content.push({
       stack: [
@@ -681,10 +683,15 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const headerBaseHeight = isLandscape ? 140 : 150;
   const topMargin = headerBaseHeight + (paramRows * (isLandscape ? 11 : 18)) + 12;
 
+  // Reserve extra bottom margin when notes repeat in the footer, so the legend never
+  // overlaps the table (default footer needs ~30pt; each note line ~9pt).
+  const footerNotes = repeatNotesInFooter ? exportConfig.notes! : undefined;
+  const bottomMargin = footerNotes ? 30 + footerNotes.length * 9 : 30;
+
   return {
     pageSize: 'A4',
     pageOrientation: orientation || 'portrait',
-    pageMargins: [30, topMargin, 30, 30] as [number, number, number, number],
+    pageMargins: [30, topMargin, 30, bottomMargin] as [number, number, number, number],
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',
@@ -703,7 +710,8 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     content,
     footer: createFooterFunction(userData, {
       showPageNumbers: true,
-      showDisclaimer: exportConfig.showFooterNote === true
+      showDisclaimer: exportConfig.showFooterNote === true,
+      footerNotes
     }),
     styles: getPdfStyles(),
     defaultStyle: { fontSize: 8, lineHeight: 1.2, color: '#333333' }
