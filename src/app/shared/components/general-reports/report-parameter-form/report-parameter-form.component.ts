@@ -61,6 +61,10 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   parameterForm!: FormGroup;
   dropdownData: Map<string, any[]> = new Map();
   loadingDropdowns: Map<string, boolean> = new Map();
+  /** Shared empty-options reference. Returned by getDropdownOptions before data loads so the value
+   *  template binding ([items]) stays referentially stable across change-detection — a fresh [] each
+   *  pass makes ng-select's virtualScroll re-render in a loop (ExpressionChanged in _renderItemsRange). */
+  private readonly EMPTY_OPTIONS: any[] = [];
   minDates = new Map<string, NgbDateStruct>();
   maxDates = new Map<string, NgbDateStruct>();
 
@@ -490,7 +494,7 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   }
 
   getDropdownOptions(paramName: string): any[] {
-    return this.dropdownData.get(paramName) || [];
+    return this.dropdownData.get(paramName) || this.EMPTY_OPTIONS;
   }
 
   private getDropdownSample(paramName: string): any {
