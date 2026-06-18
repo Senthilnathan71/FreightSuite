@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { StorageMap } from '@ngx-pwa/local-storage';
@@ -511,7 +511,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     }
   `]
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
   loginform!: FormGroup;
   forgotPasswordForm!: FormGroup;
   recoverform = false;
@@ -528,6 +528,9 @@ export class LoginComponent implements OnInit {
   resendCountdown = 0;
   private pendingLoginParams: any = null;
   private resendInterval: ReturnType<typeof setInterval> | null = null;
+
+  // Focus the email field when the login page loads.
+  @ViewChild('emailInput') emailInput?: ElementRef<HTMLInputElement>;
 
   // Auto-focus the "Force Login" button when the "Already Logged In" modal appears.
   // Uses a setter because the modal is rendered with @if, so the element only exists once activeSessionInfo is set.
@@ -583,6 +586,11 @@ export class LoginComponent implements OnInit {
     }
   }
 
+
+  ngAfterViewInit(): void {
+    // Place the cursor on the email field as soon as the login page is shown.
+    setTimeout(() => this.emailInput?.nativeElement.focus());
+  }
 
   onEmailChange(): void {
     this.loginform.get('email')?.valueChanges.pipe(

@@ -21,7 +21,7 @@
                 <form class="login-form" id="loginform" [formGroup]="loginform" (ngSubmit)="login()">
                     <div class="custom-form-group login-field login-icon-field">
                         <span class="login-field-icon" id="basic-addon1"><i class="ti-email"></i></span>
-                        <input type="text" formControlName="email" id="email" class="form-control"
+                        <input type="text" formControlName="email" id="email" class="form-control" #emailInput
                             placeholder="" aria-label="Email Address" aria-describedby="basic-addon1"
                             [ngClass]="{'is-invalid':
                                 loginform.controls['email'].invalid &&
