@@ -144,40 +144,16 @@
             </ng-template>
           </ng-select>
 
-          <!-- MULTI SELECT
-          <dofi-searchable-dropdown 
-          [items]="getDropdownOptions(param.ParameterName)" 
-          formControlName="param.ParameterName" 
-          placeholder=""
-          [displayFields]="countryLookupConfig.displayFields"
-          [displayLabels]="countryLookupConfig.displayLabels"
-          [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
-          bindValue="CountryMasterSid"
-          >
-          </dofi-searchable-dropdown> -->
-
           <!-- MULTI SELECT -->
-          <ng-select
+          <multi-select
             *ngIf="param.ParameterFieldType === 'DROPDOWN M'"
-            class="ng-select"
             [items]="getDropdownOptions(param.ParameterName)"
-            [multiple]="true"
+            [formControlName]="param.ParameterName"
             bindLabel="label"
             bindValue="value"
-            [formControlName]="param.ParameterName"
-            [class.is-invalid]="hasError(param.ParameterName)"
-            [disabled]="isDropdownDisabled(param.ParameterName)"
-            [placeholder]="isDropdownDisabled(param.ParameterName) ? 'Select ' + getParentLabel(param.ParameterName) + ' first' : ''"
+            [displayCount]="1"
           >
-
-            <ng-template ng-notfound-tmp>
-              <div class="text-center py-2">
-                <small class="text-muted">
-                  {{ isDropdownDisabled(param.ParameterName) ? 'Select ' + getParentLabel(param.ParameterName) + ' first' : 'No options available' }}
-                </small>
-              </div>
-            </ng-template>
-          </ng-select>
+          </multi-select>
 
           <!-- YEAR SELECTOR -->
           <ng-select

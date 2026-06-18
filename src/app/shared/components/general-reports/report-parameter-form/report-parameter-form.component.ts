@@ -155,6 +155,13 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
 
     this.parameterForm = this.fb.group(group);
 
+    // DROPDOWN M is rendered via <multi-select>, which honours only the form control's disabled state
+    // (no [disabled] input + map binding like the other field types). So disable dependent DROPDOWN M
+    // controls until their parent is selected — scoped to DROPDOWN M so DROPDOWN/DROPDOWN D are untouched.
+    this.parameters
+      .filter(p => p.DependsOnParameter && p.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M)
+      .forEach(p => this.parameterForm.get(p.ParameterName)?.disable({ emitEvent: false }));
+
     // Setup cascading listeners after form is built
     this.setupCascadingListeners();
 
@@ -239,12 +246,17 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
       childControl.setValue(null);
       this.dropdownData.set(childName, []);
 
+      const isMultiSelect = childParam.ParameterFieldType === this.FIELD_TYPES.DROPDOWN_M;
+
       if (parentValue === null || parentValue === undefined || parentValue === '') {
         // Parent cleared - disable child
         this.disabledDropdowns.set(childName, true);
+        // <multi-select> reads only control.disabled, so mirror the map onto the control for DROPDOWN M.
+        if (isMultiSelect) childControl.disable({ emitEvent: false });
       } else {
         // Parent has value - enable and reload child dropdown
         this.disabledDropdowns.set(childName, false);
+        if (isMultiSelect) childControl.enable({ emitEvent: false });
         this.loadDynamicDropdownWithContext(childParam, parentName, parentValue);
       }
     });
