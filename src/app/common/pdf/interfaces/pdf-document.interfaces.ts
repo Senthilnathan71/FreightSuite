@@ -17,6 +17,11 @@ import {
 // QUOTATION PDF DATA
 // =====================
 export interface QuotationPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   quotation: {
     quoteNumber?: string;
     quoteDate?: Date | string;
@@ -58,6 +63,11 @@ export interface QuotationCarrierData {
 // ENQUIRY PDF DATA
 // =====================
 export interface EnquiryPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   enquiry: {
     enquiryNumber?: string;
     enquiryDate?: Date | string;
@@ -112,6 +122,11 @@ export interface EnquiryCargoData extends PdfCargoItem {
 // BOOKING PDF DATA
 // =====================
 export interface BookingPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   booking: {
     bookingNo?: string;
     bookingDate?: Date | string;
@@ -234,6 +249,11 @@ export interface SailingConfirmationPdfData extends PdfDocumentBase {
 // PACKING LIST PDF DATA
 // =====================
 export interface PackingListPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   selectedFclLcl?: string;
   terms?: string[];
   packing: {
@@ -276,6 +296,11 @@ export interface PackingListPdfData extends PdfDocumentBase {
 // COMMERCIAL INVOICE PDF DATA
 // =====================
 export interface CommercialInvoicePdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   invoice: {
     hblNo?: string;
     jobNo?: string;
@@ -371,6 +396,11 @@ export interface HouseJobSummary {
 // SHIPMENT REPORT PDF DATA
 // =====================
 export interface ShipmentReportPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   reportTitle: string;
   shipmentNo?: string;
   selectedFclLcl?: string;
@@ -468,6 +498,11 @@ export interface ShipmentPartyAmountRow {
 // JOB CARD PDF DATA
 // =====================
 export interface JobCardPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   reportTitle: string;
   selectedDepartmentType?: string;
   parties: {
@@ -762,6 +797,11 @@ export interface ExitFormPdfData extends PdfDocumentBase {
 // DELIVERY ORDER PDF DATA
 // =====================
 export interface DeliveryOrderPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   reportTitle: string;
   selectedFclLcl?: string;
   amountInWords?: string;
@@ -951,6 +991,11 @@ export interface VendorCreditNotePdfData extends InvoicePdfData {}
 // =====================
 
 export interface CreditNotePdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
    credit: {
     invoiceNo?: string;
     invoiceDate?: Date | string;
@@ -1296,6 +1341,11 @@ export interface ReleaseLetterLclCargoRow {
 // INDEMNITY PDF DATA
 // =====================
 export interface ImdemintyPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   containerList: string[];
   houseJob: {
     vesselName?: string;

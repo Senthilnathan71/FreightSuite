@@ -72,6 +72,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -497,6 +498,7 @@ dataFromEnqPage:any;
     private emailTriggerService: EmailTriggerService,
     public voiceRecognitionService: VoiceRecognitionService,
     private voiceParserService: VoiceParserService,
+    private companySettings: CompanySettingsManagerService,
   ) {
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -7263,6 +7265,9 @@ ${this.userData['userEmail']}`;
         departments: this.departments,
         ports: this.ports,
         containerTypeList: this.containerTypeList
+      },
+      {
+        printSettings: this.companySettings.getPrintSettings()
       }
     );
 

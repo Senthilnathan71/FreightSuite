@@ -22,9 +22,9 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
           canvas: [
             {
               type: 'line',
-              x1: 0,
+              x1: 8,
               y1: 0,
-              x2: pageSize.width - 30,
+              x2: pageSize.width - 38,
               y2: 0,
               lineWidth: 0.25,
               lineColor: '#000'
@@ -68,56 +68,84 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
 function buildHeader(data: ShipmentReportPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
-  const logoPosition = 'left' as 'left' | 'center' | 'right';
-  const companyPosition = 'center' as 'left' | 'center' | 'right';
-  const companyAlignment = 'center' as 'left' | 'center' | 'right';
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
 
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = [
-    branch?.addressLine2 || company?.addressLine2 || '',
-    branch?.cityName || branch?.cityMaster?.cityName || company?.city || '',
-    (branch?.postalCode || company?.postalCode) ? `Postal Code : ${branch?.postalCode || company?.postalCode}` : '',
-    (branch?.phoneNumber || company?.phoneNumber) ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}` : ''
-  ]
-    .filter(Boolean)
-    .join(', ');
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
+  const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || company?.postalCode || '';
+  const phoneNumber = branch?.phoneNumber || company?.phoneNumber || '';
+  const detailLine2: any[] = [];
+  const appendText = (text: string | any[]) => {
+    if (detailLine2.length) detailLine2.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      detailLine2.push(...text);
+    } else {
+      detailLine2.push({ text });
+    }
+  };
+
+  if (addressLine2) appendText(addressLine2);
+  if (cityName) appendText(cityName);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phoneNumber) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phoneNumber }]);
 
   const companyDetails = {
     stack: [
-      { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: companyAlignment },
-      { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] }
+      { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: printSettings.companyAlignment },
+      { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+      { text: detailLine1, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+      { text: detailLine2, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] }
     ],
     margin: [0, 0, 0, 0]
   };
 
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot) {
+      stack.push(buildHeaderLogo(data.logo, slot));
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyDetails.stack, margin: companyMargin });
+    }
+
+    return { stack };
+  };
+
   return {
-    columns: [
-      {
-        width: '*',
-        stack: [
-          logoPosition === 'left' ? buildHeaderLogo(data.logo, 'left') : { text: '' },
-          companyPosition === 'left' ? companyDetails : { text: '' }
-        ]
-      },
-      {
-        width: '*',
-        stack: [
-          logoPosition === 'center' ? buildHeaderLogo(data.logo, 'center') : { text: '' },
-          companyPosition === 'center' ? companyDetails : { text: '' }
-        ]
-      },
-      {
-        width: '*',
-        stack: [
-          logoPosition === 'right' ? buildHeaderLogo(data.logo, 'right') : { text: '' },
-          companyPosition === 'right' ? companyDetails : { text: '' }
-        ]
-      }
-    ],
+    table: {
+      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
+    },
+    layout: 'noBorders',
     margin: [0, 0, 0, 2]
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
@@ -505,6 +533,11 @@ export function transformShipmentReportApiData(
     containerTypeList?: any[];
     selectedFCLLCL?: string;
     portList?: any[];
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   }
 ): ShipmentReportPdfData {
   const costRevenueCharges = apiData?.costRevenueCharges || [];
@@ -688,6 +721,11 @@ export function transformShipmentReportApiData(
       email: userData?.Email || userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     selectedFclLcl,
     parties: {
       customerName: apiData?.CustomerName || '',

@@ -129,7 +129,10 @@ function buildCompanyHeader(data: ReceiptPdfData): any {
       stack.push({ image: logo, fit: [60, 60], alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
     }
     if (printSettings.companyPosition === slot) {
-      stack.push({ stack: companyInfoStack, margin: stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0] });
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
     }
     return { stack };
   };
@@ -172,6 +175,14 @@ function getHeaderWidths(
 ): any[] {
   if (companyPosition === 'center' && logoPosition !== 'center') {
     return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
   }
 
   return ['33%', '34%', '33%'];

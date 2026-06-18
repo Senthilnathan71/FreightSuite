@@ -69,6 +69,7 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -400,7 +401,8 @@ export class EnquiryEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     private sidebarService : VerticalSidebarService,
     private emailTriggerService: EmailTriggerService,
     private modelService: NgbModal,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private companySettings: CompanySettingsManagerService
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
@@ -3217,6 +3219,9 @@ if (this.isTermsAndConditionsEnabled) {
           ports: this.ports,
           departments: this.departments,
           salesmen: this.salesmanList
+        },
+        {
+          printSettings: this.companySettings.getPrintSettings()
         }
       );
 
@@ -3423,6 +3428,9 @@ if (this.isTermsAndConditionsEnabled) {
           ports: this.ports,
           departments: this.departments,
           salesmen: this.salesmanList
+        },
+        {
+          printSettings: this.companySettings.getPrintSettings()
         }
       );
     } catch (error) {

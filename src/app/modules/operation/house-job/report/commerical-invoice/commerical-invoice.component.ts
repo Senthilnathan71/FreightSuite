@@ -6,6 +6,7 @@ import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { generateCommercialInvoiceDocument, transformCommercialInvoiceApiData } from 'src/app/common/pdf/generators/commercial-invoice-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -92,6 +93,7 @@ export class CommericalInvoiceComponent {
       private operationService: OperationService,
       private modalService: NgbModal,
       private emailTriggerService: EmailTriggerService,
+      private companySettings: CompanySettingsManagerService,
     ) { }
  
 
@@ -114,7 +116,10 @@ export class CommericalInvoiceComponent {
         this.currentBranch,
         this.userData,
         logo,
-        { containerTypes: this.containerTypeList }
+        {
+          containerTypes: this.containerTypeList,
+          printSettings: this.companySettings.getPrintSettings()
+        }
       );
       const docDefinition = generateCommercialInvoiceDocument(pdfData);
       this.pdfMakeService.download(docDefinition, 'Commercial_Invoice');
@@ -153,7 +158,10 @@ export class CommericalInvoiceComponent {
         this.currentBranch,
         this.userData,
         logo,
-        { containerTypes: this.containerTypeList }
+        {
+          containerTypes: this.containerTypeList,
+          printSettings: this.companySettings.getPrintSettings()
+        }
       );
       const docDefinition = generateCommercialInvoiceDocument(pdfData);
       return await this.pdfMakeService.getBlob(docDefinition);
