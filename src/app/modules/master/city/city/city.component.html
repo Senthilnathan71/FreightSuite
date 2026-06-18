@@ -317,6 +317,7 @@
                         [displayLabels]="countryLookupConfig.displayLabels"
                         [labelFields]="countryLookupConfig.labelFields" bindLabel="countryName"
                         bindValue="CountryMasterSid"
+                        (itemSelected)="filterStateByCountryId($event)"
                         >
                       </dofi-searchable-dropdown>
 
@@ -372,6 +373,7 @@
                         [displayLabels]="stateLookupConfig.displayLabels"
                         [labelFields]="stateLookupConfig.labelFields" bindLabel="stateName"
                         bindValue="StateMasterSid"
+                        [isLoading]="isLoadingStates"
                         >
                       </dofi-searchable-dropdown>
 

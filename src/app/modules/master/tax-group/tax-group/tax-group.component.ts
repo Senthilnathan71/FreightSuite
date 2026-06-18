@@ -13,6 +13,8 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 interface TaxGroup {
   TaxGroupMasterSid?: number;
@@ -32,7 +34,9 @@ interface TaxGroup {
     FavoriteStarComponent,
     NgxSpinnerModule,
     NgbPaginationModule,
-    NgbTooltipModule
+    NgbTooltipModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './tax-group.component.html',
   styles: ``

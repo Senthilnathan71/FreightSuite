@@ -172,7 +172,7 @@
         [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
         appPreventMultiClick
         (click)="onSubmit()"
-        [disabled]="isSaving || isSubmitting || (isEditMode && (isSuspended || isJobClosed))">
+        [disabled]="isSaving || isSubmitting || (isEditMode && (isSuspended || isJobClosed || !mps.can('update')))">
           <i class="fas me-1" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
           <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
           <span *ngIf="hasUnsavedChanges()"

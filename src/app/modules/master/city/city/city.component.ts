@@ -87,6 +87,7 @@ export class CityComponent extends BaseListComponent implements OnInit {
   currentMenuId: number;
   TandCList: any;
   stateList: any[] = [];
+  isLoadingStates = false;
   countryMap: { [id: number]: string } = {};
   stateMap: { [id: number]: string } = {};
   modalRef!: NgbModalRef;
@@ -229,9 +230,7 @@ private initializeTableConfig() {
     super(paginationService);
     effect(()=> {
           const countryData = this.dropdownStore.countries();
-          const stateData = this.dropdownStore.states();
           this.countryList = countryData;
-          this.stateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
         })
   }
 
@@ -557,8 +556,46 @@ private initializeTableConfig() {
 
 
   loadCountryAndStateData() {
-    this.dropdownStore.loadStates().subscribe();
     this.dropdownStore.loadCountries().subscribe();
+  }
+
+  filterStateByCountryId(countryData: any, isPatch: boolean = false) {
+    this.stateList = [];
+
+    if (!isPatch) {
+      this.cityForm.patchValue({ StateMasterSid: null });
+      this.cityForm.get('StateMasterSid')?.markAsTouched();
+    }
+
+    const countryId = typeof countryData === 'object'
+      ? countryData?.CountryMasterSid
+      : countryData;
+
+    if (!countryId) {
+      return;
+    }
+
+    this.isLoadingStates = true;
+    this.masterService.getStateByCountryId(countryId).subscribe({
+      next: (resp: any) => {
+        this.isLoadingStates = false;
+        if (resp.status) {
+          this.stateList = (resp.data || []).map((state: any) => ({
+            ...state,
+            Country: state.countryMaster?.countryName || state.Country
+          }));
+        } else {
+          this.stateList = [];
+          this.appSettingService.showError('Error Loading States');
+        }
+      },
+      error: (error) => {
+        this.isLoadingStates = false;
+        this.stateList = [];
+        console.error('Error Loading States', error);
+        this.appSettingService.showError('Error Loading States');
+      }
+    });
   }
 
   // Method to load the city data
@@ -619,6 +656,7 @@ private initializeTableConfig() {
       CountryMasterSid: null,
       status: 'Active'
     });
+    this.stateList = [];
 
     // Re-enable the status field if it was disabled
     this.cityForm.get('status')?.enable();
@@ -696,6 +734,7 @@ private initializeTableConfig() {
       // We ensure null stays null.
       const countryId = city.CountryMasterSid ? Number(city.CountryMasterSid) : null;
       const stateId = city.StateMasterSid ? Number(city.StateMasterSid) : null;
+      this.filterStateByCountryId(countryId, true);
       
       this.cityForm.patchValue({
         cityName: city.cityName,
@@ -753,6 +792,7 @@ private initializeTableConfig() {
           StateMasterSid: Number(city.StateMasterSid),
           status: city.status === 'A' ? 'Active' : 'Suspended'
         });
+        this.filterStateByCountryId(city.CountryMasterSid, true);
         this.setCityFormInitialValue();
       },
       (error) => {
@@ -856,6 +896,7 @@ private initializeTableConfig() {
   loadLeadData(leadId: number) {
     this.masterService.getCityById(leadId).subscribe(
       (leadData) => {
+        this.filterStateByCountryId(leadData.CountryMasterSid, true);
         this.cityForm.patchValue({
           ...leadData,
           CountryMasterSid: leadData.CountryMasterSid,

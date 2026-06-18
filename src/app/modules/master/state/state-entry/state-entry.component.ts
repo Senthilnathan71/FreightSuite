@@ -82,6 +82,7 @@ export class StateEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges
   isDirty: boolean = false;
   isSaving: boolean = false;
   private initialFormValue: any = null;
+  private lastZoneWarningCountryId: number | null = null;
 
 
   constructor(
@@ -206,12 +207,16 @@ export class StateEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
-  onCountryChange(selectedCountryId: number) {
+  onCountryChange(selectedCountryId: number | any) {
+  const selectedCountryValue = typeof selectedCountryId === 'object'
+    ? selectedCountryId?.CountryMasterSid
+    : selectedCountryId;
+  const countryId = Number(selectedCountryValue);
   
-  if (selectedCountryId) {
+  if (countryId) {
     // Find the selected country
     const selectedCountry = this.dropdownStore.countries().find(
-      country => country.CountryMasterSid === selectedCountryId
+      country => Number(country.CountryMasterSid) === countryId
     );
     
     
@@ -222,7 +227,7 @@ export class StateEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges
       if (zoneId) {
         // Check if this zone exists in available zones
         const zoneExists = this.dropdownStore.zone().some(
-          zone => zone.ZoneMasterSid === zoneId
+          zone => Number(zone.ZoneMasterSid) === Number(zoneId)
         );
         
         
@@ -230,17 +235,32 @@ export class StateEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges
           this.stateForm.patchValue({
             ZoneMasterSid: zoneId
           });
+          this.lastZoneWarningCountryId = null;
         } else {
           this.stateForm.patchValue({ ZoneMasterSid: '' });
+          this.showCountryZoneRequiredWarning(countryId);
         }
       } else {
         this.stateForm.patchValue({ ZoneMasterSid: '' });
+        this.showCountryZoneRequiredWarning(countryId);
       }
     }
   } else {
     this.stateForm.patchValue({ ZoneMasterSid: '' });
+    this.lastZoneWarningCountryId = null;
   }
 }
+
+  private showCountryZoneRequiredWarning(countryId: number): void {
+    this.stateForm.get('ZoneMasterSid')?.markAsTouched();
+
+    if (this.lastZoneWarningCountryId === countryId) {
+      return;
+    }
+
+    this.lastZoneWarningCountryId = countryId;
+    this.appSettingService.showWarning('Selected country has no zone, Zone is required.');
+  }
 
   initForm() {
     this.stateForm = this.fb.group({
