@@ -14,6 +14,7 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../../operation.service';
 import { saveAs } from 'file-saver';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 interface summaryDTO {
   revenue : any[];
@@ -66,7 +67,8 @@ export class JobCardComponent implements OnChanges {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
   ngOnInit() {
@@ -699,7 +701,8 @@ private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: 
       salesmenList: this.salemanList || [],
       uomList: this.uomList || [],
       portList: this.portList || [],
-      selectedDepartmentType: this.selectedDepartmentType || ''
+      selectedDepartmentType: this.selectedDepartmentType || '',
+      printSettings: this.companySettings.getPrintSettings()
     };
   }
 

@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { generateCargoManifestDocument } from 'src/app/common/pdf/generators/cargo-manifest-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -59,7 +60,8 @@ export class CargoManifestComponent {
     private operationService: OperationService,
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
-    private milestoneService: ShipmentMilestoneService
+    private milestoneService: ShipmentMilestoneService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
    showPrintLogo: boolean = false;
@@ -481,6 +483,7 @@ export class CargoManifestComponent {
       currentCompany: this.currentCompany,
       currentBranch: this.currentBranch,
       currentDate: this.currentDate,
+      printSettings: this.companySettings.getPrintSettings(),
       logo
     });
   }

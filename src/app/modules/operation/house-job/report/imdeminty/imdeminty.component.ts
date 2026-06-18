@@ -9,6 +9,7 @@ import {
 } from 'src/app/common/pdf/generators/imdeminty-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -107,7 +108,8 @@ export class ImdemintyComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
 
@@ -134,7 +136,8 @@ async downloadPDF() {
         this.currentCompany,
         this.currentBranch,
         this.userData,
-        logo
+        logo,
+        { printSettings: this.companySettings.getPrintSettings() }
       );
       const docDefinition = generateImdemintyDocument(pdfData);
       const houseJob = this.housejobData?.ShipmentNo || this.housejobData?.HBLNo || 'Report';
@@ -174,7 +177,8 @@ async downloadPDF() {
               this.currentCompany,
               this.currentBranch,
               this.userData,
-              logo
+              logo,
+              { printSettings: this.companySettings.getPrintSettings() }
             );
             const docDefinition = generateImdemintyDocument(pdfData);
             return await this.pdfMakeService.getBlob(docDefinition);

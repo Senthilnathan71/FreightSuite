@@ -501,6 +501,7 @@ getSubCurrencyNameFromCode(currencyCode: string): string {
       packageTypeList: this.packageTypeList || [],
       terms: this.TandCList || [],
       amountInWords: this.getAmountInWords(),
+      printSettings: this.companySettings.getPrintSettings(),
     };
   }
 }

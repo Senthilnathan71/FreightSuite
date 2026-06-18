@@ -520,7 +520,8 @@ get visibleTabs() {
     private commonModalService : ModalService,
     private toastr: ToastrService,
     private emailTriggerService: EmailTriggerService,
-    private creditValidationApiService: CreditValidationApiService
+    private creditValidationApiService: CreditValidationApiService,
+    private companySettings: CompanySettingsManagerService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -5690,7 +5691,10 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
           carriers: this.carrierList,
           containerTypes: this.containerTypeList
         },
-        type
+        type,
+        {
+          printSettings: this.companySettings.getPrintSettings()
+        }
       );
 
       this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} downloaded successfully!`);
@@ -6359,7 +6363,9 @@ private async generateBookingPdfBlobForMail(type: 'booking' | 'cro' = 'booking')
     };
     const pdfData = type === 'cro'
       ? transformCroApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo) as any
-      : transformBookingApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo, lookups);
+      : transformBookingApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo, lookups, {
+          printSettings: this.companySettings.getPrintSettings()
+        });
 
     return await this.pdfMakeService.generateBookingBlob(pdfData, type as BookingDocumentType);
   } catch (error) {

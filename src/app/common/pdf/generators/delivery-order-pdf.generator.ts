@@ -63,6 +63,12 @@ export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
 function buildHeader(data: DeliveryOrderPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
+  const logo = data.logo;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const,
+  };
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
   const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
   const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
@@ -75,7 +81,7 @@ function buildHeader(data: DeliveryOrderPdfData): any {
   if (postalCode) {
     detailLine2.push(
       detailLine2[0] ? ', ' : '',
-      { text: 'Postal Code : ' },
+      { text: 'Postal Code : ', bold: true },
       postalCode,
     );
   }
@@ -83,70 +89,94 @@ function buildHeader(data: DeliveryOrderPdfData): any {
   if (phoneNumber) {
     detailLine2.push(
       detailLine2.length > 1 || detailLine2[0] ? ', ' : '',
-      { text: 'Ph.no : ' },
+      { text: 'Ph.no\u00a0:\u00a0', bold: true },
       phoneNumber,
     );
   }
 
+  const companyInfoStack: any[] = [
+    {
+      text: (company?.companyName || '').toUpperCase(),
+      fontSize: 13,
+      alignment: printSettings.companyAlignment,
+    },
+    {
+      text: branch?.branchName || '',
+      fontSize: 10,
+      alignment: printSettings.companyAlignment,
+      margin: [0, 2, 0, 0],
+    },
+    {
+      text: detailLine1,
+      fontSize: 8.5,
+      alignment: printSettings.companyAlignment,
+      margin: [0, 2, 0, 0],
+    },
+    {
+      text: detailLine2,
+      fontSize: 8,
+      alignment: printSettings.companyAlignment,
+      noWrap: true,
+      margin: [0, 2, 0, 0],
+    },
+  ];
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot && logo) {
+      stack.push({
+        image: logo,
+        fit: [70, 70],
+        alignment: slot,
+        margin: slot === 'right' ? [0, 4, 10, 4] : [10, 4, 0, 4],
+      });
+    }
+    if (printSettings.companyPosition === slot) {
+      const margin = slot === 'right'
+        ? (stack.length ? [0, 6, 16, 0] : [0, 8, 16, 0])
+        : (stack.length ? [0, 6, 0, 0] : [0, 8, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin });
+    }
+
+    return {
+      border: [false, false, false, false],
+      stack,
+    };
+  };
+
   return {
     table: {
-      widths: [90, '*', 90],
+      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
       body: [
         [
-          {
-            border: [false, false, false, false],
-            alignment: 'left',
-            margin: [10, 4, 0, 4],
-            stack: [
-              data.logo
-                ? {
-                    image: data.logo,
-                    fit: [70, 70],
-                    alignment: 'left',
-                  }
-                : { text: '' },
-            ],
-          },
-          {
-            border: [false, false, false, false],
-            stack: [
-              {
-                text: (company?.companyName || '').toUpperCase(),
-                fontSize: 13,
-                alignment: 'center',
-              },
-              {
-                text: branch?.branchName || '',
-                fontSize: 10,
-                alignment: 'center',
-                margin: [0, 2, 0, 0],
-              },
-              {
-                text: detailLine1,
-                fontSize: 8.5,
-                alignment: 'center',
-                margin: [0, 2, 0, 0],
-              },
-              {
-                text: detailLine2,
-                fontSize: 8,
-                alignment: 'center',
-                noWrap: true,
-                margin: [0, 2, 0, 0],
-              },
-            ],
-            margin: [0, 8, 0, 0],
-          },
-          {
-            border: [false, false, false, false],
-            text: '',
-          },
+          buildSlot('left'),
+          buildSlot('center'),
+          buildSlot('right'),
         ],
       ],
     },
     layout: 'noBorders',
     margin: [0, 0, 0, 2],
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right',
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [90, '*', 90];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [90, '*', 260];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [260, '*', 90];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: DeliveryOrderPdfData): any {
@@ -738,6 +768,11 @@ export function transformDeliveryOrderApiData(
     packageTypeList?: any[];
     terms?: any[];
     amountInWords?: string;
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   },
 ): DeliveryOrderPdfData {
   const cargo = apiData?.Cargo?.[0] || {};
@@ -817,6 +852,11 @@ export function transformDeliveryOrderApiData(
     branch,
     userData,
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center',
+    },
     reportTitle: 'Delivery Order',
     selectedFclLcl: options?.selectedFCLLCL || '',
     amountInWords: options?.amountInWords || '',

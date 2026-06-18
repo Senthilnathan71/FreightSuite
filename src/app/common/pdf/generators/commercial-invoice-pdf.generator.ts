@@ -4,7 +4,6 @@
  */
 
 import { CommercialInvoicePdfData } from '../interfaces/pdf-document.interfaces';
-import { buildHeader } from '../builders/pdf-header.builder';
 import { buildDivider } from '../builders/pdf-section.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
 import { formatDate, formatNumber } from '../helpers/pdf-formatters';
@@ -37,19 +36,15 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
     background: function (currentPage, pageSize) {
       return {
         canvas: [
-          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
-          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.25 },
+          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 }
         ]
       };
     },
     content: [
-      buildHeader(data.company, data.branch, data.logo, {
-        logoWidth: 70,
-        logoHeight: 70,
-        compact: true
-      }),
+      buildCommercialInvoiceHeader(data),
       buildDivider({ width: 800, margin: [0, 4, 0, 6], thickness: 1 }),
       {
         text: 'Commercial Invoice',
@@ -95,6 +90,86 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
     styles,
     defaultStyle: { ...PDF_DEFAULT_CONFIG.defaultStyle, fontSize: 8 }
   };
+}
+
+function buildCommercialInvoiceHeader(data: CommercialInvoicePdfData): any {
+  const company: any = data.company || {};
+  const branch: any = data.branch || {};
+  const logo = data.logo;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
+
+  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || branch?.PostalCode || branch?.ZipCode || company?.postalCode || company?.PostalCode || company?.ZipCode || '';
+  const phone = branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || company?.phoneNumber || company?.PhoneNumber || company?.Phone || '';
+  const cityLine: any[] = [];
+  const appendText = (text: string | any[]) => {
+    if (cityLine.length) cityLine.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      cityLine.push(...text);
+    } else {
+      cityLine.push({ text });
+    }
+  };
+
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
+  if (addressLine2) appendText(addressLine2);
+  if (city) appendText(city);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
+
+  const companyInfoStack: any[] = [
+    { text: (company?.companyName || '').toUpperCase(), style: 'companyName', fontSize: 14, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 4] },
+    { text: branch?.branchName || '', style: 'branchName', fontSize: 10, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 2] },
+    { text: branch?.addressLine1 || company?.addressLine1 || '', style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] },
+    { text: cityLine, style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
+  ];
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot && logo) {
+      stack.push({ image: logo, fit: [70, 70], alignment: slot, margin: slot === 'right' ? [0, 0, 8, 0] : [8, 0, 0, 0] });
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
+    }
+
+    return { stack };
+  };
+
+  return {
+    table: {
+      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
+    },
+    layout: 'noBorders',
+    margin: [0, 0, 0, 5]
+  };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildHeaderBlocks(data: CommercialInvoicePdfData, layout: any): any {
@@ -249,6 +324,11 @@ export function transformCommercialInvoiceApiData(
   logo?: string,
   options?: {
     containerTypes?: any[];
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   }
 ): CommercialInvoicePdfData {
   const resolveContainerType = (containerTypeSid: number | string | undefined): string => {
@@ -281,16 +361,16 @@ export function transformCommercialInvoiceApiData(
       addressLine1: company?.addressLine1 || company?.Address || '',
       addressLine2: company?.addressLine2 || '',
       city: company?.City || company?.city || '',
-      postalCode: company?.postal_code || company?.ZipCode || '',
-      phoneNumber: company?.phoneNumber || company?.Phone || ''
+      postalCode: company?.postalCode || company?.PostalCode || company?.postal_code || company?.ZipCode || '',
+      phoneNumber: company?.phoneNumber || company?.PhoneNumber || company?.Phone || ''
     },
     branch: {
       branchName: branch?.branchName || branch?.BranchName || '',
       addressLine1: branch?.addressLine1 || branch?.Address || '',
       addressLine2: branch?.addressLine2 || '',
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
-      postalCode: branch?.postalCode || '',
-      phoneNumber: branch?.phoneNumber || '',
+      postalCode: branch?.postalCode || branch?.PostalCode || branch?.ZipCode || '',
+      phoneNumber: branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || '',
       cityMaster: branch?.cityMaster
     },
     userData: {
@@ -298,6 +378,11 @@ export function transformCommercialInvoiceApiData(
       email: userData?.email || userData?.Email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     invoice: {
       hblNo: housejobData?.HBLNo || '',
       jobNo: housejobData?.masterJob?.MasterJobNumber || '',

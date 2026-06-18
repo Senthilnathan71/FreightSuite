@@ -66,7 +66,7 @@ function buildHeader(data: QuotationPdfData): any {
       { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
       { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0], noWrap: true }
     ],
-    margin: [0, 0, 0, 0]
+    margin: companyPosition === 'right' ? [0, 0, 18, 0] : [0, 0, 0, 0]
   };
 
   return {
@@ -124,6 +124,18 @@ function getHeaderColumnWidth(
   logoPosition: 'left' | 'center' | 'right',
   companyPosition: 'left' | 'center' | 'right'
 ): any {
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    if (column === 'left') return 110;
+    if (column === 'right') return 300;
+    return '*';
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    if (column === 'left') return 300;
+    if (column === 'right') return 110;
+    return '*';
+  }
+
   if (companyPosition === 'center' && logoPosition !== 'center') {
     return column === 'center' ? '*' : 110;
   }
@@ -513,6 +525,13 @@ export function transformQuotationApiData(
     departments?: any[];
     ports?: any[];
     containerTypeList?: any[];
+  },
+  options?: {
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   }
 ): QuotationPdfData {
   const quotation = apiData || {};
@@ -542,6 +561,11 @@ export function transformQuotationApiData(
       email: userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     quotation: {
       quoteNumber: quotation.QuoteNumber || '',
       quoteDate: quotation.QuoteDate,

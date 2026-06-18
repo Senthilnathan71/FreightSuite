@@ -54,16 +54,21 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
 function buildHeader(data: JobCardPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
-  const logoPosition = 'left' as 'left' | 'center' | 'right';
-  const companyPosition = 'center' as 'left' | 'center' | 'right';
-  const companyAlignment = 'center' as 'left' | 'center' | 'right';
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
+  const logoPosition = printSettings.logoPosition;
+  const companyPosition = printSettings.companyPosition;
+  const companyAlignment = printSettings.companyAlignment;
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = [
-    branch?.addressLine2 || company?.addressLine2 || '',
-    branch?.cityName || branch?.cityMaster?.cityName || company?.city || '',
-    (branch?.postalCode || company?.postalCode) ? `Postal Code : ${branch?.postalCode || company?.postalCode}` : '',
-    (branch?.phoneNumber || company?.phoneNumber) ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}` : ''
-  ].filter(Boolean).join(', ');
+  const detailLine2 = buildHeaderDetailLine([
+    { value: branch?.addressLine2 || company?.addressLine2 || '' },
+    { value: branch?.cityName || branch?.cityMaster?.cityName || company?.city || '' },
+    { label: 'Postal Code : ', value: branch?.postalCode || company?.postalCode || '' },
+    { label: 'Ph.no : ', value: branch?.phoneNumber || company?.phoneNumber || '' }
+  ]);
 
   const companyDetails = {
     stack: [
@@ -71,27 +76,28 @@ function buildHeader(data: JobCardPdfData): any {
       { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: companyAlignment, margin: [0, 1, 0, 0] },
       { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
       { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] }
-    ]
+    ],
+    margin: companyPosition === 'right' ? [0, 0, 18, 0] : [0, 0, 0, 0]
   };
 
   return {
     columns: [
       {
-        width: '*',
+        width: getHeaderColumnWidth('left', logoPosition, companyPosition),
         stack: [
           logoPosition === 'left' ? buildHeaderLogo(data.logo, 'left') : { text: '' },
           companyPosition === 'left' ? companyDetails : { text: '' }
         ]
       },
       {
-        width: '*',
+        width: getHeaderColumnWidth('center', logoPosition, companyPosition),
         stack: [
           logoPosition === 'center' ? buildHeaderLogo(data.logo, 'center') : { text: '' },
           companyPosition === 'center' ? companyDetails : { text: '' }
         ]
       },
       {
-        width: '*',
+        width: getHeaderColumnWidth('right', logoPosition, companyPosition),
         stack: [
           logoPosition === 'right' ? buildHeaderLogo(data.logo, 'right') : { text: '' },
           companyPosition === 'right' ? companyDetails : { text: '' }
@@ -100,6 +106,40 @@ function buildHeader(data: JobCardPdfData): any {
     ],
     margin: [0, 0, 0, 2]
   };
+}
+
+function buildHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
+  return parts
+    .filter(part => !!part.value)
+    .flatMap((part, index) => [
+      ...(index > 0 ? [{ text: ', ' }] : []),
+      ...(part.label ? [{ text: part.label, bold: true }] : []),
+      { text: part.value }
+    ]);
+}
+
+function getHeaderColumnWidth(
+  column: 'left' | 'center' | 'right',
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return column === 'center' ? '*' : 110;
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    if (column === 'left') return 110;
+    if (column === 'right') return 300;
+    return '*';
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    if (column === 'left') return 300;
+    if (column === 'right') return 110;
+    return '*';
+  }
+
+  return '*';
 }
 
 function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
@@ -550,6 +590,11 @@ export function transformJobCardApiData(
     uomList?: any[];
     portList?: any[];
     selectedDepartmentType?: string;
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   }
 ): JobCardPdfData {
   const isSea = (options?.selectedDepartmentType || '').toUpperCase() === 'SEA';
@@ -702,6 +747,11 @@ export function transformJobCardApiData(
       email: userData?.Email || userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     parties: {
       clientName: apiData?.CustomerName || '',
       clientAddress: apiData?.CustomerAddress || '',

@@ -5,6 +5,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
@@ -90,7 +91,8 @@ export class ShipmentComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
 
@@ -721,7 +723,8 @@ getPortName(portCode: string): string {
       customerWiseSummary: this.customerWiseSummary || { revenue: [], cost: [] },
       containerTypeList: this.containerTypeList || [],
       selectedFCLLCL: this.selectedFCLLCL || '',
-      portList: this.portList || []
+      portList: this.portList || [],
+      printSettings: this.companySettings.getPrintSettings()
     };
   }
 

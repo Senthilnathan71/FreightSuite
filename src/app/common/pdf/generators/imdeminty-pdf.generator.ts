@@ -10,6 +10,11 @@ function buildImdemintyHeader(data: ImdemintyPdfData): any {
   const company = data.company;
   const branch = data.branch;
   const logo = data.logo;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
 
   const companyName = (company?.companyName || '').toUpperCase();
   const branchName = branch?.branchName || '';
@@ -19,71 +24,57 @@ function buildImdemintyHeader(data: ImdemintyPdfData): any {
   const postalCode = branch?.postalCode || company?.postalCode || '';
   const phone = branch?.phoneNumber || company?.phoneNumber || '';
 
-  const addressLine2Prefix = [addressLine2, cityName].filter(Boolean).join(', ');
-  const addressLine2Text = addressLine2Prefix ? `${addressLine2Prefix}, ` : '';
-
   const lineTwoParts: any[] = [];
-  if (addressLine2Text) {
-    lineTwoParts.push({ text: addressLine2Text });
-  }
-  if (postalCode) {
-    lineTwoParts.push({ text: 'Postal Code : ', bold: true });
-    lineTwoParts.push({ text: postalCode });
-  }
-  if (phone) {
-    lineTwoParts.push({ text: `${postalCode ? ' , ' : ''}Ph.no : `, bold: true });
-    lineTwoParts.push({ text: phone });
-  }
+  const appendText = (text: string | any[]) => {
+    if (lineTwoParts.length) lineTwoParts.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      lineTwoParts.push(...text);
+    } else {
+      lineTwoParts.push({ text });
+    }
+  };
 
-  const logoCell = logo
-    ? {
-        table: {
-          widths: [90],
-          body: [[
-            {
-              image: logo,
-              width: 70,
-              height: 70,
-              alignment: 'center',
-              margin: [0, 6, 0, 6]
-            }
-          ]]
-        },
-        layout: {
-          hLineWidth: () => 0,
-          vLineWidth: () => 0,
-          hLineColor: () => '#000000',
-          vLineColor: () => '#000000',
-          paddingLeft: () => 0,
-          paddingRight: () => 0,
-          paddingTop: () => 0,
-          paddingBottom: () => 0
-        },
-        width: 100
-      }
-    : { text: '', width: 100 };
+  if (addressLine2) appendText(addressLine2);
+  if (cityName) appendText(cityName);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
+
+  const companyInfoStack: any[] = [
+    companyName
+      ? { text: companyName, style: 'companyName', fontSize: 14, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
+      : { text: '' },
+    branchName
+      ? { text: branchName, style: 'branchName', fontSize: 10, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
+      : { text: '' },
+    addressLine1
+      ? { text: addressLine1, style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
+      : { text: '' },
+    lineTwoParts.length
+      ? { text: lineTwoParts, style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment }
+      : { text: '' }
+  ];
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot && logo) {
+      stack.push({ image: logo, fit: [70, 70], alignment: slot, margin: slot === 'right' ? [0, 6, 10, 6] : [10, 6, 0, 6] });
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
+    }
+
+    return { stack };
+  };
 
   const headerContent = {
-    columns: [
-      logoCell,
-      {
-        stack: [
-          companyName
-            ? { text: companyName, style: 'companyName', fontSize: 14, alignment: 'center', margin: [0, 0, 0, 2] }
-            : { text: '' },
-          branchName
-            ? { text: branchName, style: 'branchName', fontSize: 10, alignment: 'center', margin: [0, 0, 0, 2] }
-            : { text: '' },
-          addressLine1
-            ? { text: addressLine1, style: 'addressText', fontSize: 8, alignment: 'center', margin: [0, 0, 0, 2] }
-            : { text: '' },
-          lineTwoParts.length
-            ? { text: lineTwoParts, style: 'addressText', fontSize: 8, alignment: 'center' }
-            : { text: '' }
-        ]
-      },
-      { text: '', width: 100 }
-    ],
+    table: {
+      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
+    },
+    layout: 'noBorders',
     margin: [6, 0, 6, 4]
   };
 
@@ -185,6 +176,25 @@ function buildTitle(): any {
     ],
     margin: [0, 0, 0, 10]
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildGreeting(): any {
@@ -308,7 +318,14 @@ export function transformImdemintyApiData(
   company: any,
   branch: any,
   userData: any,
-  logo?: string
+  logo?: string,
+  options?: {
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
+  }
 ): ImdemintyPdfData {
   const cargo = apiData?.Cargo?.[0] || {};
   const containerSet = new Set<string>();
@@ -341,6 +358,11 @@ export function transformImdemintyApiData(
       email: userData?.Email || userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     containerList: Array.from(containerSet),
     houseJob: {
       vesselName: apiData?.VesselName || '',

@@ -17,6 +17,98 @@ import {
 import { getPdfStyles, PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
 import { formatDate } from '../helpers/pdf-formatters';
 
+function buildCompanyHeader(data: BookingPdfData): any {
+  const company = data.company;
+  const branch = data.branch;
+  const logo = data.logo;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
+
+  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || company?.postalCode || '';
+  const phone = branch?.phoneNumber || company?.phoneNumber || '';
+  const cityLine: any[] = [];
+  const appendText = (text: string | any[]) => {
+    if (cityLine.length) cityLine.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      cityLine.push(...text);
+    } else {
+      cityLine.push({ text });
+    }
+  };
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
+
+  if (addressLine2) appendText(addressLine2);
+  if (city) appendText(city);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phone) appendText([{ text: 'Ph.no : ', bold: true }, { text: phone }]);
+
+  const companyInfoStack: any[] = [
+    { text: (company?.companyName || '').toUpperCase(), fontSize: 14, bold: true, alignment: printSettings.companyAlignment },
+    { text: branch?.branchName || '', fontSize: 11, bold: true, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: branch?.addressLine1 || company?.addressLine1 || '', fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: cityLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 2, 0, 4], noWrap: true }
+  ];
+
+  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
+    left: 'left',
+    center: 'center',
+    right: 'right'
+  };
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot && logo) {
+      stack.push({ image: logo, fit: [70, 70], alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
+    }
+    return { stack };
+  };
+
+  return {
+    table: {
+      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
+    },
+    layout: {
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 8
+    },
+    margin: [0, 5, 0, 5]
+  };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
+}
+
 /**
  * Generate booking confirmation PDF document definition
  */
@@ -52,12 +144,7 @@ export function generateBookingDocument(
 
     content: [
       // Header
-      buildHeader(data.company, data.branch, data.logo, {
-        showLogo: true,
-        logoWidth: 70,
-        logoHeight: 70,
-        showPostalPhoneLabels: true
-      }),
+      buildCompanyHeader(data),
 
       // Title
       buildBookingTitle(`Booking Confirmation${departmentLabel}`),
@@ -664,6 +751,13 @@ export function transformBookingApiData(
     carriers?: any[];
     agents?: any[];
     containerTypes?: any[];
+  },
+  options?: {
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   }
 ): BookingPdfData {
   const booking = apiData;
@@ -729,6 +823,11 @@ export function transformBookingApiData(
       email: userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     booking: {
       bookingNo: booking.BookingNo || '',
       bookingDate: booking.BookingDateTime || booking.BookingDate,

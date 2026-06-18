@@ -205,9 +205,16 @@ export class PdfMakeService {
     userData: any,
     logo?: string,
     lookups?: any,
-    type: QuotationDocumentType = 'quotation'
+    type: QuotationDocumentType = 'quotation',
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
   ): void {
-    const pdfData = transformQuotationApiData(apiData, company, branch, userData, logo, lookups);
+    const pdfData = transformQuotationApiData(apiData, company, branch, userData, logo, lookups, options);
     this.generateQuotation(pdfData, type);
   }
 
@@ -221,9 +228,16 @@ export class PdfMakeService {
     userData: any,
     logo?: string,
     lookups?: any,
-    type: QuotationDocumentType = 'quotation'
+    type: QuotationDocumentType = 'quotation',
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
   ): Promise<Blob> {
-    const pdfData = transformQuotationApiData(apiData, company, branch, userData, logo, lookups);
+    const pdfData = transformQuotationApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateQuotationBlob(pdfData, type);
   }
 
@@ -255,9 +269,16 @@ export class PdfMakeService {
     branch: any,
     userData: any,
     logo?: string,
-    lookups?: any
+    lookups?: any,
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
   ): void {
-    const pdfData = transformEnquiryApiData(apiData, company, branch, userData, logo, lookups);
+    const pdfData = transformEnquiryApiData(apiData, company, branch, userData, logo, lookups, options);
     this.generateEnquiry(pdfData);
   }
 
@@ -270,9 +291,16 @@ export class PdfMakeService {
     branch: any,
     userData: any,
     logo?: string,
-    lookups?: any
+    lookups?: any,
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
   ): Promise<Blob> {
-    const pdfData = transformEnquiryApiData(apiData, company, branch, userData, logo, lookups);
+    const pdfData = transformEnquiryApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateEnquiryBlob(pdfData);
   }
 
@@ -306,11 +334,18 @@ export class PdfMakeService {
     userData: any,
     logo?: string,
     lookups?: any,
-    type: BookingDocumentType = 'booking'
+    type: BookingDocumentType = 'booking',
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
   ): void {
     const pdfData = type === 'cro'
       ? transformCroApiData(apiData, company, branch, userData, logo) as any
-      : transformBookingApiData(apiData, company, branch, userData, logo, lookups);
+      : transformBookingApiData(apiData, company, branch, userData, logo, lookups, options);
     this.generateBooking(pdfData, type);
   }
 
@@ -324,11 +359,18 @@ export class PdfMakeService {
     userData: any,
     logo?: string,
     lookups?: any,
-    type: BookingDocumentType = 'booking'
+    type: BookingDocumentType = 'booking',
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
   ): Promise<Blob> {
     const pdfData = type === 'cro'
       ? transformCroApiData(apiData, company, branch, userData, logo) as any
-      : transformBookingApiData(apiData, company, branch, userData, logo, lookups);
+      : transformBookingApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateBookingBlob(pdfData, type);
   }
 
@@ -669,6 +711,11 @@ export class PdfMakeService {
       amountInWords?: string;
       localCurrency?: string;
       invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
@@ -700,6 +747,11 @@ export class PdfMakeService {
       amountInWords?: string;
       localCurrency?: string;
       invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
@@ -753,6 +805,11 @@ export class PdfMakeService {
       amountInWords?: string;
       localCurrency?: string;
       invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformCommodityInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
@@ -784,6 +841,11 @@ export class PdfMakeService {
       amountInWords?: string;
       localCurrency?: string;
       invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformCommodityInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
@@ -1044,6 +1106,11 @@ export class PdfMakeService {
       containerTypeList?: any[];
       selectedFCLLCL?: string;
       portList?: any[];
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformShipmentReportApiData(apiData, company, branch, userData, logo, options);
@@ -1063,6 +1130,11 @@ export class PdfMakeService {
       containerTypeList?: any[];
       selectedFCLLCL?: string;
       portList?: any[];
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformShipmentReportApiData(apiData, company, branch, userData, logo, options);
@@ -1097,6 +1169,11 @@ export class PdfMakeService {
       uomList?: any[];
       portList?: any[];
       selectedDepartmentType?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformJobCardApiData(apiData, company, branch, userData, logo, options);
@@ -1118,6 +1195,11 @@ export class PdfMakeService {
       uomList?: any[];
       portList?: any[];
       selectedDepartmentType?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformJobCardApiData(apiData, company, branch, userData, logo, options);
@@ -1264,6 +1346,11 @@ export class PdfMakeService {
       packageTypeList?: any[];
       terms?: any[];
       amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformDeliveryOrderApiData(apiData, company, branch, userData, logo, options);
@@ -1285,6 +1372,11 @@ export class PdfMakeService {
       packageTypeList?: any[];
       terms?: any[];
       amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformDeliveryOrderApiData(apiData, company, branch, userData, logo, options);
@@ -1346,6 +1438,11 @@ export class PdfMakeService {
       amountInWords?: string;
       localCurrency?: string;
       invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformCreditNoteApiData(apiData, company, branch, userData, logo, lookups, options);
@@ -1377,6 +1474,11 @@ export class PdfMakeService {
       amountInWords?: string;
       localCurrency?: string;
       invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformCreditNoteApiData(apiData, company, branch, userData, logo, lookups, options);

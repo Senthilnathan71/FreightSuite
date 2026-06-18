@@ -159,6 +159,11 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
   const company = data.company;
   const branch = data.branch;
   const logo = data.logo;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
   const isIndiaCompany = isIndianCompany(data);
@@ -166,16 +171,17 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
   const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
 
   const logoColumn = logo
-    ? { image: logo, height: LOGO_HEIGHT, alignment: 'left' as const }
+    ? { image: logo, height: LOGO_HEIGHT, alignment: printSettings.logoPosition }
     : { text: '', width: 1 };
 
   const companyInfoStack: any[] = [];
+  const companyAlignment = printSettings.companyAlignment;
 
   if (company?.companyName) {
     companyInfoStack.push({
-      text: company.companyName,
+      text: company.companyName.toUpperCase(),
       style: 'companyName',
-      alignment: 'right',
+      alignment: companyAlignment,
       margin: [0, 0, 0, 6]
     });
   }
@@ -185,29 +191,26 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     companyInfoStack.push({
       text: addressLine1,
       style: 'addressText',
-      alignment: 'right',
+      alignment: companyAlignment,
       margin: [0, 0, 0, 6]
     });
   }
 
   const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
   const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-  const cityCountry = joinNonEmpty([addressLine2, cityName], ', ');
-  if (cityCountry) {
-    companyInfoStack.push({
-      text: cityCountry,
-      style: 'addressText',
-      alignment: 'right',
-      margin: [0, 0, 0, 6]
-    });
-  }
-
+  const postalCode = branch?.postalCode || company?.postalCode;
   const phone = branch?.phoneNumber || company?.phoneNumber;
-  if (phone) {
+  const cityLine = buildCreditNoteHeaderDetailLine([
+    { value: addressLine2 || '' },
+    { value: cityName || '' },
+    { label: 'Postal Code : ', value: postalCode || '' },
+    { label: 'Ph.no : ', value: phone || '' }
+  ]);
+  if (cityLine.length) {
     companyInfoStack.push({
-      text: `Phone No : ${phone}`,
+      text: cityLine,
       style: 'addressText',
-      alignment: 'right',
+      alignment: companyAlignment,
       margin: [0, 0, 0, 6]
     });
   }
@@ -217,14 +220,34 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     companyInfoStack.push({
       text: `${isIndiaCompany ? 'GST No' : 'VAT No'} : ${companyTaxNo}`,
       style: 'addressText',
-      alignment: 'right'
+      alignment: companyAlignment
     });
   }
 
+  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
+    left: 'left',
+    center: 'center',
+    right: 'right'
+  };
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot) {
+      stack.push(logoColumn);
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, alignment: slotAlign[slot], margin: companyMargin });
+    }
+    return { stack };
+  };
+
   const headerTable = {
     table: {
-      widths: ['auto', '*', 10],
-      body: [[logoColumn, { stack: companyInfoStack }, { text: '' }]]
+      widths: getCreditNoteHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
     },
     layout: 'noBorders',
     margin: [0, 5, 0, 3]
@@ -243,6 +266,35 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
   };
 
   return [headerTable, bottomLine];
+}
+
+function buildCreditNoteHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
+  return parts
+    .filter(part => !!part.value)
+    .flatMap((part, index) => [
+      ...(index > 0 ? [{ text: ', ' }] : []),
+      ...(part.label ? [{ text: part.label, bold: true }] : []),
+      { text: part.value }
+    ]);
+}
+
+function getCreditNoteHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 /**
@@ -1237,6 +1289,11 @@ export function transformCreditNoteApiData(
     isSeaMode?: boolean;
     isVATMode?: boolean;
     companyVatNo?: string;
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
     shipmentDetails?: any;
     cargoDetails?: any;
     creditNotePrintData?: any; // CRITICAL: The formatted print data
@@ -1355,6 +1412,11 @@ export function transformCreditNoteApiData(
       email: userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     invoiceTitle: options?.invoiceTitle || 'Credit Note Invoice',
     companyGstCode: branch?.taxRegistrationNo || company?.GST_VAT || '',
     companyPan: company?.Pan || company?.PAN || '',

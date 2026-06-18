@@ -88,6 +88,8 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 
 interface NgbDateStructLike {
   day: number;
@@ -123,7 +125,9 @@ interface rateComparison {
     NgbDropdownModule,
     DecimalPrecisionDirective,
     FormStateGuardDirective,
-    ElementStateGuardDirective
+    ElementStateGuardDirective,
+    PrintHeaderComponent,
+    PrintFooterComponent
    
   ],
   templateUrl: './credit-note-entry.component.html',
@@ -5731,6 +5735,7 @@ export class CreditNoteEntryComponent {
         isSeaMode: this.isSeaDepartment(),
         isVATMode: this.isVATMode,
         companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        printSettings: this.companySettings.getPrintSettings(),
         shipmentDetails: {
           shipper: this.creditNotePrintData?.ShipperName,
           consignee: this.creditNotePrintData?.ConsigneeName,
@@ -5832,6 +5837,7 @@ export class CreditNoteEntryComponent {
         isSeaMode: this.isSeaDepartment(),
         isVATMode: this.isVATMode,
         companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        printSettings: this.companySettings.getPrintSettings(),
         shipmentDetails: {
           shipper: this.creditNotePrintData?.ShipperName,
           consignee: this.creditNotePrintData?.ConsigneeName,
