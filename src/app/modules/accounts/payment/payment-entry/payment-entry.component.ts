@@ -1962,6 +1962,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
         // Lock fields derived from payment request
         this.paymentForm.get('CashOrBank')?.disable({ emitEvent: false });
+
+        // Cash PR has no instrument — clear the seeded NEFT default + drop the
+        // instrument validators (the fields are hidden when CashOrBank === 'C',
+        // so leaving them required would block save on unreachable controls).
+        const isCashPR = request.CashBank === 'Cash';
+        if (isCashPR) {
+          this.paymentForm.patchValue(
+            { InstrumentMode: null, InstrumentNumber: '', InstrumentDate: null, ClearanceDate: null },
+            { emitEvent: false },
+          );
+        }
+        this.setInstrumentValidators(isCashPR);
+
         // Release the guard before adding charge detail rows
         this.isPrefilling = false;
 
@@ -2167,14 +2180,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // Re-check auto posting for the loaded CashOrBank value
     this.checkVoucherPostingMechanism(headerInfo.CashOrBank);
 
-    if (headerInfo.CashOrBank === 'C') {
-      this.paymentForm.get('InstrumentMode')?.clearValidators();
-      this.paymentForm.get('InstrumentMode')?.updateValueAndValidity();
-      this.paymentForm.get('InstrumentNumber')?.clearValidators();
-      this.paymentForm.get('InstrumentNumber')?.updateValueAndValidity();
-      this.paymentForm.get('InstrumentDate')?.clearValidators();
-      this.paymentForm.get('InstrumentDate')?.updateValueAndValidity();
-    }
+    this.setInstrumentValidators(headerInfo.CashOrBank === 'C');
     this.isPosted = response.PostStatus === 'P';
     this.isReadOnly = response.PostStatus !== 'U' || response.Status !== 'A';
 
@@ -4416,6 +4422,24 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   private bankFieldsBackup: any = null;
   private cashFieldsBackup: any = null;
 
+  /**
+   * Cash payments have no instrument — clear the InstrumentMode/Number/Date
+   * validators; Bank payments require all three. Shared by the manual Cash/Bank
+   * toggle, the edit-load patch, and the payment-request prefill so the three
+   * paths stay in sync.
+   */
+  private setInstrumentValidators(isCash: boolean): void {
+    ['InstrumentMode', 'InstrumentNumber', 'InstrumentDate'].forEach((ctrl) => {
+      const c = this.paymentForm.get(ctrl);
+      if (isCash) {
+        c?.clearValidators();
+      } else {
+        c?.setValidators([Validators.required]);
+      }
+      c?.updateValueAndValidity({ emitEvent: false });
+    });
+  }
+
   toggleCashOrBank(selectedMode: any) {
     const mode = this.paymentForm.get('InstrumentMode');
     const number = this.paymentForm.get('InstrumentNumber');
@@ -4450,9 +4474,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         InstrumentDate: null,
         ClearanceDate: null,
       });
-      mode?.clearValidators();
-      number?.clearValidators();
-      date?.clearValidators();
       this.cashFieldsBackup = null;
     } else {
       // Switching to Bank — restore bank backup if available, else set defaults
@@ -4463,15 +4484,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         InstrumentDate: this.bankFieldsBackup?.InstrumentDate ?? null,
         ClearanceDate: this.bankFieldsBackup?.ClearanceDate ?? null,
       });
-      mode?.setValidators([Validators.required]);
-      number?.setValidators([Validators.required]);
-      date?.setValidators([Validators.required]);
       this.bankFieldsBackup = null;
     }
 
-    mode?.updateValueAndValidity();
-    number?.updateValueAndValidity();
-    date?.updateValueAndValidity();
+    this.setInstrumentValidators(isCash);
 
     // Update filtered COA list since bank/cash selection was cleared
     this.rebuildFilteredCoaListForAllRows();
