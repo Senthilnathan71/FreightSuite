@@ -32,14 +32,14 @@
           <tr class="bg-info">
             <th class="bg-transparent text-light">Subledger</th>
             <th class="bg-transparent text-light text-center">OS in Local</th>
-            <th class="bg-transparent text-light text-center">OS in Curr</th>
+            <th class="bg-transparent text-light text-center" *ngIf="params?.CurrencyWise">OS in Curr</th>
 
             @for (label of bucketLabels; track $index) {
               <th class="bg-transparent text-light">{{ label }}</th>
             }
 
             <th class="bg-transparent text-light">On Acc Local</th>
-            <th class="bg-transparent text-light">On Acc Curr</th>
+            <th class="bg-transparent text-light" *ngIf="params?.CurrencyWise">On Acc Curr</th>
             <th class="bg-transparent text-light">Credit Days</th>
             <th class="bg-transparent text-light">Credit Limit</th>
             <th class="bg-transparent text-light text-center">O/S</th>
@@ -66,14 +66,14 @@
               <tr style="white-space: nowrap">
                 <td>{{ sub.SubledgerName }}</td>
                 <td class="text-end">{{ sub.totalOutstandingLocal | number:'1.2-2'}}</td>
-                <td class="text-end">{{ sub.totalOutstandingCurrency | number:'1.2-2'}}</td>
+                <td class="text-end" *ngIf="params?.CurrencyWise">{{ sub.totalOutstandingCurrency | number:'1.2-2'}}</td>
 
                 @for (label of bucketLabels; track $index) {
                   <td class="text-end"> {{ (sub.buckets[label] || 0) | number:'1.2-2' }}</td>
                 }
 
                 <td class="text-end">{{sub.totalOnAccountCreditLocal | number:'1.2-2'}}</td>
-                <td class="text-end">{{sub.totalOnAccountCreditCurr | number:'1.2-2'}}</td>
+                <td class="text-end" *ngIf="params?.CurrencyWise">{{sub.totalOnAccountCreditCurr | number:'1.2-2'}}</td>
                 <td class="text-end">{{ sub.CreditDays }}</td>
                 <td class="text-end">{{sub.CreditLimit}}</td>
                 <td class="text-center">
@@ -94,7 +94,7 @@
               <td>Total</td>
 
               <td class="text-end">{{ group.totalOutstandingLocal | number:'1.2-2'}}</td>
-              <td class="text-end">{{ group.totalOutstandingCurrency | number:'1.2-2'}}</td>
+              <td class="text-end" *ngIf="params?.CurrencyWise">{{ group.totalOutstandingCurrency | number:'1.2-2'}}</td>
 
               @for (label of bucketLabels; track $index) {
                 <td class="text-end">{{ (group.bucketTotals[label] || 0) | number:'1.2-2' }}</td>
@@ -102,7 +102,7 @@
 
               <td class="text-end">{{group.totalOnAccountCreditLocal | number:'1.2-2'}}</td>
               <!-- <td></td> -->
-              <td class="text-end">{{group.totalOnAccountCreditCurr | number:'1.2-2'}}</td>
+              <td class="text-end" *ngIf="params?.CurrencyWise">{{group.totalOnAccountCreditCurr | number:'1.2-2'}}</td>
               <td></td>
               <td></td>
               <!-- <td class="text-end">0</td>
