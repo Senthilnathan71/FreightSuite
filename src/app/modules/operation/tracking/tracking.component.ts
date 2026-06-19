@@ -44,13 +44,19 @@ export class TrackingComponent implements OnInit, OnDestroy {
   isLoading = false;
   hasSearched = false;
   errorMessage = '';
+  noShipmentFound = false;
   userData: any;
   currentCompany: any;
   currentBranch: any;
   isPaused = false;
 
+  matchResults: any[] = [];
+  showMatchModal = false;
+  matchSearchType = '';
+  matchedReference = '';
+
   readonly quickSearches = ['Booking No', 'HBL / HAWB', 'MBL / MAWB', 'Job No', 'Container No'];
-  selectedSearchType = 'Booking No';
+  selectedSearchType = 'HBL / HAWB';
 
   private readonly destroy$ = new Subject<void>();
 
@@ -82,6 +88,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const referenceNo = this.searchText?.trim();
     this.hasSearched = true;
     this.errorMessage = '';
+    this.noShipmentFound = false;
+    this.showMatchModal = false;
+    this.matchResults = [];
 
     if (!referenceNo) {
       this.trackingResult = null;
@@ -89,23 +98,37 @@ export class TrackingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const context = { ...this.buildTrackingContext(), searchType: this.searchTypeCode() };
+    this.runTracking(referenceNo, context);
+  }
+
+  /** Load tracking for a specific House Job chosen from the MULTIPLE_MATCH grid. */
+  viewTracking(match: any): void {
+    if (!match?.houseJobSid) {
+      return;
+    }
+
+    this.showMatchModal = false;
+    const referenceNo = this.searchText?.trim() || match.hblNo || String(match.houseJobSid);
+    const context = {
+      ...this.buildTrackingContext(),
+      searchType: 'hbl',
+      houseJobSid: match.houseJobSid,
+    };
+    this.runTracking(referenceNo, context);
+  }
+
+  closeMatchModal(): void {
+    this.showMatchModal = false;
+  }
+
+  private runTracking(referenceNo: string, context: any): void {
     this.isLoading = true;
     this.operationService
-      .trackShipment(referenceNo, this.buildTrackingContext())
+      .trackShipment(referenceNo, context)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          if (response?.success === false || response?.status === false) {
-            this.trackingResult = null;
-            this.errorMessage = response?.message || 'No tracking details found.';
-            this.isLoading = false;
-            return;
-          }
-
-          this.trackingResult = response?.data || null;
-          this.errorMessage = this.trackingResult ? '' : 'No tracking details found.';
-          this.isLoading = false;
-        },
+        next: (response: any) => this.handleTrackingResponse(response),
         error: (error: any) => {
           this.trackingResult = null;
           this.errorMessage = error?.error?.message || 'Unable to fetch tracking details right now.';
@@ -114,8 +137,384 @@ export class TrackingComponent implements OnInit, OnDestroy {
       });
   }
 
+  private handleTrackingResponse(response: any): void {
+    this.isLoading = false;
+    const data = response?.data;
+
+    if (response?.success === false || response?.status === false || !data) {
+      this.trackingResult = null;
+      this.errorMessage = response?.message || 'No tracking details found.';
+      return;
+    }
+
+    const resultType = String(data.resultType || '').toUpperCase();
+
+    if (resultType === 'MULTIPLE_MATCH') {
+      this.trackingResult = null;
+      this.matchResults = data.matches || [];
+      this.matchSearchType = String(data.searchType || '').toUpperCase();
+      this.matchedReference = String(data.searchedReference || '');
+      this.showMatchModal = true;
+      this.errorMessage = '';
+      return;
+    }
+
+    if (resultType === 'NOT_FOUND') {
+      this.trackingResult = null;
+      this.noShipmentFound = true;
+      this.errorMessage = '';
+      return;
+    }
+
+    this.trackingResult = data;
+    this.noShipmentFound = false;
+    this.errorMessage = '';
+  }
+
   applyQuickSearch(type: string): void {
     this.selectedSearchType = type;
+  }
+
+  private searchTypeCode(): string {
+    switch (this.selectedSearchType) {
+      case 'Booking No':
+        return 'booking';
+      case 'HBL / HAWB':
+        return 'hbl';
+      case 'MBL / MAWB':
+        return 'mbl';
+      case 'Job No':
+        return 'job';
+      case 'Container No':
+        return 'container';
+      default:
+        return '';
+    }
+  }
+
+  trackByMatch(index: number, match: any): string {
+    return match?.houseJobSid || `${index}`;
+  }
+
+  matchModalTitle(): string {
+    const type = this.matchSearchType;
+    if (type === 'CONTAINER') return 'Select a House Job for this Container';
+    if (type === 'MBL' || type === 'MAWB' || type === 'JOB') return 'Select a House Job under this Master';
+    return 'Select the correct shipment';
+  }
+
+  matchModalSubtitle(): string {
+    const type = this.matchSearchType;
+    if (type === 'HBL' || type === 'HAWB') {
+      return 'This HBL / HAWB is shared across multiple House Jobs. Pick the one you want to track.';
+    }
+    if (type === 'MBL' || type === 'MAWB') {
+      return 'This MBL / MAWB master has multiple House Jobs. Pick the one you want to track.';
+    }
+    if (type === 'JOB') {
+      return 'This Master Job has multiple House Jobs. Pick the one you want to track.';
+    }
+    if (type === 'CONTAINER') {
+      return 'This container is mapped to multiple House Jobs. Pick the one you want to track.';
+    }
+    return 'Multiple House Jobs matched. Pick the one you want to track.';
+  }
+
+  /** Shared fields shown once in the modal header for Master Job / MBL / Container searches. */
+  matchCommonItems(): Array<{ label: string; value: string }> {
+    const first = this.matchResults[0] || {};
+    const items: Array<{ label: string; value: string }> = [];
+    const push = (label: string, value: any) => {
+      const display = this.displayValue(value, '');
+      if (display) items.push({ label, value: display });
+    };
+    const type = this.matchSearchType;
+
+    if (type === 'CONTAINER') {
+      push('Container No', this.matchedReference);
+      push('Master Job', first.masterJobNumber);
+      push('MBL / MAWB', first.mblNo);
+    } else if (type === 'JOB') {
+      push('Master Job', first.masterJobNumber || this.matchedReference);
+      push('MBL / MAWB', first.mblNo);
+    } else if (type === 'MBL' || type === 'MAWB') {
+      push('MBL / MAWB', first.mblNo || this.matchedReference);
+      push('Master Job', first.masterJobNumber);
+    }
+
+    return items;
+  }
+
+  /** Master Job & MBL columns stay in each row only when they differ per row (HBL search). */
+  matchShowMasterMbl(): boolean {
+    const type = this.matchSearchType;
+    return !(type === 'CONTAINER' || type === 'JOB' || type === 'MBL' || type === 'MAWB');
+  }
+
+  matchRoute(match: any): string {
+    return [match?.pol, match?.pod].filter((value) => this.hasDisplayValue(value)).join(' → ') || 'Route pending';
+  }
+
+  formatMatchDate(value: any): string {
+    return this.formatDisplayDate(value);
+  }
+
+  formatLegDate(value: any): string {
+    return this.formatDisplayDate(value);
+  }
+
+  /** Voyage legs for the summary table; synthesize a single leg from shipmentInfo if none. */
+  summaryLegs(tracking: any): any[] {
+    const legs = this.voyageLegs(tracking);
+    if (legs.length) {
+      return legs;
+    }
+
+    const info = tracking?.shipmentInfo || {};
+    if (this.hasDisplayValue(info.vesselName || info.voyageNo || info.etd || info.eta || info.atd || info.ata)) {
+      return [
+        {
+          legType: 'Main',
+          vesselName: info.vesselName,
+          voyageNo: info.voyageNo,
+          vesselVoyage: info.vesselVoyage,
+          etd: info.etd,
+          eta: info.eta,
+          atd: info.atd,
+          ata: info.ata,
+        },
+      ];
+    }
+
+    return [];
+  }
+
+  hasScheduleTable(tracking: any): boolean {
+    return this.summaryLegs(tracking).length > 0;
+  }
+
+  /**
+   * Per-port schedule under each port node, following cargo business logic:
+   *   POO  = Cargo Received   |  POL = ETD / ATD
+   *   POD  = ETA / ATA        |  FPOD = Delivered
+   * Transhipment: the T/S hub shows Leg-1 arrival and Leg-2 departure.
+   */
+  portScheduleItems(tracking: any, index: number): Array<{ label: string; value: string }> {
+    const legs = this.voyageLegs(tracking);
+    const route = tracking?.routeInfo || {};
+    const items: Array<{ label: string; value: string }> = [];
+    const add = (label: string, value: any) => {
+      const formatted = this.formatDisplayDate(value);
+      if (formatted !== '-') items.push({ label, value: formatted });
+    };
+
+    if (legs.length > 1) {
+      const first = legs[0];
+      const last = legs[legs.length - 1];
+      if (index === 0) {
+        add('Cargo Received', route.cargoReceivedDate);
+        add('ETD', first?.etd);
+        add('ATD', first?.atd);
+      } else if (index === 1) {
+        add('ETA', first?.eta);
+        add('ATA', first?.ata);
+      } else if (index === 2) {
+        add('ETD', last?.etd);
+        add('ATD', last?.atd);
+      } else {
+        add('ETA', last?.eta);
+        add('ATA', last?.ata);
+        add('Delivered', route.deliveryDate);
+      }
+      return items;
+    }
+
+    const info = tracking?.shipmentInfo || {};
+    if (index === 0) {
+      add('Cargo Received', route.cargoReceivedDate);
+    } else if (index === 1) {
+      add('ETD', info.etd);
+      add('ATD', info.atd);
+    } else if (index === 2) {
+      add('ETA', info.eta);
+      add('ATA', info.ata);
+    } else {
+      add('Delivered', route.deliveryDate);
+    }
+    return items;
+  }
+
+  /**
+   * Ordered shipment-detail fields. Booking No is hidden when empty and
+   * Movement is intentionally excluded (it duplicates Dept. + Job Type).
+   */
+  summaryFields(tracking: any): Array<{ label: string; value: string }> {
+    const fields = [
+      { label: 'Booking No', value: this.shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') },
+      { label: this.hblLabel(tracking), value: this.shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') },
+      { label: 'Job Type', value: this.shipmentInfoValue(tracking, 'jobType', 'movementType') },
+      { label: 'Dept.', value: this.displayValue(tracking?.shipmentInfo?.department) },
+      { label: 'Master Job', value: this.shipmentInfoValue(tracking, 'jobNumber') },
+      { label: this.mblLabel(tracking), value: this.shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') },
+    ];
+    return fields.filter((field) => field.value && field.value !== '-');
+  }
+
+  /** Overview "Shipment Progress" — info NOT already shown in the header. */
+  progressItems(tracking: any): Array<{ label: string; value: string }> {
+    return [
+      { label: 'Current Stage', value: this.currentRouteStageValue(tracking) },
+      { label: 'Milestones', value: this.milestoneProgressValue(tracking) },
+      { label: 'Next Milestone', value: this.nextMilestoneLabel(tracking) },
+      { label: 'Last Update', value: this.currentStatusDate(tracking) },
+    ].filter((item) => item.value && item.value !== '-');
+  }
+
+  nextMilestoneLabel(tracking: any): string {
+    const next =
+      tracking?.summary?.nextMilestone ||
+      (tracking?.milestones || []).find((milestone: any) => milestone.state === 'pending');
+    return this.displayValue(next?.eventName || next?.title, '-');
+  }
+
+  /** Overview summary table columns, ordered by the active search type (horizontal-scroll table). */
+  overviewColumns(tracking: any): Array<{ label: string; value: string }> {
+    const type = this.activeSearchType();
+    const info = tracking?.shipmentInfo || {};
+    const cols: Array<{ label: string; value: string }> = [];
+    const push = (label: string, value: any) => cols.push({ label, value: this.displayValue(value, '-') });
+
+    // Lead columns driven by the search type the user used.
+    if (type === 'Booking No') {
+      push('Booking No', this.shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo'));
+    } else if (type === 'HBL / HAWB') {
+      push(this.hblLabel(tracking), this.shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo'));
+    } else if (type === 'MBL / MAWB') {
+      push(this.mblLabel(tracking), this.shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo'));
+    } else if (type === 'Job No') {
+      push('Master Job', this.shipmentInfoValue(tracking, 'jobNumber'));
+    } else if (type === 'Container No') {
+      push('Container', this.overviewContainerNo(tracking));
+      push('Packages', this.totalPackages(tracking));
+      push('Gross Weight', this.totalWeight(tracking));
+      push('Volume', this.totalVolume(tracking));
+    }
+
+    // Common columns shown for every search.
+    push('Status', tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || info.shipmentStatus);
+    push('Current Stage', this.currentRouteStageValue(tracking));
+    push('Milestones', this.milestoneProgressValue(tracking));
+    push(this.scheduleLabel(tracking), this.vesselVoyageValue(tracking));
+    push('ETD', this.departureDateValue(tracking));
+    push('ETA', this.arrivalDateValue(tracking));
+    push('Movement', this.movementOverviewValue(tracking));
+    if (this.showContainerSection(tracking)) {
+      push('Containers', this.containerCount(tracking));
+    }
+
+    // Drop empty columns and de-duplicate by label.
+    const seen = new Set<string>();
+    return cols.filter((col) => {
+      if (!col.value || col.value === '-') return false;
+      const key = col.label.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  cargoDetailItems(tracking: any): Array<{ label: string; value: string }> {
+    const items: Array<{ label: string; value: string }> = [
+      { label: 'Department', value: this.displayValue(tracking?.shipmentInfo?.department) },
+      { label: 'Total Packages', value: this.totalPackages(tracking) },
+      { label: 'Gross Weight', value: this.totalWeight(tracking) },
+    ];
+
+    // FCL is charged per container, so Chargeable Weight does not apply — show
+    // Containers instead. LCL / Air are charged on Chargeable Weight.
+    if (this.isFclShipment(tracking)) {
+      items.push({ label: 'Containers', value: this.totalContainers(tracking) });
+    } else {
+      items.push({ label: 'Chargeable Wt', value: this.totalChargeable(tracking) });
+    }
+
+    items.push({ label: 'Volume', value: this.totalVolume(tracking) });
+    items.push({ label: 'Commodities', value: this.totalCommodities(tracking) });
+    return items;
+  }
+
+  /** FCL = full container load (charged per container, not by chargeable weight). */
+  isFclShipment(tracking: any): boolean {
+    const segment = String(tracking?.shipmentInfo?.segment || '').toUpperCase();
+    const department = String(tracking?.shipmentInfo?.department || '').toUpperCase();
+    if (segment.includes('LCL') || department.includes('LCL')) return false;
+    return segment.includes('FCL') || department.includes('FCL');
+  }
+
+  hasCargoDetail(tracking: any): boolean {
+    return this.cargoDetailItems(tracking).some((item) => item.value !== '-' && item.value !== '0');
+  }
+
+  totalChargeable(tracking: any): string {
+    const value = tracking?.cargoSummary?.totalChargeableWeight;
+    return value !== null && value !== undefined && value !== ''
+      ? `${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}kg`
+      : '-';
+  }
+
+  /** Declared No. of Containers from the cargo blocks; falls back to actual container records. */
+  totalContainers(tracking: any): string {
+    const declared = tracking?.cargoSummary?.totalContainers;
+    if (declared !== null && declared !== undefined && declared !== '' && Number(declared) > 0) {
+      return String(declared);
+    }
+    const actual = this.containerCount(tracking);
+    return actual ? String(actual) : '-';
+  }
+
+  totalCommodities(tracking: any): string {
+    const summaryCount = tracking?.cargoSummary?.totalCommodities;
+    if (summaryCount !== null && summaryCount !== undefined && summaryCount !== '') {
+      return String(summaryCount);
+    }
+    // Fallback: count from container commodity rows.
+    const total = (tracking?.containers || []).reduce(
+      (sum: number, container: any) => sum + (Number(container?.commodityCount) || 0),
+      0
+    );
+    return total ? String(total) : '-';
+  }
+
+  scheduleVesselLabel(tracking: any): string {
+    return this.isAirShipment(tracking) ? 'Flight' : 'Vsl';
+  }
+
+  /** The voyage leg that serves a given port node (first leg = departure ports, final leg = arrival ports). */
+  portLeg(tracking: any, index: number): any {
+    const legs = this.voyageLegs(tracking);
+    if (legs.length > 1) {
+      return index <= 1 ? legs[0] : legs[legs.length - 1];
+    }
+    return this.summaryLegs(tracking)[0] || null;
+  }
+
+  /** "Vessel / Voyage" (or Flight) shown under each port, connecting the port to its leg. */
+  portVesselLabel(tracking: any, index: number): string {
+    const leg = this.portLeg(tracking, index);
+    if (!leg) return '';
+    return [leg.vesselName, leg.voyageNo].filter((value) => this.hasDisplayValue(value)).join(' / ');
+  }
+
+  portVesselIcon(tracking: any): string {
+    return this.isAirShipment(tracking) ? 'fa-plane' : 'fa-ship';
+  }
+
+  /** Leg row title — single-leg shipments read "Voyage"/"Flight", transhipment reads First/Final Leg. */
+  legTitle(tracking: any, leg: any, index: number, isLast: boolean): string {
+    if (this.summaryLegs(tracking).length <= 1) {
+      return this.isAirShipment(tracking) ? 'Flight' : 'Voyage';
+    }
+    return this.transhipmentLegTitle(leg, index, isLast);
   }
 
   activeSearchType(): string {
@@ -241,10 +640,10 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const finalDestination = tracking?.routeInfo?.finalDestination || route[3];
 
     return [
-      { label: this.routeLabel(origin, 0), role: 'Origin' },
+      { label: this.routeLabel(origin, 0), role: 'POO' },
       { label: this.routeLabel(pol, 1), role: 'POL' },
       { label: this.routeLabel(pod, 2), role: 'POD' },
-      { label: this.routeLabel(finalDestination, 3), role: 'Final' },
+      { label: this.routeLabel(finalDestination, 3), role: 'FPOD' },
     ];
   }
 
@@ -337,14 +736,35 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   milestoneStatusLabel(milestone: TrackingMilestone): string {
-    if (milestone.eventDate) {
-      return milestone.status;
+    switch (milestone.state) {
+      case 'completed':
+        return 'Completed';
+      case 'current':
+        return 'In Progress';
+      case 'exception':
+        return 'Exception';
+      default:
+        return 'Pending';
     }
-
-    return milestone.state === 'current' ? 'Current' : milestone.status || 'Pending';
   }
 
+  /** Event-type icon (mode-aware): plane for air legs, ship/anchor for sea, etc. */
   milestoneIcon(milestone: TrackingMilestone): string {
+    const name = String((milestone as any)?.eventName || milestone?.title || '').toLowerCase();
+    if (name.includes('booking')) return 'fa-clipboard-list';
+    if (name.includes('received')) return 'fa-box';
+    if (name.includes('stuffing')) return 'fa-boxes';
+    if (name.includes('gate')) return 'fa-warehouse';
+    if (name.includes('custom')) return 'fa-stamp';
+    if (name.includes('airline') || name.includes('loaded') || name.includes('departed')) {
+      return name.includes('flight') || name.includes('airline') ? 'fa-plane' : 'fa-ship';
+    }
+    if (name.includes('transship') || name.includes('tranship')) return 'fa-exchange-alt';
+    if (name.includes('arrived')) return name.includes('flight') ? 'fa-plane' : 'fa-anchor';
+    if (name.includes('discharg')) return 'fa-dolly';
+    if (name.includes('out for delivery')) return 'fa-truck';
+    if (name.includes('delivered')) return 'fa-check-circle';
+
     if (milestone.state === 'completed') {
       return 'fa-check';
     }
@@ -371,11 +791,28 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   totalWeight(tracking: any): string {
-    const total = (tracking?.containers || []).reduce((sum: number, container: any) => {
-      return sum + (Number(container?.weight) || 0);
-    }, 0);
+    const summaryWeight = tracking?.cargoSummary?.totalGrossWeight;
+    const total =
+      summaryWeight !== null && summaryWeight !== undefined
+        ? Number(summaryWeight)
+        : (tracking?.containers || []).reduce(
+            (sum: number, container: any) => sum + (Number(container?.weight) || 0),
+            0
+          );
 
     return total ? `${total.toLocaleString(undefined, { maximumFractionDigits: 2 })}kg` : '-';
+  }
+
+  totalPackages(tracking: any): string {
+    const value = tracking?.cargoSummary?.totalPackages;
+    return value !== null && value !== undefined && value !== '' ? String(value) : '-';
+  }
+
+  totalVolume(tracking: any): string {
+    const value = tracking?.cargoSummary?.totalVolume;
+    return value !== null && value !== undefined && value !== ''
+      ? `${Number(value).toLocaleString(undefined, { maximumFractionDigits: 3 })} cbm`
+      : '-';
   }
 
   formatMeasure(value: any, unit: string): string {
@@ -469,14 +906,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
   overviewCards(tracking: any): OverviewCard[] {
     const info = tracking?.shipmentInfo || {};
     const containerCount = this.containerCount(tracking);
+    // NOTE: "Shipment Status" intentionally omitted here — it duplicates the
+    // header "Current status" card. (Tracking requirement 4c)
     const rawCards: OverviewCard[] = [
-      {
-        key: 'shipmentStatus',
-        label: 'Shipment Status',
-        value: this.displayValue(tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || info.shipmentStatus, 'Pending'),
-        meta: this.currentStatusDate(tracking),
-        primary: true,
-      },
       {
         key: 'routeStage',
         label: 'Current Route Stage',
@@ -685,7 +1117,19 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   milestoneDateTime(milestone: any): string {
-    return this.formatDisplayDateTime(milestone?.eventDate, 'Pending');
+    const value = milestone?.eventDate;
+    if (!value) {
+      return 'Pending';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return this.displayValue(value, 'Pending');
+    }
+    // Date-only values are stored at UTC midnight — show just the date (no misleading 00:00 time).
+    const hasTime = parsed.getUTCHours() !== 0 || parsed.getUTCMinutes() !== 0;
+    return hasTime
+      ? this.formatDisplayDateTime(value, 'Pending')
+      : this.formatDisplayDate(value, 'Pending');
   }
 
   private formatDisplayDateTime(value: any, fallback = '-'): string {
