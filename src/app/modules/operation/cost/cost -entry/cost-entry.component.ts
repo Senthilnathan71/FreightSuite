@@ -31,6 +31,7 @@ import { GetStandardChargesComponent } from '../get-standard-charges/get-standar
 import { consistentExchangeRatesValidator } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { handleError, sortValidationErrors } from 'src/app/common/error-handling/payload-validation-handler';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
@@ -362,6 +363,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     const scrollTop = (event.target as HTMLElement).scrollTop;
     this.leftBody.nativeElement.scrollTop = scrollTop;
   }
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   rateForm!: FormGroup;
   currentRateIndex: number = -1;
   private routeParentSid: number | null = null;
@@ -828,7 +830,7 @@ createRateFormGroup(data?: any): FormGroup {
     
     SerialNumber: [data?.SerialNumber ?? ''],
     ChargeMasterSid: [data?.ChargeMasterSid ?? null],
-    ChargeDescription: [data?.ChargeDescription ?? null],
+    ChargeDescription: [data?.ChargeDescription ?? null, [Validators.maxLength(VOUCHER_FIELD_LIMITS.detail.ChargeDescription)]],
 
     ChargeUomSid: [
       (data?.ChargeUomSid || data?.RevenueChargeUomSid || data?.CostChargeUomSid) ?? null,

@@ -16,6 +16,7 @@ import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-mult
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
@@ -72,6 +73,8 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
   ],
 })
 export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
+  // Character limits for text fields (single source of truth, mirrors DB widths).
+  protected override readonly LIMITS = VOUCHER_FIELD_LIMITS;
   @ViewChild('nonJobprintModal') override nonJobPrintModalRef: any;
 
   coaList: any[] = [];
@@ -138,7 +141,7 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
 
   override initForm(): void {
     super.initForm();
-    this.invoiceForm.addControl('BillNo', this.nonJobFb.control(''));
+    this.invoiceForm.addControl('BillNo', this.nonJobFb.control('', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.DocumentNumber)]));
     this.invoiceForm.addControl('BillDate', this.nonJobFb.control(null));
     this.invoiceForm.addControl('BillAmt', this.nonJobFb.control(0));
     this.invoiceForm.get('voucherOthers.DueDate')?.disable({ emitEvent: false });

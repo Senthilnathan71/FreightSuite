@@ -22,6 +22,9 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
+import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
+import { ToastrService } from 'ngx-toastr';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
@@ -64,6 +67,18 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
   ],
 })
 export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
+  // Character limits for text fields (single source of truth, mirrors DB widths).
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
+  // Field labels for the shared toastr validator (errorLoggerWithToastr).
+  private readonly prValidationConfig = buildVoucherValidationConfig({
+    PaymentRequestDate: 'Payment Request Date',
+    CashBank: 'Cash / Bank',
+    DepartmentMasterSid: 'Department',
+    PayableTo: 'Payable To',
+    CurrencyMasterSid: 'Currency',
+    Remarks: 'Remarks',
+    ChargeDescription: 'Charge Description',
+  });
   @ViewChild('paymentRequestPrintModal') paymentRequestPrintModal!: TemplateRef<any>;
 
   form!: FormGroup;
@@ -124,6 +139,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     private readonly modalService: NgbModal,
     private readonly pdfMakeService: PdfMakeService,
     public readonly mps: MenuPermissionService,
+    private readonly toastr: ToastrService,
   ) {
     this.form = this.fb.group({
       PaymentRequestSid: [null],
@@ -132,7 +148,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       CashBank: ['Bank', Validators.required],
       DepartmentMasterSid: [{ value: null, disabled: true }, Validators.required],
       Party: [{ value: null, disabled: true }],
-      PayableTo: ['', Validators.required],
+      PayableTo: ['', [Validators.required, Validators.maxLength(VOUCHER_FIELD_LIMITS.paymentRequest.PayableTo)]],
       CurrencyMasterSid: [{ value: null, disabled: true }, Validators.required],
       BookingSid: [null],
       BookingNo: [{ value: '', disabled: true }],
@@ -140,7 +156,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       MasterJobNo: [{ value: '', disabled: true }],
       HouseJobSid: [null],
       HouseNo: [{ value: '', disabled: true }],
-      Remarks: [''],
+      Remarks: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.paymentRequest.Remarks)]],
       PaymentRequestStatus: ['Pending', Validators.required],
       Status: ['A', Validators.required],
       VoucherSid: [{ value: null, disabled: true }],
@@ -660,6 +676,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         data?.Charge?.chargeName ||
         data?.Charge?.ChargeName ||
         '',
+        [Validators.maxLength(VOUCHER_FIELD_LIMITS.paymentRequest.ChargeDescription)],
       ],
       CostChargeUomSid: [data?.CostChargeUomSid || null],
       CostCurrencyMasterSid: [data?.CostCurrencyMasterSid || null],
@@ -996,7 +1013,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.appSettingsService.showWarning('Please fill mandatory fields');
+      errorLoggerWithToastr(this.form, this.toastr, this.prValidationConfig);
       if (resolve) resolve(false);
       return;
     }

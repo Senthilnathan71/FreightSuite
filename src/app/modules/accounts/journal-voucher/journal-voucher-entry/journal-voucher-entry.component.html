@@ -231,7 +231,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <textarea formControlName="narration" class="custom-input-field sm" rows="1" placeholder=""
-                                maxlength="200"></textarea>
+                                [attr.maxlength]="LIMITS.header.Narration"></textarea>
                             <label class="input-label">
                                 Narration
                                 <i
@@ -248,7 +248,7 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="DocumentNumber" class="custom-input-field sm text-end"
-                                placeholder="" />
+                                [attr.maxlength]="LIMITS.header.DocumentNumber" placeholder="" />
                             <label class="input-label">
                                 Bill NO.
                                 <i
@@ -419,7 +419,7 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <input type="text" formControlName="narration" class="form-control" maxlength="200" />
+                                <input type="text" formControlName="narration" class="form-control" [attr.maxlength]="LIMITS.detail.Narration" />
                             </td>
                         </tr>
                     </tbody>

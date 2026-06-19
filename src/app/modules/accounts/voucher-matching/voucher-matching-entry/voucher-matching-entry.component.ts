@@ -13,6 +13,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
@@ -370,8 +371,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       VoucherMatchingNo: [{ value: '', disabled: true }],
       VoucherMatchingDate: [getDefaultTodayDate(), [Validators.required]],
       PostDate: [{ value: null, disabled: true }],
-      Narration: ['',[Validators.required]],
-      Remarks: [''],
+      Narration: ['', [Validators.required, Validators.maxLength(VOUCHER_FIELD_LIMITS.matching.Narration)]],
+      Remarks: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.matching.Remarks)]],
       LedgerName: [null, [Validators.required]],
       SubledgerMasterSid : [null, [Validators.required]],
       SubledgerName: [null, [Validators.required]],
@@ -1444,6 +1445,9 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   navigateToBack() {
     this.router.navigate(['accounts/voucher-matching/list']);
   }
+
+  // Character limits for text fields (single source of truth, mirrors DB widths).
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
 
   getVoucherEntryLink(voucherType: string | number | null | undefined, voucherHeaderSid: string | number | null | undefined): string[] | null {
     const normalizedVoucherType = String(voucherType ?? '').trim().toUpperCase();

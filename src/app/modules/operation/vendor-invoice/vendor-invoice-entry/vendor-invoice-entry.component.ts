@@ -56,6 +56,7 @@ import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/sh
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -326,6 +327,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     return this.vendorInvoiceForm.get('voucherTDS') as FormGroup;
   }
 
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   private readonly vendorInvoiceValidationConfig: ValidationMessageConfig = {
     labels: {
       VoucherDate: 'Voucher Date',

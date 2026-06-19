@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { AccountsService } from '../accounts.service';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 
 export interface ApplicableRateParams {
   isLocal: boolean;
@@ -47,14 +48,17 @@ export class TdsHelperService {
       TDSSetHeaderSid: [null],
       TDSSetRateSid: [null],
       CompanyType: [''],
-      ITSectionCode: [''],
-      CertificateNo: [''],
+      ITSectionCode: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.tds.ITSectionCode)]],
+      CertificateNo: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.tds.CertificateNo)]],
       CertificateAmt: [''],
-      NotificationNo: [''],
+      NotificationNo: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.tds.NotificationNo)]],
       TaxableAmount: [0],
       TDSRate: [0],
       TDSAmount: [0],
       TDSPartyAmount: [0],
+      // No maxLength validator here: Reason is AUTO-populated by the helper with long system
+      // notices (e.g. the certificate-cap message) that can exceed the 100-char column — a
+      // validator would block save. User typing is still capped by [attr.maxlength] in the template.
       Reason: [''],
     });
   }

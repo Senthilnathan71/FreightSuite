@@ -45,6 +45,8 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
+import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -180,6 +182,23 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
 
 })
 export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges, OnDestroy  {
+  // Character limits for text fields (single source of truth, mirrors DB widths).
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
+  // Field labels for the shared toastr validator (errorLoggerWithToastr).
+  private readonly jvValidationConfig = buildVoucherValidationConfig({
+    narration: 'Narration',
+    remarks: 'Remarks',
+    voucherDate: 'Voucher Date',
+    coaMasterSid: 'COA',
+    ledgerMasterSid: 'Subledger',
+    currencyMasterSid: 'Currency',
+    currencyAmount: 'Amount',
+    localAmount: 'Local Amount',
+    exchangeRate: 'Exchange Rate',
+    drCr: 'Debit / Credit',
+    chargeDescription: 'Charge Description',
+    DocumentNumber: 'Bill No',
+  });
 
   isDirty: boolean = false;
   private initialFormValue: any = null;
@@ -787,10 +806,10 @@ private deepEqual(obj1: any, obj2: any): boolean {
     this.form = this.fb.group({
       voucherNumber: [{ value: '', disabled: true }],
       voucherDate: [defaultVoucherDate],
-      DocumentNumber:[null],
+      DocumentNumber: [null, [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.DocumentNumber)]],
       DocumentDate:[null],
-      narration: ['', [Validators.required, Validators.maxLength(200)]],
-      remarks: ['', Validators.maxLength(200)],
+      narration: ['', [Validators.required, Validators.maxLength(VOUCHER_FIELD_LIMITS.header.Narration)]],
+      remarks: ['', Validators.maxLength(VOUCHER_FIELD_LIMITS.header.Remarks)],
       Status: ['A', Validators.required],
       PostedOn: [{ value: null, disabled: true }],
       postStatus: [{ value: 'Unposted', disabled: true }],
@@ -1661,10 +1680,10 @@ private deepEqual(obj1: any, obj2: any): boolean {
       currencyAmount: [0.0, [Validators.required, Validators.min(0.01)]],
       localAmount: [0.0, [Validators.required, Validators.min(0)]],
       drCr: ['D', Validators.required],
-      narration: [''],
+      narration: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.detail.Narration)]],
       departmentMasterSid: [null],
       chargeMasterSid: [null],
-      chargeDescription: [''],
+      chargeDescription: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.detail.ChargeDescription)]],
       hssacMasterSid: [null],
       HSSACCode: [''],
       masterJobSid: [null],
@@ -2600,7 +2619,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
     if (!this.form.valid) {
       this.form.markAllAsTouched();
-      this.appSettingService.showError('Please fill all required fields', 'Validation Error');
+      errorLoggerWithToastr(this.form, this.toastr, this.jvValidationConfig);
       return false;
     }
 

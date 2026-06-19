@@ -57,12 +57,14 @@ import { CommonService } from 'src/app/common/common.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import {
-  errorLogger,
   getDefaultTodayDate,
   toNgbDateStruct,
   toNumber,
 } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
+import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
+import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
+import { ToastrService } from 'ngx-toastr';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -129,6 +131,18 @@ interface rateComparison {
   ],
 })
 export class VendorCreditNoteEntryComponent {
+  // Character limits for text fields (single source of truth, mirrors DB widths).
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
+  // Field labels for the shared toastr validator (errorLoggerWithToastr).
+  private readonly vcnValidationConfig = buildVoucherValidationConfig({
+    VoucherDate: 'Voucher Date',
+    CreditNoteReason: 'Credit Note Reason',
+    Salesman: 'Salesman',
+    ChargeDescription: 'Charge Description',
+    Narration: 'Narration',
+    Remarks: 'Remarks',
+    ReversalVoucherNumber: 'Invoice No',
+  });
   userData: any;
   currUserEmail: string | null = null;
   currentCompany: any;
@@ -370,6 +384,7 @@ export class VendorCreditNoteEntryComponent {
     private modalService: NgbModal,
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
+    private toastr: ToastrService,
     private spinner: NgxSpinnerService,
     private companySettings: CompanySettingsManagerService,
     public mps: MenuPermissionService,
@@ -627,8 +642,8 @@ export class VendorCreditNoteEntryComponent {
       BillAmt: [{ value: 0, disabled: true }],
       CreditNoteReason: [null, Validators.required],
       ReversalVoucher: [{ value: '', disabled: true }],
-      ReversalVoucherNumber: [""],
-      Salesman : [''],
+      ReversalVoucherNumber: ["", [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.VoucherNumber)]],
+      Salesman : ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.Salesman)]],
       State: [{ value: '', disabled: true }],
       HouseNumber: [{ value: '', disabled: true }],
       MasterNumber: [{ value: '', disabled: true }],
@@ -2303,10 +2318,9 @@ export class VendorCreditNoteEntryComponent {
 
 
     if (this.vendorCreditNoteForm.invalid) {
-      errorLogger(this.vendorCreditNoteForm);
       this.vendorCreditNoteForm.markAllAsTouched();
       this.vendorCreditNoteForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all required fields.');
+      errorLoggerWithToastr(this.vendorCreditNoteForm, this.toastr, this.vcnValidationConfig);
       if (resolve) resolve(false);
       return;
     }

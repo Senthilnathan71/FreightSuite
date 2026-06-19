@@ -193,7 +193,7 @@
               <td>
                 <div class="custom-form-group dofi-max-w-200 dofi-min-w-200">
                   <input type="text" id="text-input" class="custom-input-field sm" formControlName="ChargeDescription"
-                    [maxlength]="100" [disabled]="!canEditRate(i)">
+                    [maxlength]="LIMITS.detail.ChargeDescription" [disabled]="!canEditRate(i)">
                 </div>
               </td>
 
@@ -1213,6 +1213,7 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="DocumentNumber"
+                    [attr.maxlength]="LIMITS.header.DocumentNumber"
                     placeholder=""
                   />
                   <label class="input-label">Ref No <span class="text-danger" *ngIf="isFieldRequired('DocumentNumber')">*</span></label>
@@ -1221,7 +1222,7 @@
               } @else {
                 <aside class="col-md-3">
                   <div class="custom-form-group">
-                    <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" placeholder="" />
+                    <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" [attr.maxlength]="LIMITS.header.DocumentNumber" placeholder="" />
                     <label class="input-label">Bill No <span class="text-danger" *ngIf="isFieldRequired('DocumentNumber')">*</span></label>
                   </div>
                 </aside>
