@@ -118,7 +118,7 @@ export class TranshipmentCargoComponent {
       { value: '' },
       { value: '' },
       { value: '' },
-      { value: '' },
+      { value: 'TOTAL' },
       {
         value: this.formatNumber(totals.packageCount),
         alignment: { horizontal: 'right' },

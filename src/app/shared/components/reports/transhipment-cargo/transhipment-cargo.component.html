@@ -62,8 +62,8 @@
                         <td>{{ item.CargoReceivedDate | formatDate }}</td>
                         <td>{{ item.Coloader }}</td>
                     </tr>
-                    <tr *ngIf="fullData?.data?.length > 0" style="white-space: nowrap; font-weight: bold; border-top: 2px solid #dee2e6;">
-    <td colspan="6"></td>
+                    <tr *ngIf="fullData?.data?.length > 0" style="white-space: nowrap; font-weight: bold;">
+    <td colspan="6" class="text-end">TOTAL</td>
     <td class="text-end">{{ totals.packageCount }}</td>
     <td></td>
     <td class="text-end">{{ totals.grossWeight | number:'1.2-2' }}</td>
