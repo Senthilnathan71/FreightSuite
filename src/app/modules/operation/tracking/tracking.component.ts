@@ -736,14 +736,35 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   milestoneStatusLabel(milestone: TrackingMilestone): string {
-    if (milestone.eventDate) {
-      return milestone.status;
+    switch (milestone.state) {
+      case 'completed':
+        return 'Completed';
+      case 'current':
+        return 'In Progress';
+      case 'exception':
+        return 'Exception';
+      default:
+        return 'Pending';
     }
-
-    return milestone.state === 'current' ? 'Current' : milestone.status || 'Pending';
   }
 
+  /** Event-type icon (mode-aware): plane for air legs, ship/anchor for sea, etc. */
   milestoneIcon(milestone: TrackingMilestone): string {
+    const name = String((milestone as any)?.eventName || milestone?.title || '').toLowerCase();
+    if (name.includes('booking')) return 'fa-clipboard-list';
+    if (name.includes('received')) return 'fa-box';
+    if (name.includes('stuffing')) return 'fa-boxes';
+    if (name.includes('gate')) return 'fa-warehouse';
+    if (name.includes('custom')) return 'fa-stamp';
+    if (name.includes('airline') || name.includes('loaded') || name.includes('departed')) {
+      return name.includes('flight') || name.includes('airline') ? 'fa-plane' : 'fa-ship';
+    }
+    if (name.includes('transship') || name.includes('tranship')) return 'fa-exchange-alt';
+    if (name.includes('arrived')) return name.includes('flight') ? 'fa-plane' : 'fa-anchor';
+    if (name.includes('discharg')) return 'fa-dolly';
+    if (name.includes('out for delivery')) return 'fa-truck';
+    if (name.includes('delivered')) return 'fa-check-circle';
+
     if (milestone.state === 'completed') {
       return 'fa-check';
     }
@@ -1096,7 +1117,19 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   milestoneDateTime(milestone: any): string {
-    return this.formatDisplayDateTime(milestone?.eventDate, 'Pending');
+    const value = milestone?.eventDate;
+    if (!value) {
+      return 'Pending';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return this.displayValue(value, 'Pending');
+    }
+    // Date-only values are stored at UTC midnight — show just the date (no misleading 00:00 time).
+    const hasTime = parsed.getUTCHours() !== 0 || parsed.getUTCMinutes() !== 0;
+    return hasTime
+      ? this.formatDisplayDateTime(value, 'Pending')
+      : this.formatDisplayDate(value, 'Pending');
   }
 
   private formatDisplayDateTime(value: any, fallback = '-'): string {

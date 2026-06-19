@@ -224,15 +224,17 @@
                 </div>
 
                 <div class="milestone-card">
-                  <div class="milestone-copy">
-                    <span class="milestone-status">{{ milestoneStatusLabel(milestone) }}</span>
+                  <div class="milestone-head">
                     <h3>{{ milestoneTitle(milestone) }}</h3>
-                    <p>{{ displayValue(milestone.location, 'Location pending') }}</p>
+                    <span class="milestone-status">{{ milestoneStatusLabel(milestone) }}</span>
                   </div>
-                  <div class="milestone-time">
-                    <strong>{{ milestoneDateTime(milestone) }}</strong>
-                    <span>{{ displayValue(milestone.remarks, 'Awaiting update') }}</span>
+                  <div class="milestone-meta">
+                    <span class="milestone-loc" *ngIf="milestone.location">
+                      <i class="fas fa-map-marker-alt"></i>{{ milestone.location }}
+                    </span>
+                    <span class="milestone-date">{{ milestoneDateTime(milestone) }}</span>
                   </div>
+                  <p class="milestone-remark" *ngIf="milestone.remarks">{{ milestone.remarks }}</p>
                 </div>
               </article>
             </section>
