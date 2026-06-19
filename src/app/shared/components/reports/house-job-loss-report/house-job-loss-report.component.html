@@ -49,7 +49,7 @@
                         <th class="bg-transparent text-light text-center">Revenue</th>
                         <th class="bg-transparent text-light text-center">Cost</th>
                         <th class="bg-transparent text-light text-center">GP</th>
-                        <th class="bg-transparent text-light text-center">GP%</th>
+                        <th class="bg-transparent text-light text-center">Profit%</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,7 +73,7 @@
                             </td>
                             <td class="text-end">{{ item.costRevenueDetails.CostLocalAmount | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenueDetails.Profit | number:'1.2-2' }}</td>
-                            <td class="text-end">{{ item.costRevenueDetails.GP | number:'1.2-2' }}%</td>
+                            <td class="text-end">{{ item.costRevenueDetails.GP | number:'1.2-2' }}</td>
                         </tr>
                     </ng-container>
                     <ng-container *ngIf="!fullData?.data || fullData.data.length === 0">

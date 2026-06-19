@@ -67,7 +67,7 @@ export class HouseJobLossReportComponent {
       { key: 'Revenue', label: 'Revenue' },
       { key: 'Cost', label: 'Cost' },
       { key: 'GP', label: 'GP' },
-      { key: 'GPPercent', label: 'GP %' }
+      { key: 'GPPercent', label: 'Profit %' }
     ];
 
    
@@ -94,7 +94,7 @@ export class HouseJobLossReportComponent {
         { value: this.formatNumber(item.costRevenueDetails?.RevenueLocalAmount || 0) },
         { value: this.formatNumber(item.costRevenueDetails?.CostLocalAmount || 0) },
         { value: this.formatNumber(item.costRevenueDetails?.Profit || 0) },
-        { value: this.formatNumber(item.costRevenueDetails?.GP || 0) + '%' }
+        { value: this.formatNumber(item.costRevenueDetails?.GP || 0) }
       ],
       style: 'data'
     }));
