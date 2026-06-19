@@ -148,13 +148,12 @@
 
           </thead>
           <tbody #leftTableBody formArrayName="rateFormArray">
+            @if (rateFormArray.length > 0) {
             <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
             <td class="d-flex pt-1">
-              <!-- Change the delete button condition -->
               <button class="action-icon delete py-0" (click)="deleteRate(i,row.value.RateSid)"
-                [disabled]="!canEditRate(i) || rateFormArray.length === 1" [class.disabled]="rateFormArray.length === 1"
-                title="{{ rateFormArray.length === 1 ? 'Cannot delete the only row' : 'Delete rate' }}">
-                <i class="fas fa-trash fs-2" [class.text-muted]="rateFormArray.length === 1"></i>
+                [disabled]="!canEditRate(i)" title="Delete rate">
+                <i class="fas fa-trash fs-2"></i>
               </button>
               @if(row.get('RevenueVoucherHeaderSid')?.value || row.get('CostVoucherHeaderSid')?.value){
               <button class="border-0 bg-transparent" [disabled]="true">
@@ -215,6 +214,9 @@
                 </div>
               </td>
             </tr>
+            } @else {
+            <tr><td colspan="6" class="text-center text-muted py-3">No Record Found</td></tr>
+            }
           </tbody>
         </table>
       </div>
@@ -453,9 +455,7 @@
                 </td>
               </tr>
               } @else {
-             <td colspan="22" class="text-center">
-<div>No Record Found</div>
-</td>
+              <tr><td colspan="22" class="text-center text-muted py-3">No Record Found</td></tr>
               }
             </tbody>
           </table>

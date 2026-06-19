@@ -572,9 +572,9 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   this.prefetchProrateStatus();
 }
   ngOnChanges(){
-    if(!this.dataItems){
-      this.addRateRow()
-    }
+    // No auto-insert of an empty rate row on load — the grid starts empty
+    // (shows the "No Record Found" template). Rows are added explicitly via the
+    // Add button / Apply Tariff / Apply Charges.
   }
 
   ngOnDestroy() {
@@ -799,9 +799,9 @@ get r() {
         for (const item of items) {
           this.addRateRow(item);
         }
-      } else {
-        this.addRateRow(); // <-- Add one empty row when no data
       }
+      // No data → leave the grid empty (shows the "No Record Found" template);
+      // do not auto-insert a blank row.
       this.resolvePaymentRequestNumbers();
       this.calculateProfit();
     } finally {
