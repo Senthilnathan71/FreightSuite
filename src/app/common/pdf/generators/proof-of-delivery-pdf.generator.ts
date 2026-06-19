@@ -35,6 +35,11 @@ export interface ProofOfDeliveryPdfData {
   branch: any;
   userData: any;
   logo?: string;
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   partyBlocks: ProofOfDeliveryPartyBlock[];
   jobInfo: ProofOfDeliveryJobInfo;
   products: ProofOfDeliveryProductRow[];
@@ -68,10 +73,10 @@ export function generateProofOfDeliveryDocument(data: ProofOfDeliveryPdfData): a
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: data.config?.pageOrientation || 'portrait',
-    pageMargins: data.config?.pageMargins || [15, 98, 15, 46],
+    pageMargins: data.config?.pageMargins || [15, 82, 15, 46],
     header: () => ({
       stack: [buildHeader(data)],
-      margin: [15, 10, 15, 4]
+      margin: [15, 10, 15, 0]
     }),
     background: (_: number, pageSize: any) => ({
       canvas: [{
@@ -80,7 +85,7 @@ export function generateProofOfDeliveryDocument(data: ProofOfDeliveryPdfData): a
         y: 14,
         w: pageSize.width - 28,
         h: pageSize.height - 28,
-        lineWidth: 1,
+        lineWidth: 0.25,
         lineColor: '#000'
       }]
     }),
@@ -105,9 +110,11 @@ export function generateProofOfDeliveryDocument(data: ProofOfDeliveryPdfData): a
 function buildHeader(data: ProofOfDeliveryPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
-  const logoPosition = 'left' as 'left' | 'center' | 'right';
-  const companyPosition = 'center' as 'left' | 'center' | 'right';
-  const companyAlignment = 'center' as 'left' | 'center' | 'right';
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
   const detailLine2 = [
     branch?.addressLine2 || company?.addressLine2 || '',
@@ -118,39 +125,42 @@ function buildHeader(data: ProofOfDeliveryPdfData): any {
 
   const companyDetails = {
     stack: [
-      { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: companyAlignment },
-      { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] }
+      { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: printSettings.companyAlignment },
+      { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+      { text: detailLine1, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+      { text: detailLine2, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0], noWrap: true }
     ]
+  };
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot) {
+      stack.push(buildHeaderLogo(data.logo, slot));
+    }
+    if (printSettings.companyPosition === slot) {
+      stack.push({
+        ...companyDetails,
+        margin: getCompanySlotMargin(slot)
+      });
+    }
+    return { stack };
   };
 
   return {
     stack: [
       {
-        columns: [
-          {
-            width: '*',
-            stack: [
-              logoPosition === 'left' ? buildHeaderLogo(data.logo, 'left') : { text: '' },
-              companyPosition === 'left' ? companyDetails : { text: '' }
-            ]
-          },
-          {
-            width: '*',
-            stack: [
-              logoPosition === 'center' ? buildHeaderLogo(data.logo, 'center') : { text: '' },
-              companyPosition === 'center' ? companyDetails : { text: '' }
-            ]
-          },
-          {
-            width: '*',
-            stack: [
-              logoPosition === 'right' ? buildHeaderLogo(data.logo, 'right') : { text: '' },
-              companyPosition === 'right' ? companyDetails : { text: '' }
-            ]
-          }
-        ]
+        table: {
+          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
+        },
+        layout: {
+          hLineWidth: () => 0,
+          vLineWidth: () => 0,
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 0
+        }
       },
       {
         canvas: [
@@ -160,15 +170,46 @@ function buildHeader(data: ProofOfDeliveryPdfData): any {
             y1: 0,
             x2: 565,
             y2: 0,
-            lineWidth: 1,
+            lineWidth: 0.25,
             lineColor: '#000'
           }
         ],
-        margin: [0, 6, 0, 0]
+        margin: [0, 4, 0, 0]
       }
     ],
-    margin: [0, 0, 0, 2]
+    margin: [0, 0, 0, 0]
   };
+}
+
+function getCompanySlotMargin(slot: 'left' | 'center' | 'right'): number[] {
+  if (slot === 'right') {
+    return [0, 10, 24, 0];
+  }
+
+  if (slot === 'left') {
+    return [24, 10, 0, 0];
+  }
+
+  return [0, 10, 0, 0];
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [85, '*', 410];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [410, '*', 85];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
@@ -178,9 +219,9 @@ function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' 
 
   return {
     image: logo,
-    fit: [50, 50],
+    fit: [65, 65],
     alignment,
-    margin: [4, 6, 0, 0]
+    margin: [4, 0, 0, 0]
   };
 }
 
@@ -361,9 +402,9 @@ function buildNumberCell(
 
 function borderedLayout(): any {
   return {
-    hLineWidth: () => 1,
+    hLineWidth: () => 0.25,
     vLineWidth: (i: number, node: any) =>
-      i === 0 || i === node.table.widths.length ? 0 : 1,
+      i === 0 || i === node.table.widths.length ? 0 : 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => 6,
@@ -405,6 +446,11 @@ export function transformProofOfDeliveryApiData(
     portList?: any[];
     containerTypeList?: any[];
     selectedFclLcl?: string;
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   }
 ): ProofOfDeliveryPdfData {
   const portList = options?.portList || [];
@@ -497,6 +543,11 @@ export function transformProofOfDeliveryApiData(
       email: userData?.Email || userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     partyBlocks: [
       {
         leftTitle: 'Client',

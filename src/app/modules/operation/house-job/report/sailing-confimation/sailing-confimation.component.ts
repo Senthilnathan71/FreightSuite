@@ -6,6 +6,7 @@ import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { generateSailingConfirmationDocument, transformSailingConfirmationApiData } from 'src/app/common/pdf/generators/sailing-confirmation-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -54,7 +55,8 @@ export class SailingConfimationComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
 
@@ -142,7 +144,10 @@ getUniqueContainers(): string[] {
         this.currentBranch,
         this.userData,
         logo,
-        { ports: this.portList }
+        {
+          ports: this.portList,
+          printSettings: this.companySettings.getPrintSettings()
+        }
       );
       const docDefinition = generateSailingConfirmationDocument(pdfData);
       const fileName = `Sailing_Confirmation${this.masterJobData?.MasterJobNumber || 'Report'}`;
@@ -183,7 +188,10 @@ getUniqueContainers(): string[] {
         this.currentBranch,
         this.userData,
         logo,
-        { ports: this.portList }
+        {
+          ports: this.portList,
+          printSettings: this.companySettings.getPrintSettings()
+        }
       );
       const docDefinition = generateSailingConfirmationDocument(pdfData);
 

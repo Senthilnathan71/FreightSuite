@@ -222,6 +222,11 @@ export interface CroContainerData {
 // SAILING CONFIRMATION PDF DATA
 // =====================
 export interface SailingConfirmationPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   sailing: {
     mblNo?: string;
     hblNo?: string;
@@ -700,6 +705,11 @@ export interface MasterJobCardPartyAmountRow {
 // CARGO ARRIVAL PDF DATA
 // =====================
 export interface CargoArrivalPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   reportTitle: string;
   withOrWithoutCharge: boolean;
   selectedFclLcl?: string;
@@ -872,6 +882,11 @@ export interface DeliveryOrderChargePdfRow {
 // INVOICE PDF DATA
 // =====================
 export interface InvoicePdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   invoice: {
     invoiceNo?: string;
     invoiceDate?: Date | string;
@@ -1299,6 +1314,11 @@ export interface JournalVoucherLineData {
 // RELEASE LETTER PDF DATA
 // =====================
 export interface ReleaseLetterPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   reportTitle: string;
   selectedFclLcl?: string;
   releaseInfo: {

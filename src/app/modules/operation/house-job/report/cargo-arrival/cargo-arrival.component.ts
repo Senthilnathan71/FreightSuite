@@ -14,6 +14,7 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../../operation.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 @Component({
   selector: 'app-cargo-arrival',
   standalone: true,
@@ -96,7 +97,8 @@ export class CargoArrivalComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
 
@@ -434,7 +436,8 @@ printDiv(divId: string): void {
       containerTypeList: this.containerTypeList || [],
       packageTypeList: this.packageTypeList || [],
       portList: this.portList || [],
-      amountInWords: this.getAmountInWords()
+      amountInWords: this.getAmountInWords(),
+      printSettings: this.companySettings.getPrintSettings()
     };
   }
 

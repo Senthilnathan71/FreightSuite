@@ -2,10 +2,10 @@ import { InvoicePdfData } from '../interfaces/pdf-document.interfaces';
 import { PdfTermItem } from '../interfaces/pdf-base.interface';
 import { buildSectionTitle } from '../builders/pdf-section.builder';
 import { PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS, getPdfStyles } from '../styles/pdf-styles';
-import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
+import { formatDate, formatNumberWithCommas } from '../helpers/pdf-formatters';
 
-const LOGO_HEIGHT_PT = 82.5;
-const LOGO_FIT: [number, number] = [145, LOGO_HEIGHT_PT];
+const LOGO_HEIGHT_PT = 75;
+const LOGO_FIT: [number, number] = [110, LOGO_HEIGHT_PT];
 
 export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
@@ -54,17 +54,35 @@ export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
 function buildHeader(data: InvoicePdfData): any {
   const company = data.company || {} as any;
   const branch = data.branch || {} as any;
-  const printData = (data as any).invoicePrintData || {};
-  const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
 
   const companyStack: any[] = [];
 
   if (company.companyName) {
     companyStack.push({
-      text: company.companyName,
+      text: String(company.companyName).toUpperCase(),
       style: 'companyName',
-      alignment: 'right',
-      margin: [0, 0, 0, 6]
+      fontSize: 16,
+      bold: true,
+      alignment: printSettings.companyAlignment,
+      margin: [0, 0, 0, 1],
+      noWrap: true
+    });
+  }
+
+  const branchName = branch.branchName || branch.BranchName || '';
+  if (branchName) {
+    companyStack.push({
+      text: String(branchName).toUpperCase(),
+      fontSize: 12,
+      bold: true,
+      alignment: printSettings.companyAlignment,
+      margin: [0, 0, 0, 1],
+      noWrap: true
     });
   }
 
@@ -73,72 +91,101 @@ function buildHeader(data: InvoicePdfData): any {
     companyStack.push({
       text: addressLine1,
       style: 'addressText',
-      alignment: 'right',
-      margin: [0, 0, 0, 6]
+      fontSize: 10,
+      alignment: printSettings.companyAlignment,
+      margin: [0, 0, 0, 1],
+      noWrap: true
     });
   }
 
   const addressLine2 = branch.addressLine2 || company.addressLine2;
-  const branchName = branch.branchName || branch.BranchName || company.city || '';
-  const branchCode = branch.branchCode || branch.BranchCode || '';
-  const branchLine = joinNonEmpty([addressLine2, joinNonEmpty([branchName, branchCode], ' - ')], ', ');
-  if (branchLine) {
-    companyStack.push({
-      text: branchLine,
-      style: 'addressText',
-      alignment: 'right',
-      margin: [0, 0, 0, 6]
-    });
-  }
-
+  const city = branch.cityMaster?.cityName || branch.cityName || branch.City || company.city || '';
   const postalCode = branch.postalCode || company.postalCode;
-  if (postalCode) {
-    companyStack.push({
-      text: `Postal Code : ${postalCode}`,
-      style: 'addressText',
-      alignment: 'right',
-      margin: [0, 0, 0, 6]
-    });
-  }
-
   const phone = branch.phoneNumber || company.phoneNumber;
-  if (phone) {
+  const addressDetailsLine: any[] = [];
+  const appendText = (text: string | any[]) => {
+    if (addressDetailsLine.length) addressDetailsLine.push({ text: ', ', noWrap: true });
+    if (Array.isArray(text)) {
+      addressDetailsLine.push(...text);
+    } else {
+      addressDetailsLine.push({ text, noWrap: true });
+    }
+  };
+
+  if (addressLine2) appendText(addressLine2);
+  if (city) appendText(city);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true, noWrap: true }, { text: postalCode, noWrap: true }]);
+  if (phone) appendText([{ text: 'Ph.no : ', bold: true, noWrap: true }, { text: phone, noWrap: true }]);
+
+  if (addressDetailsLine.length) {
     companyStack.push({
-      text: `Phone No : ${phone}`,
+      text: addressDetailsLine,
       style: 'addressText',
-      alignment: 'right',
-      margin: [0, 0, 0, 6]
+      fontSize: 10,
+      alignment: printSettings.companyAlignment,
+      noWrap: true
     });
   }
 
-  const registrationNo = isIndiaInvoice
-    ? (printData.PAN || company.Pan || company.PAN || data.companyPan || '')
-    : (data.companyVatNo || printData.GSTCode || data.companyGstCode || data.companyPan || '');
-  if (registrationNo) {
-    companyStack.push({
-      text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
-      style: 'addressText',
-      alignment: 'right'
-    });
-  }
+  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
+    left: 'left',
+    center: 'center',
+    right: 'right'
+  };
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot && data.logo) {
+      stack.push(buildPdfLogoColumn(data.logo, slotAlign[slot]));
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyStack, margin: companyMargin });
+    }
+    return { stack };
+  };
 
   return {
     stack: [
       {
         table: {
-          widths: ['auto', '*', 10],
-          body: [[
-            buildPdfLogoColumn(data.logo),
-            { stack: companyStack },
-            { text: '' }
-          ]]
+          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
         },
-        layout: 'noBorders',
-        margin: [0, 5, 0, 3]
+        layout: {
+          hLineWidth: () => 0,
+          vLineWidth: () => 0,
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 0
+        },
+        margin: [0, 5, 0, 2]
       },
-      horizontalLine(0.1, [0, 0, 0, 6])
+      horizontalLine(0.1, [0, 0, 0, 0])
     ]
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 410];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [410, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: InvoicePdfData): any {
@@ -442,7 +489,7 @@ function buildLabeledText(label: string, value: any, labelWidth = 100): any {
   };
 }
 
-function buildPdfLogoColumn(logo: string | null | undefined): any {
+function buildPdfLogoColumn(logo: string | null | undefined, alignment: 'left' | 'center' | 'right' = 'left'): any {
   if (!logo || logo === 'none') {
     return { text: '', width: 1 };
   }
@@ -451,10 +498,10 @@ function buildPdfLogoColumn(logo: string | null | undefined): any {
     const svgPayload = logo.split(',')[1] || '';
     const isBase64 = logo.includes(';base64,');
     const svg = isBase64 ? atob(svgPayload) : decodeURIComponent(svgPayload);
-    return { svg, fit: LOGO_FIT, alignment: 'left' as const };
+    return { svg, fit: LOGO_FIT, alignment, margin: [8, 0, 15, 0] };
   }
 
-  return { image: logo, fit: LOGO_FIT, alignment: 'left' as const };
+  return { image: logo, fit: LOGO_FIT, alignment, margin: [8, 0, 15, 0] };
 }
 
 function formatContainerNumberType(printData: any, fallback = ''): string {
