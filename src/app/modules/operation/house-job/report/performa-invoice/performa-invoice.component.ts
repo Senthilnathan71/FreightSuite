@@ -6,15 +6,16 @@ import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { InvoicePdfData } from 'src/app/common/pdf/interfaces/pdf-document.interfaces';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
+import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
 @Component({
   selector: 'app-performa-invoice',
   standalone: true,
-  imports: [CommonModule, CustomDatePipe],
+  imports: [CommonModule, CustomDatePipe, PrintHeaderComponent],
   templateUrl: './performa-invoice.component.html',
   providers: [CustomDatePipe],
   styles: ``,
@@ -54,6 +55,7 @@ export class PerformaInvoiceComponent implements OnInit {
     public activeModal: NgbActiveModal,
     public logoService: LogoService,
     private appSettingService: AppSettingsService,
+    private companySettings: CompanySettingsManagerService,
     private operationService: OperationService,
     private pdfMakeService: PdfMakeService,
     private numberToWords: NumberToWordsService,
@@ -483,6 +485,7 @@ export class PerformaInvoiceComponent implements OnInit {
         email: this.userData?.email || this.userData?.Email || ''
       },
       logo,
+      printSettings: this.companySettings.getPrintSettings(),
       invoiceTitle: printData.invoiceTitle || 'PROFORMA INVOICE',
       companyGstCode: printData.GSTCode || companyRegistrationNo,
       companyPan: companyRegistrationNo,

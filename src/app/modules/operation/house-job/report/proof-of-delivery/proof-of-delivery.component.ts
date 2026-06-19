@@ -4,6 +4,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -60,7 +61,8 @@ export class ProofOfDeliveryComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
     ngOnInit() {
@@ -195,7 +197,8 @@ export class ProofOfDeliveryComponent {
         {
           portList: this.portList,
           containerTypeList: this.containerTypeList,
-          selectedFclLcl: this.selectedFCLLCL
+          selectedFclLcl: this.selectedFCLLCL,
+          printSettings: this.companySettings.getPrintSettings()
         }
       );
       const docDefinition = generateProofOfDeliveryDocument(pdfData);
@@ -240,7 +243,8 @@ export class ProofOfDeliveryComponent {
         {
           portList: this.portList,
           containerTypeList: this.containerTypeList,
-          selectedFclLcl: this.selectedFCLLCL
+          selectedFclLcl: this.selectedFCLLCL,
+          printSettings: this.companySettings.getPrintSettings()
         }
       );
       const docDefinition = generateProofOfDeliveryDocument(pdfData);

@@ -25,7 +25,7 @@ export function generateReleaseLetterDocument(data: ReleaseLetterPdfData): any {
         y: 14,
         w: pageSize.width - 28,
         h: pageSize.height - 28,
-        lineWidth: 1,
+        lineWidth: 0.25,
         lineColor: '#000'
       }]
     }),
@@ -52,39 +52,61 @@ export function generateReleaseLetterDocument(data: ReleaseLetterPdfData): any {
 function buildHeader(data: ReleaseLetterPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
-  const locationLine = joinNonEmpty([
-    branch?.addressLine2 || company?.addressLine2 || '',
-    branch?.cityName || branch?.cityMaster?.cityName || company?.city || '',
-    (branch?.postalCode || company?.postalCode) ? `Postal Code : ${branch?.postalCode || company?.postalCode}` : '',
-    (branch?.phoneNumber || company?.phoneNumber) ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}` : ''
-  ], ', ');
+  const logo = data.logo;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
+  const locationLine: any[] = [];
+  const appendText = (text: string | any[]) => {
+    if (locationLine.length) locationLine.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      locationLine.push(...text);
+    } else {
+      locationLine.push({ text });
+    }
+  };
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
+  const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || branch?.PostalCode || branch?.ZipCode || company?.postalCode || company?.PostalCode || company?.ZipCode || '';
+  const phoneNumber = branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || company?.phoneNumber || company?.PhoneNumber || company?.Phone || '';
+
+  if (addressLine2) appendText(addressLine2);
+  if (cityName) appendText(cityName);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phoneNumber) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phoneNumber }]);
+
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
   const companyInfoStack = [
-    { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: 'center' },
-    { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: 'center', margin: [0, 1, 0, 0] },
-    { text: detailLine1, fontSize: 9, alignment: 'center', margin: [0, 1, 0, 0] },
-    { text: locationLine, fontSize: 9, alignment: 'center', margin: [0, 1, 0, 0] }
+    { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: printSettings.companyAlignment },
+    { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: detailLine1, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: locationLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] }
   ];
 
   const buildSlot = (slot: 'left' | 'center' | 'right') => {
     const stack: any[] = [];
-    if (slot === 'left' && data.logo) {
+    if (printSettings.logoPosition === slot && logo) {
       stack.push({
-        image: data.logo,
+        image: logo,
         fit: [55, 55],
-        alignment: 'left',
-        margin: [6, 0, 0, 0]
+        alignment: slot,
+        margin: slot === 'right' ? [0, 0, 6, 0] : [6, 0, 0, 0]
       });
     }
-    if (slot === 'center') {
-      stack.push({ stack: companyInfoStack });
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
     }
     return { stack };
   };
 
   return {
     table: {
-      widths: ['20%', '60%', '20%'],
+      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
       body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
     },
     layout: {
@@ -99,6 +121,25 @@ function buildHeader(data: ReleaseLetterPdfData): any {
   };
 }
 
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
+}
+
 function buildTitle(data: ReleaseLetterPdfData): any {
   return {
     table: {
@@ -106,7 +147,7 @@ function buildTitle(data: ReleaseLetterPdfData): any {
       body: [[{ text: data.reportTitle, bold: true, alignment: 'center', fontSize: 12, margin: [0, 4, 0, 4] }]]
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 ? 1 : 0),
+      hLineWidth: (i: number) => (i === 0 ? 0.25 : 0),
       vLineWidth: () => 0,
       hLineColor: () => '#000'
     },
@@ -292,8 +333,8 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
 
 function boxedLayout(padding: number, sidePadding: number): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => padding,
@@ -305,8 +346,8 @@ function boxedLayout(padding: number, sidePadding: number): any {
 
 function borderedLayout(): any {
   return {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.25,
+    vLineWidth: () => 0.25,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
     paddingTop: () => 3,
@@ -339,6 +380,11 @@ export function transformReleaseLetterApiData(
     containerTypeList?: any[];
     selectedFCLLCL?: string;
     portList?: any[];
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   }
 ): ReleaseLetterPdfData {
   const other = apiData?.Others?.[0] || {};
@@ -391,6 +437,11 @@ export function transformReleaseLetterApiData(
       email: userData?.Email || userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     reportTitle: 'RELEASE LETTER',
     selectedFclLcl: options?.selectedFCLLCL || '',
     releaseInfo: {

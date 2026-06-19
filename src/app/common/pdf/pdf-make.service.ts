@@ -1290,6 +1290,11 @@ export class PdfMakeService {
       packageTypeList?: any[];
       portList?: any[];
       amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformCargoArrivalApiData(apiData, company, branch, userData, logo, options);
@@ -1312,6 +1317,11 @@ export class PdfMakeService {
       packageTypeList?: any[];
       portList?: any[];
       amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformCargoArrivalApiData(apiData, company, branch, userData, logo, options);
@@ -1733,6 +1743,11 @@ export class PdfMakeService {
       portList?: any[];
       selectedFclLcl?: 'FCL' | 'LCL';
       cfsList?: any[];
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformReleaseLetterApiData(apiData, company, branch, userData, logo, options);
@@ -1750,6 +1765,11 @@ export class PdfMakeService {
       portList?: any[];
       selectedFclLcl?: 'FCL' | 'LCL';
       cfsList?: any[];
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformReleaseLetterApiData(apiData, company, branch, userData, logo, options);

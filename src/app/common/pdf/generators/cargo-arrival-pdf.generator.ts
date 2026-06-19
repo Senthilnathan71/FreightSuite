@@ -85,9 +85,14 @@ function topBottomBorderLayout() {
 function buildHeader(data: CargoArrivalPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
-  const logoPosition = 'left' as 'left' | 'center' | 'right';
-  const companyPosition = 'center' as 'left' | 'center' | 'right';
-  const companyAlignment = 'center' as 'left' | 'center' | 'right';
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const,
+  };
+  const logoPosition = printSettings.logoPosition;
+  const companyPosition = printSettings.companyPosition;
+  const companyAlignment = printSettings.companyAlignment;
   const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
   const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
   const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
@@ -144,32 +149,55 @@ function buildHeader(data: CargoArrivalPdfData): any {
     ],
   };
 
-  return {
-    columns: [
-      {
-        width: 90,
-        stack: [
-          logoPosition === 'left' ? buildHeaderLogo(data.logo, 'left') : { text: '' },
-          companyPosition === 'left' ? companyDetails : { text: '' },
-        ],
-      },
-      {
-        width: '*',
-        stack: [
-          logoPosition === 'center' ? buildHeaderLogo(data.logo, 'center') : { text: '' },
-          companyPosition === 'center' ? companyDetails : { text: '' },
-        ],
-      },
-      {
-        width: 90,
-        stack: [
-          logoPosition === 'right' ? buildHeaderLogo(data.logo, 'right') : { text: '' },
-          companyPosition === 'right' ? companyDetails : { text: '' },
-        ],
-      },
+  const buildSlot = (slot: 'left' | 'center' | 'right') => ({
+    stack: [
+      logoPosition === slot ? buildHeaderLogo(data.logo, slot) : { text: '' },
+      companyPosition === slot ? companyDetails : { text: '' },
     ],
+  });
+
+  return {
+    table: {
+      widths: getHeaderWidths(logoPosition, companyPosition),
+      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]],
+    },
+    layout: {
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0,
+    },
     margin: [0, 0, 0, 2],
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right',
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [100, '*', 100];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [100, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 100];
+  }
+
+  if (companyPosition === 'right') {
+    return ['20%', '*', '55%'];
+  }
+
+  if (companyPosition === 'left') {
+    return ['55%', '*', '20%'];
+  }
+
+  return ['25%', '50%', '25%'];
 }
 
 function buildHeaderLogo(
@@ -184,7 +212,7 @@ function buildHeaderLogo(
     image: logo,
     fit: [50, 50],
     alignment,
-    margin: [4, 6, 0, 0],
+    margin: alignment === 'right' ? [0, 6, 4, 0] : [4, 6, 0, 0],
   };
 }
 
@@ -706,6 +734,11 @@ export function transformCargoArrivalApiData(
     packageTypeList?: any[];
     portList?: any[];
     amountInWords?: string;
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
   },
 ): CargoArrivalPdfData {
   const cargo = apiData?.Cargo?.[0] || {};
@@ -788,6 +821,11 @@ export function transformCargoArrivalApiData(
     branch,
     userData,
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center',
+    },
     reportTitle: `CARGO ARRIVAL NOTICE ${options?.withOrWithoutCharge ? 'WITH' : 'WITHOUT'} CHARGES`,
     withOrWithoutCharge: !!options?.withOrWithoutCharge,
     selectedFclLcl: options?.selectedFCLLCL || '',
