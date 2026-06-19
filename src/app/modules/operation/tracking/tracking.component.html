@@ -73,13 +73,21 @@
         </button>
       </header>
 
+      <!-- Common context shared by all matches (Master Job / MBL / Container) -->
+      <div class="match-common" *ngIf="matchCommonItems().length">
+        <div class="match-common-item" *ngFor="let c of matchCommonItems()">
+          <span>{{ c.label }}</span>
+          <strong>{{ c.value }}</strong>
+        </div>
+      </div>
+
       <div class="match-list">
         <article class="match-card" *ngFor="let m of matchResults; let i = index; trackBy: trackByMatch">
           <div class="match-card-main">
             <span class="match-index">{{ i + 1 }}</span>
             <div class="match-headline">
               <strong class="match-hbl">{{ displayValue(m.hblNo) }}</strong>
-              <span class="match-houseid">House Job #{{ displayValue(m.houseJobSid) }}</span>
+              <span class="match-tag" *ngIf="m.jobType === 'Transhipment'">Transhipment</span>
             </div>
           </div>
           <div class="match-card-body">
@@ -88,20 +96,12 @@
               <strong>{{ displayValue(m.bookingNo) }}</strong>
             </div>
             <div class="match-field">
-              <span>Job / Shipment</span>
-              <strong>{{ displayValue(m.jobNo) }}</strong>
-            </div>
-            <div class="match-field">
-              <span>MBL / MAWB</span>
-              <strong>{{ displayValue(m.mblNo) }}</strong>
-            </div>
-            <div class="match-field">
-              <span>Master Job</span>
-              <strong>{{ displayValue(m.masterJobNumber) }}</strong>
+              <span>Vessel / Voyage</span>
+              <strong>{{ displayValue(m.vesselVoyage) }}</strong>
             </div>
             <div class="match-field">
               <span>Department</span>
-              <strong>{{ displayValue(m.department) }}<span class="match-tag" *ngIf="m.jobType === 'Transhipment'">Transhipment</span></strong>
+              <strong>{{ displayValue(m.department) }}</strong>
             </div>
             <div class="match-field">
               <span>Customer</span>
@@ -115,6 +115,20 @@
               <span>ETD</span>
               <strong>{{ formatMatchDate(m.etd) }}</strong>
             </div>
+            <div class="match-field">
+              <span>ETA</span>
+              <strong>{{ formatMatchDate(m.eta) }}</strong>
+            </div>
+            <ng-container *ngIf="matchShowMasterMbl()">
+              <div class="match-field">
+                <span>MBL / MAWB</span>
+                <strong>{{ displayValue(m.mblNo) }}</strong>
+              </div>
+              <div class="match-field">
+                <span>Master Job</span>
+                <strong>{{ displayValue(m.masterJobNumber) }}</strong>
+              </div>
+            </ng-container>
           </div>
           <button type="button" class="match-action" (click)="viewTracking(m)">
             <i class="fas fa-route"></i> View Tracking
@@ -125,85 +139,51 @@
   </section>
 
   <ng-container *ngIf="trackingResult as tracking">
-    <section class="shipment-overview-card">
-      <div class="shipment-main">
-        <h2>{{ shipmentInfoValue(tracking, 'shipmentNumber', 'bookingNumber', 'bookingNo') }}</h2>
-        <p>{{ displayValue(tracking.shipmentInfo?.customerName) }}</p>
-      </div>
-
-      <aside class="current-status-card">
-        <span>Current status</span>
-        <strong>{{ displayValue(tracking.currentStatus?.label || tracking.currentStatus?.eventName, 'Pending') }}</strong>
-        <small>{{ currentStatusDate(tracking) }}</small>
-      </aside>
-
-      <div class="shipment-detail-grid">
-        <div *ngFor="let card of shipmentDetailCards(tracking); trackBy: trackByDetailCard">
-          <span>{{ card.label }}</span>
-          <strong>{{ card.value }}</strong>
+    <section class="ship-panel">
+      <div class="ship-head">
+        <div class="ship-id">
+          <h2>{{ shipmentInfoValue(tracking, 'shipmentNumber', 'bookingNumber', 'bookingNo') }}</h2>
+          <p>{{ displayValue(tracking.shipmentInfo?.customerName) }}</p>
+        </div>
+        <div class="ship-status" [ngClass]="statusClass(tracking.currentStatus?.label || tracking.shipmentInfo?.shipmentStatus)">
+          <span>Current Status</span>
+          <strong>{{ displayValue(tracking.currentStatus?.label || tracking.currentStatus?.eventName, 'Pending') }}</strong>
+          <small>{{ currentStatusDate(tracking) }}</small>
         </div>
       </div>
 
-      <section class="journey-flow" aria-label="Shipment journey">
-        <div class="journey-line">
-          <span class="journey-line-progress" [style.width.%]="routeProgressPercent(tracking)"></span>
+      <!-- Shipment details — Booking No (hidden if empty), HBL/HAWB, Job Type, Dept., Master Job, MBL/MAWB -->
+      <div class="summary-grid">
+        <div class="summary-cell" *ngFor="let field of summaryFields(tracking)">
+          <span>{{ field.label }}</span>
+          <strong>{{ field.value }}</strong>
         </div>
-        <article
-          class="journey-point"
+      </div>
+
+      <!-- Ports first; ETD / ETA / ATD / ATA shown under each port -->
+      <div class="route-strip" aria-label="Shipment route">
+        <div class="route-line"><span class="route-line-fill" [style.width.%]="routeProgressPercent(tracking)"></span></div>
+        <div
+          class="route-stop"
           *ngFor="let point of routePoints(tracking); let i = index"
           [ngClass]="routePointClass(i, tracking)"
         >
-          <span class="journey-node">
-            <i class="fas" [ngClass]="i < routeProgressIndex(tracking) ? 'fa-check' : 'fa-circle'"></i>
-          </span>
+          <span class="route-dot"><i class="fas" [ngClass]="i < routeProgressIndex(tracking) ? 'fa-check' : 'fa-circle'"></i></span>
           <strong>{{ point.label }}</strong>
           <small>{{ point.role }}</small>
-        </article>
-      </section>
-
-      <section class="voyage-schedule multi-leg-schedule" *ngIf="isMultiLegSchedule(tracking)" aria-label="Transhipment vessel schedule">
-        <ng-container *ngFor="let leg of voyageLegs(tracking); let last = last; trackBy: trackByVoyageLeg">
-          <article class="schedule-card vessel-card leg-card">
-            <span>{{ leg.legType || ('Leg ' + leg.sequence) }}</span>
-            <strong>{{ transhipmentLegVessel(leg) }}</strong>
-            <small>{{ transhipmentLegRoute(leg) }}</small>
-            <small>{{ transhipmentLegSchedule(leg) }}</small>
-          </article>
-          <div class="schedule-connector" *ngIf="!last" aria-hidden="true">
-            <span></span>
+          <div class="route-info" *ngIf="portVesselLabel(tracking, i) || portScheduleItems(tracking, i).length">
+            <div class="route-vessel" *ngIf="portVesselLabel(tracking, i)">
+              <i class="fas" [ngClass]="portVesselIcon(tracking)"></i>
+              <span>{{ portVesselLabel(tracking, i) }}</span>
+            </div>
+            <ul class="route-dates" *ngIf="portScheduleItems(tracking, i).length">
+              <li *ngFor="let d of portScheduleItems(tracking, i)">
+                <span>{{ d.label }}</span><b>{{ d.value }}</b>
+              </li>
+            </ul>
           </div>
-        </ng-container>
-      </section>
-
-      <section class="voyage-schedule" *ngIf="hasVoyageSchedule(tracking) && !isMultiLegSchedule(tracking)" aria-label="Vessel schedule">
-        <article class="schedule-card vessel-card">
-          <span>{{ scheduleLabel(tracking) }}</span>
-          <strong>{{ vesselVoyageValue(tracking) }}</strong>
-          <small>{{ scheduleLegLabel(tracking) }}</small>
-        </article>
-        <div class="schedule-connector" aria-hidden="true">
-          <span></span>
         </div>
-        <article class="schedule-card">
-          <span>{{ departureDateLabel(tracking) }}</span>
-          <strong>{{ departureDateValue(tracking) }}</strong>
-          <small>{{ departureDateMeta(tracking) }}</small>
-        </article>
-        <div class="schedule-connector" aria-hidden="true">
-          <span></span>
-        </div>
-        <article class="schedule-card">
-          <span>{{ arrivalDateLabel(tracking) }}</span>
-          <strong>{{ arrivalDateValue(tracking) }}</strong>
-          <small>{{ arrivalDateMeta(tracking) }}</small>
-        </article>
-      </section>
-
-      <section class="mobile-stat-strip">
-        <div *ngIf="showContainerSection(tracking)"><strong>{{ containerCount(tracking) }}</strong><span>Containers</span></div>
-        <div><strong>{{ completedMilestoneCount(tracking) }}</strong><span>Milestones done</span></div>
-        <div><strong>{{ totalWeight(tracking) }}</strong><span>Weight</span></div>
-      </section>
+      </div>
     </section>
 
     <section class="tracking-tabs">
@@ -211,17 +191,20 @@
         <li [ngbNavItem]="1">
           <button ngbNavLink>Overview</button>
           <ng-template ngbNavContent>
-            <section class="tab-body overview-ticker" *ngIf="overviewCards(tracking).length; else noOverview">
-              <div class="overview-track">
-                <article
-                  class="insight-panel"
-                  *ngFor="let card of overviewCards(tracking); trackBy: trackByOverviewCard"
-                  [class.primary]="card.primary"
-                >
-                  <span>{{ card.label }}</span>
-                  <strong>{{ card.value }}</strong>
-                  <p>{{ card.meta }}</p>
-                </article>
+            <section class="tab-body">
+              <!-- Cargo Detail (horizontal scroll) -->
+              <div class="detail-block">
+                <h4 class="detail-title">Cargo Detail</h4>
+                <div class="overview-table-wrap">
+                  <table class="overview-table">
+                    <thead>
+                      <tr><th *ngFor="let item of cargoDetailItems(tracking)">{{ item.label }}</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td *ngFor="let item of cargoDetailItems(tracking)">{{ item.value }}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </section>
           </ng-template>
@@ -259,17 +242,35 @@
         <li [ngbNavItem]="3" *ngIf="showContainerSection(tracking)">
           <button ngbNavLink>Containers</button>
           <ng-template ngbNavContent>
-            <section class="tab-body container-grid" *ngIf="tracking.containers?.length; else noContainers">
-              <article class="container-card" *ngFor="let container of tracking.containers; trackBy: trackByContainer">
-                <span>Container</span>
-                <strong>{{ displayValue(container.containerNo) }}</strong>
-                <div><small>Type</small><b>{{ displayValue(container.containerType) }}</b></div>
-                <div><small>HBL / HAWB</small><b>{{ displayValue(container.hblNo) }}</b></div>
-                <div><small>Seal No</small><b>{{ displayValue(container.sealNo || container.customsSealNo) }}</b></div>
-                <div><small>Commodities</small><b>{{ displayValue(container.commodityCount) }}</b></div>
-                <div><small>Packages</small><b>{{ displayValue(container.packageCount) }}</b></div>
-                <div><small>Weight / Volume</small><b>{{ formatMeasure(container.weight, 'kg') }} / {{ formatMeasure(container.volume, 'cbm') }}</b></div>
-              </article>
+            <section class="tab-body" *ngIf="tracking.containers?.length; else noContainers">
+              <div class="grid-table-wrap">
+                <table class="grid-table">
+                  <thead>
+                    <tr>
+                      <th>Container No</th>
+                      <th>Type</th>
+                      <th>{{ hblLabel(tracking) }}</th>
+                      <th>Seal No</th>
+                      <th class="num">Commodities</th>
+                      <th class="num">Packages</th>
+                      <th class="num">Weight</th>
+                      <th class="num">Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let container of tracking.containers; trackBy: trackByContainer">
+                      <td class="strong">{{ displayValue(container.containerNo) }}</td>
+                      <td>{{ displayValue(container.containerType) }}</td>
+                      <td>{{ displayValue(container.hblNo) }}</td>
+                      <td>{{ displayValue(container.sealNo) }}</td>
+                      <td class="num">{{ displayValue(container.commodityCount) }}</td>
+                      <td class="num">{{ displayValue(container.packageCount) }}</td>
+                      <td class="num">{{ formatMeasure(container.weight, 'kg') }}</td>
+                      <td class="num">{{ formatMeasure(container.volume, 'cbm') }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
           </ng-template>
         </li>

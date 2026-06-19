@@ -92,11 +92,42 @@ $radius-md: 12px;
 .mobile-stat-strip span { color: $text; font-size: 10px; }
 
 .tracking-tabs { padding: 12px 14px 14px; }
-.tab-nav { display: flex; gap: 10px; margin: 0 0 10px; padding: 0 0 0 6px; border-bottom: 1px solid $line; list-style: none; overflow-x: auto; scrollbar-width: none; }
-.tab-nav::-webkit-scrollbar { display: none; }
-.tab-nav li { flex: 0 0 auto; }
-.tab-nav button { min-height: 36px; padding: 0 16px; border: 1px solid transparent; border-bottom: 0; border-radius: 10px 10px 0 0; background: transparent; color: $text; font-size: 12px; font-weight: 800; }
-.tab-nav button.active, .tab-nav button[aria-selected='true'] { color: $brand; background: #ffffff; border-color: #bfd6ec; box-shadow: inset 0 3px 0 rgba($brand, 0.18); }
+.tab-nav {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 5px;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: $surface-soft;
+  list-style: none;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-nav::-webkit-scrollbar { height: 6px; }
+.tab-nav::-webkit-scrollbar-thumb { background: #cbd9e6; border-radius: 999px; }
+.tab-nav li { flex: 0 0 auto; scroll-snap-align: start; }
+.tab-nav button {
+  min-height: 38px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: $text;
+  font-size: 12.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.tab-nav button:hover { color: $brand; }
+.tab-nav button.active, .tab-nav button[aria-selected='true'] {
+  color: #ffffff;
+  background: linear-gradient(135deg, $brand 0%, $brand-dark 100%);
+  box-shadow: 0 6px 16px rgba($brand, 0.28);
+}
 .tab-body { min-width: 0; }
 .overview-ticker{overflow:hidden}.overview-track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .insight-panel { min-width: 0; padding: 11px 12px; border: 1px solid #dce7f1; border-radius: 9px; background: $surface-soft; }
@@ -191,6 +222,107 @@ $radius-md: 12px;
 .not-found-state .empty-icon { background: #fef2f2; color: $danger; }
 
 /* ----------------------------------------------------------------------------
+   Clean row / table tracking layout (replaces card design)
+---------------------------------------------------------------------------- */
+.ship-panel {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 16px 18px;
+  border: 1px solid $line;
+  border-radius: $radius-lg;
+  background: $surface;
+  box-shadow: $shadow;
+}
+.ship-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid $line; }
+.ship-id { min-width: 0; }
+.ship-id h2 { margin: 0 0 3px; font-size: 23px; line-height: 1.12; font-weight: 850; color: $ink; overflow-wrap: anywhere; }
+.ship-id p { margin: 0; color: $muted; font-size: 12px; font-weight: 700; }
+.ship-status { flex: 0 0 auto; text-align: right; padding: 8px 14px; border-radius: 10px; background: $surface-soft; border: 1px solid $line; }
+.ship-status span { display: block; color: $muted; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.ship-status strong { display: block; margin: 2px 0; font-size: 17px; font-weight: 850; color: $brand; }
+.ship-status small { display: block; color: $muted; font-size: 10px; font-weight: 700; }
+.ship-status.success strong { color: $success; }
+.ship-status.danger strong { color: $danger; }
+.ship-status.warning strong { color: $warning; }
+
+/* Ordered shipment detail grid (wraps responsively, keeps field order) */
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 14px; }
+.summary-cell { min-width: 0; padding: 10px 13px; border: 1px solid $line; border-radius: 9px; background: $surface-soft; }
+.summary-cell span { display: block; margin-bottom: 4px; color: $muted; font-size: 10px; font-weight: 850; text-transform: uppercase; white-space: nowrap; }
+.summary-cell strong { display: block; color: $ink; font-size: 13px; font-weight: 800; overflow-wrap: anywhere; }
+
+/* Overview horizontal-scroll table (same on desktop + mobile) */
+.overview-table-wrap { width: 100%; overflow-x: auto; border: 1px solid $line; border-radius: 10px; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+.overview-table-wrap::-webkit-scrollbar { height: 8px; }
+.overview-table-wrap::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 999px; }
+.overview-table-wrap::-webkit-scrollbar-thumb { background: #cbd9e6; border-radius: 999px; }
+.overview-table-wrap::-webkit-scrollbar-thumb:hover { background: #aebfce; }
+.overview-table { width: 100%; min-width: 100%; border-collapse: collapse; white-space: nowrap; }
+.overview-table thead th, .overview-table tbody td { width: 1%; }
+.overview-table thead th { padding: 10px 16px; text-align: left; background: #eef4f8; color: $muted; font-size: 10px; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid $line; }
+.overview-table tbody td { padding: 12px 16px; color: $ink; font-size: 13px; font-weight: 700; border-right: 1px solid #eef2f7; }
+.overview-table tbody td:last-child { border-right: 0; }
+
+/* Schedule block: meta + voyage table */
+.sched-block { margin-top: 14px; }
+.sched-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+.sched-meta div { min-width: 0; padding: 9px 12px; border: 1px solid $line; border-radius: 9px; background: $surface-soft; }
+.sched-meta span { display: block; margin-bottom: 3px; color: $muted; font-size: 10px; font-weight: 850; text-transform: uppercase; }
+.sched-meta strong { display: block; color: $ink; font-size: 13px; font-weight: 800; overflow-wrap: anywhere; }
+
+/* Generic data table (schedule + containers) */
+.grid-table-wrap { width: 100%; overflow-x: auto; border: 1px solid $line; border-radius: 10px; }
+.grid-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.grid-table thead th { padding: 10px 12px; text-align: left; white-space: nowrap; background: #eef4f8; color: $muted; font-size: 10px; font-weight: 850; text-transform: uppercase; border-bottom: 1px solid $line; }
+.grid-table tbody td { padding: 10px 12px; color: $text; border-bottom: 1px solid #eef2f7; vertical-align: middle; overflow-wrap: anywhere; }
+.grid-table tbody tr:last-child td { border-bottom: 0; }
+.grid-table tbody tr:nth-child(even) td { background: #fafcfe; }
+.grid-table .strong { color: $ink; font-weight: 850; }
+.grid-table .num { text-align: right; white-space: nowrap; }
+.grid-table .leg-name { color: $brand; font-weight: 850; white-space: nowrap; }
+.sched-grid .leg-name { min-width: 84px; }
+
+/* Ports first, dates below each port */
+.route-strip { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; padding: 16px 8px 4px; }
+.route-line { position: absolute; top: 26px; left: 10%; right: 10%; height: 2px; background: #cfd9e5; overflow: hidden; }
+.route-line-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, $success, $brand, $current); }
+.route-stop { position: relative; min-width: 0; text-align: center; }
+.route-dot { position: relative; z-index: 1; width: 18px; height: 18px; margin: 0 auto; display: grid; place-items: center; border: 2px solid #c7d2df; border-radius: 50%; background: #ffffff; color: #c7d2df; font-size: 8px; }
+.route-stop strong { display: block; margin-top: 7px; font-size: 13px; font-weight: 850; color: $ink; overflow-wrap: anywhere; }
+.route-stop small { display: block; color: $muted; font-size: 10px; font-weight: 750; }
+.route-stop.completed .route-dot { background: $success; border-color: $success; color: #fff; }
+.route-stop.active .route-dot { width: 22px; height: 22px; margin-top: -2px; background: #fff; border-color: $brand; color: $brand; box-shadow: 0 0 0 5px rgba($brand, 0.14); }
+.route-info { margin: 9px auto 0; max-width: 210px; }
+.route-vessel { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin-bottom: 7px; padding: 4px 10px; border-radius: 999px; background: $brand-soft; color: $brand-dark; font-size: 11px; font-weight: 850; }
+.route-vessel i { font-size: 11px; }
+.route-vessel span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.route-dates { list-style: none; margin: 0; padding: 8px 10px; border: 1px solid $line; border-radius: 9px; background: $surface-soft; }
+.route-dates li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 0; }
+.route-dates span { color: $muted; font-size: 10px; font-weight: 850; }
+.route-dates b { color: $ink; font-size: 11px; font-weight: 800; }
+
+/* Overview detail blocks */
+.detail-block { margin-bottom: 16px; }
+.detail-block:last-child { margin-bottom: 0; }
+.detail-title { margin: 0 0 10px; font-size: 13px; font-weight: 850; color: $ink; }
+.detail-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.detail-item { min-width: 0; padding: 11px 13px; border: 1px solid $line; border-radius: 9px; background: $surface-soft; }
+.detail-item span { display: block; margin-bottom: 4px; color: $muted; font-size: 10px; font-weight: 850; text-transform: uppercase; }
+.detail-item strong { display: block; color: $ink; font-size: 14px; font-weight: 850; overflow-wrap: anywhere; }
+.detail-item small { display: block; margin-top: 4px; color: $text; font-size: 11px; font-weight: 600; }
+
+@media (max-width: 991px) {
+  .ship-head { flex-direction: column; }
+  .ship-status { align-self: stretch; text-align: left; }
+}
+@media (max-width: 640px) {
+  .ship-panel { padding: 14px; border-radius: 14px; }
+  .ship-id h2 { font-size: 18px; }
+  .route-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 22px; }
+  .route-line { display: none; }
+}
+
+/* ----------------------------------------------------------------------------
    Multiple-match selection modal (duplicate HBL / HAWB)
 ---------------------------------------------------------------------------- */
 .match-modal-overlay {
@@ -229,6 +361,10 @@ $radius-md: 12px;
 .match-modal-head p { margin: 0; color: $muted; font-size: 12px; }
 .match-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: $brand; color: #fff; font-size: 11px; font-weight: 800; }
 .match-close { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid $line; border-radius: 10px; background: #fff; color: $ink; }
+.match-common { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 20px; background: #f2f8fc; border-bottom: 1px solid #dbe7f2; }
+.match-common-item { min-width: 0; padding: 8px 14px; border: 1px solid #d6e6f1; border-radius: 9px; background: #ffffff; }
+.match-common-item span { display: block; margin-bottom: 3px; color: $muted; font-size: 10px; font-weight: 850; text-transform: uppercase; }
+.match-common-item strong { display: block; color: $brand-dark; font-size: 13px; font-weight: 850; overflow-wrap: anywhere; }
 .match-list { display: grid; gap: 12px; padding: 16px 20px 20px; overflow-y: auto; }
 .match-card {
   display: grid;
