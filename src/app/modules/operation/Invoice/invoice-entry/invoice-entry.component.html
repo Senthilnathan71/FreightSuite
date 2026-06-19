@@ -239,7 +239,7 @@
                 } @else {
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm" formControlName="PartyAddress" placeholder=""
-                    readonly />
+                    [attr.maxlength]="LIMITS.header.PartyAddress" readonly />
                   <label class="input-label">Customer Address
                     <span class="text-danger">*</span>
                   </label>
@@ -250,7 +250,7 @@
               <aside class="col-md-3">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm text-end" formControlName="GST_VAT" id="GSTNo"
-                    placeholder="" readonly style="cursor: not-allowed" />
+                    placeholder="" [attr.maxlength]="LIMITS.header.GST_VAT" readonly style="cursor: not-allowed" />
                   @if(currentCompanyCountryCode === 'in'){
                   <label class="input-label">GST No
                     <i *ngIf="invoiceForm?.get('GST_VAT')?.value" class="fas fa-copy ms-1"
@@ -330,7 +330,7 @@
               <!-- 5. Ref No (DocumentNumber) -->
               <aside class="col-md-3">
                 <div class="custom-form-group text-end">
-                  <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="DocumentNumber" [attr.maxlength]="LIMITS.header.DocumentNumber" placeholder="" />
                   <label class="input-label">Ref No</label>
                 </div>
               </aside>
@@ -371,7 +371,7 @@
               <!-- 8. HBL No (HouseJob) -->
               <!-- <aside class="col-md-3">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="HBLNo" placeholder="">
+                  <input type="text" class="custom-input-field sm" formControlName="HBLNo" [attr.maxlength]="LIMITS.header.HouseNumber" placeholder="">
                   <label class="input-label">HBL No</label>
                 </div>
               </aside> -->
@@ -411,7 +411,7 @@
               <!-- 13. Remarks -->
               <aside class="col-md-3">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="Remarks" maxlength="300" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="Remarks" [attr.maxlength]="LIMITS.header.Remarks" placeholder="" />
                   <label class="input-label">Remarks
                     <i *ngIf="invoiceForm?.get('Remarks')?.value" class="fas fa-copy ms-1"
                       style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
@@ -423,7 +423,7 @@
               <!-- 6. IRN No - Show only for India -->
               <aside class="col-md-3" *ngIf="currentCompanyCountryCode === 'in'">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="IRNNumber" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="IRNNumber" [attr.maxlength]="LIMITS.others.IRNNumber" placeholder="" />
                   <label class="input-label">IRN No</label>
                 </div>
               </aside>
@@ -431,7 +431,7 @@
               <!-- 14. IRN Status - Show only for India -->
               <aside class="col-md-3" *ngIf="currentCompanyCountryCode === 'in'">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="IRNStatus" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="IRNStatus" [attr.maxlength]="LIMITS.others.IRNStatus" placeholder="" />
                   <label class="input-label">IRN Status</label>
                 </div>
               </aside>
@@ -612,7 +612,7 @@
 
                               <!-- Description -->
                               <td>
-                                <input class="text-start custom-input-field sm" formControlName="ChargeDescription" />
+                                <input class="text-start custom-input-field sm" formControlName="ChargeDescription" [attr.maxlength]="LIMITS.detail.ChargeDescription" />
                                 <!-- <span *ngIf="hasDetailSid(i)" style="text-align:start; font-weight: 600; color: black;">{{ row.get('ChargeDescription')?.value || '-' }}</span> -->
                               </td>
 
@@ -962,14 +962,14 @@
             <div class="row">
               <aside class="col-md-3" formGroupName="voucherOthers">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="Footer" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="Footer" [attr.maxlength]="LIMITS.others.Footer" placeholder="" />
                   <label class="input-label">Invoice Footer</label>
                 </div>
               </aside>
 
               <aside class="col-md-3" formGroupName="voucherOthers">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="VoucherNote" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="VoucherNote" [attr.maxlength]="LIMITS.others.VoucherNote" placeholder="" />
                   <label class="input-label">Invoice Note</label>
                 </div>
               </aside>
@@ -983,7 +983,7 @@
 
               <aside class="col-md-3" formGroupName="voucherOthers">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="ContainerNumber" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="ContainerNumber" [attr.maxlength]="LIMITS.others.ContainerNumber" placeholder="" />
                   <label class="input-label">Container No</label>
                 </div>
               </aside>

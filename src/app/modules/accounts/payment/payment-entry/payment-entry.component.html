@@ -435,7 +435,7 @@
                     placeholder=""
                     class="custom-input-field sm"
                     formControlName="Narration"
-                    maxlength="300"
+                    [attr.maxlength]="LIMITS.header.Narration"
                     (input)="onHeaderNarrationChange()"
                   />
                   <label
@@ -590,6 +590,7 @@
                     placeholder=""
                     class="custom-input-field sm"
                     formControlName="BankPartyName"
+                    [attr.maxlength]="LIMITS.header.BankPartyName"
                   />
                   <label
                     for="text-input"
@@ -720,7 +721,7 @@
                     placeholder=""
                     class="custom-input-field sm"
                     formControlName="Remarks"
-                    maxlength="100"
+                    [attr.maxlength]="LIMITS.header.Remarks"
                   />
                   <label
                     for="text-input"
@@ -752,6 +753,7 @@
                     placeholder=""
                     class="custom-input-field sm text-end"
                     formControlName="InstrumentNumber"
+                    [attr.maxlength]="LIMITS.header.InstrumentNumber"
                   />
                   <label
                     for="text-input"
@@ -1193,7 +1195,7 @@
                     formControlName="Narration"
                     class="custom-input-field sm"
                     style="width: 300px"
-                    maxlength="300"
+                    [attr.maxlength]="LIMITS.detail.Narration"
                   />
                 </td>
                 <td class="dofi-min-w-100">
@@ -1425,7 +1427,7 @@
                       formControlName="CertificateNo"
                       class="form-control form-control-sm"
                       style="border:none; border-bottom:1px solid #cfd6e0; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#26333d;"
-                      maxlength="50"
+                      [attr.maxlength]="LIMITS.tds.CertificateNo"
                       [readOnly]="isReadOnly || isPosted"
                     />
                   </td>
@@ -1435,7 +1437,7 @@
                       formControlName="NotificationNo"
                       class="form-control form-control-sm"
                       style="border:none; border-bottom:1px solid #cfd6e0; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#26333d;"
-                      maxlength="50"
+                      [attr.maxlength]="LIMITS.tds.NotificationNo"
                       [readOnly]="isReadOnly || isPosted"
                     />
                   </td>
@@ -1484,7 +1486,7 @@
                       formControlName="Reason"
                       class="form-control form-control-sm"
                       style="border:none; border-bottom:1px solid #cfd6e0; border-radius:0; padding:2px 2px; background:transparent; font-size:13px; color:#445;"
-                      maxlength="100"
+                      [attr.maxlength]="LIMITS.tds.Reason"
                       [readOnly]="isReadOnly || isPosted"
                     />
                   </td>

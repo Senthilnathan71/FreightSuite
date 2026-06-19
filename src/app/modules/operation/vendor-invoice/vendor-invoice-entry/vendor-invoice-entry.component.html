@@ -381,6 +381,7 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="PartyAddress"
+                    [attr.maxlength]="LIMITS.header.PartyAddress"
                     placeholder=""
                     readonly
                     style="cursor: not-allowed"
@@ -397,13 +398,14 @@
 
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   class="custom-input-field sm"
-                  formControlName="GST_VAT" 
-                  id="GSTNo" 
-                  placeholder="" 
-                  readonly 
+                  formControlName="GST_VAT"
+                  id="GSTNo"
+                  placeholder=""
+                  [attr.maxlength]="LIMITS.header.GST_VAT"
+                  readonly
                   style="cursor: not-allowed"
                 />
                   @if(currentCompanyCountryCode === 'in'){
@@ -483,7 +485,7 @@
             <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" formControlName="PlaceOfSupply" placeholder="" class="custom-input-field sm"
-                  readonly />
+                  [attr.maxlength]="LIMITS.header.PlaceOfSupply" readonly />
                 <label class="input-label">Place of Supply</label>
               </div>
 
@@ -591,7 +593,7 @@
             <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm text-end"
-                  [class.is-invalid]="isFieldInvalid('BillNo')" />
+                  [attr.maxlength]="LIMITS.header.DocumentNumber" [class.is-invalid]="isFieldInvalid('BillNo')" />
                 <label for="BillNo" class="input-label">
                   Bill No.
                   <i
@@ -873,8 +875,9 @@
 
                         <!-- Description -->
                         <td>
-                          <input 
+                          <input
                             class="custom-input-field sm" formControlName="ChargeDescription"
+                            [attr.maxlength]="LIMITS.detail.ChargeDescription"
                           >
                         </td>
                         }

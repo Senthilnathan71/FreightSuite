@@ -81,6 +81,7 @@ import {
   errorLoggerWithToastr,
   ValidationMessageConfig,
 } from 'src/app/common/error-handling/form-error-handler';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { ToastrService } from 'ngx-toastr';
 import { PdfMakeService } from 'src/app/common/pdf';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
@@ -140,6 +141,8 @@ interface rateComparison {
   ],
 })
 export class CreditNoteEntryComponent {
+  // Character limits for text fields (single source of truth, mirrors DB widths).
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   userData: any;
   currUserEmail: string | null = null;
   currentCompany: any;
@@ -593,16 +596,16 @@ export class CreditNoteEntryComponent {
       InvoiceType: [{ value: 'REG', disabled: true }],
       Narration: [{ value: '', disabled: true }],
       Remarks: [{ value: '', disabled: true }],
-      Salesman : [''],
+      Salesman : ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.Salesman)]],
       IRNStatus: [{ value: '', disabled: true }],
       //TODO - Status
       Status: [{ value: 'A', disabled: true }],
       DepartmentMasterSid: [{ value: null, disabled: true }],
       //TODO - BillNo
       BillNo: [{ value: '', disabled: true }],
-      CreditNoteReason: [null, Validators.required],
+      CreditNoteReason: [null, [Validators.required, Validators.maxLength(VOUCHER_FIELD_LIMITS.header.CreditNoteReason)]],
       ReversalVoucher: [{ value: '', disabled: true }],
-      ReversalVoucherNumber: [''],
+      ReversalVoucherNumber: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.VoucherNumber)]],
 
       State: [{ value: '', disabled: true }],
       HouseNumber: [{ value: '', disabled: true }],
@@ -611,9 +614,9 @@ export class CreditNoteEntryComponent {
       //Details Array
       voucherDetails: this.fb.array([]),
       voucherOthers: this.fb.group({
-        ContainerNumber: [''],
-        VoucherNote: [''],
-        Footer: [''],
+        ContainerNumber: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.ContainerNumber)]],
+        VoucherNote: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.VoucherNote)]],
+        Footer: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.Footer)]],
         ReverseCreditNote: [''],
         DueDate: [null],
         IRNNumber: [''],
@@ -6586,6 +6589,11 @@ export class CreditNoteEntryComponent {
       Rate: 'Rate',
       CurrencyMasterSid: 'Currency',
       LedgerMasterSid: 'Ledger',
+      Salesman: 'Salesman',
+      ReversalVoucherNumber: 'Invoice No',
+      'voucherOthers.Footer': 'Invoice Footer',
+      'voucherOthers.VoucherNote': 'Invoice Note',
+      'voucherOthers.ContainerNumber': 'Container No',
     },
 
     messages: {

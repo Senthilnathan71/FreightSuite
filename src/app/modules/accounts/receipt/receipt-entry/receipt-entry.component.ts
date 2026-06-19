@@ -34,6 +34,7 @@ import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
 import { ReceiptService } from '../../services/receipt.service';
 import { OutstandingInvoice, PaymentMode } from '../../models/receipt.model';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
@@ -133,6 +134,8 @@ import { InterBranchService } from '../../inter-branch/inter-branch.service';
   ],
 })
 export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedChanges {
+  // Character limits for text fields (single source of truth, mirrors DB widths).
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   fyMinDate: NgbDateStruct | null = null;
   fyMaxDate: NgbDateStruct | null = null;
   headerId: number;
@@ -234,6 +237,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     // Party
     PartyMasterSid: 'Party',
+    PartyName: 'Party Name',
+    PartyAddress: 'Address',
     COAMasterSid: 'Party Ledger',
     GST_VAT: 'GST/VAT',
     BankPartyName: 'Bank Party Name',
@@ -719,19 +724,19 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
       // Party related info
       PartyMasterSid: [null, [Validators.required]],
-      PartyName: [''],
-      PartyAddress: [''],
+      PartyName: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.PartyName)]],
+      PartyAddress: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.PartyAddress)]],
       CustomerBranchSid: [null],
       COAMasterSid: [null, [Validators.required]],
-      GST_VAT: [''],
-      BankPartyName: [''],
-      Narration: ['', [Validators.required, Validators.maxLength(300)]],
-      Remarks: ['', [Validators.maxLength(100)]],
+      GST_VAT: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.GST_VAT)]],
+      BankPartyName: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.BankPartyName)]],
+      Narration: ['', [Validators.required, Validators.maxLength(VOUCHER_FIELD_LIMITS.header.Narration)]],
+      Remarks: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.Remarks)]],
       InstrumentMode: [PaymentMode.NEFT, Validators.required],
-      InstrumentNumber: ['', [Validators.required]],
+      InstrumentNumber: ['', [Validators.required, Validators.maxLength(VOUCHER_FIELD_LIMITS.header.InstrumentNumber)]],
       InstrumentDate: [null, [Validators.required]],
       ClearanceDate: [null],
-      PlaceOfSupply: [''],
+      PlaceOfSupply: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.PlaceOfSupply)]],
 
       // Form arrays
       detailItems: this.fb.array([]), // charge detail formArray
@@ -2008,12 +2013,12 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       Amount: [data?.Amount || 0.0, Validators.required],
       LocalAmount: [data?.LocalAmount || 0.0, Validators.required],
 
-      Narration: [data?.Narration || '', [Validators.maxLength(300)]],
+      Narration: [data?.Narration || '', [Validators.maxLength(VOUCHER_FIELD_LIMITS.detail.Narration)]],
       CostCenter: [data?.CostCenter || null],
       ProfitCenter: [data?.ProfitCenter || null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null],
       ChargeMasterSid: [data?.ChargeMasterSid || null],
-      ChargeDescription: [data?.ChargeDescription || ''],
+      ChargeDescription: [data?.ChargeDescription || '', [Validators.maxLength(VOUCHER_FIELD_LIMITS.detail.ChargeDescription)]],
       HSSACMasterSid: [data?.HSSACMasterSid || null],
       ChargeUOMSid: [data?.ChargeUOMSid || null],
       HouseJobSid: [data?.HouseJobSid || null],
@@ -2030,7 +2035,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       TaxPercentage2: [data?.TaxPercentage2 || 0.0],
       TaxAmount2: [data?.TaxAmount2 || 0.0],
       InvoiceType: [data?.InvoiceType || ''],
-      Remarks: [data?.Remarks || '', [Validators.maxLength(100)]],
+      Remarks: [data?.Remarks || '', [Validators.maxLength(VOUCHER_FIELD_LIMITS.detail.Remarks)]],
       PartyAmount: [data?.PartyAmount || 0.0],
 
       // Relational objects (used for dropdowns or display)

@@ -275,7 +275,7 @@
             
                 <div class="custom-form-group w-100">
                   <input type="text" id="ReversalVoucherNumber" formControlName="ReversalVoucherNumber"
-                    class="custom-input-field sm" [readonly]="isEditMode || vendorCreditNoteForm.get('ReversalVoucher')?.value" />
+                    class="custom-input-field sm" [attr.maxlength]="LIMITS.header.VoucherNumber" [readonly]="isEditMode || vendorCreditNoteForm.get('ReversalVoucher')?.value" />
                   <label for="ReversalVoucherNumber" class="input-label">
                     Invoice No.
                     <i

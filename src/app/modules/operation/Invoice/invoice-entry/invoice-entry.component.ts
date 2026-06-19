@@ -80,6 +80,7 @@ import { ElementStateGuardDirective } from 'src/app/core/Directives/element-stat
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { InvoiceCommodityPrintComponent } from '../invoice-new/invoice-commodity-print.component';
 
 interface NgbDateStructLike {
@@ -331,6 +332,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     return this.invoiceForm.get('voucherOthers') as FormGroup;
   }
 
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   private readonly invoiceValidationConfig: ValidationMessageConfig = {
     labels: {
       VoucherDate: 'Voucher Date',
@@ -366,6 +368,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       LocalAmount: 'Local Amount',
       PartyAmount: 'Party Amount',
       CostRevenue: 'Cost / Revenue',
+      IRNNumber: 'IRN No',
+      IRNStatus: 'IRN Status',
+      HBLNo: 'HBL No',
+      'voucherOthers.Footer': 'Invoice Footer',
+      'voucherOthers.VoucherNote': 'Invoice Note',
+      'voucherOthers.ContainerNumber': 'Container No',
     },
     messages: {
       required: (label: string) => `${label} is required`,
@@ -583,9 +591,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       COAMasterSid: [null],
       CustomerBranchSid: [null],
       DocumentNumber: ['', [Validators.maxLength(30)]],
-      IRNNumber: [''],
+      IRNNumber: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.IRNNumber)]],
       MasterJobSid: [null],
-      HBLNo: [''],
+      HBLNo: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.HouseNumber)]],
       CurrencyMasterSid: [companyCurrencyId, Validators.required],
       CurrencyCode: [companyCurrencyCode || '', [Validators.required, Validators.maxLength(3)]],
       ExchangeRate: [
@@ -601,15 +609,15 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       TaxType : [companyCurrencyCode === 'in' ? 'GST' : 'VAT', [Validators.maxLength(3)]],
       Narration: ['', [Validators.maxLength(300)]],
       Remarks: ['', [Validators.maxLength(300)]],
-      IRNStatus: [''],
+      IRNStatus: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.IRNStatus)]],
       MBLNo: [{ value: '', disabled: true }],
       CustomsDuty: ['N', [Validators.maxLength(1)]],
       status: ['A', Validators.required],
       voucherDetails: this.fb.array([]),
       voucherOthers: this.fb.group({
-        ContainerNumber: [''],
-        VoucherNote: [''],
-        Footer: [''],
+        ContainerNumber: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.ContainerNumber)]],
+        VoucherNote: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.VoucherNote)]],
+        Footer: ['', [Validators.maxLength(VOUCHER_FIELD_LIMITS.others.Footer)]],
         ReverseCreditNote: [''],
         DueDate: [null],
         IRNNumber: [''],

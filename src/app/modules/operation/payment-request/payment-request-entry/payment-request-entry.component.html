@@ -167,6 +167,7 @@
                     class="custom-input-field sm"
                     formControlName="Remarks"
                     placeholder=""
+                    [attr.maxlength]="LIMITS.paymentRequest.Remarks"
                   />
                   <label class="input-label">Remarks
                     <i
@@ -242,6 +243,7 @@
                     class="custom-input-field sm"
                     formControlName="PayableTo"
                     placeholder=""
+                    [attr.maxlength]="LIMITS.paymentRequest.PayableTo"
                   />
                   <label class="input-label">
                     Payable To

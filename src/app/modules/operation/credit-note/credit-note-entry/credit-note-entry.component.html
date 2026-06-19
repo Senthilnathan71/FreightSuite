@@ -314,6 +314,7 @@
                         id="ReversalVoucherNumber"
                         formControlName="ReversalVoucherNumber"
                         class="custom-input-field sm"
+                        [attr.maxlength]="LIMITS.header.VoucherNumber"
                         [readonly]="
                           isEditMode ||
                           creditNoteForm.get('ReversalVoucher')?.value
@@ -1326,6 +1327,7 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="Footer"
+                    [attr.maxlength]="LIMITS.others.Footer"
                     placeholder=""
                   />
                   <label class="input-label">Invoice Footer</label>
@@ -1338,6 +1340,7 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="VoucherNote"
+                    [attr.maxlength]="LIMITS.others.VoucherNote"
                     placeholder=""
                   />
                   <label class="input-label">Invoice Note</label>
@@ -1362,6 +1365,7 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="ContainerNumber"
+                    [attr.maxlength]="LIMITS.others.ContainerNumber"
                     placeholder=""
                   />
                   <label class="input-label">Container No</label>
