@@ -6,18 +6,18 @@
        Subledger Outstanding
     </h4>
     <!-- Header Fields -->
-    <div style="margin-top: 1rem;">
+    <div style="margin-top: 1rem;font-size: 14px;">
 
         <div style="display: flex; justify-content:space-between; width: 100%;">
             <div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">To Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</p>
+                    <span class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Branch </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.branchInvolved }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.branchInvolved }}</span>
                 </div>
 
             </div>
@@ -26,7 +26,7 @@
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Subledger </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.subledgerName }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.subledgerName }}</span>
                 </div>
             </div>
         </div>

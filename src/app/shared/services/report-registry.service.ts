@@ -293,7 +293,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'ageing-report',
-        title: 'Ageing Report',
+        title: 'Ageing',
         component: AgeingReportComponent,
         filenameTemplate: 'Ageing_Report_{LedgerName}_{date}',
         module: 'accounts-report',
@@ -638,7 +638,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'vat-receivable-report',
-        title: 'VAT Receivable Report',
+        title: 'VAT Receivable',
         component: VatReportComponent,
         filenameTemplate: 'VAT_Report_{date}',
         module: 'accounts-report',
@@ -669,7 +669,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'vat-payable-report',
-        title: 'VAT Payable Report',
+        title: 'VAT Payable',
         component: VatPayableComponent,
         filenameTemplate: 'VAT_Payable_Report_{date}',
         module: 'accounts-report',
@@ -700,7 +700,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'vat-report',
-        title: 'VAT-201 Report',
+        title: 'VAT-201',
         component: Vat210Component,
         filenameTemplate: 'VAT_210_Report_{date}',
         module: 'accounts-report',
@@ -731,7 +731,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'Vat-Summary-Report',
-        title: 'VAT Summary Report',
+        title: 'VAT Summary',
         component: VatSummaryReportComponent,
         filenameTemplate: 'VAT_Summary_Report_{date}',
         module: 'accounts-report',
@@ -763,7 +763,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'unposted-voucher-list',
-        title: 'Unposted Voucher List Report',
+        title: 'Unposted Voucher List',
         component: UnpostedVoucherListReportComponent,
         filenameTemplate: 'Unposted_Voucher_List_Report_{date}',
         module: 'accounts-report',
@@ -794,7 +794,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'profit-summary-report',
-        title: 'Profit_Summary_Report',
+        title: 'Profit Summary',
         component: ProfitSummaryAccountsComponent,
         filenameTemplate: 'Profit_Summary_Report_{date}',
         module: 'accounts-report',
@@ -824,7 +824,7 @@ export class ReportRegistryService {
 
           this.registerReport({
             id: 'matching-list-report',
-            title: 'Matching List Receipt and Payment Report',
+            title: 'Matching List Receipt and Payment',
             component: MatchingListReceiptPayemntComponent,
             filenameTemplate: 'Matching_List_Receipt_and_Payment_Report_{date}',
             module: 'accounts-report',
@@ -856,7 +856,7 @@ export class ReportRegistryService {
 
           this.registerReport({
             id: 'cash-flow',
-            title: 'Cash Flow Report',
+            title: 'Cash Flow',
             component: CashFlowComponent,
             filenameTemplate: 'Cash_Flow_Report',
             module: 'management-report',
@@ -951,7 +951,7 @@ export class ReportRegistryService {
 
           this.registerReport({
             id: 'GSTR',
-            title: 'GSTR3B Report',
+            title: 'GSTR3B',
             component: GSTR3BComponent,
             filenameTemplate: 'GSTR3B_Report_{date}',
             module: 'accounts-report',
@@ -1013,7 +1013,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'shipment-summary',
-        title: 'House Summary Report',
+        title: 'House Summary',
         component: ShipmentSummaryReportComponent,
         filenameTemplate: 'Shipment_Summary_Report{GroupName}_{date}',
         module: 'accounts-report',
@@ -1046,7 +1046,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'bl-issue-list',
-        title: 'BL Issue Report',
+        title: 'BL Issue',
         component: BlIssueReportComponent,
         filenameTemplate: 'BL_Issue_Report{GroupName}_{date}',
         module: 'accounts-report',
@@ -1078,7 +1078,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'profitability-report',
-        title: 'Profitability Report',
+        title: 'Profitability',
         component: ProfitabilityReportComponent,
         filenameTemplate: 'Profitability_Report_{date}',
         module: 'accounts-report',
@@ -1361,7 +1361,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'destination-report',
-        title: 'Destination Report',
+        title: 'Destination',
         component: DestinationReportComponent,
         filenameTemplate: 'Destination_Report_{date}',
         module: 'accounts-report',
@@ -1518,7 +1518,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'freight-mom-growth',
-        title: 'Freight MoM Growth Report',
+        title: 'Freight MoM Growth',
         component: FreightMoMGrowthReportComponent,
         filenameTemplate: 'Freight_MoM_Growth_report_{date}',
         module: 'operations-report',
@@ -1549,7 +1549,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'not-booked-rates',
-        title: 'Cost & Revenue Not Booked Report',
+        title: 'Cost & Revenue Not Booked',
         component: CostRevenueNotBookedComponent,
         filenameTemplate: 'Cost_Revenue_Not_Booked_report_{date}',
         module: 'operations-report',
@@ -1580,7 +1580,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'unpicked-cargo',
-        title: 'Unpicked Cargo Report',
+        title: 'Unpicked Cargo',
         component: UnpickedCargoComponent,
         filenameTemplate: 'unpicked-cargo-report',
         module: 'operations-report',
@@ -1610,7 +1610,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'transhipment-cargo',
-        title: 'Transhipment Cargo Report',
+        title: 'Transhipment Cargo',
         component: TranshipmentCargoComponent,
         filenameTemplate: 'transhipment-cargo-report',
         module: 'operations-report',
@@ -1640,7 +1640,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'nomination-booking',
-        title: 'Import Nomination Booking Report',
+        title: 'Import Nomination Booking',
         component: ImportNominationBookingComponent,
         filenameTemplate: 'Import_Nomination_Booking_report',
         module: 'operations-report',
@@ -1700,7 +1700,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'destuffing',
-        title: 'Destuffing Report',
+        title: 'Destuffing',
         component: DestuffingReportComponent,
         filenameTemplate: 'destuffing_report',
         module: 'operations-report',
@@ -1730,7 +1730,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'outturn',
-        title: 'Outturn Report',
+        title: 'Outturn',
         component: OutturnReportComponent,
         filenameTemplate: 'outturn_report',
         module: 'operations-report',

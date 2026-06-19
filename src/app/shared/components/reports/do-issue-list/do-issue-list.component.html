@@ -4,29 +4,29 @@
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
         DO Issue List Report
     </h4>
-    <div style="margin-top: 1rem;">
+    <div style="margin-top: 1rem;font-size: 14px;">
 
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">HBL From Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.FromHblDt | formatDate }}</p>
+                    <span class="ms-1 my-0">: {{ params?.FromHblDt | formatDate }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">HBL To Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</p>
+                    <span class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</span>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Branch </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.branchInvolved }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.branchInvolved }}</span>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Dept </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.departmentNames }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.departmentNames }}</span>
                 </div>
 
                 <!-- <div class="d-flex align-items-center d-none">

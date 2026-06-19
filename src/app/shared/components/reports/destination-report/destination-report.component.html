@@ -4,49 +4,49 @@
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
         Destination Report
     </h4>
-    <div style="margin-top: 1rem;">
+    <div style="margin-top: 1rem;font-size: 14px;">
 
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">HBL From Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.FromHblDt | formatDate }}</p>
+                    <span class="ms-1 my-0">: {{ params?.FromHblDt | formatDate }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">HBL To Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</p>
+                    <span class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">Branch </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.branchesInvoled }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.branchesInvoled }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">POL </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.POL }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.POL }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">POD </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.POD }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.POD }}</span>
                 </div>
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">Dept </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.departmentNames }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.departmentNames }}</span>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">Customer </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.Customer }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.Customer }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">Salesperson </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.SalePerson }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.SalePerson }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 120px;">Transhipment </strong>
-                    <p class="ms-1 my-0">: {{ params?.Transhipment === true ? 'Yes' : 'No'}}</p>
+                    <span class="ms-1 my-0">: {{ params?.Transhipment === true ? 'Yes' : 'No'}}</span>
                 </div>
 
             </div>

@@ -8,45 +8,43 @@
 
 
     <!-- Header Fields -->
-    <div style="margin-top: 1rem;">
+    <div style="margin-top: 1rem;font-size: 14px;">
 
         <div style="display: flex; justify-content:space-between;">
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">From Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.FromDate | formatDate }}</p>
+                    <span class="ms-1 my-0">: {{ params?.FromDate | formatDate }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">To Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</p>
+                    <span class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</span>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Branch </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.branchInvolved }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.branchInvolved }}</span>
                 </div>
-
-
             </div>
 
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Ledger </strong>
-                    <p class="ms-1 my-0"> : {{ fullData?.ledgerName }}</p>
+                    <span class="ms-1 my-0"> : {{ fullData?.ledgerName }}</span>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Subledger </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.subledgerName }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.subledgerName }}</span>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Voucher Type </strong>
-                    <p class="ms-1 my-0">: {{ fullData?.voucherTypeName }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.voucherTypeName }}</span>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Currenecy</strong>
-                    <p class="ms-1 my-0">: {{ fullData?.currencyCode }}</p>
+                    <span class="ms-1 my-0">: {{ fullData?.currencyCode }}</span>
                 </div>
             </div>
         </div>
