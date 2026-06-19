@@ -1033,7 +1033,10 @@
                                 </td>
                                 <!-- <td>{{shipment.BookingDateTime | formatDate}}</td> -->
                                 <td>{{getDepartmentName(shipment.DepartmentMasterSid)}}</td>
-                                <td>{{shipment.HBLNo }}</td>
+                                <td [class.text-danger]="isDuplicateAttachedHBL(shipment)"
+                                    [class.fw-bold]="isDuplicateAttachedHBL(shipment)"
+                                    [ngbTooltip]="isDuplicateAttachedHBL(shipment) ? 'Duplicate HBL No within this Master Job' : ''">
+                                    {{shipment.HBLNo }}</td>
                                 <td>{{shipment.CustomerName}}</td>
                                 <!-- <td>{{shipment.CustomerAddress}}</td> -->
                                 <td>{{shipment.VesselName}}</td>

@@ -44,13 +44,18 @@ export class TrackingComponent implements OnInit, OnDestroy {
   isLoading = false;
   hasSearched = false;
   errorMessage = '';
+  noShipmentFound = false;
   userData: any;
   currentCompany: any;
   currentBranch: any;
   isPaused = false;
 
+  matchResults: any[] = [];
+  showMatchModal = false;
+  matchSearchType = '';
+
   readonly quickSearches = ['Booking No', 'HBL / HAWB', 'MBL / MAWB', 'Job No', 'Container No'];
-  selectedSearchType = 'Booking No';
+  selectedSearchType = 'HBL / HAWB';
 
   private readonly destroy$ = new Subject<void>();
 
@@ -82,6 +87,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const referenceNo = this.searchText?.trim();
     this.hasSearched = true;
     this.errorMessage = '';
+    this.noShipmentFound = false;
+    this.showMatchModal = false;
+    this.matchResults = [];
 
     if (!referenceNo) {
       this.trackingResult = null;
@@ -89,23 +97,37 @@ export class TrackingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const context = { ...this.buildTrackingContext(), searchType: this.searchTypeCode() };
+    this.runTracking(referenceNo, context);
+  }
+
+  /** Load tracking for a specific House Job chosen from the MULTIPLE_MATCH grid. */
+  viewTracking(match: any): void {
+    if (!match?.houseJobSid) {
+      return;
+    }
+
+    this.showMatchModal = false;
+    const referenceNo = this.searchText?.trim() || match.hblNo || String(match.houseJobSid);
+    const context = {
+      ...this.buildTrackingContext(),
+      searchType: 'hbl',
+      houseJobSid: match.houseJobSid,
+    };
+    this.runTracking(referenceNo, context);
+  }
+
+  closeMatchModal(): void {
+    this.showMatchModal = false;
+  }
+
+  private runTracking(referenceNo: string, context: any): void {
     this.isLoading = true;
     this.operationService
-      .trackShipment(referenceNo, this.buildTrackingContext())
+      .trackShipment(referenceNo, context)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          if (response?.success === false || response?.status === false) {
-            this.trackingResult = null;
-            this.errorMessage = response?.message || 'No tracking details found.';
-            this.isLoading = false;
-            return;
-          }
-
-          this.trackingResult = response?.data || null;
-          this.errorMessage = this.trackingResult ? '' : 'No tracking details found.';
-          this.isLoading = false;
-        },
+        next: (response: any) => this.handleTrackingResponse(response),
         error: (error: any) => {
           this.trackingResult = null;
           this.errorMessage = error?.error?.message || 'Unable to fetch tracking details right now.';
@@ -114,8 +136,91 @@ export class TrackingComponent implements OnInit, OnDestroy {
       });
   }
 
+  private handleTrackingResponse(response: any): void {
+    this.isLoading = false;
+    const data = response?.data;
+
+    if (response?.success === false || response?.status === false || !data) {
+      this.trackingResult = null;
+      this.errorMessage = response?.message || 'No tracking details found.';
+      return;
+    }
+
+    const resultType = String(data.resultType || '').toUpperCase();
+
+    if (resultType === 'MULTIPLE_MATCH') {
+      this.trackingResult = null;
+      this.matchResults = data.matches || [];
+      this.matchSearchType = String(data.searchType || '').toUpperCase();
+      this.showMatchModal = true;
+      this.errorMessage = '';
+      return;
+    }
+
+    if (resultType === 'NOT_FOUND') {
+      this.trackingResult = null;
+      this.noShipmentFound = true;
+      this.errorMessage = '';
+      return;
+    }
+
+    this.trackingResult = data;
+    this.noShipmentFound = false;
+    this.errorMessage = '';
+  }
+
   applyQuickSearch(type: string): void {
     this.selectedSearchType = type;
+  }
+
+  private searchTypeCode(): string {
+    switch (this.selectedSearchType) {
+      case 'Booking No':
+        return 'booking';
+      case 'HBL / HAWB':
+        return 'hbl';
+      case 'MBL / MAWB':
+        return 'mbl';
+      case 'Job No':
+        return 'job';
+      case 'Container No':
+        return 'container';
+      default:
+        return '';
+    }
+  }
+
+  trackByMatch(index: number, match: any): string {
+    return match?.houseJobSid || `${index}`;
+  }
+
+  matchModalTitle(): string {
+    const type = this.matchSearchType;
+    if (type === 'MBL' || type === 'MAWB') return 'Select a House Job under this Master';
+    if (type === 'JOB') return 'Select a House Job under this Master';
+    return 'Select the correct shipment';
+  }
+
+  matchModalSubtitle(): string {
+    const type = this.matchSearchType;
+    if (type === 'HBL' || type === 'HAWB') {
+      return 'This HBL / HAWB is shared across multiple House Jobs. Pick the one you want to track.';
+    }
+    if (type === 'MBL' || type === 'MAWB') {
+      return 'This MBL / MAWB master has multiple House Jobs. Pick the one you want to track.';
+    }
+    if (type === 'JOB') {
+      return 'This Master Job has multiple House Jobs. Pick the one you want to track.';
+    }
+    return 'Multiple House Jobs matched. Pick the one you want to track.';
+  }
+
+  matchRoute(match: any): string {
+    return [match?.pol, match?.pod].filter((value) => this.hasDisplayValue(value)).join(' → ') || 'Route pending';
+  }
+
+  formatMatchDate(value: any): string {
+    return this.formatDisplayDate(value);
   }
 
   activeSearchType(): string {
@@ -371,11 +476,28 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   totalWeight(tracking: any): string {
-    const total = (tracking?.containers || []).reduce((sum: number, container: any) => {
-      return sum + (Number(container?.weight) || 0);
-    }, 0);
+    const summaryWeight = tracking?.cargoSummary?.totalGrossWeight;
+    const total =
+      summaryWeight !== null && summaryWeight !== undefined
+        ? Number(summaryWeight)
+        : (tracking?.containers || []).reduce(
+            (sum: number, container: any) => sum + (Number(container?.weight) || 0),
+            0
+          );
 
     return total ? `${total.toLocaleString(undefined, { maximumFractionDigits: 2 })}kg` : '-';
+  }
+
+  totalPackages(tracking: any): string {
+    const value = tracking?.cargoSummary?.totalPackages;
+    return value !== null && value !== undefined && value !== '' ? String(value) : '-';
+  }
+
+  totalVolume(tracking: any): string {
+    const value = tracking?.cargoSummary?.totalVolume;
+    return value !== null && value !== undefined && value !== ''
+      ? `${Number(value).toLocaleString(undefined, { maximumFractionDigits: 3 })} cbm`
+      : '-';
   }
 
   formatMeasure(value: any, unit: string): string {

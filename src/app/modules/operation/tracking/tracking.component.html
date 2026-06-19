@@ -54,6 +54,76 @@
     <span>{{ errorMessage }}</span>
   </section>
 
+  <section class="empty-state not-found-state" *ngIf="noShipmentFound && !isLoading">
+    <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+    <h2>No Shipment Found</h2>
+    <p>We couldn't find any shipment for &ldquo;{{ searchText }}&rdquo;. Check the number and the selected search type, then try again.</p>
+  </section>
+
+  <section class="match-modal-overlay" *ngIf="showMatchModal" (click)="closeMatchModal()">
+    <div class="match-modal" (click)="$event.stopPropagation()">
+      <header class="match-modal-head">
+        <div>
+          <span class="match-pill"><i class="fas fa-layer-group"></i> {{ matchResults.length }} matches</span>
+          <h3>{{ matchModalTitle() }}</h3>
+          <p>{{ matchModalSubtitle() }}</p>
+        </div>
+        <button type="button" class="match-close" (click)="closeMatchModal()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </header>
+
+      <div class="match-list">
+        <article class="match-card" *ngFor="let m of matchResults; let i = index; trackBy: trackByMatch">
+          <div class="match-card-main">
+            <span class="match-index">{{ i + 1 }}</span>
+            <div class="match-headline">
+              <strong class="match-hbl">{{ displayValue(m.hblNo) }}</strong>
+              <span class="match-houseid">House Job #{{ displayValue(m.houseJobSid) }}</span>
+            </div>
+          </div>
+          <div class="match-card-body">
+            <div class="match-field">
+              <span>Booking No</span>
+              <strong>{{ displayValue(m.bookingNo) }}</strong>
+            </div>
+            <div class="match-field">
+              <span>Job / Shipment</span>
+              <strong>{{ displayValue(m.jobNo) }}</strong>
+            </div>
+            <div class="match-field">
+              <span>MBL / MAWB</span>
+              <strong>{{ displayValue(m.mblNo) }}</strong>
+            </div>
+            <div class="match-field">
+              <span>Master Job</span>
+              <strong>{{ displayValue(m.masterJobNumber) }}</strong>
+            </div>
+            <div class="match-field">
+              <span>Department</span>
+              <strong>{{ displayValue(m.department) }}<span class="match-tag" *ngIf="m.jobType === 'Transhipment'">Transhipment</span></strong>
+            </div>
+            <div class="match-field">
+              <span>Customer</span>
+              <strong>{{ displayValue(m.customerName) }}</strong>
+            </div>
+            <div class="match-field">
+              <span>Route</span>
+              <strong>{{ matchRoute(m) }}</strong>
+            </div>
+            <div class="match-field">
+              <span>ETD</span>
+              <strong>{{ formatMatchDate(m.etd) }}</strong>
+            </div>
+          </div>
+          <button type="button" class="match-action" (click)="viewTracking(m)">
+            <i class="fas fa-route"></i> View Tracking
+          </button>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <ng-container *ngIf="trackingResult as tracking">
     <section class="shipment-overview-card">
       <div class="shipment-main">

@@ -687,7 +687,52 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       return false;
     }
 
+    // Block save when attached shipments share the same HBL/HAWBL No within this Master Job.
+    if (this.hasDuplicateAttachedHBL()) {
+      return false;
+    }
+
     return true;
+  }
+
+  // Returns true (and toasts) when two attached shipments carry the same non-empty HBL/HAWBL No.
+  private hasDuplicateAttachedHBL(): boolean {
+    const seen = new Set<string>();
+    const duplicates = new Set<string>();
+
+    (this.attachedBookings.getRawValue() || []).forEach((shipment: any) => {
+      const hblNo = String(shipment?.HBLNo ?? '').trim();
+      if (!hblNo) {
+        return;
+      }
+      const key = hblNo.toUpperCase();
+      if (seen.has(key)) {
+        duplicates.add(hblNo);
+      }
+      seen.add(key);
+    });
+
+    if (duplicates.size > 0) {
+      const label = this.selectedDepartmentType === 'AIR' ? 'HAWBL No' : 'HBL No';
+      this.toastr.error(
+        `Duplicate ${label} found in attached shipments: ${Array.from(duplicates).join(', ')}. ${label} must be unique within a Master Job.`
+      );
+      return true;
+    }
+
+    return false;
+  }
+
+  // Per-row check used by the template to flag a duplicate HBL/HAWBL No in the attached grid.
+  isDuplicateAttachedHBL(shipment: any): boolean {
+    const hblNo = String(shipment?.HBLNo ?? '').trim().toUpperCase();
+    if (!hblNo) {
+      return false;
+    }
+    const count = (this.attachedBookings.getRawValue() || []).filter(
+      (s: any) => String(s?.HBLNo ?? '').trim().toUpperCase() === hblNo
+    ).length;
+    return count > 1;
   }
 
   private saveAndResolve(resolve: (value: boolean) => void): void {
