@@ -705,6 +705,16 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   //  Add selected Menu to Recent List
 
+  private sortMenus(results: any[]): any[] {
+    return [...(results || [])].sort((a: any, b: any) =>
+      String(a?.title || a?.MenuName || '').localeCompare(
+        String(b?.title || b?.MenuName || ''),
+        undefined,
+        { sensitivity: 'base' }
+      )
+    );
+  }
+
 
   getMenusFromSideBar() {
     this.isLoadingMenu = true;
@@ -738,7 +748,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
         collectLeaves(items);
 
-        this.allMenus = leafNodes;
+        this.allMenus = this.sortMenus(leafNodes);
         this.menuSearchResults = [...this.allMenus];
         console.log('menu fetch results (leaf, extralink=false):', this.allMenus);
         this.isLoadingMenu = false;
@@ -757,7 +767,9 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
       menus : this.allMenus
     })
     this.menuSearchSubject.next(searchTerm);
-    this.menuSearchResults = this.allMenus.filter((menu:any) => menu.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    this.menuSearchResults = this.sortMenus(
+      this.allMenus.filter((menu:any) => menu.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
   }
 
   onMenuSearchKeyDown(event: KeyboardEvent) {
