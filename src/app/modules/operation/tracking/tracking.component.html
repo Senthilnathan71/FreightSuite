@@ -194,7 +194,6 @@
               </span>
               <strong class="route-port">{{ point.label }}</strong>
               <small class="route-role">{{ point.role }}</small>
-              <span class="route-chip">{{ routeStopStatus(i, tracking) }}</span>
               <span class="route-when" *ngIf="portPrimaryDate(tracking, i).value !== '-'">
                 {{ portPrimaryDate(tracking, i).label }}{{ portPrimaryDate(tracking, i).value }}
               </span>
@@ -220,19 +219,6 @@
                       </div>
                       <div class="metric-grid">
                         <div class="metric-card" *ngFor="let item of cargoDetailItems(tracking)">
-                          <span>{{ item.label }}</span>
-                          <strong>{{ item.value }}</strong>
-                        </div>
-                      </div>
-                    </article>
-
-                    <article class="overview-card schedule-card">
-                      <div class="card-title">
-                        <i class="fas fa-calendar-alt"></i>
-                        <h4>Schedule</h4>
-                      </div>
-                      <div class="progress-grid compact">
-                        <div class="progress-item" *ngFor="let item of routeSummaryItems(tracking)">
                           <span>{{ item.label }}</span>
                           <strong>{{ item.value }}</strong>
                         </div>
