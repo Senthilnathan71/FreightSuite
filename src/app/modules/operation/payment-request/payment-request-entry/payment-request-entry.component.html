@@ -672,13 +672,13 @@
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
     <h5 class="modal-title text-white mb-0">Payment Request</h5>
     <div class="d-flex gap-2 align-items-center">
-      <button
+      <!-- <button
         type="button"
         class="btn btn-sm btn-warning rounded-5 py-0"
         (click)="printDiv('paymentRequestPrintContent')"
       >
         <i class="fas fa-print me-1"></i> Print
-      </button>
+      </button> -->
        <button
         type="button"
         class="btn btn-sm btn-danger rounded-5 py-0"
@@ -710,50 +710,57 @@
             <strong>Payment Request</strong>
           </h4>
 
-          <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:120px; font-size:15px;">
-            <div style="flex:0 0 50%; max-width:50%;">
-              <div style="display:flex; padding-top:10px;">
+          <div style="display:flex; flex-wrap:nowrap; gap:42px; margin-bottom:8px; padding:0 70px 0 120px; font-size:15px;">
+            <div style="flex:1 1 0; min-width:0;">
+              <div style="display:flex; padding-top:10px; align-items:flex-start;">
                 <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Request No.</strong></div>
                 <div>: {{ paymentRequestPrintData?.PaymentRequestNumber }}</div>
               </div>
-              <div style="display:flex;">
+              <div style="display:flex; align-items:flex-start;">
                 <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Cash / Bank</strong></div>
                 <div>: {{ paymentRequestPrintData?.CashBankLabel }}</div>
               </div>
-              <div style="display:flex;">
+              <div style="display:flex; align-items:flex-start;">
                 <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Party</strong></div>
                 <div>: {{ paymentRequestPrintData?.PartyName }}</div>
               </div>
-              <div style="display:flex;">
+              <div style="display:flex; align-items:flex-start;">
                 <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Payable To</strong></div>
                 <div>: {{ paymentRequestPrintData?.PayableTo }}</div>
               </div>
-              <div style="display:flex;">
+              <div style="display:flex; align-items:flex-start;">
                 <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Department</strong></div>
                 <div>: {{ paymentRequestPrintData?.DepartmentName }}</div>
               </div>
             </div>
 
-            <div style="flex:0 0 50%; max-width:50%;">
-              <div style="display:flex; padding-top:10px;">
-                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Request Date</strong></div>
-                <div>: {{ paymentRequestPrintData?.PaymentRequestDate | formatDate }}</div>
+            <div style="flex:1 1 0; min-width:0;">
+              <div style="display:flex; padding-top:10px; align-items:flex-start;">
+                <div style="width:150px; flex:0 0 150px; white-space:nowrap; font-weight:bolder;"><strong>Request Date</strong></div>
+                <div style="width:14px; flex:0 0 14px;">:</div>
+                <div style="flex:1 1 auto; min-width:0;">{{ paymentRequestPrintData?.PaymentRequestDate | formatDate }}</div>
               </div>
-              <div style="display:flex;">
-                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Currency</strong></div>
-                <div>: {{ paymentRequestPrintData?.CurrencyCode }}</div>
+              <div style="display:flex; align-items:flex-start;">
+                <div style="width:150px; flex:0 0 150px; white-space:nowrap; font-weight:bolder;"><strong>Currency</strong></div>
+                <div style="width:14px; flex:0 0 14px;">:</div>
+                <div style="flex:1 1 auto; min-width:0;">{{ paymentRequestPrintData?.CurrencyCode }}</div>
               </div>
-              <div style="display:flex;">
-                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Status</strong></div>
-                <div>: {{ paymentRequestPrintData?.PaymentRequestStatusLabel }}</div>
+              <div style="display:flex; align-items:flex-start;">
+                <div style="width:150px; flex:0 0 150px; white-space:nowrap; font-weight:bolder;"><strong>Status</strong></div>
+                <div style="width:14px; flex:0 0 14px;">:</div>
+                <div style="flex:1 1 auto; min-width:0;">{{ paymentRequestPrintData?.PaymentRequestStatusLabel }}</div>
               </div>
-              <div style="display:flex;">
-                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Booking No.</strong></div>
-                <div>: {{ paymentRequestPrintData?.BookingNo || '-' }}</div>
+              <div style="display:flex; align-items:flex-start;">
+                <div style="width:150px; flex:0 0 150px; white-space:nowrap; font-weight:bolder;"><strong>Booking No.</strong></div>
+                <div style="width:14px; flex:0 0 14px;">:</div>
+                <div style="flex:1 1 auto; min-width:0; overflow-wrap:anywhere; word-break:break-word;">{{ paymentRequestPrintData?.BookingNo || '' }}</div>
               </div>
-              <div style="display:flex;">
-                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Job / House No.</strong></div>
-                <div>: {{ paymentRequestPrintData?.MasterJobNo || '-' }}<span *ngIf="paymentRequestPrintData?.HouseNo"> / {{ paymentRequestPrintData?.HouseNo }}</span></div>
+              <div style="display:flex; align-items:flex-start;">
+                <div style="width:150px; flex:0 0 150px; white-space:nowrap; font-weight:bolder;"><strong>Job / House No.</strong></div>
+                <div style="width:14px; flex:0 0 14px;">:</div>
+                <div style="flex:1 1 auto; min-width:0; overflow-wrap:anywhere; word-break:break-word;">
+                  {{ paymentRequestPrintData?.MasterJobNo || '-' }}<span *ngIf="paymentRequestPrintData?.HouseNo"> / {{ paymentRequestPrintData?.HouseNo }}</span>
+                </div>
               </div>
             </div>
           </div>

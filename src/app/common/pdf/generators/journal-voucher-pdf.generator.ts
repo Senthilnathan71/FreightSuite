@@ -36,10 +36,9 @@ function buildCompanyHeader(data: JournalVoucherPdfData): any {
         ...(postalCode ? [{ text: 'Postal Code : ', bold: true }, { text: `${postalCode}${phone ? ', ' : ''}` }] : []),
         ...(phone ? [{ text: 'Ph.no : ', bold: true }, { text: phone }] : [])
       ],
-      fontSize: 8,
+      fontSize: 9,
       alignment: printSettings.companyAlignment,
-      margin: [0, 1, 0, 0],
-      noWrap: true
+      margin: [0, 2, 0, 4]
     }
   ];
 
@@ -55,7 +54,10 @@ function buildCompanyHeader(data: JournalVoucherPdfData): any {
       stack.push({ image: logo, fit: [60, 60], alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
     }
     if (printSettings.companyPosition === slot) {
-      stack.push({ stack: companyInfoStack, margin: stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0] });
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
     }
     return { stack };
   };
@@ -64,22 +66,41 @@ function buildCompanyHeader(data: JournalVoucherPdfData): any {
     stack: [
       {
         table: {
-          widths: ['20%', '60%', '20%'],
+          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
           body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
         },
         layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 1 : 0),
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0.25 : 0),
           vLineWidth: () => 0,
           hLineColor: () => '#000000',
           paddingLeft: () => 0,
           paddingRight: () => 0,
           paddingTop: () => 0,
-          paddingBottom: () => 2
+          paddingBottom: () => 14
         },
         margin: [0, 5, 0, 5]
       }
     ]
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(): any {
@@ -92,10 +113,10 @@ function buildTitle(): any {
   };
 }
 
-function infoRow(label: string, value: any, labelWidth = 75): any {
+function infoRow(label: string, value: any, labelWidth = 62): any {
   return {
     columns: [
-      { text: label, width: labelWidth, style: 'labelBold' },
+      { text: label, width: labelWidth, style: 'labelBold', noWrap: true },
       { text: ':', width: 8, style: 'labelBold' },
       { text: value ?? '', width: '*' }
     ],
@@ -110,16 +131,16 @@ function buildInfoSection(data: JournalVoucherPdfData): any {
       {
         width: '*',
         stack: [
-          infoRow('Narration', jv.narration || ''),
-          infoRow('Voucher No.', jv.voucherNumber || ''),
-          infoRow('Voucher Date', jv.voucherDate ? formatDate(jv.voucherDate) : '')
+          infoRow('Narration', jv.narration || '', 72),
+          infoRow('Voucher No.', jv.voucherNumber || '', 72),
+          infoRow('Voucher Date', jv.voucherDate ? formatDate(jv.voucherDate) : '', 72)
         ]
       },
       {
         width: '*',
         stack: [
-          infoRow('Posted On', jv.postDate ? formatDate(jv.postDate) : ''),
-          infoRow('Posted Status', jv.postStatus || '')
+          infoRow('Posted On', jv.postDate ? formatDate(jv.postDate) : '', 72),
+          infoRow('Posted Status', jv.postStatus || '', 72)
         ]
       }
     ],
@@ -159,11 +180,12 @@ function buildDetailsTable(data: JournalVoucherPdfData): any {
     },
     layout: {
       ...PDF_TABLE_LAYOUTS.bordered,
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25),
       paddingLeft: () => 0,
       paddingRight: () => 0,
       paddingTop: () => 4,
-      paddingBottom: () => 4,
-      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1)
+      paddingBottom: () => 4
     },
     margin: [-10, 0, -10, 8]
   };
@@ -228,10 +250,10 @@ export function generateJournalVoucherDocument(data: JournalVoucherPdfData): any
     }),
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
-        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 }
+        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 }
       ]
     }),
     content: [

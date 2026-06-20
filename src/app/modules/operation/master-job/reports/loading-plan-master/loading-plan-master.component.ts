@@ -10,6 +10,7 @@ import {
 } from 'src/app/common/pdf/generators/loading-plan-master-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
@@ -58,7 +59,8 @@ export class LoadingPlanMasterComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private emailTriggerService: EmailTriggerService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private companySettings: CompanySettingsManagerService
   ) { }
 
    ngOnInit() {
@@ -379,6 +381,7 @@ modalClose() {
       {
         portList: this.portList,
         containerTypeList: this.containerTypeList,
+        printSettings: this.companySettings.getPrintSettings(),
       },
     );
 

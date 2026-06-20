@@ -61,7 +61,10 @@ function buildCompanyHeader(data: PaymentRequestPdfData): any {
       });
     }
     if (printSettings.companyPosition === slot) {
-      stack.push({ stack: companyInfoStack, margin: stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0] });
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
     }
     return { stack };
   };
@@ -70,11 +73,11 @@ function buildCompanyHeader(data: PaymentRequestPdfData): any {
     stack: [
       {
         table: {
-          widths: [95, '*', 95],
+          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
           body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
         },
         layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 1 : 0),
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0.25 : 0),
           vLineWidth: () => 0,
           hLineColor: () => '#000000',
           paddingLeft: () => 0,
@@ -86,6 +89,25 @@ function buildCompanyHeader(data: PaymentRequestPdfData): any {
       }
     ]
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(): any {
@@ -189,7 +211,8 @@ function buildDetailsTable(data: PaymentRequestPdfData): any {
       paddingRight: () => 0,
       paddingTop: () => 4,
       paddingBottom: () => 4,
-      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 1)
+      hLineWidth: () => 0.25,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length ? 0 : 0.25)
     },
     margin: [-10, 0, -10, 8]
   };
@@ -239,10 +262,10 @@ export function generatePaymentRequestDocument(data: PaymentRequestPdfData): any
     }),
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
-        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 1 },
-        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 1 }
+        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.25 },
+        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.25 }
       ]
     }),
     content: [
