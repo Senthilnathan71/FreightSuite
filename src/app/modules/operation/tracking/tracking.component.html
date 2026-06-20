@@ -90,10 +90,16 @@
       <div class="match-list">
         <article class="match-card" *ngFor="let m of matchResults; let i = index; trackBy: trackByMatch">
           <div class="match-card-main">
-            <span class="match-index">{{ i + 1 }}</span>
-            <div class="match-headline">
-              <strong class="match-hbl">{{ displayValue(m.hblNo) }}</strong>
-              <span class="match-tag" *ngIf="m.jobType === 'Transhipment'">Transhipment</span>
+            <div class="match-id-group">
+              <span class="match-index">{{ i + 1 }}</span>
+              <div class="match-headline">
+                <strong class="match-hbl">{{ displayValue(m.hblNo) }}</strong>
+                <span class="match-tag" *ngIf="m.jobType === 'Transhipment'">Transhipment</span>
+              </div>
+            </div>
+            <div class="match-master" *ngIf="m.masterJobNumber">
+              <span>Master Job</span>
+              <strong>{{ displayValue(m.masterJobNumber) }}</strong>
             </div>
           </div>
 
@@ -106,7 +112,7 @@
               <span>Vessel / Voyage</span>
               <strong>{{ displayValue(m.vesselVoyage) }}</strong>
             </div>
-            <div class="match-field">
+            <div class="match-field highlight">
               <span>Department</span>
               <strong>{{ displayValue(m.department) }}</strong>
             </div>
@@ -126,16 +132,10 @@
               <span>ETA</span>
               <strong>{{ formatMatchDate(m.eta) }}</strong>
             </div>
-            <ng-container *ngIf="matchShowMasterMbl()">
-              <div class="match-field">
-                <span>MBL / MAWB</span>
-                <strong>{{ displayValue(m.mblNo) }}</strong>
-              </div>
-              <div class="match-field">
-                <span>Master Job</span>
-                <strong>{{ displayValue(m.masterJobNumber) }}</strong>
-              </div>
-            </ng-container>
+            <div class="match-field" *ngIf="matchShowMasterMbl()">
+              <span>MBL / MAWB</span>
+              <strong>{{ displayValue(m.mblNo) }}</strong>
+            </div>
           </div>
 
           <button type="button" class="match-action" (click)="viewTracking(m)">

@@ -453,8 +453,8 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   cargoDetailItems(tracking: any): Array<{ label: string; value: string }> {
+    // Department is shown in the header detail grid — omitted here to avoid duplication.
     const items: Array<{ label: string; value: string }> = [
-      { label: 'Department', value: this.displayValue(tracking?.shipmentInfo?.department) },
       { label: 'Total Packages', value: this.totalPackages(tracking) },
       { label: 'Gross Weight', value: this.totalWeight(tracking) },
     ];

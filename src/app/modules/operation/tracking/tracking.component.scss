@@ -856,7 +856,8 @@ $radius-md: 10px;
   position: relative;
   display: grid;
   gap: 8px;
-  max-width: none;
+  max-width: 760px;
+  margin: 0 auto;
   padding: 2px 0;
 }
 
@@ -1292,11 +1293,55 @@ $radius-md: 10px;
 .match-card-main {
   grid-area: main;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px 12px;
   min-width: 0;
   padding-bottom: 8px;
   border-bottom: 1px dashed #dce7f1;
+}
+
+.match-id-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Master Job — the real differentiator when HBL is shared. Centered + distinct colour. */
+.match-master {
+  flex: 0 0 auto;
+  margin: 0 auto;
+  text-align: center;
+  padding: 5px 18px;
+  border: 1px solid rgba($current, 0.3);
+  border-radius: 10px;
+  background: rgba($current, 0.1);
+}
+.match-master span {
+  display: block;
+  margin-bottom: 1px;
+  color: $current;
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.match-master strong {
+  display: block;
+  color: #0b3a63;
+  font-size: 13.5px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+/* Highlighted Department */
+.match-field.highlight strong {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: rgba($brand, 0.12);
+  color: $brand-dark;
 }
 
 .match-index {
