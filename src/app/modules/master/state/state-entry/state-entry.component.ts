@@ -412,6 +412,18 @@ openAuditLogs() {
     }
 
   onSubmit(resolve?: (value: boolean) => void) {
+
+    const countryId = this.stateForm.get('CountryMasterSid')?.value;
+  const zoneId = this.stateForm.get('ZoneMasterSid')?.value;
+
+  if (countryId && !zoneId) {
+    this.stateForm.get('ZoneMasterSid')?.markAsTouched();
+    this.appSettingService.showWarning(
+      'Selected country has no zone, Zone is required.'
+    );
+    if (resolve) resolve(false);
+    return;
+  }
     if (this.stateForm.invalid) {
       this.markFormGroupTouched(this.stateForm);
       this.appSettingService.showWarning('Please fill all required fields correctly.');
