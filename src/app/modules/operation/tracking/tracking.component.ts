@@ -331,7 +331,7 @@ export class TrackingComponent implements OnInit, OnDestroy {
 
     const info = tracking?.shipmentInfo || {};
     if (index === 0) {
-      add('Cargo Received', route.cargoReceivedDate);
+      add(this.isAirShipment(tracking) ? 'Cargo Accepted' : 'Cargo Received', route.cargoReceivedDate);
     } else if (index === 1) {
       add('ETD', info.etd);
       add('ATD', info.atd);
@@ -368,6 +368,35 @@ export class TrackingComponent implements OnInit, OnDestroy {
       { label: 'Next Milestone', value: this.nextMilestoneLabel(tracking) },
       { label: 'Last Update', value: this.currentStatusDate(tracking) },
     ].filter((item) => item.value && item.value !== '-');
+  }
+
+  compactCargoItems(tracking: any): Array<{ label: string; value: string }> {
+    return this.cargoDetailItems(tracking).filter((item) => !['Department', 'Commodities'].includes(item.label));
+  }
+
+  routeSummaryItems(tracking: any): Array<{ label: string; value: string }> {
+    // Movement is intentionally excluded — it restates Dept. + Job Type from the header.
+    return [
+      { label: this.scheduleLabel(tracking), value: this.vesselVoyageValue(tracking) },
+      { label: this.departureDateLabel(tracking), value: this.departureDateValue(tracking) },
+      { label: this.arrivalDateLabel(tracking), value: this.arrivalDateValue(tracking) },
+    ].filter((item) => item.value && item.value !== '-');
+  }
+
+  valueSourceItems(tracking: any): Array<{ source: string; description: string; active: boolean }> {
+    return [
+      { source: 'shipmentInfo', description: 'references, customer, job type', active: !!tracking?.shipmentInfo },
+      { source: 'currentStatus', description: 'status badge and last update', active: !!tracking?.currentStatus },
+      {
+        source: 'routeInfo',
+        description: this.isAirShipment(tracking) ? 'origin, airport, final delivery route' : 'POO, POL, POD, FPOD route',
+        active: !!tracking?.routeInfo,
+      },
+      { source: 'cargoSummary', description: 'packages, weight, volume', active: !!tracking?.cargoSummary },
+      { source: 'milestones', description: 'timeline events', active: !!tracking?.milestones?.length },
+      { source: 'containers', description: 'container table for sea shipments', active: !!tracking?.containers?.length },
+      { source: 'documents', description: 'document cards and downloads', active: !!tracking?.documents?.length },
+    ];
   }
 
   nextMilestoneLabel(tracking: any): string {
@@ -498,15 +527,51 @@ export class TrackingComponent implements OnInit, OnDestroy {
     return this.summaryLegs(tracking)[0] || null;
   }
 
-  /** "Vessel / Voyage" (or Flight) shown under each port, connecting the port to its leg. */
+  /**
+   * "Vessel / Voyage" (or Airline / Flight) for a port's leg. POO (origin) is
+   * pre-carriage, so no vessel is shown there. Builds the label from the name +
+   * number (vesselVoyage is only a fallback — never combined, to avoid repeats).
+   */
   portVesselLabel(tracking: any, index: number): string {
+    if (index === 0) {
+      return ''; // POO / place of receipt — pre-carriage, no vessel yet
+    }
+
     const leg = this.portLeg(tracking, index);
-    if (!leg) return '';
-    return [leg.vesselName, leg.voyageNo].filter((value) => this.hasDisplayValue(value)).join(' / ');
+    const info = tracking?.shipmentInfo || {};
+    const source = leg || info;
+
+    if (this.isAirShipment(tracking)) {
+      const airline = source?.airlineName || source?.carrierName || source?.vesselName;
+      const flightNo = source?.flightNo || source?.voyageNo;
+      const label = [airline, flightNo].filter((value) => this.hasDisplayValue(value)).join(' / ');
+      return label || (this.hasDisplayValue(source?.vesselVoyage) ? source.vesselVoyage : '');
+    }
+
+    const label = [source?.vesselName, source?.voyageNo].filter((value) => this.hasDisplayValue(value)).join(' / ');
+    return label || (this.hasDisplayValue(source?.vesselVoyage) ? source.vesselVoyage : '');
   }
 
   portVesselIcon(tracking: any): string {
     return this.isAirShipment(tracking) ? 'fa-plane' : 'fa-ship';
+  }
+
+  routePointIcon(tracking: any, index: number): string {
+    if (this.isAirShipment(tracking)) {
+      return ['fa-box', 'fa-plane-departure', 'fa-plane-arrival', 'fa-map-marker-alt'][index] || 'fa-plane';
+    }
+
+    return ['fa-warehouse', 'fa-ship', 'fa-anchor', 'fa-map-marker-alt'][index] || 'fa-map-marker-alt';
+  }
+
+  routeModeTitle(tracking: any): string {
+    return this.isAirShipment(tracking) ? 'Air Freight Routing' : 'Sea Freight Routing';
+  }
+
+  routeModeHint(tracking: any): string {
+    return this.isAirShipment(tracking)
+      ? 'Airport movement with flight schedule, departure, arrival, and final delivery checkpoints.'
+      : 'Port movement with vessel schedule, loading, arrival, and final destination checkpoints.';
   }
 
   /** Leg row title — single-leg shipments read "Voyage"/"Flight", transhipment reads First/Final Leg. */
@@ -639,12 +704,14 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const pod = tracking?.routeInfo?.pod || route[2];
     const finalDestination = tracking?.routeInfo?.finalDestination || route[3];
 
-    return [
-      { label: this.routeLabel(origin, 0), role: 'POO' },
-      { label: this.routeLabel(pol, 1), role: 'POL' },
-      { label: this.routeLabel(pod, 2), role: 'POD' },
-      { label: this.routeLabel(finalDestination, 3), role: 'FPOD' },
-    ];
+    const roles = this.isAirShipment(tracking)
+      ? ['Origin', 'Departure Airport', 'Arrival Airport', 'Final Delivery']
+      : ['POO', 'POL', 'POD', 'FPOD'];
+
+    return [origin, pol, pod, finalDestination].map((point, index) => ({
+      label: this.routeLabel(point, index),
+      role: roles[index],
+    }));
   }
 
   private transhipmentRoutePoints(tracking: any): Array<{ label: string; role: string }> {
@@ -655,12 +722,19 @@ export class TrackingComponent implements OnInit, OnDestroy {
 
     const firstLeg = legs[0];
     const finalLeg = legs[legs.length - 1];
-    const points = [
-      { label: this.displayValue(firstLeg?.pol), role: 'Origin' },
-      { label: this.displayValue(firstLeg?.pod), role: 'First POD' },
-      { label: this.displayValue(finalLeg?.pol), role: 'Final POL' },
-      { label: this.displayValue(finalLeg?.pod), role: 'Final' },
-    ];
+    const points = this.isAirShipment(tracking)
+      ? [
+          { label: this.displayValue(firstLeg?.pol), role: 'Origin' },
+          { label: this.displayValue(firstLeg?.pod), role: 'First Arrival' },
+          { label: this.displayValue(finalLeg?.pol), role: 'Final Departure' },
+          { label: this.displayValue(finalLeg?.pod), role: 'Final Delivery' },
+        ]
+      : [
+          { label: this.displayValue(firstLeg?.pol), role: 'Origin' },
+          { label: this.displayValue(firstLeg?.pod), role: 'First POD' },
+          { label: this.displayValue(finalLeg?.pol), role: 'Final POL' },
+          { label: this.displayValue(finalLeg?.pod), role: 'Final' },
+        ];
 
     return points.map((point, index) => ({
       label: this.hasDisplayValue(point.label) ? point.label : this.routeLabel(null, index),
@@ -702,6 +776,28 @@ export class TrackingComponent implements OnInit, OnDestroy {
     }
 
     return 'pending';
+  }
+
+  /** Status chip text shown under each route port. */
+  routeStopStatus(index: number, tracking: any): string {
+    const state = this.routePointClass(index, tracking);
+    if (state === 'completed') return 'Completed';
+    if (state === 'active') return 'In Progress';
+    return 'Pending';
+  }
+
+  /** Single primary date under each port: actual when available, else estimated with an ETD/ETA prefix. */
+  portPrimaryDate(tracking: any, index: number): { label: string; value: string } {
+    const items = this.portScheduleItems(tracking, index);
+    if (!items.length) {
+      return { label: '', value: '-' };
+    }
+    const actual = items.find((item) =>
+      ['ATD', 'ATA', 'Delivered', 'Cargo Received', 'Cargo Accepted'].includes(item.label)
+    );
+    const chosen = actual || items[0];
+    const prefix = chosen.label === 'ETD' || chosen.label === 'ETA' ? `${chosen.label} ` : '';
+    return { label: prefix, value: chosen.value };
   }
 
   milestoneClass(milestone: TrackingMilestone): Record<string, boolean> {
