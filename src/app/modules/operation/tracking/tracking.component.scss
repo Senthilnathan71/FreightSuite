@@ -488,7 +488,8 @@ $radius-md: 10px;
 .route-stop.active .route-badge { background: $current; border-color: $current; color: #ffffff; box-shadow: 0 0 0 6px rgba($current, 0.14); }
 .route-stop.pending .route-badge { background: #ffffff; border-color: #cbd5e1; color: #9fb0c2; }
 .route-port { margin-top: 9px; font-size: 14px; font-weight: 850; letter-spacing: 0.01em; color: $ink; overflow-wrap: anywhere; }
-.route-role { margin-top: 1px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: $muted; }
+.route-portname { margin-top: 1px; max-width: 140px; color: $text; font-size: 11px; font-weight: 650; line-height: 1.2; overflow-wrap: anywhere; }
+.route-role { margin-top: 2px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: $muted; }
 .route-chip { margin-top: 7px; display: inline-flex; align-items: center; height: 20px; padding: 0 10px; border-radius: 999px; background: #f1f5f9; color: $muted; font-size: 10px; font-weight: 850; }
 .route-stop.completed .route-chip { background: rgba($success, 0.12); color: $success; }
 .route-stop.active .route-chip { background: rgba($current, 0.14); color: $current; }

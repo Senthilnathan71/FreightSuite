@@ -556,6 +556,13 @@ export class TrackingComponent implements OnInit, OnDestroy {
     return this.isAirShipment(tracking) ? 'fa-plane' : 'fa-ship';
   }
 
+  /** Full port name for a port code (e.g. DXB → Dubai), from the resolved PortMaster map. */
+  portName(tracking: any, code: string): string {
+    const names = tracking?.routeInfo?.portNames || {};
+    const name = names[String(code || '').trim()];
+    return name && name !== code ? name : '';
+  }
+
   routePointIcon(tracking: any, index: number): string {
     if (this.isAirShipment(tracking)) {
       return ['fa-box', 'fa-plane-departure', 'fa-plane-arrival', 'fa-map-marker-alt'][index] || 'fa-plane';

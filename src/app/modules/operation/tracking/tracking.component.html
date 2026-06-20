@@ -193,6 +193,7 @@
                 <i class="fas" [ngClass]="routePointIcon(tracking, i)"></i>
               </span>
               <strong class="route-port">{{ point.label }}</strong>
+              <small class="route-portname" *ngIf="portName(tracking, point.label)">{{ portName(tracking, point.label) }}</small>
               <small class="route-role">{{ point.role }}</small>
               <span class="route-when" *ngIf="portPrimaryDate(tracking, i).value !== '-'">
                 {{ portPrimaryDate(tracking, i).label }}{{ portPrimaryDate(tracking, i).value }}
