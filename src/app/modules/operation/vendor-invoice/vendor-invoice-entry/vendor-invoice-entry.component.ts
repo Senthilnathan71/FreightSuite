@@ -933,8 +933,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     if (this.isNonJob) {
       criticalSource.coa = this.operationService.getAllCoaWithLedgerCategory({
         LedgerCategory: 'Ledger',
-        CompanyMasterSid: CompanyMasterSid,
-        filterNonJob: true
+        CompanyMasterSid: CompanyMasterSid
+        // No filterNonJob: show all Ledger COAs (both JobNoRequire Y and N)
       }).pipe(catchError(() => of({ data: [] })));
     }
 
