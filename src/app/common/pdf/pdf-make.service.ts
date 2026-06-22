@@ -507,9 +507,14 @@ export class PdfMakeService {
     userData: any,
     logo?: string,
     orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    },
     filename = 'Comprehensive-Management-Report'
   ): void {
-    const pdfData = transformComprehensiveManagementReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const pdfData = transformComprehensiveManagementReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateComprehensiveManagementReportDocument(pdfData);
     this.download(docDefinition, filename);
   }
@@ -520,9 +525,14 @@ export class PdfMakeService {
     branch: any,
     userData: any,
     logo?: string,
-    orientation: 'portrait' | 'landscape' = 'landscape'
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    }
   ): Promise<Blob> {
-    const pdfData = transformComprehensiveManagementReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const pdfData = transformComprehensiveManagementReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateComprehensiveManagementReportDocument(pdfData);
     return this.getBlob(docDefinition);
   }
@@ -534,9 +544,14 @@ export class PdfMakeService {
     userData: any,
     logo?: string,
     orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    },
     filename = 'Balance-Sheet-Report'
   ): void {
-    const pdfData = transformBalanceSheetReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const pdfData = transformBalanceSheetReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateBalanceSheetReportDocument(pdfData);
     this.download(docDefinition, filename);
   }
@@ -547,9 +562,14 @@ export class PdfMakeService {
     branch: any,
     userData: any,
     logo?: string,
-    orientation: 'portrait' | 'landscape' = 'landscape'
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    }
   ): Promise<Blob> {
-    const pdfData = transformBalanceSheetReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const pdfData = transformBalanceSheetReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateBalanceSheetReportDocument(pdfData);
     return this.getBlob(docDefinition);
   }
@@ -561,9 +581,14 @@ export class PdfMakeService {
     userData: any,
     logo?: string,
     orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    },
     filename = 'VAT-Summary-Report'
   ): void {
-    const pdfData = transformVatSummaryReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const pdfData = transformVatSummaryReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateVatSummaryReportDocument(pdfData);
     this.download(docDefinition, filename);
   }
@@ -574,9 +599,14 @@ export class PdfMakeService {
     branch: any,
     userData: any,
     logo?: string,
-    orientation: 'portrait' | 'landscape' = 'landscape'
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    }
   ): Promise<Blob> {
-    const pdfData = transformVatSummaryReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const pdfData = transformVatSummaryReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateVatSummaryReportDocument(pdfData);
     return this.getBlob(docDefinition);
   }

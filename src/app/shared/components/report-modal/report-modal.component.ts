@@ -15,6 +15,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { ReportService, REPORT_DATA, ReportCard } from '../../services/report.service';
 import { ReportConfig } from '../../services/report-registry.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { ExcelExportService } from '../../excel-report-service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -122,6 +123,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     private reportService: ReportService,
     private spinner: NgxSpinnerService,
     private appSettingsService: AppSettingsService,
+    private companySettings: CompanySettingsManagerService,
     private injector: Injector,
     private excelReportService: ExcelExportService,
     private appSettingService: AppSettingsService,
@@ -301,6 +303,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         const branch = this.appSettingsService.getCurrentBranchInfo();
         const userData = this.appSettingsService.getDecryptedUserProfile();
         const logo = this.pdfMakeService.getReportLogo();
+        const printSettings = this.companySettings.getPrintSettings();
 
         this.pdfMakeService.generateComprehensiveManagementReport(
           this.buildInjectedReportData(),
@@ -309,6 +312,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
           userData,
           logo,
           this.reportConfig?.pdfOrientation || 'landscape',
+          printSettings,
           filename
         );
         this.appSettingsService.showSuccess('PDF downloaded successfully!');
@@ -321,6 +325,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         const branch = this.appSettingsService.getCurrentBranchInfo();
         const userData = this.appSettingsService.getDecryptedUserProfile();
         const logo = this.pdfMakeService.getReportLogo();
+        const printSettings = this.companySettings.getPrintSettings();
 
         this.pdfMakeService.generateBalanceSheetReport(
           this.buildInjectedReportData(),
@@ -329,6 +334,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
           userData,
           logo,
           this.reportConfig?.pdfOrientation || 'landscape',
+          printSettings,
           filename
         );
         this.appSettingsService.showSuccess('PDF downloaded successfully!');
@@ -341,6 +347,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         const branch = this.appSettingsService.getCurrentBranchInfo();
         const userData = this.appSettingsService.getDecryptedUserProfile();
         const logo = this.pdfMakeService.getReportLogo();
+        const printSettings = this.companySettings.getPrintSettings();
 
         this.pdfMakeService.generateVatSummaryReport(
           this.buildInjectedReportData(),
@@ -349,6 +356,29 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
           userData,
           logo,
           'landscape',
+          printSettings,
+          filename
+        );
+        this.appSettingsService.showSuccess('PDF downloaded successfully!');
+        this.spinner.hide();
+        return;
+      }
+
+      if (this.reportId === 'balance-sheet') {
+        const company = this.appSettingsService.getCurrentCompanyInfo();
+        const branch = this.appSettingsService.getCurrentBranchInfo();
+        const userData = this.appSettingsService.getDecryptedUserProfile();
+        const logo = this.pdfMakeService.getReportLogo();
+        const printSettings = this.companySettings.getPrintSettings();
+
+        this.pdfMakeService.generateBalanceSheetReport(
+          this.buildInjectedReportData(),
+          company,
+          branch,
+          userData,
+          logo,
+          this.reportConfig?.pdfOrientation || 'landscape',
+          printSettings,
           filename
         );
         this.appSettingsService.showSuccess('PDF downloaded successfully!');
@@ -419,6 +449,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
           const branch = this.appSettingsService.getCurrentBranchInfo();
           const userData = this.appSettingsService.getDecryptedUserProfile();
           const logo = this.pdfMakeService.getReportLogo();
+          const printSettings = this.companySettings.getPrintSettings();
 
           pdfBlob = await this.pdfMakeService.generateComprehensiveManagementReportBlob(
             this.buildInjectedReportData(),
@@ -426,13 +457,15 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
             branch,
             userData,
             logo,
-            this.reportConfig?.pdfOrientation || 'landscape'
+            this.reportConfig?.pdfOrientation || 'landscape',
+            printSettings
           );
         } else if (this.reportId === 'balance-sheet') {
           const company = this.appSettingsService.getCurrentCompanyInfo();
           const branch = this.appSettingsService.getCurrentBranchInfo();
           const userData = this.appSettingsService.getDecryptedUserProfile();
           const logo = this.pdfMakeService.getReportLogo();
+          const printSettings = this.companySettings.getPrintSettings();
 
           pdfBlob = await this.pdfMakeService.generateBalanceSheetReportBlob(
             this.buildInjectedReportData(),
@@ -440,13 +473,15 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
             branch,
             userData,
             logo,
-            this.reportConfig?.pdfOrientation || 'landscape'
+            this.reportConfig?.pdfOrientation || 'landscape',
+            printSettings
           );
         } else if (this.reportId === 'Vat-Summary-Report') {
           const company = this.appSettingsService.getCurrentCompanyInfo();
           const branch = this.appSettingsService.getCurrentBranchInfo();
           const userData = this.appSettingsService.getDecryptedUserProfile();
           const logo = this.pdfMakeService.getReportLogo();
+          const printSettings = this.companySettings.getPrintSettings();
 
           pdfBlob = await this.pdfMakeService.generateVatSummaryReportBlob(
             this.buildInjectedReportData(),
@@ -454,7 +489,8 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
             branch,
             userData,
             logo,
-            'landscape'
+            'landscape',
+            printSettings
           );
         } else if (exportConfig?.reportHeader && exportConfig?.rows) {
           const company = this.appSettingsService.getCurrentCompanyInfo();
