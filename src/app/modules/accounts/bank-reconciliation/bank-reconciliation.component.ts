@@ -10,6 +10,7 @@ import { finalize } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { getVoucherEntryLink } from 'src/app/common/voucher-route';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -803,20 +804,7 @@ export class BankReconciliationComponent implements OnInit {
   }
 
   getVoucherRoute(row: BankBookRow): string[] | null {
-    const voucherType = String(row.VoucherTypeCode ?? '').trim().toUpperCase();
-    const voucherRouteMap: Record<string, string> = {
-      RPT: '/accounts/receipt/entry',
-      RECEIPT: '/accounts/receipt/entry',
-      PMT: '/accounts/payment/entry',
-      PAYMENT: '/accounts/payment/entry',
-      JV: '/accounts/journal-voucher/entry',
-      'JOURNAL VOUCHER': '/accounts/journal-voucher/entry',
-      RJV: '/accounts/reverse-voucher/entry',
-      'REVERSAL JOURNAL VOUCHER': '/accounts/reverse-voucher/entry',
-    };
-
-    const route = voucherRouteMap[voucherType];
-    return route ? [route, String(row.VoucherHeaderSid)] : null;
+    return getVoucherEntryLink(row.VoucherTypeCode, row.VoucherHeaderSid);
   }
 
   private buildExcelHtmlReport(): string {

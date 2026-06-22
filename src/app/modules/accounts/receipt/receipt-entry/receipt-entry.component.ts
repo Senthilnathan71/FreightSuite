@@ -28,12 +28,14 @@ import {
   NgbDropdownModule,
   NgbModal,
   NgbTooltipModule,
+  NgbPopoverModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
 import { ReceiptService } from '../../services/receipt.service';
 import { OutstandingInvoice, PaymentMode } from '../../models/receipt.model';
+import { getVoucherEntryLink, navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -48,6 +50,7 @@ import {
   Observable,
   of,
   Subject,
+  Subscription,
   takeUntil,
   tap,
 } from 'rxjs';
@@ -120,6 +123,7 @@ import { InterBranchService } from '../../inter-branch/inter-branch.service';
     NgxSpinnerModule,
     RouterModule,
     NgbTooltipModule,
+    NgbPopoverModule,
     ElementStateGuardDirective,
     FormStateGuardDirective,
     ExpandTextDirective,
@@ -134,6 +138,9 @@ import { InterBranchService } from '../../inter-branch/inter-branch.service';
   ],
 })
 export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedChanges {
+  // Voucher-type → entry-route mapping for matching-grid hyperlinks (shared util).
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
+  protected readonly VoucherType = VoucherType;
   // Character limits for text fields (single source of truth, mirrors DB widths).
   protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   fyMinDate: NgbDateStruct | null = null;
@@ -361,6 +368,12 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   companyCurrency: any;
   currentCurrencyCode: string = '';
   private destroy$ = new Subject<void>();
+  // Route-id reactivity: Angular reuses this component between two .../receipt/entry/:id URLs,
+  // so we watch paramMap (not a one-time snapshot) and recreate on a changed id. routeSub is
+  // kept separate from destroy$ because patchValues completes destroy$ on read-only loads.
+  private routeInitialized = false;
+  private loadedReceiptId: number | null = null;
+  private routeSub?: Subscription;
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
@@ -485,21 +498,40 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.loadDetailLookups();
     this.loadVoucherPeriods();
 
-    // Check if editing existing receipt
-    const receiptId = this.route.snapshot.params['id'];
-    if (receiptId) {
-      this.headerId = Number(receiptId);
-    }
+    // React to the route id. Angular REUSES this component when navigating between two
+    // .../receipt/entry/:id URLs (same route config), so a one-time snapshot read would leave
+    // the previous receipt patched. First emission runs the normal load; a later emission with
+    // a different id means the instance was reused for another receipt → force a fresh instance
+    // (clean edit-load) by bouncing through the list route. (entry vs entry/:id are separate
+    // routes, so create↔edit already recreates and isn't handled here.)
+    this.routeSub = this.route.paramMap.subscribe((params) => {
+      const id = Number(params.get('id')) || null;
 
-    // Load currencies first, then fetch the receipt so currencyList
-    // is always populated before patchValues runs.
-    this.loadAllLookups().subscribe(() => {
-      if (this.headerId) {
-        this.loadInterBranchAllocations(this.headerId); // fire in parallel with the receipt fetch
-        this.loadReceipt(this.headerId);
-      } else {
-        this.subscribeToPartyAndBankChanges();
+      if (this.routeInitialized) {
+        if (id !== this.loadedReceiptId) {
+          this.router
+            .navigateByUrl('/accounts/receipt/list', { skipLocationChange: true })
+            .then(() => navigateToVoucherEntry(this.router, VoucherType.RECEIPT, id));
+        }
+        return;
       }
+
+      this.routeInitialized = true;
+      this.loadedReceiptId = id;
+      if (id) {
+        this.headerId = id;
+      }
+
+      // Load currencies first, then fetch the receipt so currencyList
+      // is always populated before patchValues runs.
+      this.loadAllLookups().subscribe(() => {
+        if (this.headerId) {
+          this.loadInterBranchAllocations(this.headerId); // fire in parallel with the receipt fetch
+          this.loadReceipt(this.headerId);
+        } else {
+          this.subscribeToPartyAndBankChanges();
+        }
+      });
     });
   }
 
@@ -1252,6 +1284,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         ],
         isTicked: [false],
         isLimitErrorShown: [false],
+        // Display-only: party-row narration shown as a hover popover on the Voucher No. cell
+        narration: [{ value: tx.Narration ?? '', disabled: true }],
       });
 
       [
@@ -1627,7 +1661,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             // Stage inter-branch first, THEN navigate/reload — avoids the reload racing the stage POST.
             this.stageInterBranchIfNeeded(this.headerId, () => {
               if (this.headerId) {
-                this.router.navigate(['accounts/receipt/entry', this.headerId]);
+                navigateToVoucherEntry(this.router, VoucherType.RECEIPT, this.headerId);
               }
             });
           } else {
@@ -3106,6 +3140,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         ],
         isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0 : false],
         isLimitErrorShown: [false],
+        // Display-only: party-row narration shown as a hover popover on the Voucher No. cell
+        narration: [{ value: tx.Narration ?? '', disabled: true }],
       });
 
       // Disable fields
@@ -4483,6 +4519,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.matchingObserver?.disconnect();
@@ -4634,7 +4671,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: 'Receipt',
+        DocumentTypeCode: VoucherType.RECEIPT,
         Type: typeValue,
       })
       .subscribe({
@@ -4665,6 +4702,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
 
         navigateToCreate() {
-          this.router.navigate(['accounts/receipt/entry']);
+          navigateToVoucherEntry(this.router, VoucherType.RECEIPT);
         }
 }

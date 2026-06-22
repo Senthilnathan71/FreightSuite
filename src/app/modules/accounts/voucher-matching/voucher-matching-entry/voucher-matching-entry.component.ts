@@ -2,7 +2,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { getDefaultTodayDate, toNumber } from 'src/app/common/helper';
+import { getVoucherEntryLink, navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
@@ -51,6 +52,7 @@ import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directi
     RouterLink,
     NgbDatepickerModule,
     NgbDropdownModule,
+    NgbPopoverModule,
     FeatherModule,
     NgSelectModule,
     CustomDatePipe,
@@ -554,6 +556,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       }],
       isTicked: [{ value: isBalanceZero ?? false, disabled: readOnly }],
       MatchingType: [item?.MatchingType ?? MatchingType],
+      // Display-only: party-row narration shown as a hover tooltip on the Voucher No. cell
+      Narration: [{ value: item?.Narration ?? '', disabled: true }],
     });
   }
 
@@ -1225,7 +1229,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
             this.isDirty = false;
             this.VoucherMatchingHeaderSid = resp?.data?.VoucherMatchingHeaderSid;
             this.appSettingService.showSuccess(resp.message);
-            this.router.navigate(['accounts/voucher-matching/entry', this.VoucherMatchingHeaderSid]);
+            navigateToVoucherEntry(this.router, VoucherType.VOUCHER_MATCHING, this.VoucherMatchingHeaderSid);
           }
           else {
             this.appSettingService.showError(resp?.message || 'Error creating voucher matching');
@@ -1448,41 +1452,10 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     this.router.navigate(['accounts/voucher-matching/list']);
   }
 
+  // Voucher-type → entry-route mapping lives in the shared util; exposed here for the template.
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
   // Character limits for text fields (single source of truth, mirrors DB widths).
   protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
-
-  getVoucherEntryLink(voucherType: string | number | null | undefined, voucherHeaderSid: string | number | null | undefined): string[] | null {
-    const normalizedVoucherType = String(voucherType ?? '').trim().toUpperCase();
-    const normalizedHeaderSid = Number(voucherHeaderSid);
-
-    if (!normalizedVoucherType || !Number.isFinite(normalizedHeaderSid) || normalizedHeaderSid <= 0) {
-      return null;
-    }
-
-    const voucherRouteMap: Record<string, string> = {
-      INV: '/operation/invoice/entry',
-      INVOICE: '/operation/invoice/entry',
-      VIN: '/operation/vendor-invoice/entry',
-      'VENDOR INVOICE': '/operation/vendor-invoice/entry',
-      RPT: '/accounts/receipt/entry',
-      RECEIPT: '/accounts/receipt/entry',
-      PMT: '/accounts/payment/entry',
-      PAYMENT: '/accounts/payment/entry',
-      JV: '/accounts/journal-voucher/entry',
-      'JOURNAL VOUCHER': '/accounts/journal-voucher/entry',
-      IJV: '/accounts/journal-voucher/entry',
-      'INTER BRANCH JOURNAL VOUCHER': '/accounts/journal-voucher/entry',
-      RJV: '/accounts/reverse-voucher/entry',
-      'REVERSAL JOURNAL VOUCHER': '/accounts/reverse-voucher/entry',
-      CRN: '/operation/credit-note/entry',
-      'CREDIT NOTE': '/operation/credit-note/entry',
-      VRN: '/operation/vendor-credit-note/entry',
-      'VENDOR CREDIT NOTE': '/operation/vendor-credit-note/entry',
-    };
-
-    const route = voucherRouteMap[normalizedVoucherType];
-    return route ? [route, normalizedHeaderSid.toString()] : null;
-  }
 
   //SECTION: PLUGIN / INFO METHODS
   showInfo() {
@@ -1587,7 +1560,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.VOUCHER_MATCHING,
       })
       .subscribe({
         next: (resp) => {

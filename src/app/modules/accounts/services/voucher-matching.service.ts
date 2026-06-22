@@ -65,6 +65,7 @@ export interface MatchingDetail {
   MatchingTDSAmount: number;
   MatchingType: string;
   MatchingTransactionSid: number;
+  Narration?: string;
 }
 
 export interface UpdateStandaloneVoucherMatchingDto extends CreateStandaloneVoucherMatchingDto {

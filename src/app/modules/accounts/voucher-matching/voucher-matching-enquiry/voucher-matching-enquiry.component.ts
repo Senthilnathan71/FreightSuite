@@ -7,6 +7,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { VoucherMatchingService } from '../../services/voucher-matching.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { getVoucherEntryLink } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-voucher-matching-enquiry',
@@ -27,6 +28,8 @@ import { NgApexchartsModule } from 'ng-apexcharts';
   `
 })
 export class VoucherMatchingEnquiryComponent implements OnInit {
+  // Voucher-type → entry-route mapping for the Source/Object voucher badges (shared util).
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
   voucherNumber = '';
   isLoading = false;
   errorMessage = '';

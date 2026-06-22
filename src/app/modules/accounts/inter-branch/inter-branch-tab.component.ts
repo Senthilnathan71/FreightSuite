@@ -12,6 +12,7 @@ import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { getVoucherEntryLink, VoucherType } from 'src/app/common/voucher-route';
 
 /**
  * Reusable, lazy-loadable Inter Branch tab for Receipt/Payment entry.
@@ -26,6 +27,9 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
   styleUrl: './inter-branch-tab.component.scss',
 })
 export class InterBranchTabComponent implements OnChanges {
+  // Voucher-type → entry-route mapping for the Source JV hyperlink (shared util).
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
+  protected readonly VoucherType = VoucherType;
   @Input() interBranches!: FormArray;
   @Input() mode: 'Receipt' | 'Payment' = 'Receipt';
   @Input() companyBranches: any[] = [];

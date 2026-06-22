@@ -38,6 +38,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
@@ -934,8 +935,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     if (this.isNonJob) {
       criticalSource.coa = this.operationService.getAllCoaWithLedgerCategory({
         LedgerCategory: 'Ledger',
-        CompanyMasterSid: CompanyMasterSid,
-        filterNonJob: true
+        CompanyMasterSid: CompanyMasterSid
+        // No filterNonJob: show all Ledger COAs (both JobNoRequire Y and N)
       }).pipe(catchError(() => of({ data: [] })));
     }
 
@@ -1500,7 +1501,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.VENDOR_INVOICE,
       })
       .subscribe({
         next: (resp) => {
@@ -2142,9 +2143,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
             if(resolve) resolve(true);
             if (this.headerId) {
               this.loadVendorInvoiceById(this.headerId);
-              this.router.navigate(['operation/vendor-invoice/entry', this.headerId],{
-                replaceUrl: true,
-                queryParams : {
+              navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, this.headerId, {
+                extras: { replaceUrl: true },
+                queryParams: {
                   ...(this.isNonJob ? {isNonJob: this.isNonJob} : {})
                 }
               });
@@ -4669,12 +4670,12 @@ Please configure the missing mappings and try again.`
     }
 
     navigateToCreate() {
-      this.router.navigate(['/operation/vendor-invoice/entry']);
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE);
     }
 
     navigateToNonJob(){
-      this.router.navigate(['/operation/vendor-invoice/entry'], {
-      queryParams: { isNonJob: true }
-    });
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, null, {
+        queryParams: { isNonJob: true }
+      });
     }
 }

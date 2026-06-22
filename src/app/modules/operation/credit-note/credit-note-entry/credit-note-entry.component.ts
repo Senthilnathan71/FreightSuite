@@ -82,6 +82,7 @@ import {
   ValidationMessageConfig,
 } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { ToastrService } from 'ngx-toastr';
 import { PdfMakeService } from 'src/app/common/pdf';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
@@ -1938,7 +1939,7 @@ export class CreditNoteEntryComponent {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.CREDIT_NOTE,
       })
       .subscribe({
         next: (resp) => {
@@ -2605,10 +2606,7 @@ export class CreditNoteEntryComponent {
             // }
             if (resolve) resolve(true);
             if (this.headerId) {
-              this.router.navigate([
-                'operation/credit-note/entry',
-                this.headerId,
-              ]);
+              navigateToVoucherEntry(this.router, VoucherType.CREDIT_NOTE, this.headerId);
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -5537,7 +5535,7 @@ export class CreditNoteEntryComponent {
       return;
     }
 
-    this.router.navigate(['/operation/invoice/entry', reversalVoucherSid]);
+    navigateToVoucherEntry(this.router, VoucherType.INVOICE, reversalVoucherSid);
   }
 
   private getDetailNavigationContext(detailIndex: number, row: FormGroup): {
@@ -6634,6 +6632,6 @@ export class CreditNoteEntryComponent {
     }
 
     navigateToCreate() {
-      this.router.navigate(['operation/credit-note/entry']);
+      navigateToVoucherEntry(this.router, VoucherType.CREDIT_NOTE);
     }
 }

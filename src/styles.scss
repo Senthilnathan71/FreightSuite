@@ -3,6 +3,34 @@
 // html, body { height: 100%; }
 // body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+/* Party-row Narration popover on matching grids (receipt / payment / voucher-matching).
+   Opened by clicking the narration icon next to the Voucher No.; stays open (autoClose:'outside')
+   so the user can select the text with the mouse and copy it. Popovers render on <body>
+   (container="body"), so this must live in the global stylesheet. */
+.narration-popover {
+  max-width: 360px;
+
+  .popover-header {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .popover-body {
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 0.4rem 0.6rem;
+    max-height: 220px;
+    overflow-y: auto;
+
+    /* Selectable so the user can highlight + copy the narration with the mouse */
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+  }
+}
+
 /* Placeholder Autocomplete Dropdown */
 .placeholder-autocomplete-dropdown {
   position: absolute;

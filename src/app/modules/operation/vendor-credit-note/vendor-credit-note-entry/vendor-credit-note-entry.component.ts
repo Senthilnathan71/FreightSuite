@@ -62,6 +62,7 @@ import {
   toNumber,
 } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
 import { ToastrService } from 'ngx-toastr';
@@ -1688,7 +1689,7 @@ export class VendorCreditNoteEntryComponent {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.VENDOR_CREDIT_NOTE,
       })
       .subscribe({
         next: (resp) => {
@@ -2381,14 +2382,11 @@ export class VendorCreditNoteEntryComponent {
             // }
             if (resolve) resolve(true);
             if (this.headerId) {
-              this.router.navigate(
-                ['operation/vendor-credit-note/entry', this.headerId],
-                {
-                  queryParams: {
-                    ...(this.isNonJob ? { isNonJob: this.isNonJob } : {}),
-                  },
+              navigateToVoucherEntry(this.router, VoucherType.VENDOR_CREDIT_NOTE, this.headerId, {
+                queryParams: {
+                  ...(this.isNonJob ? { isNonJob: this.isNonJob } : {}),
                 },
-              );
+              });
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -4148,6 +4146,6 @@ export class VendorCreditNoteEntryComponent {
   }
 
   navigateToCreate() {
-    this.router.navigate(['/operation/vendor-credit-note/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.VENDOR_CREDIT_NOTE);
   }
 }

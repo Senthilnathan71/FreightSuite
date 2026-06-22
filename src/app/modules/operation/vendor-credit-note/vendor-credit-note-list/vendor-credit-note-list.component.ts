@@ -33,6 +33,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-vendor-credit-note-list',
@@ -533,7 +534,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       });
       if (this.voucherActionGuard.block(blockedReason)) return;
 
-      this.router.navigate(['/operation/vendor-credit-note/entry']);
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_CREDIT_NOTE);
     }
   
     onReport() {
@@ -688,10 +689,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     navigateToVendorInvoice(voucherSid: number) {
   if (!voucherSid) return;
 
-  this.router.navigate([
-    '/operation/vendor-invoice/entry',
-    voucherSid
-  ]);
+  navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, voucherSid);
 }
   
     viewVendorCreditNote(vendorCreditNote: any) {
@@ -699,7 +697,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     }
   
     editVendorCreditNote(vendorCreditNote: any) {
-      this.router.navigate(['/operation/vendor-credit-note/entry', vendorCreditNote.VoucherHeaderSid]);
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_CREDIT_NOTE, vendorCreditNote.VoucherHeaderSid);
     }
   
     deleteVendorCreditNote(vendorCreditNote: any) {

@@ -45,15 +45,18 @@
           <!-- Voucher Matching No (moved up next to the title) -->
           @if(isEditMode && voucherMatchingInfo?.VoucherMatchingHeaderSid){
           <a
-            class="fw-bold text-decoration-underline"
+            *ngIf="getVoucherEntryLink(VoucherType.VOUCHER_MATCHING, voucherMatchingInfo.VoucherMatchingHeaderSid) as link; else vmMatchingPlain"
+            class="voucher-number-link fw-bold text-decoration-underline"
             style="font-size: 0.8rem"
-            [routerLink]="[
-              '/accounts/voucher-matching/entry',
-              voucherMatchingInfo.VoucherMatchingHeaderSid
-            ]"
+            [routerLink]="link"
           >
             {{ voucherMatchingInfo?.VoucherMatchingNo || "" }}
           </a>
+          <ng-template #vmMatchingPlain>
+            <span class="fw-bold text-decoration-underline" style="font-size: 0.8rem">
+              {{ voucherMatchingInfo?.VoucherMatchingNo || "" }}
+            </span>
+          </ng-template>
           }
         </div>
       </div>
@@ -882,11 +885,18 @@
       <!-- spacer / payment-request link (Voucher Matching No moved up next to the title) -->
       <div class="flex-grow-1 text-start">
         @if(isFromPaymentRequest && paymentForm.get('ReversalVoucher')?.getRawValue()){
-        <a [routerLink]="['/operation/payment-request/entry', paymentForm.get('ReversalVoucher')?.getRawValue()]"
+        <a *ngIf="getVoucherEntryLink(VoucherType.PAYMENT_REQUEST, paymentForm.get('ReversalVoucher')?.getRawValue()) as link; else prLinkPlain"
+           [routerLink]="link"
            class="voucher-number-link" title="View Payment Request">
           <i class="fas fa-external-link-alt me-1"></i>
           {{ prPaymentRequestNumber || paymentForm.get('ReversalVoucher')?.getRawValue() }}
         </a>
+        <ng-template #prLinkPlain>
+          <span class="voucher-number-link" title="View Payment Request">
+            <i class="fas fa-external-link-alt me-1"></i>
+            {{ prPaymentRequestNumber || paymentForm.get('ReversalVoucher')?.getRawValue() }}
+          </span>
+        </ng-template>
         }
       </div>
 
@@ -1048,10 +1058,10 @@
                   </dofi-searchable-dropdown>
                 </td>
                 <td class="dofi-min-w-150">
-                  <!-- Party control account (Sy Cr) → pick the full party (Subledger · Branch · Address);
-                       any other COA → the plain subledger dropdown. -->
+                  <!-- MAIN party row (Sy Cr) → pick the full party (Subledger · Branch · Address);
+                       advance Sy Cr rows and any other COA → the plain subledger dropdown. -->
                   <dofi-searchable-dropdown
-                    *ngIf="isPartyCoaRow(i); else normalSubledger"
+                    *ngIf="showPartyPicker(i); else normalSubledger"
                     [items]="partyList"
                     formControlName="CustomerBranchSid"
                     [displayFields]="PartyLedgerLookupConfig.displayFields"
@@ -1082,6 +1092,7 @@
                     bindValue="value"
                     formControlName="DrCr"
                     appendTo="body"
+                    [readonly]="isSyTypeRow(i) || isPosted"
                   ></ng-select>
                 </td>
                 <td class="dofi-min-w-50 text-center">
@@ -1610,132 +1621,47 @@
             >
               <!-- Voucher No -->
               <td class="dofi-min-w-120">
-                <div
-                  class="custom-form-group custom-form-group-select dofi-min-w-140"
-                  [ngSwitch]="v.get('voucherType')?.value"
-                >
+                <div class="custom-form-group custom-form-group-select dofi-min-w-140">
                   <!-- When voucherNo is empty -->
                   <input
                     *ngIf="!v.get('voucherNo')?.value"
                     type="text"
                     class="custom-input-field sm fw-bold px-2"
-                    [value]="v.get('voucherNo')?.value || ''"
+                    [value]="''"
                     readonly
                   />
 
-                  <!-- Cross-branch (other than the source branch) voucher: plain text, no hyperlink -->
-                  <span
-                    *ngIf="v.get('voucherNo')?.value && v.get('allotmentBranchSid')?.value"
-                    class="fw-bold px-2"
-                  >
-                    {{ v.get("voucherNo")?.value }}
-                  </span>
-
-                  <!-- Source-branch voucher: hyperlinks only when voucherNo exists -->
-                  <ng-container *ngIf="v.get('voucherNo')?.value && !v.get('allotmentBranchSid')?.value">
-                    <!-- Invoice -->
+                  <ng-container *ngIf="v.get('voucherNo')?.value">
+                    <!-- Source-branch voucher with a known type: hyperlink. Cross-branch
+                         rows (allotmentBranchSid set) and unknown types fall back to plain text. -->
                     <a
-                      *ngSwitchCase="'INV'"
-                      [routerLink]="[
-                        '/operation/invoice/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2"
+                      *ngIf="
+                        !v.get('allotmentBranchSid')?.value &&
+                          getVoucherEntryLink(v.get('voucherType')?.value, v.get('VoucherHeaderSid')?.value) as link;
+                        else voucherPlain
+                      "
+                      [routerLink]="link"
+                      class="voucher-number-link fw-bold px-2"
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
-
-                    <!-- Vendor Invoice (VIN / VN) -->
-                    <a
-                      *ngSwitchCase="'VIN'"
-                      [routerLink]="[
-                        '/operation/vendor-invoice/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2"
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Receipt -->
-                    <a
-                      *ngSwitchCase="'RPT'"
-                      [routerLink]="[
-                        '/accounts/receipt/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 "
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Payment (if needed later) -->
-                    <a
-                      *ngSwitchCase="'PMT'"
-                      [routerLink]="[
-                        '/accounts/payment/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 "
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Journal Voucher -->
-                    <a
-                      *ngSwitchCase="'JV'"
-                      [routerLink]="[
-                        '/accounts/journal-voucher/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 "
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-                    <!-- Reversal Journal Voucher -->
-                    <a
-                      *ngSwitchCase="'RJV'"
-                      [routerLink]="[
-                        '/accounts/reverse-voucher/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 "
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Credit Note -->
-                    <a
-                      *ngSwitchCase="'CRN'"
-                      [routerLink]="[
-                        '/operation/credit-note/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 "
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Vendor Credit Note -->
-                    <a
-                      *ngSwitchCase="'VRN'"
-                      [routerLink]="[
-                        '/operation/vendor-credit-note/entry',
-                        v.get('VoucherHeaderSid')?.value
-                      ]"
-                      class="fw-bold px-2 "
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </a>
-
-                    <!-- Default case -->
-                    <span
-                      *ngSwitchDefault
-                      class="fw-bold px-2 "
-                    >
-                      {{ v.get("voucherNo")?.value }}
-                    </span>
+                    <ng-template #voucherPlain>
+                      <span class="fw-bold px-2">{{ v.get("voucherNo")?.value }}</span>
+                    </ng-template>
                   </ng-container>
+                  <!-- Narration: click to open the popover, then select the text with the mouse to copy -->
+                  <i
+                    *ngIf="v.get('narration')?.getRawValue()"
+                    class="fas fa-comment-dots ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="View / copy narration"
+                    [ngbPopover]="v.get('narration')?.getRawValue()"
+                    popoverTitle="Narration"
+                    [autoClose]="'outside'"
+                    container="body"
+                    placement="top-start"
+                    popoverClass="narration-popover"
+                  ></i>
                 </div>
               </td>
 

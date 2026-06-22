@@ -130,12 +130,12 @@
             <td class="text-center">
               <ng-container *ngIf="row.get('SourceJV')?.value as srcJv">
                 <a
-                  *ngIf="row.get('SourceJVSid')?.value"
-                  [routerLink]="['/accounts/journal-voucher/entry', row.get('SourceJVSid')?.value]"
+                  *ngIf="getVoucherEntryLink(VoucherType.JOURNAL, row.get('SourceJVSid')?.value) as link; else sourceJvPlain"
+                  [routerLink]="link"
                   class="voucher-number-link fw-semibold"
                   >{{ srcJv }}</a
                 >
-                <span *ngIf="!row.get('SourceJVSid')?.value" class="fw-semibold">{{ srcJv }}</span>
+                <ng-template #sourceJvPlain><span class="fw-semibold">{{ srcJv }}</span></ng-template>
                 <i
                   class="fas fa-copy ms-1"
                   style="cursor: pointer; color: #1976d2; font-size: 12px"

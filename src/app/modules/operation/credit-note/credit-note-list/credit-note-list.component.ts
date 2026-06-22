@@ -33,6 +33,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-credit-note-list',
@@ -514,7 +515,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     }
 
     editbyrow(row:any) {
-     this.router.navigate(['operation/credit-note/entry/', row.VoucherHeaderSid]);
+     navigateToVoucherEntry(this.router, VoucherType.CREDIT_NOTE, row.VoucherHeaderSid);
   }
 
    navigateToMasterJob(invoice: any): void {
@@ -536,10 +537,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   navigateToInvoice(voucherSid: number) {
   if (!voucherSid) return;
 
-  this.router.navigate([
-    '/operation/invoice/entry',
-    voucherSid
-  ]);
+  navigateToVoucherEntry(this.router, VoucherType.INVOICE, voucherSid);
 }
 
  navigateToHouse(row: any): void {
@@ -828,7 +826,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['operation/credit-note/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.CREDIT_NOTE);
   }
   formatDate(date: any): string {
     if (!date) return 'N/A';
@@ -842,7 +840,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   viewCreditNote(id: number) {
-    this.router.navigate(['operation/credit-note/entry/', id]);
+    navigateToVoucherEntry(this.router, VoucherType.CREDIT_NOTE, id);
   }
 }
 

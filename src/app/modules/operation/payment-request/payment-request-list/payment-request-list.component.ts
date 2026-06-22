@@ -18,6 +18,7 @@ import { Observable } from 'rxjs';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../operation.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-payment-request-list',
@@ -315,7 +316,7 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
   }
 
   navigateToCreate() {
-    this.router.navigate(['operation/payment-request/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.PAYMENT_REQUEST);
   }
 
   onSearchTriggered(searchValue: string): void {
@@ -331,7 +332,7 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
   onTableActionClick(event: TableEventData): void {
     const row = event.row;
     if (event.action === 'view') {
-      this.router.navigate(['operation/payment-request/entry', row.PaymentRequestSid]);
+      navigateToVoucherEntry(this.router, VoucherType.PAYMENT_REQUEST, row.PaymentRequestSid);
     }
   }
 
