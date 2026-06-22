@@ -70,7 +70,9 @@ export class TradelaneProfitabilityComponent {
     const colCount = tableHeaders.length;
     const bookingHeaderValues = ['Booking No','Booking Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
     const masterHeaderValues = ['MBL No','MBL Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const masterAirHeaderValues = ['MAWB No','MAWB Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
     const houseHeaderValues = ['HBL No','HBL Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const houseAirHeaderValues = ['HAWB No','HAWB Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
     const buildHeaderRow = (values: string[]): ExcelRow => ({
       cells: values.map(value => ({ value, alignment: { horizontal: 'center' } })),
       style: 'header'
@@ -127,14 +129,15 @@ export class TradelaneProfitabilityComponent {
       }
 
       // ---- Master Job Section ----
-      if (route.masterRows?.length > 0) {
+      const masterJobRows = this.getSectionRows(route.masterRows, 'Master Job');
+      if (masterJobRows.length > 0) {
         rows.push({
           cells: [{ value: 'Master Job', colspan: colCount }],
           style: 'section'
         });
         rows.push(buildHeaderRow(masterHeaderValues));
 
-        route.masterRows.forEach(item => {
+        masterJobRows.forEach(item => {
           rows.push({
             cells: [
               { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
@@ -150,15 +153,62 @@ export class TradelaneProfitabilityComponent {
           });
         });
 
+        const masterJobTotals = this.getSectionTotals(masterJobRows);
+
         rows.push({
           cells: [
             { value: 'Total' , colspan:2 , alignment:{horizontal:'right'} },
-            { value: this.formatNumber(route.masterTotals?.revenue ?? 0) },
-            { value: this.formatNumber(route.masterTotals?.cost ?? 0) },
-            { value: this.formatNumber(route.masterTotals?.profit ?? 0) },
-            { value: this.formatNumber(route.masterTotals?.grossWt ?? 0) },
-            { value: this.formatNumber(route.masterTotals?.netWt ?? 0) },
-            { value: this.formatNumber(route.masterTotals?.vol ?? 0) }
+            { value: this.formatNumber(masterJobTotals?.revenue ?? 0) },
+            { value: this.formatNumber(masterJobTotals?.cost ?? 0) },
+            { value: this.formatNumber(masterJobTotals?.profit ?? 0) },
+            { value: this.formatNumber(masterJobTotals?.grossWt ?? 0) },
+            { value: this.formatNumber(masterJobTotals?.netWt ?? 0) },
+            { value: this.formatNumber(masterJobTotals?.vol ?? 0) }
+          ],
+          style: 'total'
+        });
+
+        rows.push({
+          cells: [{ value: '', colspan: colCount }],
+          style: 'section'
+        });
+      }
+
+      const masterAirRows = this.getSectionRows(route.masterRows, 'Master Air Waybill');
+      if (masterAirRows.length > 0) {
+        rows.push({
+          cells: [{ value: 'Master Air Waybill', colspan: colCount }],
+          style: 'section'
+        });
+        rows.push(buildHeaderRow(masterAirHeaderValues));
+
+        masterAirRows.forEach(item => {
+          rows.push({
+            cells: [
+              { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
+              { value: this.formatDate(item.MasterDate)  , alignment:{horizontal:'center'}},
+              { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
+              { value: this.formatNumber(item.costLocalAmt ?? 0) },
+              { value: this.formatNumber(item.profit ?? 0) },
+              { value: this.formatNumber(item.grossWt ?? 0) },
+              { value: this.formatNumber(item.netWt ?? 0) },
+              { value: this.formatNumber(item.vol ?? 0) }
+            ],
+            style: 'data'
+          });
+        });
+
+        const masterAirTotals = this.getSectionTotals(masterAirRows);
+
+        rows.push({
+          cells: [
+            { value: 'Total' , colspan:2 , alignment:{horizontal:'right'} },
+            { value: this.formatNumber(masterAirTotals?.revenue ?? 0) },
+            { value: this.formatNumber(masterAirTotals?.cost ?? 0) },
+            { value: this.formatNumber(masterAirTotals?.profit ?? 0) },
+            { value: this.formatNumber(masterAirTotals?.grossWt ?? 0) },
+            { value: this.formatNumber(masterAirTotals?.netWt ?? 0) },
+            { value: this.formatNumber(masterAirTotals?.vol ?? 0) }
           ],
           style: 'total'
         });
@@ -170,14 +220,15 @@ export class TradelaneProfitabilityComponent {
       }
 
       // ---- House Job Section ----
-      if (route.houseRows?.length > 0) {
+      const houseJobRows = this.getSectionRows(route.houseRows, 'House Job');
+      if (houseJobRows.length > 0) {
         rows.push({
           cells: [{ value: 'House Job', colspan: colCount }],
           style: 'section'
         });
         rows.push(buildHeaderRow(houseHeaderValues));
 
-        route.houseRows.forEach(item => {
+        houseJobRows.forEach(item => {
           rows.push({
             cells: [
               { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
@@ -193,15 +244,62 @@ export class TradelaneProfitabilityComponent {
           });
         });
 
+        const houseJobTotals = this.getSectionTotals(houseJobRows);
+
         rows.push({
           cells: [
             { value: 'Total' , colspan:2 , alignment:{horizontal:'right'} },
-            { value: this.formatNumber(route.houseTotals?.revenue ?? 0) },
-            { value: this.formatNumber(route.houseTotals?.cost ?? 0) },
-            { value: this.formatNumber(route.houseTotals?.profit ?? 0) },
-            { value: this.formatNumber(route.houseTotals?.grossWt ?? 0) },
-            { value: this.formatNumber(route.houseTotals?.netWt ?? 0) },
-            { value: this.formatNumber(route.houseTotals?.vol ?? 0) }
+            { value: this.formatNumber(houseJobTotals?.revenue ?? 0) },
+            { value: this.formatNumber(houseJobTotals?.cost ?? 0) },
+            { value: this.formatNumber(houseJobTotals?.profit ?? 0) },
+            { value: this.formatNumber(houseJobTotals?.grossWt ?? 0) },
+            { value: this.formatNumber(houseJobTotals?.netWt ?? 0) },
+            { value: this.formatNumber(houseJobTotals?.vol ?? 0) }
+          ],
+          style: 'total'
+        });
+
+        rows.push({
+          cells: [{ value: '', colspan: colCount }],
+          style: 'section'
+        });
+      }
+
+      const houseAirRows = this.getSectionRows(route.houseRows, 'House Air Waybill');
+      if (houseAirRows.length > 0) {
+        rows.push({
+          cells: [{ value: 'House Air Waybill', colspan: colCount }],
+          style: 'section'
+        });
+        rows.push(buildHeaderRow(houseAirHeaderValues));
+
+        houseAirRows.forEach(item => {
+          rows.push({
+            cells: [
+              { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
+              { value: this.formatDate(item.HouseDate)  , alignment:{horizontal:'center'}},
+              { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
+              { value: this.formatNumber(item.costLocalAmt ?? 0) },
+              { value: this.formatNumber(item.profit ?? 0) },
+              { value: this.formatNumber(item.grossWt ?? 0) },
+              { value: this.formatNumber(item.netWt ?? 0) },
+              { value: this.formatNumber(item.vol ?? 0) }
+            ],
+            style: 'data'
+          });
+        });
+
+        const houseAirTotals = this.getSectionTotals(houseAirRows);
+
+        rows.push({
+          cells: [
+            { value: 'Total' , colspan:2 , alignment:{horizontal:'right'} },
+            { value: this.formatNumber(houseAirTotals?.revenue ?? 0) },
+            { value: this.formatNumber(houseAirTotals?.cost ?? 0) },
+            { value: this.formatNumber(houseAirTotals?.profit ?? 0) },
+            { value: this.formatNumber(houseAirTotals?.grossWt ?? 0) },
+            { value: this.formatNumber(houseAirTotals?.netWt ?? 0) },
+            { value: this.formatNumber(houseAirTotals?.vol ?? 0) }
           ],
           style: 'total'
         });
@@ -232,10 +330,34 @@ export class TradelaneProfitabilityComponent {
       suppressSectionBorders: true,
       tableHeaders,
       rows,
-      columnWidths: [15, 12, 12, 12, 12, 12, 12]
+      columnWidths: [40, 12, 12, 12, 12, 12, 12, 12]
     };
   }
 
+  getSectionRows(rows: any[] | undefined, screen: string): any[] {
+    return (rows || []).filter((item) => this.getRowScreen(item) === screen);
+  }
+
+  getSectionTotals(rows: any[] | undefined): any {
+    return (rows || []).reduce(
+      (totals, item) => ({
+        revenue: totals.revenue + Number(item?.revenueLocalAmt || 0),
+        cost: totals.cost + Number(item?.costLocalAmt || 0),
+        profit: totals.profit + Number(item?.profit || 0),
+        grossWt: totals.grossWt + Number(item?.grossWt || 0),
+        netWt: totals.netWt + Number(item?.netWt || 0),
+        vol: totals.vol + Number(item?.vol || 0)
+      }),
+      { revenue: 0, cost: 0, profit: 0, grossWt: 0, netWt: 0, vol: 0 }
+    );
+  }
+
+  private getRowScreen(item: any): string {
+    if (item?.screen) return item.screen;
+    if (item?.MBLNo !== undefined) return 'Master Job';
+    if (item?.HBLNo !== undefined) return 'House Job';
+    return '';
+  }
  private formatNumber(value: any): string {
   if (value === null || value === undefined) return '';
 

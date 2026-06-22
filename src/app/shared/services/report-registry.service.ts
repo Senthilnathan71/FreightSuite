@@ -300,7 +300,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Ageing Report - Ledger: {LedgerName}',
+        emailSubjectTemplate: 'Ageing Report - Ledger : {LedgerName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -326,12 +326,12 @@ export class ReportRegistryService {
         id: 'outstanding-report',
         title: 'Outstanding',
         component: OutstandingReportComponent,
-        filenameTemplate: 'Outstanding_Report_{LedgerName}_{date}',
+        filenameTemplate: 'Outstanding_Report_{ledgerName}_{date}',
         module: 'accounts-report',
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Outstanding Report - Ledger: {LedgerName}',
+        emailSubjectTemplate: 'Outstanding Report - Ledger : {ledgerName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -357,12 +357,12 @@ export class ReportRegistryService {
         id: 'outstanding-local',
         title: 'Outstanding Local',
         component: OutstandingLocalComponent,
-        filenameTemplate: 'Outstanding_Local_Report_{LedgerName}_{date}',
+        filenameTemplate: 'Outstanding_Local_Report_{ledgerName}_{date}',
         module: 'accounts-report',
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Outstanding Local Report - Ledger: {LedgerName}',
+        emailSubjectTemplate: 'Outstanding Local Report - Ledger : {ledgerName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -388,12 +388,12 @@ export class ReportRegistryService {
         id: 'statement-ledger-report',
         title: 'Statement of Accounts',
         component: StatementReportComponent,
-        filenameTemplate: 'Statement_of_Accounts_Report_{LedgerName}_{date}',
+        filenameTemplate: 'Statement_of_Accounts_Report_{ledgerName}_{date}',
         module: 'accounts-report',
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Statment Ledger Report - Ledger: {LedgerName}',
+        emailSubjectTemplate: 'Statment Ledger Report - Ledger : {ledgerName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -419,12 +419,12 @@ export class ReportRegistryService {
         id: 'trial-balance',
         title: 'Trail Balance',
         component: TrailBalanceComponent,
-        filenameTemplate: 'Trail_Balance_Report_{GroupName}_{date}',
+        filenameTemplate: 'Trail_Balance_Report_{date}',
         module: 'accounts-report',
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/trial-balance/report',
-        emailSubjectTemplate: 'Trail_Balance Report - Group: {GroupName}',
+        emailSubjectTemplate: 'Trail Balance Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -487,7 +487,7 @@ export class ReportRegistryService {
         apiEndpoint: 'management-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Profit_Loss_Report',
+        emailSubjectTemplate: 'Profit Loss Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -519,7 +519,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Top_N_Customer_Report',
+        emailSubjectTemplate: 'Top N Customer Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -551,7 +551,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Ledger_Report',
+        emailSubjectTemplate: 'Ledger Report - {LedgerName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -583,7 +583,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Ledger_Currenecy_Report',
+        emailSubjectTemplate: 'Ledger Currenecy Report - {LedgerName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -614,7 +614,7 @@ export class ReportRegistryService {
         apiEndpoint: 'management-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Balance_Sheet',
+        emailSubjectTemplate: 'Balance Sheet',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -645,7 +645,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'VAT_Report',
+        emailSubjectTemplate: 'VAT Recivedable Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -676,7 +676,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'VAT_Payable_Report',
+        emailSubjectTemplate: 'VAT Payable Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -707,7 +707,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'VAT_201_Report',
+        emailSubjectTemplate: 'VAT 201 Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -738,7 +738,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'VAT_Summary_Report',
+        emailSubjectTemplate: 'VAT Summary Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -770,7 +770,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Unposted_Voucher_List_Report',
+        emailSubjectTemplate: 'Unposted Voucher List Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -801,7 +801,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Profit_Summary_Report',
+        emailSubjectTemplate: 'Profit Summary Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -896,7 +896,7 @@ export class ReportRegistryService {
             apiEndpoint: 'accounts-report/send-email',
             request: 'POST',
             fetchDataEndpoint: 'accounts/reports/{id}/generate',
-            emailSubjectTemplate: 'GST_Inward_Register',
+            emailSubjectTemplate: 'GST Inward Register',
             emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -927,7 +927,7 @@ export class ReportRegistryService {
             apiEndpoint: 'accounts-report/send-email',
             request: 'POST',
             fetchDataEndpoint: 'accounts/reports/{id}/generate',
-            emailSubjectTemplate: 'GST_Outward_Register',
+            emailSubjectTemplate: 'GST Outward Register',
             emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -987,7 +987,7 @@ export class ReportRegistryService {
             apiEndpoint: 'accounts-report/send-email',
             request: 'POST',
             fetchDataEndpoint: 'accounts/reports/{id}/generate',
-            emailSubjectTemplate: 'Subledger_Outstanding_Report',
+            emailSubjectTemplate: 'Subledger Outstanding Report - {SubledgerName}',
             emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1020,7 +1020,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'House_Summary_Report - Ledger: {GroupName}',
+        emailSubjectTemplate: 'House Summary Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1053,7 +1053,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'BL_Issue_Report',
+        emailSubjectTemplate: 'BL Issue Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1085,7 +1085,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Profitability_Report',
+        emailSubjectTemplate: 'Profitability Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1117,7 +1117,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Container_Wise-KPI_Report',
+        emailSubjectTemplate: 'Container Wise-KPI Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1148,7 +1148,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Do_Issue_List_Report',
+        emailSubjectTemplate: 'Do Issue List Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1180,7 +1180,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Shipment_Summary_Details_Report',
+        emailSubjectTemplate: 'Shipment Summary Details Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1212,7 +1212,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Unbilled_cost_report',
+        emailSubjectTemplate: 'Unbilled Cost Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1243,7 +1243,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Unbilled_Revenue_report',
+        emailSubjectTemplate: 'Unbilled Revenue report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1274,7 +1274,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'House_Job_Loss_Report',
+        emailSubjectTemplate: 'House Job Loss Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1305,7 +1305,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Profit_Summary_Report',
+        emailSubjectTemplate: 'Profit Summary Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1337,7 +1337,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Lost_Customer_Report',
+        emailSubjectTemplate: 'Lost Customer Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1368,7 +1368,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Destination_Report',
+        emailSubjectTemplate: 'Destination Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1399,7 +1399,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Export_Job_Volume_TEU_Report',
+        emailSubjectTemplate: 'Export Job Volume TEU Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1430,7 +1430,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Comprehensive_Management_Report',
+        emailSubjectTemplate: 'Comprehensive Management Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1461,7 +1461,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Tradelane_Profitability_Report',
+        emailSubjectTemplate: 'Tradelane Profitability Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1486,14 +1486,14 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'network-report',
-        title: 'Network Report',
+        title: 'Network',
         component: NetworkReportComponent,
         filenameTemplate: 'Network_report_{date}',
         module: 'operations-report',
         apiEndpoint: 'operations-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Network_report',
+        emailSubjectTemplate: 'Network Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1525,7 +1525,7 @@ export class ReportRegistryService {
         apiEndpoint: 'operations-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Freight_MoM_Growth_report',
+        emailSubjectTemplate: 'Freight MoM Growth report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -1556,7 +1556,7 @@ export class ReportRegistryService {
         apiEndpoint: 'operations-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'cost_revenue_not_booked_report',
+        emailSubjectTemplate: 'Cost Revenue Not Booked Report',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>

@@ -9,6 +9,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { ReportRegistryService, ReportConfig } from './report-registry.service';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 export interface ReportCard {
@@ -124,6 +125,7 @@ export class ReportService {
     private reportRegistry: ReportRegistryService,
     private pdfDownloadService: PdfDownloadService,
     private appSettingsService: AppSettingsService,
+    private globalDateFormatService: GlobalDateFormatService,
     private injector: Injector
   ) {}
 
@@ -560,7 +562,7 @@ export class ReportService {
     let filename = this.reportRegistry.processTemplate(filenameTemplate, data);
 
     // Replace {date} placeholder with current date
-    const currentDate = new Date().toISOString().split('T')[0];
+    const currentDate = this.globalDateFormatService.formatDate(new Date());
     filename = filename.replace('{date}', currentDate);
 
     // Remove any remaining placeholders
@@ -643,9 +645,39 @@ export class ReportService {
       EmailCC: emailData.cc || [],
       EmailBCC: emailData.bcc || [],
       Subject: emailData.subject,
-      Mailbody: emailData.body,
+      Mailbody: this.buildEmailPreviewBody(emailData.body),
       attachments: [pdfFile]
     };
+  }
+
+  buildEmailPreviewBody(body: string): string {
+    if (!body) return '';
+
+    const normalizedHtml = body
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>\s*<p[^>]*>/gi, '\n')
+      .replace(/<\/div>\s*<div[^>]*>/gi, '\n')
+      .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
+      .replace(/<(li)[^>]*>/gi, '- ');
+
+    const htmlWithoutTags = normalizedHtml
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<[^>]+>/g, '');
+
+    return htmlWithoutTags
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/\r/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .split('\n')
+      .map(line => line.trim())
+      .join('\n')
+      .trim();
   }
 
   /**

@@ -496,7 +496,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         EmailCC: emailData.cc || [],
         EmailBCC: emailData.bcc || [],
         Subject: emailData.subject,
-        Mailbody: emailData.body,
+        Mailbody: this.reportService.buildEmailPreviewBody(emailData.body),
         attachments: [attachmentFile]
       };
     } catch (error) {
