@@ -162,7 +162,15 @@
 
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input type="text" class="custom-input-field sm" formControlName="Narration" [attr.maxlength]="LIMITS.header.Narration" placeholder="" />
+                <input
+                  type="text"
+                  class="custom-input-field sm"
+                  formControlName="Narration"
+                  [attr.maxlength]="LIMITS.header.Narration"
+                  appExpandText="Narration"
+                  title="Double-click or press Enter twice to expand"
+                  placeholder=""
+                />
                 <label class="input-label">Narration
                   <i *ngIf="invoiceForm?.get('Narration')?.value" class="fas fa-copy ms-1" style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;" title="Copy Narration" (click)="copyDocumentValue('Narration', 'Narration', $event)"></i>
                 </label>
@@ -505,9 +513,9 @@
             <div style="flex: 1; text-align: right; font-size: 17px; padding-right: 3%;">
               <h3 style="margin: 0; font-weight: 900">{{ currentCompany?.companyName || "Company Name" }}</h3>
               <div style="text-align: right; font-size: 16px; padding-right: 3%;">
-                {{ currentBranch?.addressLine1 || '' }}
+                {{ currentBranch?.addressLine1 || '' }}<ng-container *ngIf="currentCompanyCountryCode === 'in' && currentBranch?.addressLine1 && (currentBranch?.addressLine2 || currentBranch?.branchName || currentBranch?.postalCode || currentBranch?.ZipCode || currentBranch?.phoneNumber || currentBranch?.Phone)">,</ng-container>
                 <span *ngIf="currentBranch?.addressLine2">
-                  , {{ currentBranch?.addressLine2 }}
+                  <ng-container *ngIf="!(currentCompanyCountryCode === 'in' && currentBranch?.addressLine1)">,</ng-container> {{ currentBranch?.addressLine2 }}
                 </span>
               </div>
 

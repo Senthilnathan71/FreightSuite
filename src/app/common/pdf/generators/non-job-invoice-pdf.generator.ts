@@ -64,7 +64,11 @@ function buildHeader(data: InvoicePdfData, isIndiaInvoice: boolean): any {
   const phone = branch.phoneNumber || (branch as any).Phone || '';
   const branchName = String(branch.branchName || branch.BranchName || 'Company Branch').trim();
   const branchPlace = branchName;
-  const addressLine = `${branch.addressLine1 || company.addressLine1 || ''}${branch.addressLine2 ? `, ${branch.addressLine2}` : ''}`;
+  const addressLine1 = branch.addressLine1 || company.addressLine1 || '';
+  const hasMoreAddressDetails = !!(branch.addressLine2 || branchName || postalCode || phone);
+  const addressLine = addressLine1
+    ? `${addressLine1}${isIndiaInvoice && hasMoreAddressDetails ? ',' : ''}${branch.addressLine2 ? `${isIndiaInvoice && hasMoreAddressDetails ? ' ' : ', '}${branch.addressLine2}` : ''}`
+    : branch.addressLine2 || '';
   const branchPostalLine = `${branchPlace}${postalCode ? `, Postal Code : ${postalCode}` : ''}`;
   const companyTaxLabel = isIndiaInvoice ? 'GST No' : 'VAT No';
   const companyTaxValue = isIndiaInvoice

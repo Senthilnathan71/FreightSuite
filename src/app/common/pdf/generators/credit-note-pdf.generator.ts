@@ -46,10 +46,10 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   const isIndiaCompany = isIndianCompany(data);
   const printData = (data as any).creditNotePrintData;
   const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
-  const baseTopMargin = 150;
+  const baseTopMargin = 132;
   const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
-  const extraTopMarginForIndiaInfo = isIndiaCompany ? 24 : 0;
-  const extraTopMarginForGstCode = isIndiaCompany && (printData?.GSTCode || data.companyGstCode) ? 12 : 0;
+  const extraTopMarginForIndiaInfo = isIndiaCompany ? 12 : 0;
+  const extraTopMarginForGstCode = isIndiaCompany && (printData?.GSTCode || data.companyGstCode) ? 6 : 0;
   const billedTo = String(printData?.BilledTo || data.credit?.customerName || '');
   const billingAddress = String(printData?.BillingAddress || data.credit?.customerAddress || '');
   const billedToLines =
@@ -81,13 +81,13 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
       return {
         canvas: [
           // LEFT BORDER
-          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.4 },
           // RIGHT BORDER
-          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.4 },
           // TOP BORDER
-          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.4 },
           // BOTTOM BORDER
-          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.4 }
         ]
       };
     },
@@ -186,20 +186,21 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     });
   }
 
+  const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
+  const postalCode = branch?.postalCode || company?.postalCode;
+  const phone = branch?.phoneNumber || company?.phoneNumber;
   const addressLine1 = branch?.addressLine1 || company?.addressLine1;
   if (addressLine1) {
+    const hasMoreAddressDetails = !!(addressLine2 || cityName || postalCode || phone);
     companyInfoStack.push({
-      text: addressLine1,
+      text: isIndiaCompany && hasMoreAddressDetails ? `${addressLine1},` : addressLine1,
       style: 'addressText',
       alignment: companyAlignment,
       margin: [0, 0, 0, 6]
     });
   }
 
-  const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-  const postalCode = branch?.postalCode || company?.postalCode;
-  const phone = branch?.phoneNumber || company?.phoneNumber;
   const cityLine = buildCreditNoteHeaderDetailLine([
     { value: addressLine2 || '' },
     { value: cityName || '' },
@@ -215,7 +216,9 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     });
   }
 
-  const companyTaxNo = data.companyPan;
+  const companyTaxNo = isIndiaCompany
+    ? data.companyGstCode || (branch as any)?.taxRegistrationNo || (company as any)?.GST_VAT || ''
+    : data.companyPan || (data as any)?.companyVatNo || (company as any)?.Pan || (company as any)?.PAN || '';
   if (companyTaxNo) {
     companyInfoStack.push({
       text: `${isIndiaCompany ? 'GST No' : 'VAT No'} : ${companyTaxNo}`,
@@ -260,7 +263,7 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
       y1: 0,
       x2: PAGE_RIGHT,
       y2: 0,
-      lineWidth: 1.5
+      lineWidth: 0.8
     }],
     margin: [0, 0, 0, 6]
   };
@@ -302,9 +305,6 @@ function getCreditNoteHeaderWidths(
   */
 function buildCreditNoteTitle(data: CreditNotePdfData): any {
   const title = data.creditnoteTitle || 'CREDIT NOTE';
-  const printData = (data as any).creditNotePrintData;
-  const isIndiaCompany = isIndianCompany(data);
-  const gstCode = printData?.GSTCode || data.companyGstCode || '';
 
   return {
     stack: [
@@ -314,18 +314,8 @@ function buildCreditNoteTitle(data: CreditNotePdfData): any {
         alignment: 'center',
         bold: true,
         fontSize: 12,
-        margin: [0, 2, 0, isIndiaCompany && gstCode ? 2 : 7]
-      },
-      ...(isIndiaCompany && gstCode
-        ? [{
-            text: [
-              { text: 'GST Code :', bold: true },
-              { text: ` ${gstCode}` }
-            ],
-            alignment: 'center',
-            margin: [0, 0, 0, 7]
-          }]
-        : [])
+        margin: [0, 2, 0, 7]
+      }
     ]
   };
 }
@@ -455,9 +445,9 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
       type: 'line',
       x1: PAGE_LEFT, y1: 0,
       x2: PAGE_RIGHT, y2: 0,
-      lineWidth: 1.5
+      lineWidth: 0.8
     }],
-    margin: [0, 6, 0, 0]
+    margin: [0, 4, 0, 0]
   };
 
   return {
@@ -627,15 +617,20 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
   }
 
   return {
-    table: {
-      widths: ['50%', '50%'],
-      body: [[
-        { stack: leftStack, margin: [5, 0, 5, 2] },
-        { stack: rightStack, margin: [5, 0, 5, 2] }
-      ]]
-    },
-    layout: 'noBorders',
-    margin: [0, -4, 0, 0]
+    stack: [
+      {
+        table: {
+          widths: ['50%', '50%'],
+          body: [[
+            { stack: leftStack, margin: [5, 0, 5, 2] },
+            { stack: rightStack, margin: [5, 0, 5, 2] }
+          ]]
+        },
+        layout: 'noBorders',
+        margin: [0, 0, 0, 0]
+      }
+    ],
+    margin: [0, 0, 0, 0]
   };
 }
 
@@ -830,12 +825,12 @@ function buildChargesTable(data: CreditNotePdfData): any {
       body: [headerRow, ...dataRows, totalRow]
     },
     layout: {
-      hLineWidth: () => 1,
+      hLineWidth: () => 0.5,
       vLineWidth: (i: number, node: any) => {
         const last = node.table.widths.length;
         // Use the page border as the table's outer left/right edge.
         if (i === 0 || i === last) return 0;
-        return 1;
+        return 0.5;
       },
       hLineColor: () => '#000',
       vLineColor: () => '#000',

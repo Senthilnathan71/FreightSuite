@@ -39,6 +39,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 @Component({
   selector: 'app-voucher-matching-entry',
@@ -58,6 +59,7 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     PreventMultiClickDirective,
     ElementStateGuardDirective,
     FormStateGuardDirective,
+    ExpandTextDirective,
   ],
   templateUrl: './voucher-matching-entry.component.html',
   providers: [

@@ -901,6 +901,11 @@ export class PdfMakeService {
       invoiceTitle?: string;
       isSeaMode?: boolean;
       isVATMode?: boolean;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
       companyVatNo?: string;
       shipmentDetails?: any;
       cargoDetails?: any;
@@ -947,6 +952,11 @@ export class PdfMakeService {
       invoiceTitle?: string;
       isSeaMode?: boolean;
       isVATMode?: boolean;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
       companyVatNo?: string;
       shipmentDetails?: any;
       cargoDetails?: any;

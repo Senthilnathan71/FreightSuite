@@ -23,6 +23,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -37,7 +38,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     NgbDropdownModule,
     DecimalPrecisionDirective,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './currency-exchange-entry.component.html',
   styleUrls: ['./currency-exchange-entry.component.scss'],

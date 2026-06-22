@@ -94,6 +94,7 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
 import { InterBranchTabComponent } from '../../inter-branch/inter-branch-tab.component';
 import { InterBranchService } from '../../inter-branch/inter-branch.service';
 import { TdsHelperService } from '../../services/tds-helper.service';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 /**
  * Payment Entry Component
@@ -126,6 +127,7 @@ import { TdsHelperService } from '../../services/tds-helper.service';
     ElementStateGuardDirective,
     FormStateGuardDirective,
     InterBranchTabComponent,
+    ExpandTextDirective,
   ],
   templateUrl: './payment-entry.component.html',
   styleUrl: './payment-entry.component.scss',

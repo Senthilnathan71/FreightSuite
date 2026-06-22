@@ -167,6 +167,17 @@
                 </tbody>
             </table>
         </div>
+        <div style="margin-top: 6px; font-size: 14px;" *ngIf="getOutstandingAmountInWordsLines().length">
+            <div style="display: flex; align-items: flex-start;">
+                <strong style="width: 140px; flex: 0 0 140px;">Amount in words</strong>
+                <div style="width: 10px; flex: 0 0 10px;">:</div>
+                <div style="flex: 1;">
+                    <div *ngFor="let amountInWords of getOutstandingAmountInWordsLines()">
+                        {{ amountInWords }}
+                    </div>
+                </div>
+            </div>
+        </div>
         <div>
             <!-- <div class="pt-2">
                 Note:
@@ -178,7 +189,7 @@
             </div> -->
         </div>
 
-       
+
     </div>
 
     <div class="pt-2">

@@ -28,84 +28,7 @@
             position: relative;
           ">
       <!-- Company Info -->
-      <div style="
-              display: flex;
-              flex-direction: column;
-              margin-bottom: 0;
-              width: 100%;
-              padding-top: 5px;
-              padding-left: 20px;
-            ">
-        <div style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            flex-wrap: wrap;
-                          ">
-          <div style="
-                              display: flex;
-                              flex-direction: column;
-                            ">
-            <!-- Print logo -->
-            <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid"
-              style="width:auto; height: 110px" />
-          </div>
-          <div style="
-                              flex: 1;
-                              text-align:right;
-                              font-size: 17px;
-                              padding-right: 3%;
-                            ">
-            <h3 style="margin: 0; font-weight: 900">
-              {{ currentCompany?.companyName || "Company Name" }}
-            </h3>
-            <!-- <h5 style="margin: 0; font-weight: 900">
-                              {{ currentBranch?.branchName || "Company Branch" }}
-                            </h5> -->
-            <p style="margin: 0px 0; font-size: 16px">
-              {{ currentBranch?.addressLine1 || "" }}
-            </p>
-            <p style="margin: 0px 0; font-size: 16px">
-              <ng-container *ngIf="currentBranch?.addressLine2 as addr">
-                {{ addr }},
-              </ng-container>
-              <!-- {{
-                                currentBranch?.cityMaster?.cityName ||
-                                  currentCompany?.City ||
-                                  ""
-                              }} -->
-              {{ currentBranch?.branchName || "Company Branch" }}
-
-              <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
-                    - {{ code }}
-                  </ng-container> -->
-              <ng-container *ngIf="currentBranch?.branchCode as code">
-                - {{ code }}
-              </ng-container>
-
-            </p>
-            <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
-              style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-              <span>Postal Code</span>
-              <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
-            </div>
-
-            <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
-              style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-              <span>Phone No</span>
-              <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
-            </div>
-
-            <div style="display: flex;justify-content: right;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-              <span *ngIf="currentCompanyCountryCode?.toLowerCase() === 'in'">GST No</span>
-              <span *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'in'">VAT No</span>
-              <span>: {{ currentCompany?.Pan || '' }}</span>
-            </div>
-
-          </div>
-
-        </div>
-      </div>
+      <app-print-header [showTaxRegistration]="true"></app-print-header>
 
       <!-- Invoice Title -->
       <div style="
@@ -116,12 +39,12 @@
         <h3 style="margin: 2px 0; font-weight: bolder; font-size: 20px">
           <strong>{{ vendorCreditNoteData?.invoiceTitle }}</strong>
         </h3>
-        <p style="font-size: 12px; margin: 2px 0" *ngIf="currentCompanyCountryCode === 'in'">
+        <!-- <p style="font-size: 12px; margin: 2px 0" *ngIf="currentCompanyCountryCode === 'in'">
           <strong>GST Code :</strong>
           {{
           vendorCreditNoteData?.GSTCode
           }}
-        </p>
+        </p> -->
       </div>
 
       <!-- Billing Info -->
@@ -887,11 +810,14 @@
       </div>
 
       <!-- Amount in words -->
-      <div style="display: flex;margin-top: 8px;font-size: 16px;padding: 0 20px;">
-        <p style="font-weight: bolder;width: 165px;margin: 0;font-weight: bolder;">
+      <div style="display: flex; align-items: flex-start; margin-top: 8px; font-size: 16px; padding: 0 20px;">
+        <p style="font-weight: bolder; width: 165px; margin: 0; font-weight: bolder; white-space: nowrap;">
           <strong>Amount In Words</strong>
         </p>
-        <p style="margin: 0">: {{ vendorCreditNoteData?.AmountInWords }}</p>
+        <p style="width: 12px; margin: 0; text-align: center;">:</p>
+        <p style="flex: 1; min-width: 0; margin: 0; overflow-wrap: anywhere;">
+          {{ vendorCreditNoteData?.AmountInWords }}
+        </p>
       </div>
 
       <!--Container No and type-->
@@ -913,10 +839,11 @@
 
 
       <!-- Remarks -->
-      <div style="display: flex;margin-top: 8px;padding: 0 20px;font-size: 13px">
-        <p style="font-weight: bolder; width: 165px; margin: 0"><strong>Remarks</strong></p>
-        <p style="margin: 0">
-          : {{ vendorCreditNoteData?.Remarks }}
+      <div style="display: flex; align-items: flex-start; margin-top: 8px; padding: 0 20px; font-size: 13px;">
+        <p style="font-weight: bolder; width: 165px; margin: 0; white-space: nowrap;"><strong>Remarks</strong></p>
+        <p style="width: 12px; margin: 0; text-align: center;">:</p>
+        <p style="flex: 1; min-width: 0; margin: 0; line-height: 1.35; overflow-wrap: anywhere;">
+          {{ vendorCreditNoteData?.Remarks }}
         </p>
       </div>
 

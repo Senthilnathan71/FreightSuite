@@ -411,7 +411,9 @@
               <!-- 13. Remarks -->
               <aside class="col-md-3">
                 <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm" formControlName="Remarks" [attr.maxlength]="LIMITS.header.Remarks" placeholder="" />
+                  <input type="text" class="custom-input-field sm" formControlName="Remarks"
+                    [attr.maxlength]="LIMITS.header.Remarks" placeholder="" appExpandText="Remarks"
+                    title="Double-click to expand" />
                   <label class="input-label">Remarks
                     <i *ngIf="invoiceForm?.get('Remarks')?.value" class="fas fa-copy ms-1"
                       style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
@@ -1060,92 +1062,7 @@
             position: relative;
           ">
             <!-- Company Info -->
-            <div style="
-              display: flex;
-              flex-direction: column;
-              margin-bottom: 0;
-              width: 100%;
-              padding-top: 5px;
-              padding-left: 20px;
-            ">
-              <div style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            flex-wrap: wrap;
-                          ">
-                <div style="
-                              display: flex;
-                              flex-direction: column;
-                            ">
-                  <!-- Print logo -->
-                  <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid"
-                    style="width:auto; height: 110px" />
-                </div>
-                <div style="
-                              flex: 1;
-                              text-align:right;
-                              font-size: 17px;
-                              padding-right: 3%;
-                            ">
-                  <h3 style="margin: 0; font-weight: 900">
-                    {{ currentCompany?.companyName || "Company Name" }}
-                  </h3>
-                  <!-- <h5 style="margin: 0; font-weight: 900">
-                              {{ currentBranch?.branchName || "Company Branch" }}
-                            </h5> -->
-                  <p style="margin: 0px 0; font-size: 16px">
-                    {{ currentBranch?.addressLine1 || "" }}
-                  </p>
-                  <p style="margin: 0px 0; font-size: 16px">
-                    <ng-container *ngIf="currentBranch?.addressLine2 as addr">
-                      {{ addr }},
-                    </ng-container>
-                    <!-- {{
-                                currentBranch?.cityMaster?.cityName ||
-                                  currentCompany?.City ||
-                                  ""
-                              }} -->
-                    {{ currentBranch?.branchName || "Company Branch" }}
-
-                    <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
-                    - {{ code }}
-                  </ng-container> -->
-                    <ng-container *ngIf="currentCompanyCountryCode !== 'in' && currentBranch?.branchCode as code">
-                      - {{ code }}
-                    </ng-container>
-
-                  </p>
-                  <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
-                    style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-                    <span>Postal Code</span>
-                    <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
-                  </div>
-
-                  <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
-                    style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-                    <span>Phone No</span>
-                    <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
-                  </div>
-
-                   <div style="display: flex; justify-content: right; align-items: center; gap: 6px; width: 100%; font-size: 16px;">
-                  
-                  <span>
-                    {{ currentCompanyCountryCode === 'in' ? 'GST No' : 'VAT No' }}
-                  </span>
-
-                  <span>
-                    : {{ currentCompanyCountryCode === 'in'
-                      ? (currentBranch?.taxRegistrationNo || '')
-                      : (currentCompany?.Pan || '') }}
-                  </span>
-
-                </div>
-
-                </div>
-
-              </div>
-            </div>
+            <app-print-header [showTaxRegistration]="true"></app-print-header>
 
             <!-- Invoice Title -->
             <div style="
@@ -2460,85 +2377,7 @@
             position: relative;
           ">
           <!-- Company Info -->
-          <div style="
-              display: flex;
-              flex-direction: column;
-              margin-bottom: 0;
-              width: 100%;
-              padding-top: 5px;
-              padding-left: 20px;
-            ">
-            <div style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            flex-wrap: wrap;
-                          ">
-              <div style="
-                              display: flex;
-                              flex-direction: column;
-                            ">
-                <!-- Print logo -->
-                <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid"
-                  style="width:auto; height: 110px" />
-              </div>
-              <div style="
-                              flex: 1;
-                              text-align:right;
-                              font-size: 17px;
-                              padding-right: 3%;
-                            ">
-                <h3 style="margin: 0; font-weight: 900">
-                  {{ currentCompany?.companyName || "Company Name" }}
-                </h3>
-                <!-- <h5 style="margin: 0; font-weight: 900">
-                              {{ currentBranch?.branchName || "Company Branch" }}
-                            </h5> -->
-                <p style="margin: 0px 0; font-size: 16px">
-                  {{ currentBranch?.addressLine1 || "" }}
-                </p>
-                <p style="margin: 0px 0; font-size: 16px">
-                  <ng-container *ngIf="currentBranch?.addressLine2 as addr">
-                    {{ addr }},
-                  </ng-container>
-                  <!-- {{
-                                currentBranch?.cityMaster?.cityName ||
-                                  currentCompany?.City ||
-                                  ""
-                              }} -->
-                  {{ currentBranch?.branchName || "Company Branch" }}
-
-                  <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
-                    - {{ code }}
-                  </ng-container> -->
-                  <ng-container *ngIf="currentCompanyCountryCode !== 'in' && currentBranch?.branchCode as code">
-                    - {{ code }}
-                  </ng-container>
-
-                </p>
-                <div *ngIf="currentCompanyCountryCode === 'in' || currentBranch?.phoneNumber || currentBranch?.Phone"
-                  style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-                  <span>Phone No</span>
-                  <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</span>
-                </div>
-
-                <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
-                  style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-                  <span>Postal Code</span>
-                  <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
-                </div>
-
-                <div
-                  style="display: flex;justify-content: right;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-                  <span *ngIf="currentCompanyCountryCode === 'in'">GST No</span>
-                  <span *ngIf="currentCompanyCountryCode !== 'in'">VAT No</span>
-                  <span>: {{ currentCompany?.Pan || '' }}</span>
-                </div>
-
-              </div>
-
-            </div>
-          </div>
+          <app-print-header [showTaxRegistration]="true"></app-print-header>
 
           <!-- Invoice Title -->
           <div style="

@@ -55,6 +55,7 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 
@@ -80,7 +81,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     DecimalPrecisionDirective,
     PreventMultiClickDirective,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './vendor-invoice-entry.component.html',
   styleUrls: ['./vendor-invoice-entry.component.scss'],

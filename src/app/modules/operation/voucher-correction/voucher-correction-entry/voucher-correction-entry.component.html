@@ -127,7 +127,9 @@
                         <aside class="col-md-3" *ngIf="!isCreditNote && !isInvoice">
                             <div class="custom-form-group">
                                 <input type="text" id="Narration" formControlName="Narration" placeholder=""
-                                    class="custom-input-field sm highlight-field" />
+                                    class="custom-input-field sm highlight-field"
+                                    appExpandText="Narration"
+                                    title="Double-click or press Enter twice to expand" />
                                 <label for="Narration" class="input-label">Narration
                                     <i
                                         *ngIf="voucherForm?.get('Narration')?.value"
@@ -493,8 +495,15 @@
 
                         <aside class="col-md-3" *ngIf="!isJournalVoucher">
                             <div class="custom-form-group">
-                                <textarea id="Remarks" placeholder="" rows="1" class="custom-input-field sm highlight-field"
-                                    formControlName="Remarks"></textarea>
+                                <textarea
+                                    id="Remarks"
+                                    placeholder=""
+                                    rows="1"
+                                    class="custom-input-field sm highlight-field"
+                                    formControlName="Remarks"
+                                    appExpandText="Remarks"
+                                    title="Double-click to expand"
+                                ></textarea>
                                 <label for="Remarks" class="input-label">Remarks
                                     <i
                                         *ngIf="voucherForm?.get('Remarks')?.value"
@@ -666,7 +675,9 @@
                                                     }
                                                 <td class="dofi-min-w-180">
                                                 <input type="text" formControlName="Narration"
-                                                    class="custom-input-field sm highlight-field" style="width: 300px" />
+                                                    class="custom-input-field sm highlight-field" style="width: 300px"
+                                                    appExpandText="Narration"
+                                                    title="Double-click or press Enter twice to expand" />
                                             </td>
                                                 <td>
                                                     <ng-select [items]="hssacList" bindLabel="HSSACCode"
@@ -772,7 +783,9 @@
                                                 </td>
                                                 <td class="dofi-min-w-180">
                                                 <input type="text" formControlName="Narration"
-                                                    class="custom-input-field sm highlight-field" style="width: 300px" />
+                                                    class="custom-input-field sm highlight-field" style="width: 300px"
+                                                    appExpandText="Narration"
+                                                    title="Double-click or press Enter twice to expand" />
                                             </td>
                                                 <td style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('DrCr')?.value || '-' }}</span>

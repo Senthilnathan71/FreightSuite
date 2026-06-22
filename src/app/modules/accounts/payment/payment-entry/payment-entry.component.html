@@ -436,6 +436,8 @@
                     class="custom-input-field sm"
                     formControlName="Narration"
                     [attr.maxlength]="LIMITS.header.Narration"
+                    appExpandText="Narration"
+                    title="Double-click or press Enter twice to expand"
                     (input)="onHeaderNarrationChange()"
                   />
                   <label
@@ -722,6 +724,8 @@
                     class="custom-input-field sm"
                     formControlName="Remarks"
                     [attr.maxlength]="LIMITS.header.Remarks"
+                    appExpandText="Remarks"
+                    title="Double-click or press Enter twice to expand"
                   />
                   <label
                     for="text-input"
@@ -1196,6 +1200,8 @@
                     class="custom-input-field sm"
                     style="width: 300px"
                     [attr.maxlength]="LIMITS.detail.Narration"
+                    appExpandText="Narration"
+                    title="Double-click or press Enter twice to expand"
                   />
                 </td>
                 <td class="dofi-min-w-100">

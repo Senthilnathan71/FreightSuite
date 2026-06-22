@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService, PrintSettings } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -12,6 +12,8 @@ import { LogoService } from 'src/app/core/services/logo.service';
   styles: ``
 })
 export class PrintHeaderComponent {
+  @Input() showTaxRegistration = false;
+
   userData: any;
   currentCompany: any;
   currentBranch: any;
@@ -48,6 +50,28 @@ export class PrintHeaderComponent {
       : this.logoPosition === 'center'
         ? 'center'
         : 'flex-end';
+  }
+
+  get companyCountryCode(): string {
+    return String(
+      this.currentBranch?.countryMaster?.countryCode ||
+      this.currentBranch?.countryCode ||
+      this.currentCompany?.countryMaster?.countryCode ||
+      this.currentCompany?.countryCode ||
+      ''
+    ).toLowerCase();
+  }
+
+  get taxRegistrationLabel(): string {
+    return this.companyCountryCode === 'in' ? 'GST No' : 'VAT No';
+  }
+
+  get taxRegistrationValue(): string {
+    return String(
+      this.companyCountryCode === 'in'
+        ? (this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || this.currentCompany?.Pan || this.currentCompany?.PAN || '')
+        : (this.currentCompany?.Pan || this.currentCompany?.PAN || this.currentCompany?.GST_VAT || this.currentBranch?.taxRegistrationNo || '')
+    );
   }
 
   constructor(

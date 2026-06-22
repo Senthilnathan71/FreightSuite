@@ -62,20 +62,24 @@
     </div>
 
     <div style="font-size:13px;">
-      {{ currentBranch?.addressLine1 || '' }}
+      {{ currentBranch?.addressLine1 || '' }}<ng-container *ngIf="companyCountryCode === 'in' && currentBranch?.addressLine1 && (currentBranch?.addressLine2 || currentBranch?.cityMaster?.cityName || currentBranch?.postalCode || currentBranch?.phoneNumber)">,</ng-container>
     </div>
 
     <div style="font-size:13px;">
       {{ currentBranch?.addressLine2 || '' }}
       <ng-container *ngIf="currentBranch?.cityMaster?.cityName">
-        , {{ currentBranch.cityMaster.cityName }}
+        <ng-container *ngIf="currentBranch?.addressLine2">, </ng-container>{{ currentBranch.cityMaster.cityName }}
       </ng-container>
       <ng-container *ngIf="currentBranch?.postalCode">
-        , <strong>Postal Code :</strong> {{ currentBranch.postalCode }}
+        <ng-container *ngIf="currentBranch?.addressLine2 || currentBranch?.cityMaster?.cityName">, </ng-container><strong>Postal Code :</strong> {{ currentBranch.postalCode }}
       </ng-container>
       <ng-container *ngIf="currentBranch?.phoneNumber">
-        , <strong>Ph.no :</strong> {{ currentBranch.phoneNumber }}
+        <ng-container *ngIf="currentBranch?.addressLine2 || currentBranch?.cityMaster?.cityName || currentBranch?.postalCode">, </ng-container><strong>Ph.no :</strong> {{ currentBranch.phoneNumber }}
       </ng-container>
+    </div>
+
+    <div *ngIf="showTaxRegistration" style="font-size:13px;">
+      <strong>{{ taxRegistrationLabel }} :</strong> {{ taxRegistrationValue }}
     </div>
   </div>
 </ng-template>
