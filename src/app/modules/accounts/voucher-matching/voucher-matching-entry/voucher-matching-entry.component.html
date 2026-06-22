@@ -590,6 +590,19 @@
                             (click)="copyValue(s.get('VoucherNumber')?.value, 'Voucher No', $event)"
                           ></i>
                         </ng-template>
+                        <!-- Narration: click to open the popover, then select the text with the mouse to copy -->
+                        <i
+                          *ngIf="s.get('Narration')?.getRawValue()"
+                          class="fas fa-comment-dots ms-1"
+                          style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                          title="View / copy narration"
+                          [ngbPopover]="s.get('Narration')?.getRawValue()"
+                          popoverTitle="Narration"
+                          [autoClose]="'outside'"
+                          container="body"
+                          placement="top-start"
+                          popoverClass="narration-popover"
+                        ></i>
                       </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType"
                           class="custom-input-field sm" /></td>
@@ -781,6 +794,19 @@
                             (click)="copyValue(o.get('VoucherNumber')?.value, 'Voucher No', $event)"
                           ></i>
                         </ng-template>
+                        <!-- Narration: click to open the popover, then select the text with the mouse to copy -->
+                        <i
+                          *ngIf="o.get('Narration')?.getRawValue()"
+                          class="fas fa-comment-dots ms-1"
+                          style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                          title="View / copy narration"
+                          [ngbPopover]="o.get('Narration')?.getRawValue()"
+                          popoverTitle="Narration"
+                          [autoClose]="'outside'"
+                          container="body"
+                          placement="top-start"
+                          popoverClass="narration-popover"
+                        ></i>
                       </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
                       <td [style.width]="isPosted ? '8%' : '6%'"><input type="text" [value]="(o.getRawValue().VoucherDate | formatDate)"

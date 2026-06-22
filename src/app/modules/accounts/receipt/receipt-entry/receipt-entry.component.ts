@@ -28,6 +28,7 @@ import {
   NgbDropdownModule,
   NgbModal,
   NgbTooltipModule,
+  NgbPopoverModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -122,6 +123,7 @@ import { InterBranchService } from '../../inter-branch/inter-branch.service';
     NgxSpinnerModule,
     RouterModule,
     NgbTooltipModule,
+    NgbPopoverModule,
     ElementStateGuardDirective,
     FormStateGuardDirective,
     ExpandTextDirective,
@@ -1282,6 +1284,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         ],
         isTicked: [false],
         isLimitErrorShown: [false],
+        // Display-only: party-row narration shown as a hover popover on the Voucher No. cell
+        narration: [{ value: tx.Narration ?? '', disabled: true }],
       });
 
       [
@@ -3136,6 +3140,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         ],
         isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0 : false],
         isLimitErrorShown: [false],
+        // Display-only: party-row narration shown as a hover popover on the Voucher No. cell
+        narration: [{ value: tx.Narration ?? '', disabled: true }],
       });
 
       // Disable fields

@@ -95,6 +95,7 @@ export interface OutstandingInvoice {
   HAWB?: string;
   MAWB?: string;
   ChargeDescription?: string;
+  Narration?: string;
 
   // UI-only fields
   selected?: boolean;

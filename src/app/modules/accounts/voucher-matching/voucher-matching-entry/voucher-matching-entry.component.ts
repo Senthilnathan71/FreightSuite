@@ -2,7 +2,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -51,6 +51,7 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     RouterLink,
     NgbDatepickerModule,
     NgbDropdownModule,
+    NgbPopoverModule,
     FeatherModule,
     NgSelectModule,
     CustomDatePipe,
@@ -553,6 +554,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       }],
       isTicked: [{ value: isBalanceZero ?? false, disabled: readOnly }],
       MatchingType: [item?.MatchingType ?? MatchingType],
+      // Display-only: party-row narration shown as a hover tooltip on the Voucher No. cell
+      Narration: [{ value: item?.Narration ?? '', disabled: true }],
     });
   }
 

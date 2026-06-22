@@ -1642,6 +1642,19 @@
                       <span class="fw-bold px-2">{{ v.get("voucherNo")?.value }}</span>
                     </ng-template>
                   </ng-container>
+                  <!-- Narration: click to open the popover, then select the text with the mouse to copy -->
+                  <i
+                    *ngIf="v.get('narration')?.getRawValue()"
+                    class="fas fa-comment-dots ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="View / copy narration"
+                    [ngbPopover]="v.get('narration')?.getRawValue()"
+                    popoverTitle="Narration"
+                    [autoClose]="'outside'"
+                    container="body"
+                    placement="top-start"
+                    popoverClass="narration-popover"
+                  ></i>
                 </div>
               </td>
 
