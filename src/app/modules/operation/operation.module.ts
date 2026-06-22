@@ -6,6 +6,7 @@ import { OperationRoutes } from './operation-routing.module';
 import { OperationService } from './operation.service';
 import { TaxCalculationService } from './services/tax-calculation.service';
 import { MasterDocumentUploadComponent } from './master-document-upload/master-document-upload.component';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 
 @NgModule({
@@ -14,7 +15,8 @@ import { MasterDocumentUploadComponent } from './master-document-upload/master-d
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterModule.forChild(OperationRoutes)
+    RouterModule.forChild(OperationRoutes),
+    SearchableDropdown
   ],
   providers: [OperationService, TaxCalculationService]
 })

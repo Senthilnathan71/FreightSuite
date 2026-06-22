@@ -179,6 +179,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
+  containerTypeLookupConfig = DROPDOWN_CONFIGS.CONTAINER_TYPE;
   profitSummary: any;
   customerWiseSummary: any;
   chargeWiseSummary: any[] = []
@@ -191,6 +192,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   voyageList: any[] = [];
   containerTypeList: any[] = [];
   currencyList: any[] = [];
+  // Staged house-level data from a Bill of Lading upload; on Save the backend
+  // creates one linked House Job from it. Null when not uploading.
+  billOfLadingHouseJob: any = null;
   filteredPorts: any[] = [];
   filteredPOO: any[] = [];
   filteredPOL: any[] = [];
@@ -830,6 +834,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         HBLNo: shipment.HBLNo,
       }));
     formData['shipmentList'] = [...allShipments];
+    // On create, the backend uses this to also create one linked House Job from the BoL.
+    formData['billOfLadingHouseJob'] = this.billOfLadingHouseJob || null;
 
     if (this.isEditMode && this.masterJobSid) {
       formData.MasterJobSid = this.masterJobSid;
@@ -1026,6 +1032,16 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       centered: true,
     });
 
+    // Provide master data + context so the modal can resolve Department/Ports/Customer.
+    modalRef.componentInstance.mode = 'master';
+    modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.departmentList = this.departments || [];
+    modalRef.componentInstance.customerList = this.customerList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.defaultDepartmentSid =
+      this.masterJobForm.get('DepartmentMasterSid')?.value || this.selectedDepartment?.DepartmentMasterSid || null;
+    modalRef.componentInstance.companyMasterSid = this.currentCompany?.CompanyMasterSid || null;
+
     modalRef.result.then(
       (billOfLadingData: any) => {
         if (billOfLadingData) {
@@ -1037,21 +1053,28 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   private applyBillOfLadingToMasterJob(data: any): void {
-    const polPort = this.findPortFromBillOfLadingValue(data?.portOfLoading);
-    const podPort = this.findPortFromBillOfLadingValue(data?.portOfDischarge);
-    const missingPorts: string[] = [];
+    // Set the Department first (from the modal). onDeptChange rebuilds the route/port
+    // filters and clears route selections, so it MUST run before the ports are patched.
+    if (data?.departmentMasterSid && data?.department) {
+      const currentDept = this.masterJobForm.get('DepartmentMasterSid')?.value;
+      if (currentDept !== data.departmentMasterSid) {
+        this.masterJobForm.get('DepartmentMasterSid')?.setValue(data.departmentMasterSid);
+        this.onDeptChange(data.department);
+      }
+    }
 
-    if (data?.portOfLoading && !polPort) {
-      missingPorts.push(`Port of Loading "${data.portOfLoading}"`);
-    }
-    if (data?.portOfDischarge && !podPort) {
-      missingPorts.push(`Port of Discharge "${data.portOfDischarge}"`);
-    }
+    // The Bill of Lading modal already resolves the ports against the dropdown
+    // (data.resolvedPOL / data.resolvedPOD). Fall back to text matching only when
+    // the modal did not provide a resolved port.
+    const polPort = data?.resolvedPOL || this.findPortFromBillOfLadingValue(data?.portOfLoading);
+    const podPort = data?.resolvedPOD || this.findPortFromBillOfLadingValue(data?.portOfDischarge);
+    // Place of Receipt -> POO (origin), Place of Delivery -> FPD (final destination).
+    const porPort = data?.resolvedPOR || this.findPortFromBillOfLadingValue(data?.placeOfReceipt);
+    const podelPort = data?.resolvedPODel || this.findPortFromBillOfLadingValue(data?.placeOfDelivery);
 
-    if (missingPorts.length) {
-      this.toastr.error(`${missingPorts.join(', ')} not found in port dropdown. Please correct the PDF extracted value or select the port manually.`);
-      return;
-    }
+    // Vessel / Voyage from the PDF (e.g. "X-PRESS EUPHRATES / 22015W"). The names
+    // are free text, so enable free-text mode so they display in the dropdowns.
+    const vessel = this.splitBillOfLadingVesselVoyage(data?.vesselVoyage);
 
     const patchValue: any = {
       MBLNo: data?.blNumber || this.masterJobForm.get('MBLNo')?.value,
@@ -1063,25 +1086,153 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       NoOfPkg: this.parseBillNumber(data?.numberOfPackages) || this.masterJobForm.get('NoOfPkg')?.value,
     };
 
+    if (vessel.vesselName) {
+      patchValue.isVesselFreeText = true;
+      patchValue.VesselName = vessel.vesselName;
+    }
+    if (vessel.voyageNo) {
+      patchValue.isVoyageFreeText = true;
+      patchValue.VoyageNo = vessel.voyageNo;
+    }
+
+    // POO (Place of Receipt) -> falls back to POL when not separately resolved.
+    const poo = porPort || polPort;
+    if (poo) {
+      patchValue.POO = poo.PortMasterSid;
+    }
     if (polPort) {
       patchValue.POL = polPort.PortMasterSid;
     }
     if (podPort) {
       patchValue.POD = podPort.PortMasterSid;
-      patchValue.FPD = podPort.PortMasterSid;
+    }
+    // FPD (Place of Delivery) -> falls back to POD when not separately resolved.
+    const fpd = podelPort || podPort;
+    if (fpd) {
+      patchValue.FPD = fpd.PortMasterSid;
     }
 
     this.masterJobForm.patchValue(patchValue);
 
+    // POO has no dedicated change handler (value binding only). POL/POD handlers
+    // drive the route/vessel filtering; FPD is refreshed via onRouteChange().
     if (polPort) {
       this.handlePOLChange(polPort);
     }
     if (podPort) {
       this.handlePODChange(podPort);
     }
+    if (fpd) {
+      this.onRouteChange();
+    }
+
+    // The container from the Bill of Lading is a MASTER-level entity, so add it
+    // to the Container tab (the house job later allocates its cargo to it).
+    this.addContainerFromBillOfLading(data);
+
+    // Stage the house-level data so that, on Save, the backend also creates ONE
+    // linked House Job (shipper/consignee/notify/cargo) under this master.
+    this.stageBillOfLadingHouseJob(data, vessel);
 
     this.masterJobForm.markAsDirty();
-    this.toastr.success('Bill of Lading data loaded. Review the fields and click Save to update the Master Job.');
+    this.toastr.success('Bill of Lading loaded. On Save, the Master Job, its Container and a linked House Job will be created.');
+  }
+
+  /** Splits "VESSEL NAME / VOYAGE" into its parts. */
+  private splitBillOfLadingVesselVoyage(value: any): { vesselName: string; voyageNo: string } {
+    const text = String(value || '').trim();
+    if (!text) {
+      return { vesselName: '', voyageNo: '' };
+    }
+    const parts = text.split('/');
+    return {
+      vesselName: (parts[0] || '').trim(),
+      voyageNo: (parts.slice(1).join('/') || '').trim(),
+    };
+  }
+
+  /**
+   * Captures the house-level fields from the Bill of Lading so the backend can
+   * create one linked House Job when the Master Job is saved. Only populated for
+   * a NEW master job (the upload flow); cleared after a successful save.
+   */
+  private stageBillOfLadingHouseJob(data: any, vessel: { vesselName: string; voyageNo: string }): void {
+    if (!data?.customerMasterSid) {
+      this.billOfLadingHouseJob = null;
+      return;
+    }
+
+    this.billOfLadingHouseJob = {
+      CustomerMasterSid: data.customerMasterSid,
+      DepartmentMasterSid: data.departmentMasterSid || this.masterJobForm.get('DepartmentMasterSid')?.value,
+      HBLNo: data.blNumber || '',
+      HBLDate: this.parseBillOfLadingDate(data.dateOfIssue),
+      ShipperName: data.shipper || '',
+      ShipperAddress: data.shipperAddress || '',
+      ConsigneeName: data.consignee || '',
+      ConsigneeAddress: data.consigneeAddress || '',
+      Notify: data.notifyParty || '',
+      FreightTerms: data.freightTerms || '',
+      VesselName: vessel.vesselName || '',
+      VoyageNo: vessel.voyageNo || '',
+      POL: data.resolvedPOL?.PortCode || '',
+      POD: data.resolvedPOD?.PortCode || '',
+      FPD: (data.resolvedPODel || data.resolvedPOD)?.PortCode || '',
+      POO: (data.resolvedPOR || data.resolvedPOL)?.PortCode || '',
+      ContainerNumber: this.extractBolContainerNumber(data.containerDetails),
+      ContainerType: data.containerTypeMasterSid || null,
+      cargo: {
+        CommodityDescription: data.cargoDescription || data.cargoDetails || '',
+        NoOfPackage: this.parseBillNumber(data.numberOfPackages) || 0,
+        GrossWeight: this.parseBillNumber(data.grossWeight) || 0,
+        Volume: this.parseBillNumber(data.measurement) || 0,
+      },
+    };
+  }
+
+  /**
+   * Adds a container row to the Container tab from the Bill of Lading. Only the
+   * container number and seal are parseable from the PDF; the user must still
+   * choose the Container Type (required master-data) before saving.
+   */
+  private addContainerFromBillOfLading(data: any): void {
+    const containerNumber = this.extractBolContainerNumber(data?.containerDetails);
+    if (!containerNumber) {
+      return;
+    }
+
+    const exists = (this.masterJobContainers?.getRawValue() || []).some(
+      (c: any) => this.normalizeBillOfLadingLookupText(c?.ContainerNumber) === this.normalizeBillOfLadingLookupText(containerNumber)
+    );
+    if (exists) {
+      return;
+    }
+
+    const containerType = data?.containerTypeMasterSid || null;
+    this.addContainer({
+      ContainerNumber: containerNumber,
+      ContainerType: containerType,
+      LineSeal: this.extractBolSealNumber(data?.containerDetails),
+      CommodityDescription: data?.cargoDescription || data?.cargoDetails || '',
+      GrossWeight: this.parseBillNumber(data?.grossWeight) || 0,
+      NoOfPkg: this.parseBillNumber(data?.numberOfPackages) || 0,
+      Volume: this.parseBillNumber(data?.measurement) || 0,
+    });
+
+    this.toastr.info(containerType
+      ? 'Container added to the Container tab from the Bill of Lading.'
+      : 'Container added to the Container tab. Please select its Container Type before saving.');
+  }
+
+  private extractBolContainerNumber(value: any): string {
+    const match = String(value || '').toUpperCase().replace(/\s+/g, '').match(/[A-Z]{4}\d{7}/);
+    return match ? match[0] : '';
+  }
+
+  private extractBolSealNumber(value: any): string {
+    const withoutContainer = String(value || '').toUpperCase().replace(/[A-Z]{4}\s*\d{7}/, ' ');
+    const match = withoutContainer.match(/\b\d{5,10}\b/);
+    return match ? match[0] : '';
   }
 
   private normalizeBillOfLadingFreightTerms(value: any): string {
@@ -3229,7 +3380,9 @@ onETDDateSelect(): void {
         }
       });
     formData['shipmentList'] = [...allShipments];
-   
+    // On create, the backend uses this to also create one linked House Job from the BoL.
+    formData['billOfLadingHouseJob'] = this.billOfLadingHouseJob || null;
+
     // Debug to check the payload
     this.isSaving = true;
     this.spinner.show();
@@ -3269,6 +3422,7 @@ onETDDateSelect(): void {
           this.spinner.hide();
           if (response.status) {
             this.toastr.success('Master Job created successfully');
+            this.billOfLadingHouseJob = null;
             this.resetDirtyState();
 
             // ✅ CORRECT PATH: response.data.newMasterJob.MasterJobSid

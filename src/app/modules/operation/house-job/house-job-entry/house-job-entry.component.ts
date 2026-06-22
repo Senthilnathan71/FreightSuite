@@ -4708,6 +4708,28 @@ usesDimensionalCargoFields(): boolean {
   this.b['CustomerAddress']?.setValue(customer.Address);
   this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
   this.handleImportExport();
+
+  // Auto-load the customer's branches and auto-select the branch (then patch its
+  // address). Runs for both manual selection and Bill of Lading upload.
+  this.loadAndSelectCustomerBranch(customer.CustomerMasterSid, customer.CustomerBranchSid);
+}
+
+/** Loads the branches for a customer and auto-selects the matching (or first) branch. */
+private loadAndSelectCustomerBranch(customerMasterSid: number, preselectBranchSid?: number): void {
+  if (!customerMasterSid) {
+    return;
+  }
+  this.operationService.getCustomerBranchByCustomer(customerMasterSid).subscribe((resp: any) => {
+    if (!resp?.status) {
+      return;
+    }
+    this.customerBranchList = resp.data || [];
+    const branch = this.customerBranchList.find(b => b.CustomerBranchSid === preselectBranchSid)
+      || this.customerBranchList[0];
+    if (branch) {
+      this.onCustomerBranchChange(branch);
+    }
+  });
 }
 
   onShipperChange(shipper?: any) {
@@ -6166,6 +6188,16 @@ ${this.userData['userName']}`;
       centered: true,
     });
 
+    // Provide master data + context so the modal can resolve Department/Ports/Customer.
+    modalRef.componentInstance.mode = 'house';
+    modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.departmentList = this.departmentList || [];
+    modalRef.componentInstance.customerList = this.customerList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.defaultDepartmentSid =
+      this.houseJobForm.get('DepartmentMasterSid')?.value || this.selectedDepartment?.DepartmentMasterSid || null;
+    modalRef.componentInstance.companyMasterSid = this.currentCompany?.CompanyMasterSid || null;
+
     modalRef.result.then(
       (billOfLadingData: any) => {
         if (billOfLadingData) {
@@ -6177,21 +6209,11 @@ ${this.userData['userName']}`;
   }
 
   private applyBillOfLadingToHouseJob(data: any): void {
-    const polPort = this.findPortFromBillOfLadingValue(data?.portOfLoading);
-    const podPort = this.findPortFromBillOfLadingValue(data?.portOfDischarge);
-    const missingPorts: string[] = [];
-
-    if (data?.portOfLoading && !polPort) {
-      missingPorts.push(`Port of Loading "${data.portOfLoading}"`);
-    }
-    if (data?.portOfDischarge && !podPort) {
-      missingPorts.push(`Port of Discharge "${data.portOfDischarge}"`);
-    }
-
-    if (missingPorts.length) {
-      this.appSettingService.showError(`${missingPorts.join(', ')} not found in port dropdown. Please correct the PDF extracted value or select the port manually.`);
-      return;
-    }
+    // The Bill of Lading modal already resolves the ports against the dropdown
+    // (data.resolvedPOL / data.resolvedPOD). Fall back to text matching only when
+    // the modal did not provide a resolved port.
+    const polPort = data?.resolvedPOL || this.findPortFromBillOfLadingValue(data?.portOfLoading);
+    const podPort = data?.resolvedPOD || this.findPortFromBillOfLadingValue(data?.portOfDischarge);
 
     const vesselVoyage = this.splitBillOfLadingVesselVoyage(data?.vesselVoyage);
     const patchValue: any = {
@@ -6224,9 +6246,46 @@ ${this.userData['userName']}`;
       this.handlePODChange(podPort, false);
     }
 
+    // Customer chosen in the modal (by Export/Import direction). Mandatory for the House Job.
+    this.applyBillOfLadingCustomer(data);
+
     this.patchBillOfLadingCargo(data);
     this.houseJobForm.markAsDirty();
     this.appSettingService.showSuccess('Bill of Lading data loaded. Review the fields and click Save to update the House Job.');
+  }
+
+  /**
+   * Applies the Customer the user selected/matched in the Bill of Lading modal.
+   *
+   * IMPORTANT (upload-only behaviour): selecting a customer normally runs
+   * onCustomerChange -> handleImportExport, which auto-fills Shipper (Export) or
+   * Consignee/Notify (Import) FROM the customer. During an HBL upload we must keep
+   * the Shipper/Consignee/Notify exactly as extracted from the PDF, so after the
+   * customer is set we re-apply the PDF parties (as free text) so they win.
+   * Manual customer selection is NOT affected — this method only runs on upload.
+   */
+  private applyBillOfLadingCustomer(data: any): void {
+    const customer = data?.customer
+      || (data?.customerMasterSid ? this.customerList?.find(c => c.CustomerMasterSid === data.customerMasterSid) : null);
+
+    if (!customer) {
+      return;
+    }
+
+    this.houseJobForm.get('CustomerMasterSid')?.setValue(customer.CustomerMasterSid);
+    this.onCustomerChange(customer);
+
+    // Re-apply the PDF parties so the customer auto-fill does not overwrite them.
+    this.houseJobForm.patchValue({
+      isShipperFreeText: true,
+      isConsigneeFreeText: true,
+      isNotifyFreeText: true,
+      ShipperName: data?.shipper || this.houseJobForm.get('ShipperName')?.value,
+      ShipperAddress: data?.shipperAddress || this.houseJobForm.get('ShipperAddress')?.value,
+      ConsigneeName: data?.consignee || this.houseJobForm.get('ConsigneeName')?.value,
+      ConsigneeAddress: data?.consigneeAddress || this.houseJobForm.get('ConsigneeAddress')?.value,
+      Notify: data?.notifyParty || this.houseJobForm.get('Notify')?.value,
+    });
   }
 
   private patchBillOfLadingCargo(data: any): void {

@@ -2818,9 +2818,13 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group custom-form-group-select"
                             [class.filled]="!!containerFormGroup.get('ContainerType')?.value">
-                            <ng-select [items]="containerTypeList" bindLabel="ContainerName"
-                                bindValue="ContainerTypeMasterSid" formControlName="ContainerType" placeholder="">
-                            </ng-select>
+                            <dofi-searchable-dropdown [items]="containerTypeList"
+                                [displayFields]="containerTypeLookupConfig.displayFields"
+                                [displayLabels]="containerTypeLookupConfig.displayLabels"
+                                [labelFields]="containerTypeLookupConfig.labelFields"
+                                bindValue="ContainerTypeMasterSid" bindLabel="ContainerName"
+                                formControlName="ContainerType" placeholder="">
+                            </dofi-searchable-dropdown>
                             <label class="input-label">Container Type <span class="text-danger">*</span></label>
 
                             <div *ngIf="containerFormGroup.get('ContainerType')?.touched && containerFormGroup.get('ContainerType')?.invalid"

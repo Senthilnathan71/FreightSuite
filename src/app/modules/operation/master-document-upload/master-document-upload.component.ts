@@ -253,11 +253,13 @@
 
 
 // src/app/components/document-upload/document-upload.component.ts
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { DocumentService, BillOfLadingData, UploadProgress } from '../services/document.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { OperationService } from '../operation.service';
 
 @Component({
   selector: 'app-document-upload',
@@ -275,12 +277,40 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
   // Output event to send data to parent component
   @Output() documentProcessed = new EventEmitter<BillOfLadingData>();
   @Output() documentCleared = new EventEmitter<void>();
-  
+
+  // ---- Master data + context passed in by the parent (Master / House screen) ----
+  @Input() portList: any[] = [];
+  @Input() departmentList: any[] = [];
+  @Input() customerList: any[] = [];
+  @Input() containerTypeList: any[] = [];
+  @Input() defaultDepartmentSid: number | null = null;
+  @Input() companyMasterSid: number | null = null;
+  @Input() mode: 'master' | 'house' = 'master';
+
+  // Dropdown display configs (reused from the main screens)
+  readonly portConfig = DROPDOWN_CONFIGS['PORT'];
+  readonly departmentConfig = DROPDOWN_CONFIGS['DEPARTMENT'];
+  readonly customerConfig = DROPDOWN_CONFIGS['CUSTOMER'];
+  readonly containerTypeConfig = DROPDOWN_CONFIGS['CONTAINER_TYPE'];
+
+  // Resolved selections (the actual master-data objects the user picked / matched)
+  selectedDepartment: any = null;
+  selectedCustomer: any = null;
+  selectedPOL: any = null;
+  selectedPOD: any = null;
+  selectedPOR: any = null;
+  selectedPODel: any = null;
+  selectedContainerType: any = null;
+
+  // Per-field "could not auto-match" hints shown under each dropdown
+  matchHints: { [key: string]: string } = {};
+
   private subscriptions: Subscription[] = [];
 
   constructor(
     private fb: FormBuilder,
     private documentService: DocumentService,
+    private operationService: OperationService,
      public activeModal: NgbActiveModal
   ) {
     this.billOfLadingForm = this.createForm();
@@ -304,8 +334,120 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
     
     this.subscriptions.push(progressSub);
 
+    // Apply the default department (from the parent screen) if its list is present.
+    this.applyDefaultDepartment();
+
+    // The modal must be self-sufficient: when the parent screen has not loaded a
+    // list yet (e.g. uploading on a brand-new job), load it here so the Department,
+    // Port and Customer dropdowns always have items to match/select.
+    this.ensureDepartmentList();
+    this.ensurePortList();
+    this.ensureCustomerList();
+    this.ensureContainerTypeList();
+
     // Test connection on component load
     this.testConnection();
+  }
+
+  private applyDefaultDepartment(): void {
+    if (!this.defaultDepartmentSid || this.selectedDepartment) {
+      return;
+    }
+    const dept = this.departmentList?.find(d => d.DepartmentMasterSid === this.defaultDepartmentSid);
+    if (dept) {
+      this.selectedDepartment = dept;
+      this.billOfLadingForm.get('DepartmentMasterSid')?.setValue(dept.DepartmentMasterSid);
+    }
+  }
+
+  private departmentListLoading = false;
+
+  /** Loads the department list when the parent did not supply one. */
+  private ensureDepartmentList(): void {
+    if (this.departmentListLoading || (this.departmentList && this.departmentList.length) || !this.companyMasterSid) {
+      return;
+    }
+    this.departmentListLoading = true;
+    const sub = this.operationService.getAllDepartments(this.companyMasterSid).subscribe({
+      next: (resp: any) => {
+        this.departmentList = resp?.data || (Array.isArray(resp) ? resp : []);
+        this.departmentListLoading = false;
+        this.applyDefaultDepartment();
+      },
+      error: () => { this.departmentListLoading = false; },
+    });
+    this.subscriptions.push(sub);
+  }
+
+  private portListLoading = false;
+
+  /** Loads the port master when the parent did not supply one. */
+  private ensurePortList(): void {
+    if (this.portListLoading || (this.portList && this.portList.length)) {
+      return;
+    }
+    this.portListLoading = true;
+    const sub = this.operationService.getAllPorts().subscribe({
+      next: (resp: any) => {
+        const ports = resp?.data || (Array.isArray(resp) ? resp : []);
+        this.portList = ports.map((p: any) => ({ ...p, Country: p?.countryMaster?.countryName }));
+        this.portListLoading = false;
+        // Re-run port matching now that the list is available.
+        if (this.extractedData) {
+          this.autoMatchSelections(this.extractedData);
+        }
+      },
+      error: () => { this.portListLoading = false; },
+    });
+    this.subscriptions.push(sub);
+  }
+
+  private containerTypeListLoading = false;
+
+  /** Loads the container-type master when the parent did not supply one. */
+  private ensureContainerTypeList(): void {
+    if (this.containerTypeListLoading || (this.containerTypeList && this.containerTypeList.length)) {
+      return;
+    }
+    this.containerTypeListLoading = true;
+    const sub = this.operationService.getAllContainerTypes().subscribe({
+      next: (resp: any) => {
+        this.containerTypeList = resp?.data || (Array.isArray(resp) ? resp : []);
+        this.containerTypeListLoading = false;
+        if (this.extractedData) {
+          this.matchContainerType(this.extractedData);
+        }
+      },
+      error: () => { this.containerTypeListLoading = false; },
+    });
+    this.subscriptions.push(sub);
+  }
+
+  private customerListLoading = false;
+
+  /** Loads the customer master when the parent did not supply a populated list. */
+  private ensureCustomerList(): void {
+    if (this.customerListLoading || (this.customerList && this.customerList.length) || !this.companyMasterSid) {
+      return;
+    }
+    this.customerListLoading = true;
+    const customerSub = this.operationService.getAllCustomersWithBranch(this.companyMasterSid).subscribe({
+      next: (customers: any) => {
+        this.customerList = Array.isArray(customers) ? customers : (customers?.data || []);
+        this.customerListLoading = false;
+        // Re-derive the customer if the document was already processed.
+        if (this.extractedData) {
+          this.deriveCustomerByDirection(this.extractedData);
+        }
+      },
+      error: () => { this.customerListLoading = false; },
+    });
+    this.subscriptions.push(customerSub);
+  }
+
+  /** Export / Import direction of the currently selected department. */
+  get direction(): string {
+    return this.normalizeText(this.selectedDepartment?.ExportImport);
   }
 
   ngOnDestroy(): void {
@@ -322,8 +464,10 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
       consignee: ['', Validators.required],
       consigneeAddress: [''],
       notifyParty: [''],
-      portOfLoading: ['', Validators.required],
-      portOfDischarge: ['', Validators.required],
+      // Raw extracted port text (kept for reference / emit). The actual port is
+      // chosen through the dropdown-bound *Sid controls below.
+      portOfLoading: [''],
+      portOfDischarge: [''],
       placeOfReceipt: [''],
       placeOfDelivery: [''],
       vesselVoyage: ['', Validators.required],
@@ -335,7 +479,15 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
       measurement: [''],
       containerDetails: ['', Validators.required],
       consolNumber: [''],
-      freightTerms: ['']
+      freightTerms: [''],
+      // ---- Resolved selections (dropdowns) ----
+      DepartmentMasterSid: [null, Validators.required],
+      CustomerMasterSid: [null, Validators.required],
+      POLSid: [null, Validators.required],
+      PODSid: [null, Validators.required],
+      PORSid: [null],
+      PODelSid: [null],
+      ContainerTypeSid: [null],
     });
   }
 
@@ -379,6 +531,12 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
     this.isUploading = true;
     this.uploadError = null;
     this.extractedData = null;
+
+    // Make sure all master lists are available before the extracted data is applied.
+    this.ensureDepartmentList();
+    this.ensurePortList();
+    this.ensureCustomerList();
+    this.ensureContainerTypeList();
 
     try {
       console.log('Starting upload process...');
@@ -443,6 +601,210 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
       consolNumber: data.consolNumber || '',
       freightTerms: data.freightTerms || ''
     });
+
+    // Try to resolve the extracted ports & customer against the master data.
+    this.autoMatchSelections(data);
+  }
+
+  /**
+   * Auto-matches the extracted strings to the master data:
+   *  - the 4 ports -> port dropdowns
+   *  - the customer -> by department direction (Export=Shipper, Import=Consignee)
+   * Anything that cannot be matched is left empty with a hint for the user.
+   */
+  private autoMatchSelections(data: BillOfLadingData): void {
+    this.matchHints = {};
+
+    this.selectedPOL = this.matchPort('POL', data.portOfLoading, true);
+    this.selectedPOD = this.matchPort('POD', data.portOfDischarge, true);
+    this.selectedPOR = this.matchPort('POR', data.placeOfReceipt, false);
+    this.selectedPODel = this.matchPort('PODel', data.placeOfDelivery, false);
+
+    this.billOfLadingForm.patchValue({
+      POLSid: this.selectedPOL?.PortMasterSid ?? null,
+      PODSid: this.selectedPOD?.PortMasterSid ?? null,
+      PORSid: this.selectedPOR?.PortMasterSid ?? null,
+      PODelSid: this.selectedPODel?.PortMasterSid ?? null,
+    });
+
+    this.deriveCustomerByDirection(data);
+    this.matchContainerType(data);
+  }
+
+  /** Matches the extracted container type (e.g. "40HC") to the container-type master. */
+  private matchContainerType(data: BillOfLadingData): void {
+    const raw = data?.containerType || '';
+    if (!raw) {
+      return;
+    }
+    const containerType = this.findContainerTypeByText(raw);
+    this.selectedContainerType = containerType;
+    this.billOfLadingForm.get('ContainerTypeSid')?.setValue(containerType?.ContainerTypeMasterSid ?? null);
+    if (!containerType) {
+      this.matchHints['CONTAINERTYPE'] = `"${raw}" not matched — please select the Container Type.`;
+    } else {
+      delete this.matchHints['CONTAINERTYPE'];
+    }
+  }
+
+  private findContainerTypeByText(value: string): any {
+    const normalized = this.normalizeText(value); // e.g. "40HC"
+    if (!normalized || !this.containerTypeList?.length) {
+      return null;
+    }
+
+    // Split "40HC" -> size digits "40" + type abbreviation "HC", and map the
+    // abbreviation to the descriptive word used in ContainerName ("HIGH CUBE").
+    const parsed = normalized.match(/^(\d{2})([A-Z]+)$/);
+    const sizeDigits = parsed?.[1] || '';
+    const typeAbbr = parsed?.[2] || '';
+    const typeWords: { [key: string]: string } = {
+      HC: 'HIGHCUBE', HQ: 'HIGHCUBE', GP: 'GENERAL', DC: 'STANDARD', DV: 'STANDARD',
+      RF: 'REEFER', RH: 'REEFER', RE: 'REEFER', OT: 'OPENTOP', FR: 'FLATRACK', TK: 'TANK',
+    };
+    const typeWord = typeWords[typeAbbr] || '';
+
+    return this.containerTypeList.find(ct => {
+      const name = this.normalizeText(ct?.ContainerName);
+      const code = this.normalizeText(ct?.ContainerCode);
+      const size = this.normalizeText(ct?.ContainerSize);
+      const iso = this.normalizeText(ct?.ContainerIsoCode);
+
+      // Direct matches first.
+      if (code === normalized || iso === normalized || size === normalized || name === normalized) {
+        return true;
+      }
+      if (`${size}${code}` === normalized) {
+        return true;
+      }
+
+      // Size + type match: the entry must reflect BOTH the size and the type, so
+      // "40HC" matches "40ft High Cube" but never "45ft High Cube" or "40ft Standard".
+      if (sizeDigits && typeAbbr) {
+        const hasSize = name.includes(sizeDigits) || size.includes(sizeDigits) || code.includes(sizeDigits);
+        const hasType = name.includes(typeAbbr) || code.includes(typeAbbr) || size.includes(typeAbbr) ||
+          (!!typeWord && name.includes(typeWord));
+        if (hasSize && hasType) {
+          return true;
+        }
+      }
+      return false;
+    }) || null;
+  }
+
+  onContainerTypeSelected(containerType: any): void {
+    this.selectedContainerType = containerType || null;
+    if (containerType) { delete this.matchHints['CONTAINERTYPE']; }
+  }
+
+  private matchPort(key: string, rawValue: string, required: boolean): any {
+    if (!rawValue) {
+      return null;
+    }
+    const port = this.findPortByText(rawValue);
+    if (!port && required) {
+      this.matchHints[key] = 'Not matched automatically — please select the port.';
+    }
+    return port;
+  }
+
+  /** Picks the House customer from the BoL parties by department direction. */
+  private deriveCustomerByDirection(data: BillOfLadingData): void {
+    const partyName = this.direction === 'IMPORT'
+      ? (data.consignee || data.notifyParty || '')
+      : (data.shipper || '');
+
+    if (!partyName) {
+      return;
+    }
+
+    const customer = this.findCustomerByText(partyName);
+    if (customer) {
+      this.selectedCustomer = customer;
+      this.billOfLadingForm.get('CustomerMasterSid')?.setValue(customer.CustomerMasterSid);
+      delete this.matchHints['CUSTOMER'];
+    } else {
+      this.selectedCustomer = null;
+      this.billOfLadingForm.get('CustomerMasterSid')?.setValue(null);
+      this.matchHints['CUSTOMER'] = 'Not matched automatically — please select the Customer.';
+    }
+  }
+
+  // ---- Dropdown change handlers ----
+  onDepartmentSelected(dept: any): void {
+    this.selectedDepartment = dept || null;
+    // Re-derive the customer using the new direction and the extracted parties.
+    if (this.extractedData) {
+      this.deriveCustomerByDirection(this.extractedData);
+    }
+  }
+
+  onPortSelected(key: 'POL' | 'POD' | 'POR' | 'PODel', port: any): void {
+    if (key === 'POL') { this.selectedPOL = port; }
+    if (key === 'POD') { this.selectedPOD = port; }
+    if (key === 'POR') { this.selectedPOR = port; }
+    if (key === 'PODel') { this.selectedPODel = port; }
+    if (port) { delete this.matchHints[key]; }
+  }
+
+  onCustomerSelected(customer: any): void {
+    this.selectedCustomer = customer || null;
+    if (customer) { delete this.matchHints['CUSTOMER']; }
+  }
+
+  // ---- Matching helpers ----
+  private findPortByText(value: string): any {
+    const full = this.normalizeText(value);
+    // City part = text before the first comma, dropping the country.
+    // e.g. "JEBEL ALI,UNITED ARAB EMIRATES" -> "JEBEL ALI"
+    const city = this.normalizeText(String(value || '').split(',')[0]);
+    const candidates = [full, city].filter(v => v && v.length >= 3);
+    if (!candidates.length || !this.portList?.length) {
+      return null;
+    }
+
+    return this.portList.find(port => {
+      const code = this.normalizeText(port?.PortCode);
+      const name = this.normalizeText(port?.PortName);
+      // Drop a trailing "PORT" so "JEBELALIPORT" matches "JEBELALI".
+      const nameCore = name.replace(/PORT$/, '');
+      const unCode = this.normalizeText(port?.UNLOCODE || port?.UnLocode || port?.UNCode);
+
+      return candidates.some(v =>
+        code === v ||
+        unCode === v ||
+        name === v ||
+        (!!nameCore && nameCore === v) ||
+        (!!code && v.includes(code)) ||
+        (!!name && v.includes(name)) ||
+        (!!nameCore && nameCore.length >= 4 && (v.startsWith(nameCore) || nameCore.startsWith(v))) ||
+        (!!name && name.startsWith(v))
+      );
+    }) || null;
+  }
+
+  private findCustomerByText(value: string): any {
+    const normalized = this.normalizeText(value);
+    if (!normalized || !this.customerList?.length) {
+      return null;
+    }
+    return this.customerList.find(customer => {
+      const name = this.normalizeText(customer?.CustomerName);
+      return !!name && (name === normalized || normalized.includes(name) || name.includes(normalized));
+    }) || null;
+  }
+
+  private normalizeText(value: any): string {
+    return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  }
+
+  /** Save is allowed only when Department, both required ports and Customer are set. */
+  get canSave(): boolean {
+    return !!this.billOfLadingForm.get('DepartmentMasterSid')?.value &&
+      !!this.billOfLadingForm.get('CustomerMasterSid')?.value &&
+      !!this.billOfLadingForm.get('POLSid')?.value &&
+      !!this.billOfLadingForm.get('PODSid')?.value &&
+      !!this.extractedData;
   }
 
   private toDateInputValue(value: string | undefined): string {
@@ -479,19 +841,30 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.billOfLadingForm.valid) {
+    if (this.billOfLadingForm.valid && this.canSave) {
       const formData = {
         ...this.billOfLadingForm.value,
-        confidence: this.extractedData?.confidence || 0
+        confidence: this.extractedData?.confidence || 0,
+        // Resolved selections for the parent screen to apply directly.
+        departmentMasterSid: this.selectedDepartment?.DepartmentMasterSid ?? this.billOfLadingForm.get('DepartmentMasterSid')?.value,
+        department: this.selectedDepartment,
+        customerMasterSid: this.selectedCustomer?.CustomerMasterSid ?? this.billOfLadingForm.get('CustomerMasterSid')?.value,
+        customer: this.selectedCustomer,
+        resolvedPOL: this.selectedPOL,
+        resolvedPOD: this.selectedPOD,
+        resolvedPOR: this.selectedPOR,
+        resolvedPODel: this.selectedPODel,
+        containerTypeMasterSid: this.selectedContainerType?.ContainerTypeMasterSid ?? this.billOfLadingForm.get('ContainerTypeSid')?.value ?? null,
+        containerType: this.selectedContainerType,
+        mode: this.mode,
       };
-      console.log('Form submitted:', formData);
-      
+
       // Emit the final form data to parent component
       this.documentProcessed.emit(formData);
       this.activeModal.close(formData);
     } else {
       this.markFormGroupTouched(this.billOfLadingForm);
-      this.uploadError = 'Please fill in all required fields';
+      this.uploadError = 'Please select Department, Port of Loading, Port of Discharge and Customer before saving.';
     }
   }
 

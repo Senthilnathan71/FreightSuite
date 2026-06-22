@@ -235,8 +235,9 @@ export interface BillOfLadingData {
   
   // Container Information
   containerDetails: string;
+  containerType?: string;
   consolNumber: string;
-  
+
   // System Fields
   confidence: number;
   extractedText?: string;

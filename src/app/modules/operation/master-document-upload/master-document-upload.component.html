@@ -81,6 +81,54 @@
         <h4 class="text-black">Bill of Landing Information</h4>
       </div>
 
+      <!-- Job & Routing: Department drives Import/Export, which decides the Customer -->
+      <div class="col-md-12" *ngIf="extractedData">
+        <div class="form-section-header">
+          <h5 class="my-1">Job &amp; Customer</h5>
+        </div>
+        <div class="row compact-form">
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('DepartmentMasterSid')?.value"> 
+              <dofi-searchable-dropdown
+                [items]="departmentList"
+                [displayFields]="departmentConfig.displayFields"
+                [displayLabels]="departmentConfig.displayLabels"
+                [labelFields]="departmentConfig.labelFields"
+                bindValue="DepartmentMasterSid"
+                bindLabel="departmentName"
+                placeholder=""
+                formControlName="DepartmentMasterSid"
+                (itemSelected)="onDepartmentSelected($event)">
+              </dofi-searchable-dropdown>
+              <label class="input-label">Department <span class="text-danger">*</span></label>
+            </div>
+            <div class="small text-muted mt-1" *ngIf="selectedDepartment">
+              Direction: <strong>{{ selectedDepartment.ExportImport || '—' }}</strong>
+            </div>
+          </aside>
+
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('CustomerMasterSid')?.value">
+              <dofi-searchable-dropdown
+                [items]="customerList"
+                [displayFields]="customerConfig.displayFields"
+                [displayLabels]="customerConfig.displayLabels"
+                [labelFields]="customerConfig.labelFields"
+                bindValue="CustomerMasterSid"
+                bindLabel="CustomerName"
+                placeholder=""
+                formControlName="CustomerMasterSid"
+                (itemSelected)="onCustomerSelected($event)">
+              </dofi-searchable-dropdown>
+              <label class="input-label">Customer <span class="text-danger">*</span></label>
+            </div>
+            <small class="bol-hint text-warning d-flex align-items-center gap-1 mt-1" *ngIf="matchHints['CUSTOMER']">
+              <i class="fas fa-exclamation-triangle"></i> {{ matchHints['CUSTOMER'] }}
+            </small>
+          </aside>
+        </div>
+      </div>
+
       <div class="col-md-12">
         <div class="row">
           <div class="col-md-6">
@@ -141,49 +189,76 @@
       </div>
       <div class="row compact-form">
         <aside class="col-md-6">
-          <div class="custom-form-group">
-            <input type="text" id="portOfLoading" formControlName="portOfLoading" placeholder=""
-              [class.invalid]="isFieldInvalid('portOfLoading')" class="form-control custom-input-field sm">
-            <label for="portOfLoading" class="input-label">Port of Loading <span class="text-danger">*</span></label>
-            <div class="error-message" *ngIf="isFieldInvalid('portOfLoading')">
-            {{ getFieldError('portOfLoading') }}
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('POLSid')?.value">
+            <dofi-searchable-dropdown
+              [items]="portList"
+              [displayFields]="portConfig.displayFields"
+              [displayLabels]="portConfig.displayLabels"
+              [labelFields]="portConfig.labelFields"
+              bindValue="PortMasterSid"
+              bindLabel="PortName"
+              placeholder=""
+              formControlName="POLSid"
+              (itemSelected)="onPortSelected('POL', $event)">
+            </dofi-searchable-dropdown>
+            <label class="input-label">Port of Loading <span class="text-danger">*</span></label>
           </div>
-          </div>
-          
+          <small class="bol-hint text-warning d-flex align-items-center gap-1 mt-1" *ngIf="matchHints['POL']">
+            <i class="fas fa-exclamation-triangle"></i> {{ matchHints['POL'] }}
+          </small>
         </aside>
 
         <aside class="col-md-6">
-          <div class="custom-form-group">
-            <input type="text" id="portOfDischarge" formControlName="portOfDischarge"
-              placeholder="" [class.invalid]="isFieldInvalid('portOfDischarge')"
-              class="form-control custom-input-field sm">
-            <label for="portOfDischarge" class="input-label">Port of Discharge <span class="text-danger">*</span></label>
-             <div class="error-message" *ngIf="isFieldInvalid('portOfDischarge')">
-            {{ getFieldError('portOfDischarge') }}
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('PODSid')?.value">
+            <dofi-searchable-dropdown
+              [items]="portList"
+              [displayFields]="portConfig.displayFields"
+              [displayLabels]="portConfig.displayLabels"
+              [labelFields]="portConfig.labelFields"
+              bindValue="PortMasterSid"
+              bindLabel="PortName"
+              placeholder=""
+              formControlName="PODSid"
+              (itemSelected)="onPortSelected('POD', $event)">
+            </dofi-searchable-dropdown>
+            <label class="input-label">Port of Discharge <span class="text-danger">*</span></label>
           </div>
-          </div>
-         
+          <small class="bol-hint text-warning d-flex align-items-center gap-1 mt-1" *ngIf="matchHints['POD']">
+            <i class="fas fa-exclamation-triangle"></i> {{ matchHints['POD'] }}
+          </small>
         </aside>
 
         <aside class="col-md-6">
-          <div class="custom-form-group">
-            <input type="text" id="placeOfReceipt" formControlName="placeOfReceipt" placeholder=""
-              [class.invalid]="isFieldInvalid('placeOfReceipt')" class="form-control custom-input-field sm">
-            <label for="placeOfReceipt" class="input-label">Place of Receipt</label>
-          </div>
-          <div class="error-message" *ngIf="isFieldInvalid('placeOfReceipt')">
-            {{ getFieldError('placeOfReceipt') }}
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('PORSid')?.value"> 
+            <dofi-searchable-dropdown
+              [items]="portList"
+              [displayFields]="portConfig.displayFields"
+              [displayLabels]="portConfig.displayLabels"
+              [labelFields]="portConfig.labelFields"
+              bindValue="PortMasterSid"
+              bindLabel="PortName"
+              placeholder=""
+              formControlName="PORSid"
+              (itemSelected)="onPortSelected('POR', $event)">
+            </dofi-searchable-dropdown>
+            <label class="input-label">Place of Receipt</label>
           </div>
         </aside>
 
         <aside class="col-md-6">
-          <div class="custom-form-group">
-            <input type="text" id="placeOfDelivery" formControlName="placeOfDelivery" placeholder=""
-              [class.invalid]="isFieldInvalid('placeOfDelivery')" class="form-control custom-input-field sm">
-            <label for="placeOfDelivery" class="input-label">Place of Delivery</label>
-          </div>
-          <div class="error-message" *ngIf="isFieldInvalid('placeOfDelivery')">
-            {{ getFieldError('placeOfDelivery') }}
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('PODelSid')?.value">
+            <dofi-searchable-dropdown
+              [items]="portList"
+              [displayFields]="portConfig.displayFields"
+              [displayLabels]="portConfig.displayLabels"
+              [labelFields]="portConfig.labelFields"
+              bindValue="PortMasterSid"
+              bindLabel="PortName"
+              placeholder=""
+              formControlName="PODelSid"
+              (itemSelected)="onPortSelected('PODel', $event)">
+            </dofi-searchable-dropdown>
+            <label class="input-label">Place of Delivery</label>
           </div>
         </aside>
       </div>
@@ -358,7 +433,27 @@
             {{ getFieldError('containerDetails') }}
           </div>
           </div>
-        
+
+        </aside>
+
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('ContainerTypeSid')?.value">
+            <dofi-searchable-dropdown
+              [items]="containerTypeList"
+              [displayFields]="containerTypeConfig.displayFields"
+              [displayLabels]="containerTypeConfig.displayLabels"
+              [labelFields]="containerTypeConfig.labelFields"
+              bindValue="ContainerTypeMasterSid"
+              bindLabel="ContainerName"
+              placeholder=""
+              formControlName="ContainerTypeSid"
+              (itemSelected)="onContainerTypeSelected($event)">
+            </dofi-searchable-dropdown>
+            <label class="input-label">Container Type</label>
+          </div>
+          <small class="bol-hint text-warning d-flex align-items-center gap-1 mt-1" *ngIf="matchHints['CONTAINERTYPE']">
+            <i class="fas fa-exclamation-triangle"></i> {{ matchHints['CONTAINERTYPE'] }}
+          </small>
         </aside>
 
         <aside class="col-md-6">
@@ -393,7 +488,7 @@
         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80 " (click)="clearForm()">
           Clear Form
         </button>
-        <button type="submit" class="btn btn-info btn-sm" [disabled]="billOfLadingForm.invalid">
+        <button type="submit" class="btn btn-info btn-sm" [disabled]="!canSave">
           Save Bill of Lading
         </button>
       </div>
@@ -510,6 +605,9 @@
               <h6>Container Information</h6>
               <div class="data-item" *ngIf="extractedData.containerDetails">
                 <strong>Container Details:</strong> {{ extractedData.containerDetails }}
+              </div>
+              <div class="data-item">
+                <strong>Container Type:</strong> {{ extractedData.containerType || '(not extracted)' }}
               </div>
               <div class="data-item" *ngIf="extractedData.consolNumber">
                 <strong>Consol Number:</strong> {{ extractedData.consolNumber }}
