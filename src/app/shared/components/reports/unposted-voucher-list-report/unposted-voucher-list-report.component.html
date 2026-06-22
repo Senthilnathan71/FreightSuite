@@ -48,76 +48,18 @@
                         <td>{{ item.branch }}</td>
                         <!-- <td>{{ item.voucherNo }}</td> -->
                         <td>
-                            <div [ngSwitch]=item.voucherCode>
+                            <div>
                                 <ng-container *ngIf="item.voucherCode">
-                                    <!-- Invoice -->
-                                    <a *ngSwitchCase="'INV'" (click)="closeAllModal()" [routerLink]="[
-                                                '/operation/invoice/entry',
-                                               item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
+                                    <!-- Known voucher type → hyperlink (closes the report modal on navigate);
+                                         unknown types fall back to plain text. -->
+                                    <a *ngIf="getVoucherEntryLink(item.voucherCode, item.VoucherHeaderSid) as link; else voucherPlain"
+                                       (click)="closeAllModal()" [routerLink]="link"
+                                       class="voucher-number-link fw-bold px-2">
                                         {{ item.voucherNo }}
                                     </a>
-
-                                    <!-- Vendor Invoice (VIN / VN) -->
-                                    <a *ngSwitchCase="'VIN'" [routerLink]="[
-                                                '/operation/vendor-invoice/entry',
-                                                item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </a>
-
-                                    <!-- Receipt -->
-                                    <a *ngSwitchCase="'RPT'" [routerLink]="[
-                                                '/accounts/receipt/entry',
-                                                item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </a>
-
-                                    <!-- Payment (if needed later) -->
-                                    <a *ngSwitchCase="'PMT'" [routerLink]="[
-                                                '/accounts/payment/entry',
-                                                item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </a>
-
-                                    <!-- Journal Voucher -->
-                                    <a *ngSwitchCase="'JV'" [routerLink]="[
-                                                '/accounts/journal-voucher/entry',
-                                                item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </a>
-                                    <!-- Reversal Journal Voucher -->
-                                    <a *ngSwitchCase="'RJV'" [routerLink]="[
-                                                '/accounts/reversal-voucher/entry',
-                                                item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </a>
-
-
-                                    <!-- Credit Note -->
-                                    <a *ngSwitchCase="'CRN'" [routerLink]="[
-                                                '/operation/credit-note/entry',
-                                                item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </a>
-
-                                    <!-- Vendor Credit Note -->
-                                    <a *ngSwitchCase="'VRN'" [routerLink]="[
-                                                '/operation/vendor-credit-note/entry',
-                                                item.VoucherHeaderSid
-                                              ]" class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </a>
-
-                                    <!-- Default case -->
-                                    <span *ngSwitchDefault class="fw-bold px-2 ">
-                                        {{ item.voucherNo }}
-                                    </span>
+                                    <ng-template #voucherPlain>
+                                        <span class="fw-bold px-2">{{ item.voucherNo }}</span>
+                                    </ng-template>
                                 </ng-container>
                             </div>
                         </td>

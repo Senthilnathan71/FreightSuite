@@ -15,6 +15,7 @@ import {
 } from '../../models/payment.model';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 
 /**
  * Payment View Component
@@ -321,7 +322,7 @@ export class PaymentViewComponent implements OnInit {
   }
 
   editPayment(): void {
-    this.router.navigate(['accounts/payment/entry', this.paymentId]);
+    navigateToVoucherEntry(this.router, VoucherType.PAYMENT, this.paymentId);
   }
 
   printPayment(): void {

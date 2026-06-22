@@ -34,6 +34,7 @@ import { FeatherModule } from 'angular-feather';
 import { ToastrService } from 'ngx-toastr';
 import { PaymentService } from '../../services/payment.service';
 import { OutstandingInvoice, PaymentMode } from '../../models/receipt.model';
+import { getVoucherEntryLink, navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -49,6 +50,7 @@ import {
   Observable,
   of,
   Subject,
+  Subscription,
   takeUntil,
   tap,
 } from 'rxjs';
@@ -138,6 +140,9 @@ import { TdsHelperService } from '../../services/tds-helper.service';
   ],
 })
 export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedChanges {
+  // Voucher-type → entry-route mapping for matching-grid hyperlinks (shared util).
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
+  protected readonly VoucherType = VoucherType;
   // Character limits for text fields (single source of truth, mirrors DB widths).
   protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   fyMinDate: NgbDateStruct | null = null;
@@ -396,6 +401,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   companyCurrency: any;
   currentCurrencyCode: string = '';
   private destroy$ = new Subject<void>();
+  // Route-id reactivity: Angular reuses this component between two .../payment/entry/:id URLs,
+  // so we watch paramMap (not a one-time snapshot) and recreate on a changed id. routeSub is
+  // kept separate from destroy$ because patchValues completes destroy$ on read-only loads.
+  private routeInitialized = false;
+  private loadedPaymentId: number | null = null;
+  private routeSub?: Subscription;
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
@@ -509,35 +520,54 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     this.paymentRequestSid = Number(this.route.snapshot.queryParamMap.get('paymentRequestSid')) || null;
 
-    // Check if editing existing payment
-    const paymentId = this.route.snapshot.params['id'];
-    if (paymentId) {
-      this.headerId = Number(paymentId);
-    }
-    const historyState = history?.state;
-    this.copiedPaymentData = historyState?.copiedPaymentData;
-    this.isCopiedPayment = !!historyState?.isCopiedPayment;
-    if (this.isCopiedPayment && this.copiedPaymentData) {
-      history.replaceState({}, '', location.pathname);
-    }
+    // React to the route id. Angular REUSES this component when navigating between two
+    // .../payment/entry/:id URLs (same route config), so a one-time snapshot read would leave
+    // the previous payment patched. First emission runs the normal load; a later emission with
+    // a different id means the instance was reused for another payment → force a fresh instance
+    // (clean edit-load) by bouncing through the list route. (entry vs entry/:id are separate
+    // routes, so create↔edit — incl. copy/new — already recreates and isn't handled here.)
+    this.routeSub = this.route.paramMap.subscribe((params) => {
+      const id = Number(params.get('id')) || null;
 
-    // Load currencies first, then fetch the payment so currencyList
-    // is always populated before patchValues runs.
-    this.loadAllLookups().subscribe(() => {
-      if (this.headerId) {
-        this.loadInterBranchAllocations(this.headerId); // fire in parallel with the payment fetch
-        this.loadPayment(this.headerId);
-      } else {
-        if (this.isCopiedPayment && this.copiedPaymentData) {
-          this.patchValues(this.copiedPaymentData);
-          this.applyCopiedPaymentMode();
-          this.spinner.hide();
+      if (this.routeInitialized) {
+        if (id !== this.loadedPaymentId) {
+          this.router
+            .navigateByUrl('/accounts/payment/list', { skipLocationChange: true })
+            .then(() => navigateToVoucherEntry(this.router, VoucherType.PAYMENT, id));
         }
-        this.subscribeToPartyAndBankChanges();
-        if (this.paymentRequestSid) {
-          this.prefillFromPaymentRequest(this.paymentRequestSid);
-        }
+        return;
       }
+
+      this.routeInitialized = true;
+      this.loadedPaymentId = id;
+      if (id) {
+        this.headerId = id;
+      }
+      const historyState = history?.state;
+      this.copiedPaymentData = historyState?.copiedPaymentData;
+      this.isCopiedPayment = !!historyState?.isCopiedPayment;
+      if (this.isCopiedPayment && this.copiedPaymentData) {
+        history.replaceState({}, '', location.pathname);
+      }
+
+      // Load currencies first, then fetch the payment so currencyList
+      // is always populated before patchValues runs.
+      this.loadAllLookups().subscribe(() => {
+        if (this.headerId) {
+          this.loadInterBranchAllocations(this.headerId); // fire in parallel with the payment fetch
+          this.loadPayment(this.headerId);
+        } else {
+          if (this.isCopiedPayment && this.copiedPaymentData) {
+            this.patchValues(this.copiedPaymentData);
+            this.applyCopiedPaymentMode();
+            this.spinner.hide();
+          }
+          this.subscribeToPartyAndBankChanges();
+          if (this.paymentRequestSid) {
+            this.prefillFromPaymentRequest(this.paymentRequestSid);
+          }
+        }
+      });
     });
   }
 
@@ -1736,7 +1766,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             // Stage inter-branch first, THEN navigate/reload — avoids the reload racing the stage POST.
             this.stageInterBranchIfNeeded(this.headerId, () => {
               if (this.headerId) {
-                this.router.navigate(['accounts/payment/entry', this.headerId]);
+                navigateToVoucherEntry(this.router, VoucherType.PAYMENT, this.headerId);
               }
             });
           } else {
@@ -5591,6 +5621,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.matchingObserver?.disconnect();
@@ -5773,7 +5804,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   navigateToCreate() {
-        this.router.navigate(['accounts/payment/entry']);
+        navigateToVoucherEntry(this.router, VoucherType.PAYMENT);
   }
 
   copyPayment(): void {
@@ -5797,10 +5828,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.spinner.show();
     const copiedData = this.prepareCopiedPaymentData();
 
-    this.router.navigate(['/accounts/payment/entry'], {
-      state: {
-        copiedPaymentData: copiedData,
-        isCopiedPayment: true,
+    navigateToVoucherEntry(this.router, VoucherType.PAYMENT, undefined, {
+      extras: {
+        state: {
+          copiedPaymentData: copiedData,
+          isCopiedPayment: true,
+        },
       },
     });
   }
@@ -5849,7 +5882,7 @@ if (copiedData.ReversalVoucher || copiedData.PaymentRequestSid) {
     : '';
 
   const bankNarration = cashOrBank === 'Bank'
-    ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}from ${bankPartyName}`
+    ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}to ${bankPartyName}`
     : '';
 
   if (Array.isArray(copiedData.VoucherDetail)) {

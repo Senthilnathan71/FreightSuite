@@ -36,6 +36,7 @@ import {
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 /**
  * Receipt List Component
@@ -547,11 +548,11 @@ private formatAmount(amount: number | string): string {
   }
 
   viewReceipt(row: any) {
-    this.router.navigate(['accounts/receipt/entry/', row.VoucherHeaderSid]);
+    navigateToVoucherEntry(this.router, VoucherType.RECEIPT, row.VoucherHeaderSid);
   }
 
   editReceipt(row: any) {
-    this.router.navigate(['accounts/receipt/entry/', row.VoucherHeaderSid]);
+    navigateToVoucherEntry(this.router, VoucherType.RECEIPT, row.VoucherHeaderSid);
   }
 
   reverseReceipt(row: any) {
@@ -743,7 +744,7 @@ private formatAmount(amount: number | string): string {
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['accounts/receipt/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.RECEIPT);
   }
 
   formatDate(date: any): string {

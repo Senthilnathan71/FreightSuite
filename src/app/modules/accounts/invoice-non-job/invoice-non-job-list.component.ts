@@ -23,6 +23,7 @@ import { OperationService } from '../../operation/operation.service';
 import { InvoiceNonJobService } from '../services/invoice-non-job.service';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
@@ -253,7 +254,7 @@ export class InvoiceNonJobListComponent extends BaseListComponent implements OnI
   }
 
   onTableActionClick(event: TableEventData): void {
-    if (event.action === 'view') this.router.navigate(['/accounts/invoice-non-job/entry', event.row.VoucherHeaderSid]);
+    if (event.action === 'view') navigateToVoucherEntry(this.router, VoucherType.NON_JOB_INVOICE, event.row.VoucherHeaderSid);
     if (event.action === 'delete') this.deleteInvoice(event.row.VoucherHeaderSid, event.row);
   }
 
@@ -289,7 +290,7 @@ export class InvoiceNonJobListComponent extends BaseListComponent implements OnI
   navigateToAddNewInvoice(): void {
     const blockedReason = this.voucherActionGuard.getInsertBlockedReason({ documentName: 'Invoice Non Job', canInsert: this.mps.can('insert') });
     if (this.voucherActionGuard.block(blockedReason)) return;
-    this.router.navigate(['/accounts/invoice-non-job/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.NON_JOB_INVOICE);
   }
 
   deleteInvoice(id: number, invoice?: any): void {

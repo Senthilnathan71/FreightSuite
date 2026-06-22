@@ -32,6 +32,7 @@ import {
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-voucher-matching-list',
@@ -407,7 +408,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   }
 
   viewVoucherMatching(row: any) {
-    this.router.navigate(['accounts/voucher-matching/entry/', row.VoucherMatchingHeaderSid]);
+    navigateToVoucherEntry(this.router, VoucherType.VOUCHER_MATCHING, row.VoucherMatchingHeaderSid);
   }
 
 
@@ -461,7 +462,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['accounts/voucher-matching/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.VOUCHER_MATCHING);
   }
 
   formatDate(date: any): string {

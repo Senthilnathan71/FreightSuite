@@ -31,6 +31,7 @@ import { generateNonJobInvoiceDocument } from 'src/app/common/pdf/generators/non
 import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { VoucherPeriodValidationService } from 'src/app/common/voucher-period-validation.service';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
@@ -221,10 +222,12 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     try {
       const copiedData = this.prepareCopiedNonJobInvoiceData();
 
-      void this.nonJobRouter.navigate(['/accounts/invoice-non-job/entry'], {
-        state: {
-          copiedNonJobInvoiceData: copiedData,
-          isCopiedNonJobInvoice: true,
+      navigateToVoucherEntry(this.nonJobRouter, VoucherType.NON_JOB_INVOICE, null, {
+        extras: {
+          state: {
+            copiedNonJobInvoiceData: copiedData,
+            isCopiedNonJobInvoice: true,
+          },
         },
       });
     } catch (err) {

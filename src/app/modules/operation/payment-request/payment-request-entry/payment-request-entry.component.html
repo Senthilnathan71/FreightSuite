@@ -29,10 +29,16 @@
 
       <div class="col-md-auto pb-1 payment-request-link-section">
         @if(isEditMode && form.get('VoucherSid')?.value){
-          <a [routerLink]="['/accounts/payment/entry', form.get('VoucherSid')?.value]"
+          <a *ngIf="getVoucherEntryLink(VoucherType.PAYMENT, form.get('VoucherSid')?.value) as link; else paymentPlain"
+             [routerLink]="link"
              class="voucher-number-link" title="View Payment">
             <i class="fas fa-external-link-alt me-1"></i>{{ paymentVoucherNumber || 'Payment' }}
           </a>
+          <ng-template #paymentPlain>
+            <span class="voucher-number-link">
+              <i class="fas fa-external-link-alt me-1"></i>{{ paymentVoucherNumber || 'Payment' }}
+            </span>
+          </ng-template>
         }
       </div>
 

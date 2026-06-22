@@ -11,6 +11,7 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 import { PrintFooterComponent } from '../../print-footer/print-footer.component';
+import { getVoucherEntryLink } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-unposted-voucher-list-report',
@@ -21,6 +22,8 @@ import { PrintFooterComponent } from '../../print-footer/print-footer.component'
 })
 export class UnpostedVoucherListReportComponent {
 
+  // Voucher-type → entry-route mapping for the voucher-no hyperlinks (shared util).
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
 
   currentCompany: any;
   currentBranch: any;

@@ -23,6 +23,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { AccountsService } from '../../accounts.service';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import {
@@ -477,7 +478,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         });
         if (this.voucherActionGuard.block(blockedReason)) return;
 
-        this.router.navigate(['/accounts/reverse-voucher/entry']);
+        navigateToVoucherEntry(this.router, VoucherType.REVERSAL_JV);
       }
     
       onReport() {
@@ -497,28 +498,12 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
     
       onTableAction(event: TableEventData): void {
-        const returnRoute = (voucherType : string) => {
-          switch(voucherType) {
-            case 'Receipt':
-              return 'accounts/receipt/entry';
-            case 'Payment Voucher':
-              return 'accounts/payment/entry';
-            case 'Journal Voucher':
-              return 'accounts/journal-voucher/entry';
-            case 'Invoice':
-              return 'operation/invoice/entry';
-            case 'Credit Note':
-              return 'operation/credit-note/entry';
-            default :
-              return 'accounts/reverse-voucher/entry';
-          }
-        }
-
         if(event.column?.template === "link") {
-          const path = returnRoute(event.row.reversalVoucherType);
-          console.log("path", path);
-          console.log(event.row.ReversalVoucher);
-          this.router.navigate([path, event.row.ReversalVoucher]);
+          const sid = event.row.ReversalVoucher;
+          // Shared voucher routing; unknown types fall back to the reverse-voucher entry.
+          navigateToVoucherEntry(this.router, event.row.reversalVoucherType, sid, {
+            fallback: ['/accounts/reverse-voucher/entry', String(sid)]
+          });
         } else if (event.action === 'view') {
           this.viewReverseVoucher(event.row);
         } else if (event.action === 'delete') {
@@ -538,11 +523,11 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
     
       viewReverseVoucher(ReverseVoucher: any) {
-        this.router.navigate(['/accounts/reverse-voucher/entry', ReverseVoucher.VoucherHeaderSid]);
+        navigateToVoucherEntry(this.router, VoucherType.REVERSAL_JV, ReverseVoucher.VoucherHeaderSid);
       }
-    
+
       editReverseVoucher(ReverseVoucher: any) {
-        this.router.navigate(['/accounts/reverse-voucher/entry', ReverseVoucher.VoucherHeaderSid]);
+        navigateToVoucherEntry(this.router, VoucherType.REVERSAL_JV, ReverseVoucher.VoucherHeaderSid);
       }
     
       deleteReverseVoucher(ReverseVoucher: any) {

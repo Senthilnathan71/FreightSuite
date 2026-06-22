@@ -34,6 +34,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-vendor-invoice-list',
@@ -531,7 +532,7 @@ private formatAmount(amount: number | string): string {
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['/operation/vendor-invoice/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE);
   }
 
   onCreateNonJob() {
@@ -541,7 +542,7 @@ private formatAmount(amount: number | string): string {
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['/operation/vendor-invoice/entry'], {
+    navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, null, {
       queryParams: { isNonJob: true }
     });
   }
@@ -763,21 +764,21 @@ private formatAmount(amount: number | string): string {
 
   viewVendorInvoice(vendorInvoice: any) {
     if(vendorInvoice.CashOrBank === 'Y'){
-      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid],{
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, vendorInvoice.VoucherHeaderSid, {
         queryParams : {isNonJob : true}
       });
     } else {
-      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid]);
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, vendorInvoice.VoucherHeaderSid);
     }
   }
 
   editVendorInvoice(vendorInvoice: any) {
     if(vendorInvoice.CashOrBank === 'Y'){
-      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid],{
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, vendorInvoice.VoucherHeaderSid, {
         queryParams : {isNonJob : true}
       });
     } else {
-      this.router.navigate(['/operation/vendor-invoice/entry', vendorInvoice.VoucherHeaderSid]);
+      navigateToVoucherEntry(this.router, VoucherType.VENDOR_INVOICE, vendorInvoice.VoucherHeaderSid);
     }
   }
 

@@ -30,6 +30,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 import { JournalVoucherImportModalComponent } from './journal-voucher-upload.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -536,11 +537,11 @@ downloadTemplate(): void {
   }
 
   viewJournalVoucher(item: any): void {
-  this.router.navigate(['/accounts/journal-voucher/entry', item.VoucherHeaderSid]);
+  navigateToVoucherEntry(this.router, VoucherType.JOURNAL, item.VoucherHeaderSid);
 }
 
 editJournalVoucher(item: any): void {
-  this.router.navigate(['/accounts/journal-voucher/entry', item.VoucherHeaderSid]);
+  navigateToVoucherEntry(this.router, VoucherType.JOURNAL, item.VoucherHeaderSid);
 }
 
   postJournalVoucher(item: any): void {
@@ -727,6 +728,6 @@ editJournalVoucher(item: any): void {
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['accounts/journal-voucher/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.JOURNAL);
   }
 }

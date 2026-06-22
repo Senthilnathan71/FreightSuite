@@ -8,6 +8,7 @@ import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptDetailView, ReceiptLineView, MatchedInvoice, InterBranchJV } from '../../models/receipt.model';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 
 /**
  * Receipt View Component
@@ -255,7 +256,7 @@ export class ReceiptViewComponent implements OnInit {
   }
 
   editReceipt(): void {
-    this.router.navigate(['accounts/receipt/entry', this.receiptId]);
+    navigateToVoucherEntry(this.router, VoucherType.RECEIPT, this.receiptId);
   }
 
   printReceipt(): void {

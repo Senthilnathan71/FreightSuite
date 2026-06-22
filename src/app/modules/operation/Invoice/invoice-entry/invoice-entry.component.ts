@@ -56,6 +56,7 @@ import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ToastrService } from 'ngx-toastr';
@@ -2846,8 +2847,8 @@ isSeaDepartment(): boolean {
             if (resolve) resolve(true);
             if (this.headerId) {
               this.loadInvoiceById(this.headerId);
-              this.router.navigate(['operation/invoice/entry', this.headerId], {
-                replaceUrl: true
+              navigateToVoucherEntry(this.router, VoucherType.INVOICE, this.headerId, {
+                extras: { replaceUrl: true }
               });
             }
           } else {
@@ -5077,7 +5078,7 @@ isSeaDepartment(): boolean {
   }
 
   navigateToCreate() : void {
-    this.router.navigate(['operation/invoice/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.INVOICE);
   }
 
   ngOnDestroy(): void {

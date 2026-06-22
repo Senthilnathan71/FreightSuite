@@ -25,6 +25,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
+import { getVoucherEntryLink, navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { ToastrService } from 'ngx-toastr';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
@@ -70,6 +71,9 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
 export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   // Character limits for text fields (single source of truth, mirrors DB widths).
   protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
+  // Shared voucher-route hub helpers for the Payment voucher hyperlink.
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
+  protected readonly VoucherType = VoucherType;
   // Field labels for the shared toastr validator (errorLoggerWithToastr).
   private readonly prValidationConfig = buildVoucherValidationConfig({
     PaymentRequestDate: 'Payment Request Date',
@@ -1109,7 +1113,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
               this.loadRequest(id);
             } else {
               this.form.patchValue({ PaymentRequestSid: id }, { emitEvent: false });
-              this.router.navigate(['/operation/payment-request/entry', id]);
+              navigateToVoucherEntry(this.router, VoucherType.PAYMENT_REQUEST, id);
             }
           } else {
             this.scheduleDirtyTrackingSnapshot();

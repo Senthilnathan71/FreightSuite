@@ -34,6 +34,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 /**
  * Payment List Component
@@ -577,7 +578,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['accounts/payment/entry'])
+    navigateToVoucherEntry(this.router, VoucherType.PAYMENT);
   }
 
   setTab(tab: 'payments' | 'pending-request') {
@@ -594,7 +595,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['accounts/payment/entry'], {
+    navigateToVoucherEntry(this.router, VoucherType.PAYMENT, undefined, {
       queryParams: { paymentRequestSid: item.PaymentRequestSid }
     });
   }
@@ -740,14 +741,14 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
    * View payment details
    */
   viewPayment(id: number): void {
-    this.router.navigate(['accounts/payment/entry', id]);
+    navigateToVoucherEntry(this.router, VoucherType.PAYMENT, id);
   }
 
   /**
    * Edit payment
    */
   editPayment(id: number): void {
-    this.router.navigate(['accounts/payment/entry', id]);
+    navigateToVoucherEntry(this.router, VoucherType.PAYMENT, id);
   }
 
   /**

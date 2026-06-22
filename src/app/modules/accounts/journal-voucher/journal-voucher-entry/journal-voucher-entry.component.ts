@@ -47,6 +47,7 @@ import { ElementStateGuardDirective } from 'src/app/core/Directives/element-stat
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -562,7 +563,7 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
   if (!this.voucherHeaderSid) {
     // NEW RECORD
     this.voucherHeaderSid = voucherHeaderSid;
-    this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
+    navigateToVoucherEntry(this.router, VoucherType.JOURNAL, voucherHeaderSid);
   } else {
     // UPDATE RECORD → Reload latest data
     this.loadVoucherForEdit(voucherHeaderSid);
@@ -612,10 +613,12 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
     this.spinner.show();
     const copiedData = this.prepareCopiedJournalVoucherData();
 
-    this.router.navigate(['/accounts/journal-voucher/entry'], {
-      state: {
-        copiedJournalVoucherData: copiedData,
-        isCopiedJournalVoucher: true,
+    navigateToVoucherEntry(this.router, VoucherType.JOURNAL, null, {
+      extras: {
+        state: {
+          copiedJournalVoucherData: copiedData,
+          isCopiedJournalVoucher: true,
+        },
       },
     });
   }
@@ -2717,7 +2720,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
             this.loadVoucherForEdit(voucherHeaderSid);
             if (!this.voucherHeaderSid && voucherHeaderSid) {
               this.voucherHeaderSid = voucherHeaderSid;
-              this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
+              navigateToVoucherEntry(this.router, VoucherType.JOURNAL, voucherHeaderSid);
             }
           }
         } else {
@@ -2795,7 +2798,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
         // Force reload of the same entry route so component state is fully refreshed
         this.router.navigateByUrl('/accounts/journal-voucher/list', { skipLocationChange: true }).then(() => {
-          this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
+          navigateToVoucherEntry(this.router, VoucherType.JOURNAL, voucherHeaderSid);
         });
       } else {
         this.appSettingService.showError(result.message || 'Failed to post journal voucher.');
@@ -3613,7 +3616,7 @@ resetForm(): void {
   }
 
   navigateToCreate() {
-          this.router.navigate(['accounts/journal-voucher/entry'])
+          navigateToVoucherEntry(this.router, VoucherType.JOURNAL);
         }
 }
 

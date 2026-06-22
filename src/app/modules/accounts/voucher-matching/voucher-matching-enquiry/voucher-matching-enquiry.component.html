@@ -344,7 +344,11 @@
                         style="max-width: 320px; border: 1px solid #b9d7ff; background: #eef6ff; color: #103a5e;"
                         [title]="voucherSummaryTitle(voucher)">
                         <span class="badge bg-primary" style="font-size: 10px;">{{ voucher.voucherTypeCode || voucher.voucherType || 'SRC' }}</span>
-                        <span class="fw-bold text-truncate" style="max-width: 225px; color: #103a5e; text-decoration: underline;">{{ voucher.voucherNumber }}</span>
+                        <a *ngIf="getVoucherEntryLink(voucher.voucherTypeCode || voucher.voucherType, voucher.voucherHeaderSid) as link; else srcVoucherText"
+                          [routerLink]="link" class="voucher-number-link fw-bold text-truncate" style="max-width: 225px;">{{ voucher.voucherNumber }}</a>
+                        <ng-template #srcVoucherText>
+                          <span class="fw-bold text-truncate" style="max-width: 225px; color: #103a5e; text-decoration: underline;">{{ voucher.voucherNumber }}</span>
+                        </ng-template>
                         <button
                           type="button"
                           class="btn btn-link btn-sm p-0"
@@ -374,7 +378,11 @@
                         style="max-width: 320px; border: 1px solid #bbf0d0; background: #effcf4; color: #064e3b;"
                         [title]="voucherSummaryTitle(voucher)">
                         <span class="badge bg-success" style="font-size: 10px;">{{ voucher.voucherTypeCode || voucher.voucherType || 'OBJ' }}</span>
-                        <span class="fw-bold text-truncate" style="max-width: 225px; color: #103a5e; text-decoration: underline;">{{ voucher.voucherNumber }}</span>
+                        <a *ngIf="getVoucherEntryLink(voucher.voucherTypeCode || voucher.voucherType, voucher.voucherHeaderSid) as link; else objVoucherText"
+                          [routerLink]="link" class="voucher-number-link fw-bold text-truncate" style="max-width: 225px;">{{ voucher.voucherNumber }}</a>
+                        <ng-template #objVoucherText>
+                          <span class="fw-bold text-truncate" style="max-width: 225px; color: #103a5e; text-decoration: underline;">{{ voucher.voucherNumber }}</span>
+                        </ng-template>
                         <button
                           type="button"
                           class="btn btn-link btn-sm p-0"

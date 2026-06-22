@@ -36,6 +36,7 @@ import {
 import { InvoiceService } from '../../services/invoice.service';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { VoucherType, navigateToVoucherEntry } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-invoice-list',
@@ -615,7 +616,7 @@ navigateToBooking(row: any): void {
 
   // viewInvoice(item.VoucherHeaderSid)
   editbyrow(row:any) {
-     this.router.navigate(['operation/invoice/entry/', row.VoucherHeaderSid]);
+     navigateToVoucherEntry(this.router, VoucherType.INVOICE, row.VoucherHeaderSid);
   }
 
 
@@ -952,7 +953,7 @@ navigateToBooking(row: any): void {
     });
     if (this.voucherActionGuard.block(blockedReason)) return;
 
-    this.router.navigate(['operation/invoice/entry']);
+    navigateToVoucherEntry(this.router, VoucherType.INVOICE);
   }
 
   // clearFilterValue() {
@@ -1019,7 +1020,7 @@ navigateToBooking(row: any): void {
   }
 
   viewInvoice(id: number) {
-    this.router.navigate(['operation/invoice/entry/', id]);
+    navigateToVoucherEntry(this.router, VoucherType.INVOICE, id);
   }
 }
 

@@ -8,6 +8,7 @@ import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { debounceTime, firstValueFrom, forkJoin, Subject, takeUntil } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { navigateToVoucherEntry, VoucherType } from 'src/app/common/voucher-route';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
@@ -575,7 +576,7 @@ export class ReverseVoucherEntryComponent {
 
 
   navigateToVoucherMatching(sid: number) {
-    this.router.navigate(['/accounts/voucher-matching/entry', sid]);
+    navigateToVoucherEntry(this.router, VoucherType.VOUCHER_MATCHING, sid);
   }
 
   private patchVoucherData(data: any) {
@@ -810,7 +811,7 @@ export class ReverseVoucherEntryComponent {
 
             if (!this.headerId && voucherHeaderSid) {
               this.headerId = voucherHeaderSid;
-              this.router.navigate(['operation/reverse-voucher/entry', voucherHeaderSid]);
+              navigateToVoucherEntry(this.router, VoucherType.REVERSAL_JV, voucherHeaderSid);
             }
           }
         } else {
@@ -1758,7 +1759,7 @@ export class ReverseVoucherEntryComponent {
           if (response.status) {
             this.appSettingService.showSuccess('Reverse Voucher updated successfully');
             const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
-            this.router.navigate(['/accounts/reverse-voucher/entry', id]);
+            navigateToVoucherEntry(this.router, VoucherType.REVERSAL_JV, id);
           } else {
             this.appSettingService.showError(response.message);
           }
@@ -1779,7 +1780,7 @@ export class ReverseVoucherEntryComponent {
           if (response.status) {
             this.appSettingService.showSuccess('Reverse Voucher created and posted successfully');
             const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
-            if (id) this.router.navigate(['/accounts/reverse-voucher/entry', id]);
+            if (id) navigateToVoucherEntry(this.router, VoucherType.REVERSAL_JV, id);
             else this.router.navigate(['/accounts/reverse-voucher/list']);
           } else {
             this.appSettingService.showError(response.message);
