@@ -1687,7 +1687,7 @@ export class VendorCreditNoteEntryComponent {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.VENDOR_CREDIT_NOTE,
       })
       .subscribe({
         next: (resp) => {

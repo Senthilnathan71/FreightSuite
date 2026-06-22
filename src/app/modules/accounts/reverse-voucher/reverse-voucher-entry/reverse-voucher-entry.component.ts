@@ -2041,7 +2041,7 @@ export class ReverseVoucherEntryComponent {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.REVERSAL_JV,
       })
       .subscribe({
         next: (resp) => {

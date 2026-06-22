@@ -32,6 +32,7 @@ import { consistentExchangeRatesValidator } from 'src/app/core/ValidationFn/exRa
 import { handleError, sortValidationErrors } from 'src/app/common/error-handling/payload-validation-handler';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
+import { VoucherType } from 'src/app/common/voucher-route';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
@@ -3013,16 +3014,20 @@ createRateFormGroup(data?: any): FormGroup {
   checkVoucherPostingMechanism() {
     const companyId = this.currentCompany?.CompanyMasterSid;
     const branchId = this.currentBranch?.BranchMasterSid;
-    const menuName = this.selectedVoucherType;
     const isInvoice = this.selectedVoucherType === 'Invoice';
-    if (!companyId || !branchId || !menuName) {
+    const documentTypeCode =
+      this.selectedVoucherType === 'Vendor Invoice' ? VoucherType.VENDOR_INVOICE
+      : this.selectedVoucherType === 'Payment Request' ? VoucherType.PAYMENT_REQUEST
+      : this.selectedVoucherType === 'Invoice' ? VoucherType.INVOICE
+      : null;
+    if (!companyId || !branchId || !documentTypeCode) {
       return;
     }
     this.operationService
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: documentTypeCode,
       })
       .subscribe({
         next: (resp) => {

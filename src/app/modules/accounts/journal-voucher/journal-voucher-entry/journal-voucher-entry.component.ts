@@ -3569,7 +3569,7 @@ resetForm(): void {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.JOURNAL,
       })
       .subscribe({
         next: (resp) => {

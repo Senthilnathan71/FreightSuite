@@ -1499,7 +1499,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.VENDOR_INVOICE,
       })
       .subscribe({
         next: (resp) => {

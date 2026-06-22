@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http';
 export interface CheckVoucherPostingMechanism {
   CompanyMasterSid: number;
   BranchMasterSid: number;
-  MenuName: string;
+  DocumentTypeCode: string;
   Type?: string;
 }
 @Injectable({

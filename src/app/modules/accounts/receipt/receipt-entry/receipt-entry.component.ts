@@ -4671,7 +4671,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: 'Receipt',
+        DocumentTypeCode: VoucherType.RECEIPT,
         Type: typeValue,
       })
       .subscribe({

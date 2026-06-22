@@ -1897,7 +1897,7 @@ isSeaDepartment(): boolean {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.INVOICE,
       })
       .subscribe({
         next: (resp) => {

@@ -5933,7 +5933,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: 'Payment',
+        DocumentTypeCode: VoucherType.PAYMENT,
         Type: typeValue,
       })
       .subscribe({

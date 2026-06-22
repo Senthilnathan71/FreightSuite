@@ -1558,7 +1558,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.VOUCHER_MATCHING,
       })
       .subscribe({
         next: (resp) => {

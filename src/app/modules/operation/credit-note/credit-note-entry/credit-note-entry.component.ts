@@ -1937,7 +1937,7 @@ export class CreditNoteEntryComponent {
       .checkVoucherPostingMechanism({
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
-        MenuName: menuName,
+        DocumentTypeCode: VoucherType.CREDIT_NOTE,
       })
       .subscribe({
         next: (resp) => {
