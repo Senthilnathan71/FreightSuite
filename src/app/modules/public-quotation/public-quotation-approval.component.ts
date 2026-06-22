@@ -7,6 +7,7 @@ import {
   PublicCarrierDecisionStatus,
   PublicQuotationCarrier,
   PublicQuotationResponse,
+  PublicQuotationRoute,
   PublicQuotationService,
 } from './public-quotation.service';
 
@@ -14,6 +15,7 @@ type ScreenState = 'loading' | 'ready' | 'submitted' | 'error';
 type ErrorCode = 'NOT_FOUND' | 'EXPIRED' | 'ALREADY_USED' | 'UNKNOWN';
 
 interface CarrierDecisionDraft {
+  route: PublicQuotationRoute;
   carrier: PublicQuotationCarrier;
   status: '' | PublicCarrierDecisionStatus;
   approvedBy: string;
@@ -59,12 +61,15 @@ export class PublicQuotationApprovalComponent implements OnInit {
     this.service.fetch(this.token).subscribe({
       next: (data) => {
         this.data = data;
-        this.drafts = data.carriers.map((carrier) => ({
-          carrier,
-          status: '',
-          approvedBy: '',
-          remarks: '',
-        }));
+        this.drafts = data.routes.flatMap((route) =>
+          route.carriers.map((carrier) => ({
+            route,
+            carrier,
+            status: '' as const,
+            approvedBy: '',
+            remarks: '',
+          })),
+        );
         this.state = 'ready';
       },
       error: (err: HttpErrorResponse) => {
@@ -123,6 +128,10 @@ export class PublicQuotationApprovalComponent implements OnInit {
       },
     });
   }
+
+  draftsForRoute(route: PublicQuotationRoute): CarrierDecisionDraft[] {
+  return this.drafts.filter((d) => d.route === route);
+}
 
   private classifyError(err: HttpErrorResponse): ErrorCode {
     const code = err?.error?.code;

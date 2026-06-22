@@ -403,6 +403,24 @@ export class ReverseVoucherEntryComponent {
       Narration: [{ value: '', disabled: true }],
       Remarks: [{ value: '', disabled: true }],
       Status: [{ value: 'A', disabled: true }],
+      PartyMasterSid: [null],
+      PartyName: [''],
+      PartyAddress: [''],
+      CustomerMasterSid: [null],
+      CustomerBranchSid: [null],
+      GSTNo: [''],
+      PlaceOfSupply: [''],
+      CurrencyCode: [''],
+      ExchangeRate: [1],
+      BillNo: [''],
+      BillDate: [null],
+      BillAmt: [0],
+      MBLNo: [''],
+      HBLNo: [''],
+      InvoiceType: ['B2B'],
+      GSTType: [''],
+      MasterJobSid: [null],
+      HouseJobSid: [null],
       voucherDetails: this.fb.array([]),
     });
   }
@@ -1636,6 +1654,7 @@ export class ReverseVoucherEntryComponent {
       COAMasterSid: detail.COAMasterSid,
       ProfitCenterMasterSid: detail.ProfitCenterMasterSid,
       CostCenterMasterSid: detail.CostCenterMasterSid,
+      Narration: formValue.Narration,
     }));
 
     // Add TDS

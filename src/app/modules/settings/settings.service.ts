@@ -479,4 +479,10 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     );
   }
 
+  getUsersByRole(payload: any) {
+      return this.http.post<{ data: any }>(`ff-user/by-role`,payload).pipe(
+        map((resp) => resp)
+      );
+    }
+
 }
