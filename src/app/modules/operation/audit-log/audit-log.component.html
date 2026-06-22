@@ -23,19 +23,19 @@
 
   <ng-container *ngIf="!loading">
     <div *ngIf="auditLogs?.length > 0; else noLogs" class="audit-log-list">
-      <div class="audit-log-card" *ngFor="let log of auditLogs">
+      <div class="audit-log-card" *ngFor="let log of auditLogs; trackBy: trackByGroup">
         <div class="audit-log-top">
           <div>
             <div class="audit-user">{{ log.changedBy || '-' }}</div>
-            <div class="audit-time">{{ formatAuditDate(log.changedAt) }}</div>
+            <div class="audit-time">{{ log.changedAtDisplay }}</div>
           </div>
 
-          <span class="audit-badge" [ngClass]="getOperationClass(log.operation)">
+          <span class="audit-badge" [ngClass]="log.operationClass">
             {{ log.operation }}
           </span>
         </div>
 
-        <div *ngFor="let section of log.sections" class="audit-section">
+        <div *ngFor="let section of log.sections; trackBy: trackBySection" class="audit-section">
           <div class="audit-section-title" *ngIf="!log.isActionOnly">
             {{ section.title }}
           </div>
@@ -45,7 +45,7 @@
               <div class="audit-panel-heading">Changes</div>
 
               <ul class="audit-list" *ngIf="section.actionDisplay?.length; else emptyAction">
-                <li *ngFor="let field of section.actionDisplay">{{ field }}</li>
+                <li *ngFor="let field of section.actionDisplay; trackBy: trackByLine">{{ field }}</li>
               </ul>
             </div>
           </ng-container>
@@ -57,7 +57,7 @@
                   <div class="audit-panel-heading">Old Value</div>
 
                   <ul class="audit-list" *ngIf="section.oldValDisplay?.length; else emptyOld">
-                    <li *ngFor="let field of section.oldValDisplay">{{ field }}</li>
+                    <li *ngFor="let field of section.oldValDisplay; trackBy: trackByLine">{{ field }}</li>
                   </ul>
                 </div>
               </div>
@@ -67,13 +67,25 @@
                   <div class="audit-panel-heading">New Value</div>
 
                   <ul class="audit-list" *ngIf="section.newValDisplay?.length; else emptyNew">
-                    <li *ngFor="let field of section.newValDisplay">{{ field }}</li>
+                    <li *ngFor="let field of section.newValDisplay; trackBy: trackByLine">{{ field }}</li>
                   </ul>
                 </div>
               </div>
             </div>
           </ng-template>
         </div>
+      </div>
+
+      <!-- Load more -->
+      <div *ngIf="hasMore" class="audit-load-more text-center mt-3">
+        <button
+          type="button"
+          class="btn btn-outline-primary btn-sm"
+          (click)="loadMore()"
+          [disabled]="loadingMore">
+          <span *ngIf="loadingMore" class="spinner-border spinner-border-sm me-1" role="status"></span>
+          {{ loadingMore ? 'Loading…' : 'Load more' }}
+        </button>
       </div>
     </div>
 
