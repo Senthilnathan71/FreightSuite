@@ -34,12 +34,19 @@ interface LoadingPlanEntryTotals {
   volume: number;
 }
 
+type HeaderPosition = 'left' | 'center' | 'right';
+
 export interface LoadingPlanEntryPdfData {
   reportTitle: string;
   company: any;
   branch: any;
   userData: any;
   logo?: string;
+  printSettings?: {
+    logoPosition: HeaderPosition;
+    companyPosition: HeaderPosition;
+    companyAlignment: HeaderPosition;
+  };
   info: LoadingPlanEntryInfo;
   rows: LoadingPlanEntryRow[];
   totals: LoadingPlanEntryTotals;
@@ -92,83 +99,93 @@ export function generateLoadingPlanEntryDocument(data: LoadingPlanEntryPdfData):
 function buildHeader(data: LoadingPlanEntryPdfData): any {
   const company: any = data.company || {};
   const branch: any = data.branch || {};
-  const logoPosition = 'left' as 'left' | 'center' | 'right';
-  const companyPosition = 'center' as 'left' | 'center' | 'right';
-  const companyAlignment = 'center' as 'left' | 'center' | 'right';
-  const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = [
-    branch?.addressLine2 || company?.addressLine2 || '',
-    branch?.cityName || branch?.cityMaster?.cityName || company?.city || '',
-    (branch?.postalCode || company?.postalCode) ? `Postal Code : ${branch?.postalCode || company?.postalCode}` : '',
-    (branch?.phoneNumber || company?.phoneNumber) ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}` : ''
-  ].filter(Boolean).join(', ');
+  const logo = data.logo;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
 
-  const companyDetails = {
-    stack: [
-      { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: companyAlignment },
-      { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] }
-    ]
+  const city = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || company?.postalCode || '';
+  const phone = branch?.phoneNumber || company?.phoneNumber || '';
+  const cityLine: any[] = [];
+  const appendText = (text: string | any[]) => {
+    if (cityLine.length) cityLine.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      cityLine.push(...text);
+    } else {
+      cityLine.push({ text });
+    }
+  };
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
+
+  if (addressLine2) appendText(addressLine2);
+  if (city) appendText(city);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phone) appendText([{ text: 'Ph.no : ', bold: true }, { text: phone }]);
+
+  const companyInfoStack: any[] = [
+    { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: printSettings.companyAlignment },
+    { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: branch?.addressLine1 || company?.addressLine1 || '', fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: cityLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 2, 0, 4] }
+  ];
+
+  const buildSlot = (slot: HeaderPosition) => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot && logo) {
+      stack.push({ image: logo, fit: [60, 60], alignment: slot, margin: [8, 0, 15, 0] });
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 16, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 16, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
+    }
+    return { stack };
   };
 
   return {
     stack: [
       {
-        columns: [
-          {
-            width: '*',
-            stack: [
-              logoPosition === 'left' ? buildHeaderLogo(data.logo, 'left') : { text: '' },
-              companyPosition === 'left' ? companyDetails : { text: '' }
-            ]
-          },
-          {
-            width: '*',
-            stack: [
-              logoPosition === 'center' ? buildHeaderLogo(data.logo, 'center') : { text: '' },
-              companyPosition === 'center' ? companyDetails : { text: '' }
-            ]
-          },
-          {
-            width: '*',
-            stack: [
-              logoPosition === 'right' ? buildHeaderLogo(data.logo, 'right') : { text: '' },
-              companyPosition === 'right' ? companyDetails : { text: '' }
-            ]
-          }
-        ]
-      },
-      {
-        canvas: [
-          {
-            type: 'line',
-            x1: 0,
-            y1: 0,
-            x2: 812,
-            y2: 0,
-            lineWidth: 1,
-            lineColor: '#000'
-          }
-        ],
-        margin: [0, 6, 0, 0]
+        table: {
+          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
+        },
+        layout: {
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0.8 : 0),
+          vLineWidth: () => 0,
+          hLineColor: () => '#000',
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 8
+        },
+        margin: [0, 5, 0, 0]
       }
     ],
     margin: [0, 0, 0, 2]
   };
 }
 
-function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
-  if (!logo) {
-    return { text: '' };
+function getHeaderWidths(
+  logoPosition: HeaderPosition,
+  companyPosition: HeaderPosition
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
   }
 
-  return {
-    image: logo,
-    fit: [50, 50],
-    alignment,
-    margin: [4, 6, 0, 0]
-  };
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: LoadingPlanEntryPdfData): any {
@@ -374,6 +391,11 @@ export function transformLoadingPlanEntryApiData(
   options?: {
     portList?: any[];
     carrier?: string;
+    printSettings?: {
+      logoPosition: HeaderPosition;
+      companyPosition: HeaderPosition;
+      companyAlignment: HeaderPosition;
+    };
   }
 ): LoadingPlanEntryPdfData {
   const firstRow = loadingPlanData?.[0] || {};
@@ -439,6 +461,11 @@ export function transformLoadingPlanEntryApiData(
       email: userData?.Email || userData?.email || ''
     },
     logo,
+    printSettings: options?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     info: {
       vesselVoyageNo: joinNonEmpty([firstRow?.VesselName, firstRow?.VoyageNo], ' / '),
       carrier: options?.carrier || firstRow?.CarrierName || '',

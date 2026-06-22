@@ -22,6 +22,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
 import { ToastrService } from 'ngx-toastr';
@@ -138,6 +139,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     private readonly numberToWords: NumberToWordsService,
     private readonly modalService: NgbModal,
     private readonly pdfMakeService: PdfMakeService,
+    private readonly companySettings: CompanySettingsManagerService,
     public readonly mps: MenuPermissionService,
     private readonly toastr: ToastrService,
   ) {
@@ -512,7 +514,8 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         pdfCompany,
         pdfBranch,
         this.userData,
-        logo
+        logo,
+        { printSettings: this.companySettings.getPrintSettings() }
       );
 
       this.appSettingsService.showSuccess('PDF downloaded successfully!');

@@ -35,6 +35,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 @Component({
   selector: 'app-loading-plan-entry',
   standalone: true,
@@ -168,6 +169,7 @@ export class LoadingPlanEntryComponent {
     public logoService : LogoService,
     public mps: MenuPermissionService,
     private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService,
 
 
   ) {
@@ -1386,6 +1388,7 @@ formatContainerNumber(): void {
         {
           portList: this.portList,
           carrier: this.loadingPlanForm.get('carrier')?.value || '',
+          printSettings: this.companySettings.getPrintSettings(),
         },
       );
       const docDefinition = generateLoadingPlanEntryDocument(pdfData);

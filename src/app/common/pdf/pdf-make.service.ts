@@ -1020,6 +1020,11 @@ export class PdfMakeService {
       cargoDetails?: any;
       vendorCreditNoteData?: any;
       creditNotePrintData?: any;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformVendorCreditNoteApiData(
@@ -1066,6 +1071,11 @@ export class PdfMakeService {
       cargoDetails?: any;
       vendorCreditNoteData?: any;
       creditNotePrintData?: any;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformVendorCreditNoteApiData(
@@ -1698,6 +1708,12 @@ export class PdfMakeService {
     lookups?: {
       coaList?: any[];
       subledgerList?: any[];
+      amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): void {
     const pdfData = transformJournalVoucherApiData(apiData, company, branch, userData, logo, lookups);
@@ -1713,6 +1729,12 @@ export class PdfMakeService {
     lookups?: {
       coaList?: any[];
       subledgerList?: any[];
+      amountInWords?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): Promise<Blob> {
     const pdfData = transformJournalVoucherApiData(apiData, company, branch, userData, logo, lookups);
