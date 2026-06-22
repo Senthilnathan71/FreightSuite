@@ -2315,6 +2315,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           this.detailItems.at(i).get(field)?.disable({ emitEvent: false });
         });
       }
+      // Extra advance creditor rows (cash multi-party) use the classic subledger dropdown; their
+      // ledgerList is loaded by handleCOAChange in the detail loop above, so nothing to do here.
     }
 
     // Lock charge detail fields for Payment Request payments in edit mode
@@ -2599,11 +2601,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
     if (this.voucherActionGuard.block(blockedReason)) return;
 
+    const wasAdvance = this.isExtraAdvanceRow(detailIndex);
     // Remove from form array only — the backend soft-deletes orphaned rows on save
     (this.detailItems as FormArray).removeAt(detailIndex);
     this.filteredCoaList.splice(detailIndex, 1);
     this.removeJobSearchState(detailIndex);
     this.rebuildFilteredCoaListForAllRows();
+    // Re-balance the cash row only in the multi-party feature context (an advance was removed, or
+    // advances still remain) — single-party / bank payments are left untouched.
+    if (wasAdvance || this.detailItems.controls.some((_, i) => this.isExtraAdvanceRow(i))) {
+      this.syncCashToParties();
+    }
   }
 
    private subscribeToPartyAndBankChanges(): void {
@@ -2651,19 +2659,23 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
-    // Find ALL party-type rows (rows with Sy Cr or Sy Dr ledger types)
+    // Replace the previous MAIN (header) party row (the creditor debit row at index 0) AND fold in any
+    // row that already carries THIS party — the "first pick" row that promotes to the header, or a
+    // would-be duplicate. EXTRA advance rows for OTHER creditors keep a different LedgerMasterSid, so
+    // they are preserved.
+    const rows = this.detailItems.getRawValue() || [];
     const partyIndexes: number[] = [];
-    (this.detailItems.getRawValue() || []).forEach((d, index) => {
-      const ledgerObj = this.coaList.find(
-        l => l.COAMasterSid === d.COAMasterSid
-      );
-      // Check if it's a Sy Cr or Sy Dr type OR matches the party ledger
-      if (
-        ledgerObj?.LedgerType === 'Sy Cr' ||
-        ledgerObj?.LedgerType === 'Sy Dr' ||
-        d.LedgerMasterSid === partyLedger.SubledgerMasterSid ||
-        (d.DrCr === 'D' && d.COAMasterSid === partyLedger.COAMappedId)
-      ) {
+    rows.forEach((d, index) => {
+      const isPrevMainAtZero =
+        index === 0 &&
+        d.DrCr === 'D' &&
+        (d.COAMasterSid === partyLedger.COAMappedId ||
+          this.isSyCrCoa(d.COAMasterSid) ||
+          d.LedgerMasterSid === partyLedger.SubledgerMasterSid);
+      const isSameAsNewParty =
+        d.LedgerMasterSid != null &&
+        Number(d.LedgerMasterSid) === Number(partyLedger.SubledgerMasterSid);
+      if (isPrevMainAtZero || isSameAsNewParty) {
         partyIndexes.push(index);
       }
     });
@@ -2901,11 +2913,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         );
       }
     } else {
-      // Other rows: exclude both Sy Cr/Sy Dr and the selected bank/cash COA
+      // Other rows: exclude Sy Dr always, and Sy Cr too — EXCEPT on cash payments, where extra
+      // Sy Cr rows are allowed (advances to other creditors). Also exclude the selected bank/cash COA.
       if (partySid) {
-        filtered = filtered.filter(
-          (coa) => coa.LedgerType?.trim() !== 'Sy Cr' && coa.LedgerType?.trim() !== 'Sy Dr'
-        );
+        const allowExtraSyCr = this.paymentForm.get('CashOrBank')?.getRawValue() === 'C';
+        filtered = filtered.filter((coa) => {
+          const lt = coa.LedgerType?.trim();
+          if (lt === 'Sy Dr') return false;          // never a payment party type
+          if (lt === 'Sy Cr') return allowExtraSyCr;  // extra creditor only in cash mode
+          return true;
+        });
       }
       if (bankCoaSid) {
         filtered = filtered.filter((coa) => coa.LedgerType !== 'Bank' && coa.LedgerType !== 'Cash');
@@ -2938,16 +2955,22 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const fullCoa = this.coaList.find(c => c.COAMasterSid === coa.COAMasterSid) || coa;
 
     if (this.isScreenPartyCoa(fullCoa)) {
-      // Party control account (Sy Cr) → the subledger cell is the party picker fed from partyList.
+      // Party control account (Sy Cr).
       const ledgerCtrl = (this.detailItems.at(detailIndex) as FormGroup).get('LedgerMasterSid');
       ledgerCtrl?.setValidators([Validators.required]);
-      if (!isPatching) {
-        this.detailItems.at(detailIndex).patchValue(
-          { LedgerMasterSid: null, CustomerBranchSid: null },
-          { emitEvent: false },
-        );
+      if (this.showPartyPicker(detailIndex)) {
+        // Main party row (and the first pick that sets the header) → Customer+Branch picker (partyList).
+        if (!isPatching) {
+          this.detailItems.at(detailIndex).patchValue(
+            { LedgerMasterSid: null, CustomerBranchSid: null },
+            { emitEvent: false },
+          );
+        }
+        ledgerCtrl?.updateValueAndValidity({ emitEvent: false });
+      } else {
+        // Extra advance creditor row → classic subledger dropdown fed from ledgerList[i].
+        this.fetchLedgerForCOA(coa, detailIndex, isPatching);
       }
-      ledgerCtrl?.updateValueAndValidity({ emitEvent: false });
     } else {
       this.fetchLedgerForCOA(coa, detailIndex, isPatching);
     }
@@ -2972,11 +2995,23 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return coa?.LedgerType?.trim() === this.PARTY_LEDGER_TYPE;
   }
 
-  /** True when a detail row's chosen COA is the party control account → use the party picker. */
+  /** True when a detail row's chosen COA is the party control account (Sy Cr). */
   isPartyCoaRow(detailIndex: number): boolean {
     const coaSid = this.detailItems.at(detailIndex)?.get('COAMasterSid')?.getRawValue();
     const coa = this.coaList.find((c) => c.COAMasterSid === coaSid);
     return this.isScreenPartyCoa(coa);
+  }
+
+  /**
+   * Whether a Sy Cr row shows the Customer + Branch party picker (vs the classic subledger dropdown).
+   * Only the MAIN (header) party row — and the first Sy Cr pick that promotes to the header before any
+   * party exists — needs the branch. Extra advance rows use the classic subledger dropdown (branch is
+   * irrelevant for an on-account advance: a customer's branches share one SubledgerMasterSid).
+   */
+  showPartyPicker(detailIndex: number): boolean {
+    if (!this.isPartyCoaRow(detailIndex)) return false;
+    if (this.isAutoPartyRow(detailIndex)) return true;
+    return !this.r['PartyMasterSid']?.getRawValue();
   }
 
   /**
@@ -2986,7 +3021,23 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    */
   onPartyLedgerSelect(party: any, detailIndex: number): void {
     const row = this.detailItems.at(detailIndex) as FormGroup;
-    row.get('LedgerMasterSid')?.setValue(party?.SubledgerMasterSid ?? null, { emitEvent: false });
+    const picked = party?.SubledgerMasterSid ?? null;
+
+    // Block a creditor that is already the header party or already on another row.
+    // (A customer's branches share one SubledgerMasterSid, so compare on that.)
+    const headerParty = this.paymentForm.get('PartyMasterSid')?.getRawValue();
+    const dupInOtherRow = (this.detailItems.getRawValue() || []).some(
+      (d, i) => i !== detailIndex && Number(d.LedgerMasterSid) === Number(picked),
+    );
+    if (picked && (Number(picked) === Number(headerParty) || dupInOtherRow)) {
+      this.appSettingService.showWarning(
+        `${party?.CustomerName ?? 'This party'} is already on this payment.`,
+      );
+      row.patchValue({ LedgerMasterSid: null, CustomerBranchSid: null }, { emitEvent: false });
+      return;
+    }
+
+    row.get('LedgerMasterSid')?.setValue(picked, { emitEvent: false });
     this.checkAndUpdateForPartyDetail(detailIndex);
 
     // First-time guard: never override an already-set header party.
@@ -3895,6 +3946,25 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return ledgerType === 'Sy Cr' || ledgerType === 'Sy Dr';
   }
 
+  /** True when the COA on a row is this screen's creditor control account (Sy Cr). */
+  private isSyCrCoa(coaSid: number | null): boolean {
+    if (!coaSid || !this.coaList?.length) return false;
+    const coa = this.coaList.find((c) => c.COAMasterSid === coaSid);
+    return String(coa?.LedgerType || '').trim() === 'Sy Cr';
+  }
+
+  /**
+   * True when a row is an EXTRA creditor (advance) row on a cash payment — a Sy Cr row that is
+   * neither the main (header) party row nor the bank/cash row. These post as on-account advances:
+   * no bill matching, no TDS, no tax.
+   */
+  private isExtraAdvanceRow(index: number): boolean {
+    if (this.paymentForm.get('CashOrBank')?.getRawValue() !== 'C') return false;
+    if (this.isAutoPartyRow(index) || this.isAutoBankRow(index)) return false;
+    const coaSid = this.detailItems.at(index)?.get('COAMasterSid')?.getRawValue();
+    return this.isSyCrCoa(coaSid);
+  }
+
   /**
    * Get tooltip text for the delete button.
    */
@@ -4521,7 +4591,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       });
       this.cashFieldsBackup = null;
     } else {
-      // Switching to Bank — restore bank backup if available, else set defaults
+      // Switching to Bank — drop any EXTRA advance (Sy Cr) rows; multiple parties are cash-only.
+      // (CashOrBank is already 'B' here, so check the COA type directly, not isExtraAdvanceRow.)
+      for (let i = this.detailItems.length - 1; i >= 2; i--) {
+        const coaSid = this.detailItems.at(i).get('COAMasterSid')?.getRawValue();
+        if (this.isSyCrCoa(coaSid) && !this.isAutoPartyRow(i)) {
+          this.detailItems.removeAt(i);
+          this.filteredCoaList.splice(i, 1);
+        }
+      }
+      // Restore bank backup if available, else set defaults
       this.paymentForm.patchValue({
         BankCOA: this.bankFieldsBackup?.BankCOA ?? null,
         InstrumentMode: this.bankFieldsBackup?.InstrumentMode ?? null,
@@ -4632,6 +4711,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     if (recalcPartyAmount) {
       this.recalcPaymentTaxForRow(index);
+    }
+
+    // Cash multi-party: when any creditor (debit) row's amount changes and advances are present,
+    // re-balance the single cash row. Covers both the main party and the advance rows.
+    if (!this.isPatching && this.paymentForm.get('CashOrBank')?.getRawValue() === 'C') {
+      const isDebitRow = this.detailItems.at(index)?.get('DrCr')?.getRawValue() === 'D';
+      const hasAdvances = this.detailItems.controls.some((_, j) => this.isExtraAdvanceRow(j));
+      if (isDebitRow && hasAdvances) {
+        this.syncCashToParties();
+      }
     }
   }
 
@@ -5115,6 +5204,23 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   onSubledgerChange(subledger: any, index: number): void {
+    // Advance creditor rows use this classic dropdown — block a party already on the payment
+    // (the header party or another row). Compare on SubledgerMasterSid (= the party ledger).
+    if (this.isPartyCoaRow(index)) {
+      const picked = subledger?.SubledgerMasterSid
+        ?? this.detailItems.at(index).get('LedgerMasterSid')?.getRawValue();
+      const headerParty = this.r['PartyMasterSid']?.getRawValue();
+      const dup = (this.detailItems.getRawValue() || []).some(
+        (d, i) => i !== index && Number(d.LedgerMasterSid) === Number(picked),
+      );
+      if (picked && (Number(picked) === Number(headerParty) || dup)) {
+        this.appSettingService.showWarning(
+          `${subledger?.SubledgerName ?? 'This party'} is already on this payment.`,
+        );
+        this.detailItems.at(index).get('LedgerMasterSid')?.setValue(null, { emitEvent: false });
+        return;
+      }
+    }
     this.fillPayTo()
     this.checkAndUpdateForPartyDetail(index);
     this.loadHSSACForSubledger(index, subledger, false);
@@ -5692,6 +5798,15 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       partyRow.patchValue({ Amount: totalMatchCurrAmt });
       this.calculateLocalAmount(0, true);
     }
+    // Cash multi-party: when advance rows exist, the cash row = matched main amount + the advances.
+    // With no advances we keep the original matched-only behaviour byte-for-byte.
+    const hasExtraAdvance =
+      this.paymentForm.get('CashOrBank')?.getRawValue() === 'C' &&
+      this.detailItems.controls.some((_, i) => this.isExtraAdvanceRow(i));
+    if (hasExtraAdvance) {
+      this.syncCashToParties();
+      return;
+    }
     const headerCurrency = this.r['CurrencyMasterSid']?.getRawValue();
     const bankRow = this.detailItems.at(1) as FormGroup;
     if (bankRow) {
@@ -5699,6 +5814,45 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       bankRow.patchValue({ Amount: headerCurrency === bankCurrency ?  totalMatchCurrAmt : 0 });
       this.calculateLocalAmount(1, true);
     }
+  }
+
+  /**
+   * Cash multi-party: keep the single cash row equal to the sum of every creditor (debit) row —
+   * the matched main-party amount plus each advance row — so debits == credits stay balanced.
+   * Tightly scoped to a header-party cash payment; a no-op for PR payments, bank/cheque payments,
+   * during edit-load patching, or when the cash currency differs from the header currency.
+   */
+  private syncCashToParties(): void {
+    if (this.isFromPaymentRequest) return;
+    if (this.paymentForm.get('CashOrBank')?.getRawValue() !== 'C') return;
+    if (this.isPatching) return;
+    if (!this.r['PartyMasterSid']?.getRawValue()) return;
+    const bankRow = this.detailItems.at(1) as FormGroup;
+    if (!bankRow || bankRow.get('DrCr')?.getRawValue() !== 'C') return;
+    const headerCurrency = this.r['CurrencyMasterSid']?.getRawValue();
+    const bankCurrency = bankRow.get('CurrencyMasterSid')?.value;
+    if (headerCurrency !== bankCurrency) return; // mixed-currency cash isn't auto-summed
+    let debitTotal = 0;
+    this.detailItems.controls.forEach((_, i) => {
+      if (this.detailItems.at(i).get('DrCr')?.getRawValue() === 'D') {
+        debitTotal += toNumber(this.detailItems.at(i).get('Amount')?.value);
+      }
+    });
+    // Net the cash by any TDS withheld from the MAIN party (India) — mirrors validateAmount, which
+    // adds TDS to the credit side. Cash paid = creditor debits − TDS, so debits == credits balances.
+    let tdsInHeaderCurr = 0;
+    if (this.tdsHelper?.isTDSEnabled && this.currentCompanyCountryCode === 'in') {
+      const tdsAmt = toNumber(this.tdsForm?.get('TDSAmount')?.value || 0);
+      const exRate = toNumber(this.r['ExchangeRate']?.getRawValue()) || 1;
+      if (tdsAmt > 0) tdsInHeaderCurr = tdsAmt / exRate;
+    }
+    const cash = debitTotal - tdsInHeaderCurr;
+    bankRow.patchValue(
+      { Amount: this.getFormattedAndPaddedAmount(cash, bankCurrency) },
+      { emitEvent: false },
+    );
+    this.calculateLocalAmount(1, true);
+    this.validateAmount();
   }
 
   validateMatchLimits(index: number) {
