@@ -6,6 +6,11 @@ export interface BalanceSheetReportPdfData {
   branch: PdfBranchInfo;
   userData: PdfUserInfo;
   logo?: string;
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   orientation?: 'portrait' | 'landscape';
   reportTitle: string;
   params?: any;
@@ -26,7 +31,12 @@ export function transformBalanceSheetReportData(
   branch: PdfBranchInfo,
   userData: PdfUserInfo,
   logo?: string,
-  orientation: 'portrait' | 'landscape' = 'landscape'
+  orientation: 'portrait' | 'landscape' = 'landscape',
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  }
 ): BalanceSheetReportPdfData {
   const fullData = rawData || {};
   const processedFunds = processFunds(fullData?.data || []);
@@ -43,6 +53,11 @@ export function transformBalanceSheetReportData(
     branch,
     userData,
     logo,
+    printSettings: printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    },
     orientation,
     reportTitle: 'Balance Sheet Report',
     params: fullData?.params || {},
@@ -101,30 +116,75 @@ export function generateBalanceSheetReportDocument(data: BalanceSheetReportPdfDa
 }
 
 function buildHeader(data: BalanceSheetReportPdfData): any {
-  const address1 = data.branch?.addressLine1 || data.company?.addressLine1 || '';
-  const address2 = [
-    data.branch?.addressLine2 || '',
-    data.branch?.cityMaster?.cityName || data.branch?.cityName || '',
-    data.branch?.postalCode ? `Postal Code : ${data.branch.postalCode}` : '',
-    data.branch?.phoneNumber ? `Ph.no : ${data.branch.phoneNumber}` : ''
-  ].filter(Boolean).join(', ');
+  const company = data.company;
+  const branch = data.branch;
+  const printSettings = data.printSettings || {
+    logoPosition: 'left' as const,
+    companyPosition: 'center' as const,
+    companyAlignment: 'center' as const
+  };
+  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
+  const postalCode = branch?.postalCode || company?.postalCode || '';
+  const phone = branch?.phoneNumber || company?.phoneNumber || '';
+  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
+  const cityLine: any[] = [];
+
+  const appendText = (text: string | any[]) => {
+    if (cityLine.length) cityLine.push({ text: ', ' });
+    if (Array.isArray(text)) {
+      cityLine.push(...text);
+    } else {
+      cityLine.push({ text });
+    }
+  };
+
+  if (addressLine2) appendText(addressLine2);
+  if (city) appendText(city);
+  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+  if (phone) appendText([{ text: 'Ph.no : ', bold: true }, { text: phone }]);
+
+  const companyInfoStack: any[] = [
+    { text: (company?.companyName || '').toUpperCase(), style: 'headerCompany', alignment: printSettings.companyAlignment },
+    { text: branch?.branchName || '', style: 'headerBranch', alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: branch?.addressLine1 || company?.addressLine1 || '', style: 'headerAddress', alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
+    { text: cityLine, style: 'headerAddress', alignment: printSettings.companyAlignment, margin: [0, 2, 0, 0], noWrap: true }
+  ];
+
+  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
+    left: 'left',
+    center: 'center',
+    right: 'right'
+  };
+
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (printSettings.logoPosition === slot && data.logo) {
+      stack.push({ image: data.logo, fit: [50, 50], width: 56, alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
+    }
+    if (printSettings.companyPosition === slot) {
+      const companyMargin = slot === 'right'
+        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
+        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+      stack.push({ stack: companyInfoStack, margin: companyMargin });
+    }
+    return { stack };
+  };
 
   return {
     stack: [
       {
-        columns: [
-          data.logo ? { image: data.logo, fit: [50, 50], width: 56, margin: [0, 4, 0, 0] } : { text: '', width: 56 },
-          {
-            width: '*',
-            stack: [
-              { text: (data.company?.companyName || '').toUpperCase(), style: 'headerCompany', alignment: 'center' },
-              { text: data.branch?.branchName || '', style: 'headerBranch', alignment: 'center', margin: [0, 1, 0, 0] },
-              { text: address1, style: 'headerAddress', alignment: 'center', margin: [0, 1, 0, 0] },
-              { text: address2, style: 'headerAddress', alignment: 'center', margin: [0, 1, 0, 0] }
-            ]
-          },
-          { text: '', width: 56 }
-        ]
+        table: {
+          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
+        },
+        layout: {
+          hLineWidth: () => 0,
+          vLineWidth: () => 0,
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 4
+        }
       },
       {
         text: data.reportTitle,
@@ -153,6 +213,25 @@ function buildHeader(data: BalanceSheetReportPdfData): any {
     ],
     margin: [18, 18, 18, 6]
   };
+}
+
+function getHeaderWidths(
+  logoPosition: 'left' | 'center' | 'right',
+  companyPosition: 'left' | 'center' | 'right'
+): any[] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [110, '*', 110];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [110, '*', 300];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [300, '*', 110];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildPanelsTable(data: BalanceSheetReportPdfData): any {

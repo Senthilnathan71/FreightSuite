@@ -37,13 +37,13 @@
         </div>
 
         <div *ngIf="fullData?.groupedRoutes?.length > 0; else noRowsTemplate">
-            <div *ngFor="let route of fullData.groupedRoutes">
+            <div *ngFor="let route of fullData.groupedRoutes" class="route-block">
                 <div class="mb-0">
                     <strong>Route :</strong> {{ route.route }}
                 </div>
-                <!-- Booking Table -->
                 <ng-container *ngIf="route.bookingRows?.length > 0">
-                    <h6 class="fw-bold">Booking</h6>
+                    <div class="report-section">
+                    <h6 class="fw-bold report-section-title">Booking</h6>
                     <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
                         <thead class="bg-info">
                             <tr>
@@ -79,84 +79,179 @@
                             </tr>
                         </tbody>
                     </table>
+                    </div>
                 </ng-container>
-                <!-- Master Job Table -->
-                <ng-container *ngIf="route.masterRows?.length > 0">
-                    <h6 class="fw-bold ">Master Job</h6>
-                    <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
-                        <thead class="bg-info text-light">
-                            <tr>
-                                <th class="bg-transparent text-light text-center">MBL No</th>
-                                <th class="bg-transparent text-light text-center">MBL Date</th>
-                                <th class="bg-transparent text-light text-center">Revenue</th>
-                                <th class="bg-transparent text-light text-center">Cost</th>
-                                <th class="bg-transparent text-light text-center">Profit</th>
-                                <th class="bg-transparent text-light text-center">Gross Wt</th>
-                                <th class="bg-transparent text-light text-center">Net Wt</th>
-                                <th class="bg-transparent text-light text-center">CBM</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let item of route.masterRows">
-                                <td>{{ item.MBLNo }}</td>
-                                <td class="text-center">{{item.MasterDate | formatDate}}</td>
-                                <td class="text-end">{{ item.revenueLocalAmt | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ item.costLocalAmt | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ item.profit | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ item.grossWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.netWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
-                            </tr>
-                            <tr class="fw-bold bg-light">
-                                <td colspan="2" class="text-end">Total</td>
-                                <td class="text-end">{{ route.masterTotals.revenue | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ route.masterTotals.cost | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ route.masterTotals.profit | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ route.masterTotals.grossWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ route.masterTotals.netWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ route.masterTotals.vol | number:'1.3-3' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                <ng-container *ngIf="getSectionRows(route.masterRows, 'Master Job') as masterJobRows">
+                    <ng-container *ngIf="masterJobRows.length > 0">
+                        <div class="report-section">
+                        <h6 class="fw-bold report-section-title">Master Job</h6>
+                        <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
+                            <thead class="bg-info text-light">
+                                <tr>
+                                    <th class="bg-transparent text-light text-center">MBL No</th>
+                                    <th class="bg-transparent text-light text-center">MBL Date</th>
+                                    <th class="bg-transparent text-light text-center">Revenue</th>
+                                    <th class="bg-transparent text-light text-center">Cost</th>
+                                    <th class="bg-transparent text-light text-center">Profit</th>
+                                    <th class="bg-transparent text-light text-center">Gross Wt</th>
+                                    <th class="bg-transparent text-light text-center">Net Wt</th>
+                                    <th class="bg-transparent text-light text-center">CBM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of masterJobRows">
+                                    <td>{{ item.MBLNo }}</td>
+                                    <td class="text-center">{{item.MasterDate | formatDate}}</td>
+                                    <td class="text-end">{{ item.revenueLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.costLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light" *ngIf="getSectionTotals(masterJobRows) as masterJobTotals">
+                                    <td colspan="2" class="text-end">Total</td>
+                                    <td class="text-end">{{ masterJobTotals.revenue | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ masterJobTotals.cost | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ masterJobTotals.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ masterJobTotals.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ masterJobTotals.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ masterJobTotals.vol | number:'1.3-3' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </ng-container>
                 </ng-container>
-                <!-- House Details -->
-                <ng-container *ngIf="route.houseRows.length > 0">
-                    <h6 class="fw-bold">House Job</h6>
-                    <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
-                        <thead class="bg-info text-light">
-                            <tr>
-                                <th class="bg-transparent text-light text-center">HBL No</th>
-                                <th class="bg-transparent text-light text-center">HBL Date</th>
-                                <th class="bg-transparent text-light text-center">Revenue</th>
-                                <th class="bg-transparent text-light text-center">Cost</th>
-                                <th class="bg-transparent text-light text-center">Profit</th>
-                                <th class="bg-transparent text-light text-center">Gross Wt</th>
-                                <th class="bg-transparent text-light text-center">Net Wt</th>
-                                <th class="bg-transparent text-light text-center">CBM</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let item of route.houseRows">
-                                <td>{{ item.HBLNo }}</td>
-                                <td class="text-center">{{item.HouseDate | formatDate}}</td>
-                                <td class="text-end">{{ item.revenueLocalAmt | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ item.costLocalAmt | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ item.profit | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ item.grossWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.netWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
-                            </tr>
-                            <tr class="fw-bold bg-light">
-                                <td colspan="2" class="text-end">Total</td>
-                                <td class="text-end">{{ route.houseTotals.revenue | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ route.houseTotals.cost | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ route.houseTotals.profit | number:'1.2-2' }}</td>
-                                <td class="text-end">{{ route.houseTotals.grossWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ route.houseTotals.netWt | number:'1.3-3' }}</td>
-                                <td class="text-end">{{ route.houseTotals.vol | number:'1.3-3' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                <ng-container *ngIf="getSectionRows(route.masterRows, 'Master Air Waybill') as masterAirRows">
+                    <ng-container *ngIf="masterAirRows.length > 0">
+                        <div class="report-section">
+                        <h6 class="fw-bold report-section-title">Master Air Waybill</h6>
+                        <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
+                            <thead class="bg-info text-light">
+                                <tr>
+                                    <th class="bg-transparent text-light text-center">MAWB No</th>
+                                    <th class="bg-transparent text-light text-center">MAWB Date</th>
+                                    <th class="bg-transparent text-light text-center">Revenue</th>
+                                    <th class="bg-transparent text-light text-center">Cost</th>
+                                    <th class="bg-transparent text-light text-center">Profit</th>
+                                    <th class="bg-transparent text-light text-center">Gross Wt</th>
+                                    <th class="bg-transparent text-light text-center">Net Wt</th>
+                                    <th class="bg-transparent text-light text-center">CBM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of masterAirRows">
+                                    <td>{{ item.MBLNo }}</td>
+                                    <td class="text-center">{{item.MasterDate | formatDate}}</td>
+                                    <td class="text-end">{{ item.revenueLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.costLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light" *ngIf="getSectionTotals(masterAirRows) as masterAirTotals">
+                                    <td colspan="2" class="text-end">Total</td>
+                                    <td class="text-end">{{ masterAirTotals.revenue | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ masterAirTotals.cost | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ masterAirTotals.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ masterAirTotals.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ masterAirTotals.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ masterAirTotals.vol | number:'1.3-3' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </ng-container>
+                </ng-container>
+
+                <ng-container *ngIf="getSectionRows(route.houseRows, 'House Job') as houseJobRows">
+                    <ng-container *ngIf="houseJobRows.length > 0">
+                        <div class="report-section">
+                        <h6 class="fw-bold report-section-title">House Job</h6>
+                        <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
+                            <thead class="bg-info text-light">
+                                <tr>
+                                    <th class="bg-transparent text-light text-center">HBL No</th>
+                                    <th class="bg-transparent text-light text-center">HBL Date</th>
+                                    <th class="bg-transparent text-light text-center">Revenue</th>
+                                    <th class="bg-transparent text-light text-center">Cost</th>
+                                    <th class="bg-transparent text-light text-center">Profit</th>
+                                    <th class="bg-transparent text-light text-center">Gross Wt</th>
+                                    <th class="bg-transparent text-light text-center">Net Wt</th>
+                                    <th class="bg-transparent text-light text-center">CBM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of houseJobRows">
+                                    <td>{{ item.HBLNo }}</td>
+                                    <td class="text-center">{{item.HouseDate | formatDate}}</td>
+                                    <td class="text-end">{{ item.revenueLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.costLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light" *ngIf="getSectionTotals(houseJobRows) as houseJobTotals">
+                                    <td colspan="2" class="text-end">Total</td>
+                                    <td class="text-end">{{ houseJobTotals.revenue | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ houseJobTotals.cost | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ houseJobTotals.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ houseJobTotals.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ houseJobTotals.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ houseJobTotals.vol | number:'1.3-3' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </ng-container>
+                </ng-container>
+
+                <ng-container *ngIf="getSectionRows(route.houseRows, 'House Air Waybill') as houseAirRows">
+                    <ng-container *ngIf="houseAirRows.length > 0">
+                        <div class="report-section">
+                        <h6 class="fw-bold report-section-title">House Air Waybill</h6>
+                        <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
+                            <thead class="bg-info text-light">
+                                <tr>
+                                    <th class="bg-transparent text-light text-center">HAWB No</th>
+                                    <th class="bg-transparent text-light text-center">HAWB Date</th>
+                                    <th class="bg-transparent text-light text-center">Revenue</th>
+                                    <th class="bg-transparent text-light text-center">Cost</th>
+                                    <th class="bg-transparent text-light text-center">Profit</th>
+                                    <th class="bg-transparent text-light text-center">Gross Wt</th>
+                                    <th class="bg-transparent text-light text-center">Net Wt</th>
+                                    <th class="bg-transparent text-light text-center">CBM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of houseAirRows">
+                                    <td>{{ item.HBLNo }}</td>
+                                    <td class="text-center">{{item.HouseDate | formatDate}}</td>
+                                    <td class="text-end">{{ item.revenueLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.costLocalAmt | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ item.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ item.vol | number:'1.3-3' }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light" *ngIf="getSectionTotals(houseAirRows) as houseAirTotals">
+                                    <td colspan="2" class="text-end">Total</td>
+                                    <td class="text-end">{{ houseAirTotals.revenue | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ houseAirTotals.cost | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ houseAirTotals.profit | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ houseAirTotals.grossWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ houseAirTotals.netWt | number:'1.3-3' }}</td>
+                                    <td class="text-end">{{ houseAirTotals.vol | number:'1.3-3' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </ng-container>
                 </ng-container>
             </div>
         </div>
@@ -187,7 +282,7 @@
     <div class="pt-2">
             Note :
             <ul>
-                <li>This report contains data from Booking, Master Job, and House Job.</li>
+                <li>This report contains data from Booking, Master Job, Master Air Waybill, House Job, and House Air Waybill.</li>
             </ul>
         </div>
 
