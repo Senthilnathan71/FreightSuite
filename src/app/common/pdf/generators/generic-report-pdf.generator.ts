@@ -68,12 +68,17 @@ function buildHeaderSlots(
   logoNode: any,
   companyNode: any,
   printSettings: GenericHeaderPrintSettings,
-  _sideColumnWidth = 170
+  sideColumnWidth = 170
 ): any[] {
+  const widths = getHeaderWidths(
+    printSettings.logoPosition,
+    printSettings.companyPosition,
+    sideColumnWidth
+  );
   const slots: Record<HeaderPosition, any> = {
-    left: { width: '*', stack: [], alignment: 'left' },
-    center: { width: '*', stack: [], alignment: 'center' },
-    right: { width: '*', stack: [], alignment: 'right' }
+    left: { width: widths[0], stack: [], alignment: 'left' },
+    center: { width: widths[1], stack: [], alignment: 'center' },
+    right: { width: widths[2], stack: [], alignment: 'right' }
   };
 
   if (logoNode) {
@@ -106,6 +111,26 @@ function buildHeaderSlots(
       alignment: slot.alignment
     };
   });
+}
+
+function getHeaderWidths(
+  logoPosition: HeaderPosition,
+  companyPosition: HeaderPosition,
+  sideColumnWidth: number
+): [any, any, any] {
+  if (companyPosition === 'center' && logoPosition !== 'center') {
+    return [sideColumnWidth, '*', sideColumnWidth];
+  }
+
+  if (companyPosition === 'right' && logoPosition === 'left') {
+    return [sideColumnWidth, '*', Math.max(sideColumnWidth * 2, 220)];
+  }
+
+  if (companyPosition === 'left' && logoPosition === 'right') {
+    return [Math.max(sideColumnWidth * 2, 220), '*', sideColumnWidth];
+  }
+
+  return ['33%', '34%', '33%'];
 }
 
 function buildMainTableLayout(
@@ -210,6 +235,8 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   function portraitHeader(data: GenericReportPdfData): any {
     const { company, branch, logo, exportConfig } = data;
     const stack: any[] = [];
+    const printableWidth = 595 - 60;
+    const sideColumnWidth = Math.min(100, Math.max(76, Math.floor(printableWidth * 0.18)));
 
     // Company info stack
     const companyStack: any[] = [];
@@ -217,17 +244,15 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       companyStack.push({
         text: String(company.companyName).toUpperCase(),
         bold: true,
-        fontSize: 12,
-        alignment: printSettings.companyAlignment,
-        noWrap: true
+        fontSize: 11,
+        alignment: printSettings.companyAlignment
       });
     if (branch?.branchName)
       companyStack.push({
         text: branch.branchName,
-        fontSize: 10,
+        fontSize: 9,
         alignment: printSettings.companyAlignment,
-        color: '#000000',
-        noWrap: true
+        color: '#000000'
       });
     const addressLine = branch?.addressLine1 || company?.addressLine1 || '';
     if (addressLine)
@@ -235,8 +260,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         text: addressLine,
         fontSize: 8,
         alignment: printSettings.companyAlignment,
-        color: '#000000',
-        noWrap: true
+        color: '#000000'
       });
 
     const portraitAddressLine2 = branch?.addressLine2 || '';
@@ -266,7 +290,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     if (portraitLineParts.length) {
       companyStack.push({
         text: portraitLineParts,
-        fontSize: 10,
+        fontSize: 8,
         alignment: printSettings.companyAlignment,
         color: '#000000',
         noWrap: true
@@ -275,47 +299,26 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
 
     stack.push({
       columns: [
-        {
-          width: 90,
-          stack: printSettings.logoPosition === 'left' && logo
-            ? [{ image: logo, height: 60, alignment: 'left' }]
-            : [],
-          alignment: 'left'
-        },
-        {
-          width: '*',
-          stack: printSettings.companyPosition === 'center'
-            ? companyStack
-            : [],
-          alignment: printSettings.companyAlignment,
-          margin: [0, 4, 0, 0]
-        },
-        {
-          width: 90,
-          stack: printSettings.logoPosition === 'right' && logo
-            ? [{ image: logo, height: 60, alignment: 'right' }]
-            : [],
-          alignment: 'right'
-        }
-      ],
-      columnGap: 16,
-      margin: [0, 0, 0, 8]
-    });
-
-    if (printSettings.companyPosition !== 'center') {
-      stack.unshift({
-        columns: buildHeaderSlots(
-          null,
+        ...buildHeaderSlots(
+          logo
+            ? {
+                image: logo,
+                height: 60,
+                alignment: printSettings.logoPosition
+              }
+            : null,
           {
             stack: companyStack,
             alignment: printSettings.companyAlignment,
             margin: [0, 4, 0, 0]
           },
-          printSettings
-        ),
-        margin: [0, 0, 0, 8]
-      });
-    }
+          printSettings,
+          sideColumnWidth
+        )
+      ],
+      columnGap: 16,
+      margin: [0, 0, 0, 8]
+    });
 
     // Report title
     if (exportConfig.reportHeader.reportTitle) {

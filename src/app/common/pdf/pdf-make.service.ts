@@ -474,27 +474,11 @@ export class PdfMakeService {
     company: any, branch: any, userData: any,
     logo?: string, orientation?: 'portrait' | 'landscape'
   ): GenericReportPdfData {
-    console.log(company, branch, logo)
     return {
       exportConfig,
-      company: {
-        companyName: company?.CompanyName || company?.companyName || '',
-        addressLine1: company?.Address || company?.addressLine1 || '',
-        phoneNumber: company?.Phone || company?.phoneNumber || '',
-        email: company?.Email || company?.email || ''
-      },
-      branch: {
-        branchName: branch?.BranchName || branch?.branchName || '',
-        addressLine1: branch?.Address || branch?.addressLine1 || '',
-        addressLine2: branch?.addressLine2 || '',
-        cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
-        postalCode: branch?.postalCode || '',
-        phoneNumber: branch?.phoneNumber || '',
-        cityMaster: branch?.cityMaster
-      },
-      userData: {
-        userName: userData?.UserName || userData?.userName || ''
-      },
+      company: this.mapCompany(company),
+      branch: this.mapBranch(branch),
+      userData: this.mapUser(userData),
       logo,
       orientation
     };
