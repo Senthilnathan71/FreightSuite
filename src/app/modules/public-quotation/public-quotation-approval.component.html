@@ -1,8 +1,4 @@
 <div class="pq-page">
-  <header class="pq-header">
-    <h1>Quotation Approval</h1>
-  </header>
-
   <main class="pq-main">
     <ng-container [ngSwitch]="state">
       <section *ngSwitchCase="'loading'" class="pq-card pq-loading">
@@ -27,166 +23,212 @@
       </section>
 
       <ng-container *ngSwitchCase="'submitted'">
-        <section class="pq-card pq-success">
-          <h2>Thank you &mdash; your response has been recorded.</h2>
-          <p>The following decisions were submitted:</p>
-          <ul class="pq-summary-list">
-            <li *ngFor="let d of submittedDecisions">
-              <strong>{{ d.carrier.carrierName }}</strong>:
-              {{ d.status }} by {{ d.approvedBy }}
-              <span *ngIf="d.remarks"> &mdash; "{{ d.remarks }}"</span>
-            </li>
-          </ul>
+        <section class="pq-panel pq-success">
+          <div class="pq-panel-head">
+            <span class="pq-panel-title">Response Recorded</span>
+          </div>
+          <div class="pq-panel-body">
+            <p>Thank you &mdash; the following decisions were submitted:</p>
+            <ul class="pq-summary-list">
+              <li *ngFor="let d of submittedDecisions">
+                <strong>{{ d.carrier.carrierName }}</strong>
+                <span class="pq-badge" *ngIf="d.route.department">{{ d.route.department }}</span>
+                <span class="pq-badge"
+                      [class.pq-badge-green]="d.status === 'Approved'"
+                      [class.pq-badge-red]="d.status === 'Rejected'">{{ d.status }}</span>
+                by {{ d.approvedBy }}
+                <span *ngIf="d.remarks" class="pq-muted"> &mdash; "{{ d.remarks }}"</span>
+              </li>
+            </ul>
+          </div>
         </section>
       </ng-container>
 
       <ng-container *ngSwitchCase="'ready'">
-        <section class="pq-card pq-summary" *ngIf="data">
-          <h2>Quotation Summary</h2>
-          <dl class="pq-meta">
-            <dt>Quotation No.</dt>
-            <dd>{{ data.quoteNumber || '-' }}</dd>
-            <dt>Quotation Date</dt>
-            <dd>{{ data.quoteDate | date:'mediumDate' }}</dd>
-            <dt>Customer</dt>
-            <dd>{{ data.customerName }}</dd>
-            <dt *ngIf="data.validFrom || data.validTo">Validity</dt>
-            <dd *ngIf="data.validFrom || data.validTo">
-              {{ data.validFrom | date:'mediumDate' }} &mdash; {{ data.validTo | date:'mediumDate' }}
-            </dd>
-          </dl>
-
-          <h3>Route</h3>
-          <table class="pq-table" *ngIf="data.routes.length">
-            <thead>
-              <tr>
-                <th>POR</th>
-                <th>POL</th>
-                <th>POD</th>
-                <th>FDP</th>
-                <th>Transit Days</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let r of data.routes">
-                <td>{{ r.por?.PortName || r.por?.PortCode || '-' }}</td>
-                <td>{{ r.pol?.PortName || r.pol?.PortCode || '-' }}</td>
-                <td>{{ r.pod?.PortName || r.pod?.PortCode || '-' }}</td>
-                <td>{{ r.fdp?.PortName || r.fdp?.PortCode || '-' }}</td>
-                <td>{{ r.transitDays ?? '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <h3>Cargo</h3>
-          <table class="pq-table" *ngIf="data.cargo.length; else noCargo">
-            <thead>
-              <tr>
-                <th>Cargo Type</th>
-                <th>Container</th>
-                <th>Qty</th>
-                <th>Gross Weight</th>
-                <th>Net Weight</th>
-                <th>CBM</th>
-                <th>Shipment Terms</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let c of data.cargo">
-                <td>{{ c.cargoType || '-' }}</td>
-                <td>{{ c.containerType || '-' }}</td>
-                <td>{{ c.qty ?? '-' }}</td>
-                <td>{{ c.grossWeight ?? '-' }}</td>
-                <td>{{ c.netWeight ?? '-' }}</td>
-                <td>{{ c.cbm ?? '-' }}</td>
-                <td>{{ c.shipmentTerms || '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <ng-template #noCargo><p class="pq-muted">No cargo recorded.</p></ng-template>
-        </section>
-
-        <section class="pq-card pq-decisions" *ngIf="data">
-          <h2>Carriers &mdash; Your Decision</h2>
-          <p class="pq-muted">Choose Approved or Rejected for each carrier you'd like to act on, then submit. Carriers left blank will not be changed.</p>
-
-          <div class="pq-carrier" *ngFor="let d of drafts; let i = index">
-            <header class="pq-carrier-header">
-              <h3>{{ d.carrier.carrierName || 'Carrier ' + (i + 1) }}</h3>
-              <span class="pq-status-tag" *ngIf="d.carrier.approvalStatus">
-                Current: {{ d.carrier.approvalStatus }}
-              </span>
-              <span class="pq-transit" *ngIf="d.carrier.transitTime">
-                Transit: {{ d.carrier.transitTime }}
-              </span>
-            </header>
-
-            <table class="pq-table" *ngIf="d.carrier.charges.length">
-              <thead>
-                <tr>
-                  <th>Charge</th>
-                  <th>Qty</th>
-                  <th>Rate</th>
-                  <th>Amount</th>
-                  <th>Currency</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let ch of d.carrier.charges">
-                  <td>{{ ch.chargeName }}</td>
-                  <td>{{ ch.qty ?? '-' }}</td>
-                  <td>{{ ch.rate ?? '-' }}</td>
-                  <td>{{ ch.amount ?? '-' }}</td>
-                  <td>{{ ch.currency || '-' }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div class="pq-decision-row">
-              <label>
-                <span>Decision</span>
-                <select [(ngModel)]="d.status" name="status-{{ i }}">
-                  <option value="">(no decision)</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </label>
-              <label>
-                <span>Authorized By <small *ngIf="d.status">(required)</small></span>
-                <input
-                  type="text"
-                  maxlength="20"
-                  [(ngModel)]="d.approvedBy"
-                  [disabled]="!d.status"
-                  name="approvedBy-{{ i }}"
-                  placeholder="Your name"
-                />
-              </label>
-              <label class="pq-remarks">
-                <span>Remarks <small>(optional)</small></span>
-                <textarea
-                  maxlength="100"
-                  [(ngModel)]="d.remarks"
-                  [disabled]="!d.status"
-                  name="remarks-{{ i }}"
-                ></textarea>
-              </label>
+        <!-- ===== Quotation header panel ===== -->
+        <section class="pq-panel" *ngIf="data">
+          <div class="pq-panel-head">
+            <span class="pq-panel-title">{{ data.quoteNumber || 'Quotation' }}</span>
+            <span class="pq-badge pq-badge-light">{{ data.customerName }}</span>
+            <span class="pq-spacer"></span>
+            <span class="pq-tag-corner">Quotation Approval</span>
+          </div>
+          <div class="pq-panel-body">
+            <div class="pq-field-grid">
+              <div class="pq-field">
+                <label>Quotation No.</label>
+                <div class="pq-field-val">{{ data.quoteNumber || '-' }}</div>
+              </div>
+              <div class="pq-field">
+                <label>Quotation Date</label>
+                <div class="pq-field-val">{{ data.quoteDate | date:'dd/MM/yyyy' }}</div>
+              </div>
+              <div class="pq-field">
+                <label>Customer</label>
+                <div class="pq-field-val">{{ data.customerName }}</div>
+              </div>
+              <div class="pq-field" *ngIf="data.validFrom || data.validTo">
+                <label>Validity</label>
+                <div class="pq-field-val">
+                  {{ data.validFrom | date:'dd/MM/yyyy' }} &mdash; {{ data.validTo | date:'dd/MM/yyyy' }}
+                </div>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div class="pq-submit-row">
-            <button
-              type="button"
-              class="pq-submit-btn"
-              [disabled]="!canSubmit"
-              (click)="submit()"
-            >
-              {{ isSubmitting ? 'Submitting&hellip;' : 'Submit Decisions' }}
-            </button>
-            <p *ngIf="!hasAnyDecision" class="pq-hint">Choose at least one carrier decision to enable Submit.</p>
-            <p *ngIf="submitError" class="pq-error-inline">{{ submitError }}</p>
+        <!-- ===== Route panels (carriers nested inside) ===== -->
+        <section class="pq-panel" *ngFor="let r of data!.routes; let ri = index">
+          <div class="pq-panel-head">
+            <span class="pq-panel-title">
+              {{ (r.pol?.PortCode || r.pol?.PortName || 'POL') }} &rarr; {{ (r.pod?.PortCode || r.pod?.PortName || 'POD') }}
+            </span>
+            <span class="pq-badge pq-badge-light" *ngIf="r.department">{{ r.department }}</span>
+          </div>
+
+          <div class="pq-panel-body">
+            <div class="pq-field-grid">
+              <div class="pq-field">
+                <label>POR</label>
+                <div class="pq-field-val">{{ r.por?.PortName || r.por?.PortCode || '-' }}</div>
+              </div>
+              <div class="pq-field">
+                <label>POL</label>
+                <div class="pq-field-val">{{ r.pol?.PortName || r.pol?.PortCode || '-' }}</div>
+              </div>
+              <div class="pq-field">
+                <label>POD</label>
+                <div class="pq-field-val">{{ r.pod?.PortName || r.pod?.PortCode || '-' }}</div>
+              </div>
+              <div class="pq-field">
+                <label>FPOD</label>
+                <div class="pq-field-val">{{ r.fdp?.PortName || r.fdp?.PortCode || '-' }}</div>
+              </div>
+            </div>
+
+            <!-- Cargo sub-cards -->
+            <div class="pq-subcard" *ngFor="let c of r.cargo; let ci = index">
+              <div class="pq-subcard-head">
+                <span class="pq-subcard-title">Cargo</span>
+                <span class="pq-badge pq-badge-light" *ngIf="c.cargoType">{{ c.cargoType }}</span>
+              </div>
+
+              <div class="pq-field-grid pq-field-grid-tight">
+                <div class="pq-field">
+                  <label>Cargo Type</label>
+                  <div class="pq-field-val">{{ c.cargoType || '-' }}</div>
+                </div>
+                <div class="pq-field">
+                  <label>Gross Wt.</label>
+                  <div class="pq-field-val">{{ c.grossWeight ?? '-' }}</div>
+                </div>
+                <div class="pq-field">
+                  <label>Net Wt.</label>
+                  <div class="pq-field-val">{{ c.netWeight ?? '-' }}</div>
+                </div>
+                <div class="pq-field">
+                  <label>CBM</label>
+                  <div class="pq-field-val">{{ c.cbm ?? '-' }}</div>
+                </div>
+                <div class="pq-field">
+                  <label>Shipment Terms</label>
+                  <div class="pq-field-val">{{ c.shipmentTerms || '-' }}</div>
+                </div>
+              </div>
+
+              <div class="pq-grid-table-wrap" *ngIf="c.products.length">
+                <table class="pq-grid-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th class="pq-num">Gross Wt.</th>
+                      <th class="pq-num">Net Wt.</th>
+                      <th class="pq-num">Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let p of c.products">
+                      <td>{{ p.productName || '-' }}</td>
+                      <td class="pq-num">{{ p.grossWeight ?? '-' }}</td>
+                      <td class="pq-num">{{ p.netWeight ?? '-' }}</td>
+                      <td class="pq-num">{{ p.volume ?? '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Carrier details for THIS route -->
+            <div class="pq-carrier-section">
+              <div class="pq-section-label">Carrier Details</div>
+
+              <div class="pq-carrier" *ngFor="let d of draftsForRoute(r); let i = index"
+                   [class.pq-carrier-approved]="d.status === 'Approved'"
+                   [class.pq-carrier-rejected]="d.status === 'Rejected'">
+                <div class="pq-carrier-bar">
+                  <span class="pq-carrier-name">{{ d.carrier.carrierName || 'Carrier ' + (i + 1) }}</span>
+                  <span class="pq-badge pq-badge-green" *ngIf="d.carrier.approvalStatus">{{ d.carrier.approvalStatus }}</span>
+                  <span class="pq-badge" *ngIf="d.carrier.transitTime">Transit: {{ d.carrier.transitTime }}</span>
+                </div>
+
+                <div class="pq-grid-table-wrap" *ngIf="d.carrier.charges.length">
+  <table class="pq-grid-table">
+    <thead>
+      <tr class="pq-group-row">
+        <th rowspan="2">Charge</th>
+        <th rowspan="2">Qty</th>
+      </tr>
+      <tr>
+        <th>Curr.</th>
+        <th class="pq-num">Per Unit</th>
+        <th class="pq-num">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let ch of d.carrier.charges">
+        <td>{{ ch.chargeName }}</td>
+        <td class="pq-num">{{ ch.qty ?? '-' }}</td>
+        <td>{{ ch.revenueCurrency || '-' }}</td>
+        <td class="pq-num">{{ ch.revenue ?? '-' }}</td>
+        <td class="pq-num">{{ ch.revenueLcAmount ?? '-' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+                <div class="pq-decision-row">
+                  <label>
+                    <span>Authorization Status</span>
+                    <select [(ngModel)]="d.status" name="status-{{ ri }}-{{ i }}">
+                      <option value="">Select Status</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Authorized By <small *ngIf="d.status">*</small></span>
+                    <input type="text" maxlength="20" [(ngModel)]="d.approvedBy"
+                           [disabled]="!d.status" name="approvedBy-{{ ri }}-{{ i }}" placeholder="Your name" />
+                  </label>
+                  <label class="pq-remarks">
+                    <span>Remarks</span>
+                    <input type="text" maxlength="100" [(ngModel)]="d.remarks"
+                           [disabled]="!d.status" name="remarks-{{ ri }}-{{ i }}" placeholder="Optional" />
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
+
+        <!-- ===== Single submit for all routes ===== -->
+        <div class="pq-submit-row pq-submit-standalone">
+          <button type="button" class="pq-submit-btn" [disabled]="!canSubmit" (click)="submit()">
+            {{ isSubmitting ? 'Submitting…' : 'Submit' }}
+          </button>
+          <p *ngIf="!hasAnyDecision" class="pq-hint">Update any of the Carrier's Authorization Status to enable Submit.</p>
+          <p *ngIf="submitError" class="pq-error-inline">{{ submitError }}</p>
+        </div>
       </ng-container>
     </ng-container>
   </main>

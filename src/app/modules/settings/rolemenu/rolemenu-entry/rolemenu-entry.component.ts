@@ -63,6 +63,9 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
     { value: 'S', name: 'Suspended' },
   ];
 
+  assignedUsers: any[] = [];
+  isLoadingAssignedUsers = false;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -857,5 +860,41 @@ isAllPostDisabled(): boolean {
 onPermissionChange(): void {
   // This method is called to ensure header checkboxes update properly
   // No need to implement anything, just triggering change detection
+}
+
+// Add these methods in the component class
+viewAssignedUsers(content: any): void {
+  const roleMasterSid = this.roleMenuForm.get('RoleMasterSid')?.value;
+  const companyMasterSid = this.roleMenuForm.getRawValue().CompanyMasterSid
+    ?? this.currentCompany?.CompanyMasterSid;
+
+  if (!roleMasterSid) {
+    this.appSettingService.showWarning('Please select a role first');
+    return;
+  }
+  
+  const payload = {
+    roleMasterSid,
+    companyMasterSid
+  }
+
+  this.assignedUsers = [];
+  this.modalService.open(content, {
+    size: 'lg',
+    centered: true,
+    scrollable: true
+  });
+
+  this.isLoadingAssignedUsers = true;
+  this.settingService.getUsersByRole(payload).subscribe({
+    next: (resp: any) => {
+      this.assignedUsers = resp.data || [];
+      this.isLoadingAssignedUsers = false;
+    },
+    error: () => {
+      this.assignedUsers = [];
+      this.isLoadingAssignedUsers = false;
+    },
+  });
 }
 }

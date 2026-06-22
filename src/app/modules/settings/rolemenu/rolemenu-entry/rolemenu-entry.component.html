@@ -171,6 +171,16 @@
                   <label for="status-select" class="input-label">Status</label>
                 </div>
               </aside>
+              <aside class="col-md-3">
+                <button
+  type="button"
+  class="btn btn-outline-primary btn-sm"
+  (click)="viewAssignedUsers(assignedUsersModal)"
+  [disabled]="!roleMenuForm.get('RoleMasterSid')?.value">
+<i-feather name="users" class="icon-sm me-1"></i-feather>
+  View Assigned Users
+</button>
+              </aside>
             </div>
           </div>
         </div>
@@ -407,3 +417,43 @@
     </form>
   </div>
 </div>
+
+<ng-template #assignedUsersModal let-modal>
+<div class="modal-header">
+<h5 class="modal-title">Users Assigned to this Role</h5>
+<button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+</div>
+<div class="modal-body">
+<div *ngIf="isLoadingAssignedUsers" class="text-center py-3">Loading...</div>
+ 
+    <div *ngIf="!isLoadingAssignedUsers && assignedUsers.length === 0"
+         class="text-center text-muted py-3">
+      No users assigned to this role.
+</div>
+ 
+    <table *ngIf="!isLoadingAssignedUsers && assignedUsers.length > 0"
+           class="table table-sm table-hover">
+<thead>
+<tr>
+<th>Sno.</th>
+<th>Name</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr *ngFor="let u of assignedUsers; let i = index">
+<td>{{ i + 1 }}</td>
+<td>{{ u?.userCompanyMaster?.userMaster?.userName }}</td>
+<td>
+<span class="badge" [ngClass]="u?.userCompanyMaster?.userMaster?.status === 'A' ? 'bg-success' : 'bg-secondary'">
+              {{ u?.userCompanyMaster?.userMaster?.status === 'A' ? 'Active' : 'Suspended' }}
+</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary btn-sm" (click)="modal.close()">Close</button>
+</div>
+</ng-template>
