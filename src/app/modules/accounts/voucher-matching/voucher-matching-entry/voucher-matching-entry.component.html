@@ -358,7 +358,10 @@
       </div>
       <div class="col-md-3">
         <div class="custom-form-group">
-          <input type="text" formControlName="Narration" class="custom-input-field sm" [readOnly]="isPosted" [attr.maxlength]="LIMITS.matching.Narration" />
+          <input type="text" formControlName="Narration" class="custom-input-field sm" [readOnly]="isPosted"
+            [attr.maxlength]="LIMITS.matching.Narration"
+            appExpandText="Narration"
+            title="Double-click or press Enter twice to expand" />
           <label class="input-label">Narration
             <i
               *ngIf="voucherMatchingForm?.get('Narration')?.value"

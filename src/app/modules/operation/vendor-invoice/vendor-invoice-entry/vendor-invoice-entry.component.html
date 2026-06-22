@@ -308,7 +308,7 @@
             <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="Narration" formControlName="Narration" maxlength="300" placeholder=""
-                  class="custom-input-field sm" />
+                  class="custom-input-field sm" appExpandText="Narration" title="Double-click to expand" />
                 <label for="Narration" class="input-label">Narration
                   <i
                     *ngIf="vendorInvoiceForm?.get('Narration')?.value"
@@ -681,6 +681,8 @@
                     formControlName="Remarks"
                     maxlength="300"
                     placeholder=""
+                    appExpandText="Remarks"
+                    title="Double-click to expand"
                   />
                 <label for="Remarks" class="input-label">Remarks
                   <i

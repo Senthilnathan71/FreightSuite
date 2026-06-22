@@ -12,6 +12,7 @@ import { PrintFooterComponent } from '../../print-footer/print-footer.component'
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 
 @Component({
   selector: 'app-statement-report',
@@ -44,7 +45,8 @@ export class StatementReportComponent {
     private reportRegistryService: ReportRegistryService,
     private companySettings: CompanySettingsManagerService,
     private operationService: OperationService,
-    private masterService: MasterService
+    private masterService: MasterService,
+    private numberToWords: NumberToWordsService,
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -58,6 +60,7 @@ export class StatementReportComponent {
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
     this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+    this.ensureCurrencyListLoaded();
 
     this.operationService
       .getCompanyConfig(this.currentCompany?.CompanyMasterSid, 'OSandStatementShowBankDetails')
@@ -230,19 +233,203 @@ export class StatementReportComponent {
     try {
       const currencies = await firstValueFrom(this.masterService.getAllCurrencies());
       this.currencyList = Array.isArray(currencies) ? currencies : [];
+      this.numberToWords.initializeCurrencies(this.currencyList);
     } catch (error) {
       console.warn('Could not load currency list for bank headers:', error);
       this.currencyList = [];
     }
   }
 
+  getOutstandingAmountInWordsLines(): string[] {
+    const transactions = this.fullData?.transactions || [];
+    const total = Math.abs(this.getLocalTotal(transactions));
+    if (!total) return [];
+
+    const currencyCode = this.getReportCurrencyCode();
+    const currencySid = this.getCurrencySidByCode(currencyCode) || Number(this.fullData?.CurrencyMasterSid || this.currentCurrency || 0);
+    return [this.convertAmountWithZeroSubUnit(total, currencyCode, currencySid)];
+  }
+
+  private getReportCurrencyCode(): string {
+    const configuredCode = String(
+      this.fullData?.currencyCode ||
+      this.fullData?.CurrencyCode ||
+      this.companyCurrency?.code ||
+      this.currentCurrencyCode ||
+      this.currentCompany?.CurrencyCode ||
+      this.currentCompany?.currencyCode ||
+      ''
+    ).trim().toUpperCase();
+
+    if (configuredCode === 'UAE') return 'AED';
+    if (configuredCode === 'IND') return 'INR';
+    if (configuredCode) return configuredCode;
+
+    return this.getCompanyCountryCurrencyCode();
+  }
+
+  private getCompanyCountryCurrencyCode(): string {
+    const selectedCountry = this.safeDecryptLocalStorage('selected-country') || {};
+    const countryText = [
+      selectedCountry?.countryCode,
+      selectedCountry?.countryName,
+      this.currentCompany?.countryCode,
+      this.currentCompany?.countryName,
+      this.currentCompany?.countryMaster?.countryCode,
+      this.currentCompany?.countryMaster?.countryName,
+      this.currentBranch?.countryCode,
+      this.currentBranch?.countryName,
+      this.currentBranch?.countryMaster?.countryCode,
+      this.currentBranch?.countryMaster?.countryName,
+      this.currentBranch?.branchName,
+      this.currentCompany?.companyName,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toUpperCase();
+
+    if (countryText.includes('AE') || countryText.includes('UAE') || countryText.includes('UNITED ARAB') || countryText.includes('DUBAI')) {
+      return 'AED';
+    }
+
+    if (countryText.includes('IN') || countryText.includes('INDIA')) {
+      return 'INR';
+    }
+
+    return '';
+  }
+
+  private safeDecryptLocalStorage(key: string): any {
+    const value = localStorage.getItem(key);
+    if (!value) return null;
+
+    try {
+      return this.appSettingsService.decrypt(value);
+    } catch {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  private getCurrencySidByCode(currencyCode: string): number {
+    const currency = (this.currencyList || []).find((item: any) => {
+      const code = String(item?.currencyCode || item?.CurrencyCode || item?.code || '').trim().toUpperCase();
+      return code === currencyCode;
+    });
+
+    return Number(currency?.CurrencyMasterSid || currency?.currencyMasterSid || 0);
+  }
+
+  private convertAmountWithZeroSubUnit(amount: number, currencyCode: string, currencySid: number): string {
+    const normalizedCode = String(currencyCode || '').trim().toUpperCase();
+    const currency = this.getCurrencyByCodeOrSid(normalizedCode, currencySid);
+    const unit = this.getCurrencyUnit(currency, normalizedCode);
+    const subUnit = this.getCurrencySubUnit(currency, normalizedCode);
+    const decimals = this.getCurrencyDecimals(currency, normalizedCode);
+    const absoluteAmount = Math.abs(Number(amount) || 0);
+    const integerPart = Math.floor(absoluteAmount);
+    const decimalPart = decimals > 0
+      ? Math.round((absoluteAmount - integerPart) * Math.pow(10, decimals))
+      : 0;
+
+    const integerWords = this.stripCurrencyUnit(this.stripOnly(this.numberToWords.convert(integerPart, currencySid)), unit);
+    const decimalWords = decimals > 0
+      ? this.stripOnly(this.numberToWords.convert(decimalPart, null))
+      : 'Zero';
+
+    if (!unit && !subUnit) {
+      return this.numberToWords.convert(absoluteAmount, currencySid);
+    }
+
+    return `${integerWords}${unit ? ` ${unit}` : ''} and ${decimalWords}${subUnit ? ` ${subUnit}` : ''} Only`;
+  }
+
+  private getCurrencyByCodeOrSid(currencyCode: string, currencySid: number): any {
+    return (this.currencyList || []).find((item: any) => {
+      const code = String(item?.currencyCode || item?.CurrencyCode || item?.code || '').trim().toUpperCase();
+      const sid = Number(item?.CurrencyMasterSid || item?.currencyMasterSid || 0);
+      return (currencyCode && code === currencyCode) || (currencySid && sid === Number(currencySid));
+    }) || {};
+  }
+
+  private getCurrencyUnit(currency: any, currencyCode: string): string {
+    const configuredUnit = String(currency?.CurrencyUnit || currency?.currencyUnit || '').trim();
+    if (configuredUnit) return configuredUnit;
+
+    const fallbackUnits: Record<string, string> = {
+      AED: 'Dirhams',
+      UAE: 'Dirhams',
+      USD: 'Dollars',
+      INR: 'Rupees',
+      IND: 'Rupees'
+    };
+
+    return fallbackUnits[currencyCode] || '';
+  }
+
+  private getCurrencySubUnit(currency: any, currencyCode: string): string {
+    const configuredSubUnit = String(currency?.CurrencySubUnit || currency?.currencySubUnit || '').trim();
+    if (configuredSubUnit) return configuredSubUnit;
+
+    const fallbackSubUnits: Record<string, string> = {
+      AED: 'Fils',
+      UAE: 'Fils',
+      USD: 'Cents',
+      INR: 'Paise',
+      IND: 'Paise'
+    };
+
+    return fallbackSubUnits[currencyCode] || '';
+  }
+
+  private getCurrencyDecimals(currency: any, currencyCode: string): number {
+    const subUnitIn = Number(currency?.SubUnitIn || currency?.subUnitIn || 0);
+    if (subUnitIn >= 10) {
+      return Math.round(Math.log10(subUnitIn));
+    }
+
+    if (subUnitIn > 0 && subUnitIn < 10) {
+      return Math.floor(subUnitIn);
+    }
+
+    if (currencyCode === 'AED' || currencyCode === 'UAE' || currencyCode === 'USD' || currencyCode === 'INR' || currencyCode === 'IND') {
+      return 2;
+    }
+
+    return 2;
+  }
+
+  private stripOnly(value: string): string {
+    return String(value || '')
+      .replace(/\s+Only$/i, '')
+      .trim();
+  }
+
+  private stripCurrencyUnit(value: string, unit: string): string {
+    if (!unit) return value;
+
+    return String(value || '')
+      .replace(new RegExp(`\\s+${this.escapeRegExp(unit)}$`, 'i'), '')
+      .trim();
+  }
+
+  private escapeRegExp(value: string): string {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   getLocalTotal(transactions: any[]): number {
-    if (!transactions || !transactions.length) return 0;
+    if (!transactions || !transactions.length) return this.fullData?.openingBalance || 0;
     const ledgerType = this.fullData?.ledgerType?.trim();
     let total = this.fullData?.openingBalance || 0;
     transactions.forEach((item) => {
       const drCr = item?.drCr;
-      const amount = +item?.originalLocalAmount || 0;
+      const signedAmount = Number(item?.signedLocalAmt);
+      const amount = Number.isFinite(signedAmount)
+        ? Math.abs(signedAmount)
+        : (+item?.originalLocalAmount || 0);
 
       if (ledgerType === "Sy Dr") {
         total += drCr === "D" ? amount : -amount;
@@ -250,6 +437,10 @@ export class StatementReportComponent {
 
       if (ledgerType === "Sy Cr") {
         total += drCr === "C" ? amount : -amount;
+      }
+
+      if (ledgerType !== "Sy Dr" && ledgerType !== "Sy Cr") {
+        total += Number.isFinite(signedAmount) ? signedAmount : amount;
       }
     });
 
@@ -299,6 +490,7 @@ export class StatementReportComponent {
     const rows: ExcelRow[] = [];
     const transactions = this.fullData?.transactions || [];
     const openingBalance = this.fullData?.openingBalance || 0;
+    const amountInWordsLines = this.getOutstandingAmountInWordsLines();
 
     if (openingBalance !== 0) {
 
@@ -364,6 +556,16 @@ export class StatementReportComponent {
 
     rows.push({ cells: totalCells, style: 'total' });
   }
+
+    amountInWordsLines.forEach((amountInWords, index) => {
+      rows.push({
+        cells: [
+          { value: index === 0 ? 'Amount in words' : '', colspan: 2 },
+          { value: amountInWords, colspan: tableHeaders.length - 2 }
+        ],
+        style: 'data'
+      });
+    });
 
     return {
       fileName: 'Statement-Report',

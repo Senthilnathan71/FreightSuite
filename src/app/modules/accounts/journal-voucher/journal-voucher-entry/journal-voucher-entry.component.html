@@ -231,7 +231,9 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <textarea formControlName="narration" class="custom-input-field sm" rows="1" placeholder=""
-                                [attr.maxlength]="LIMITS.header.Narration"></textarea>
+                                [attr.maxlength]="LIMITS.header.Narration"
+                                appExpandText="Narration"
+                                title="Double-click or press Enter twice to expand"></textarea>
                             <label class="input-label">
                                 Narration
                                 <i
@@ -419,7 +421,10 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <input type="text" formControlName="narration" class="form-control" [attr.maxlength]="LIMITS.detail.Narration" />
+                                <input type="text" formControlName="narration" class="form-control"
+                                    [attr.maxlength]="LIMITS.detail.Narration"
+                                    appExpandText="Narration"
+                                    title="Double-click or press Enter twice to expand" />
                             </td>
                         </tr>
                     </tbody>

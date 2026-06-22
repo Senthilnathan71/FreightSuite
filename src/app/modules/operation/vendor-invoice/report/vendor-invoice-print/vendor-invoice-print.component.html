@@ -35,84 +35,7 @@
             padding-bottom: 42px;
           ">
       <!-- Company Info -->
-      <div style="
-              display: flex;
-              flex-direction: column;
-              margin-bottom: 0;
-              width: 100%;
-              padding-top: 5px;
-              padding-left: 20px;
-            ">
-        <div style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            flex-wrap: wrap;
-                          ">
-          <div style="
-                              display: flex;
-                              flex-direction: column;
-                            ">
-            <!-- Print logo -->
-            <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid"
-              style="width:auto; height: 110px" />
-          </div>
-          <div style="
-                              flex: 1;
-                              text-align:right;
-                              font-size: 17px;
-                              padding-right: 3%;
-                            ">
-            <h3 style="margin: 0; font-weight: 900">
-              {{ currentCompany?.companyName || "Company Name" }}
-            </h3>
-            <!-- <h5 style="margin: 0; font-weight: 900">
-                              {{ currentBranch?.branchName || "Company Branch" }}
-                            </h5> -->
-            <p style="margin: 0px 0; font-size: 16px">
-              {{ currentBranch?.addressLine1 || "" }}
-            </p>
-            <p style="margin: 0px 0; font-size: 16px">
-              <ng-container *ngIf="currentBranch?.addressLine2 as addr">
-                {{ addr }},
-              </ng-container>
-              <!-- {{
-                                currentBranch?.cityMaster?.cityName ||
-                                  currentCompany?.City ||
-                                  ""
-                              }} -->
-              {{ currentBranch?.branchName || "Company Branch" }}
-
-              <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
-                    - {{ code }}
-                  </ng-container> -->
-              <ng-container *ngIf="currentBranch?.branchCode as code">
-                - {{ code }}
-              </ng-container>
-
-            </p>
-            <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
-              style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-              <span>Postal Code</span>
-              <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
-            </div>
-
-            <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
-              style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
-              <span>Phone No</span>
-              <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
-            </div>
-
-            <div style="display: flex;justify-content: right;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-              <span *ngIf="currentCompanyCountryCode?.toLowerCase() === 'in'">GST No</span>
-              <span *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'in'">VAT No</span>
-              <span>: {{ currentCompany?.Pan || '' }}</span>
-            </div>
-
-          </div>
-
-        </div>
-      </div>
+      <app-print-header [showTaxRegistration]="true"></app-print-header>
 
       <!-- Invoice Title -->
       <div style="
@@ -123,12 +46,12 @@
         <h3 style="margin: 2px 0; font-weight: bolder; font-size: 20px">
           <strong>{{ vendorInvoiceData?.invoiceTitle }}</strong>
         </h3>
-        <p style="font-size: 12px; margin: 2px 0" *ngIf="currentCompanyCountryCode === 'in'">
+        <!-- <p style="font-size: 12px; margin: 2px 0" *ngIf="currentCompanyCountryCode === 'in'">
           <strong>GST Code :</strong>
           {{
           vendorInvoiceData?.GSTCode
           }}
-        </p>
+        </p> -->
       </div>
 
       <!-- Billing Info -->
@@ -142,45 +65,50 @@
             ">
         <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
           <strong style="font-weight: bolder">BILLED BY</strong><br />
-          <div style="padding-left: 30px">
+          <div style="padding-left: 30px; line-height: 1.35; overflow-wrap: anywhere; word-break: break-word;">
             <span>{{ vendorInvoiceData?.BilledTo }}</span><br />
             {{ vendorInvoiceData?.BillingAddress }}<br />
-            <div style="display: flex" *ngIf="currentCompanyCountryCode === 'in'">
+            <!-- <div style="display: flex" *ngIf="currentCompanyCountryCode === 'in'">
               <span style="font-weight: 600">PAN:</span>
               {{ vendorInvoiceData?.PAN }}
+            </div> -->
+          </div>
+          <div style="display: flex; align-items: flex-start; margin-bottom: 2px; margin-top: 16px;">
+            <div style="width: 70px; font-weight: bolder; white-space: nowrap;">
+              <strong *ngIf="currentCompanyCountryCode === 'in'">GST No.</strong>
+              <strong *ngIf="currentCompanyCountryCode !== 'in'">VAT No.</strong>
             </div>
+            <div style="width: 12px; text-align: center;">:</div>
+            <div style="flex: 1; min-width: 0; overflow-wrap: anywhere;">{{ vendorInvoiceData?.GST_VAT }}</div>
           </div>
         </div>
         <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
-          <div>
-            <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder">
+          <div style="width: 100%;">
+            <div style="display: flex; align-items: flex-start; margin-bottom: 2px;">
+              <div style="width: 180px; font-weight: bolder; white-space: nowrap;">
                 <strong>Vendor Invoice No.</strong>
               </div>
-              <div>
-                : {{ vendorInvoiceData?.InvoiceNo }}
+              <div style="width: 12px; text-align: center;">:</div>
+              <div style="flex: 1; min-width: 0; overflow-wrap: anywhere;">
+                {{ vendorInvoiceData?.InvoiceNo }}
               </div>
             </div>
-            <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder">
+            <div style="display: flex; align-items: flex-start; margin-bottom: 2px;">
+              <div style="width: 180px; font-weight: bolder; white-space: nowrap;">
                 <strong>Vendor Invoice Date</strong>
               </div>
-              <div>
-                : {{ vendorInvoiceData?.VoucherDate | formatDate }}
+              <div style="width: 12px; text-align: center;">:</div>
+              <div style="flex: 1; min-width: 0; overflow-wrap: anywhere;">
+                {{ vendorInvoiceData?.VoucherDate | formatDate }}
               </div>
             </div>
-            <div style="display: flex">
-              <div style="width: 180px; font-weight: bolder">
-                <strong *ngIf="currentCompanyCountryCode === 'in'">GST No.</strong>
-                <strong *ngIf="currentCompanyCountryCode !== 'in'">VAT No.</strong>
-              </div>
-              <div>: {{ vendorInvoiceData?.GST_VAT }}</div>
-            </div>
-            <div style="display: flex" *ngIf="currentCompanyCountryCode === 'in'">
-              <div style="width: 180px; font-weight: bolder">
+            
+            <div style="display: flex; align-items: flex-start; margin-bottom: 2px;" *ngIf="currentCompanyCountryCode === 'in'">
+              <div style="width: 180px; font-weight: bolder; white-space: nowrap;">
                 <strong>IRN No.</strong>
               </div>
-              <div>: {{ vendorInvoiceData?.IRNNumber }}</div>
+              <div style="width: 12px; text-align: center;">:</div>
+              <div style="flex: 1; min-width: 0; overflow-wrap: anywhere;">{{ vendorInvoiceData?.IRNNumber }}</div>
             </div>
             <!-- Show GST Type only for India -->
             <!-- <div style="display:flex;" *ngIf="currentCompanyCountryCode === 'in'">

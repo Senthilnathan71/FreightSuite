@@ -174,7 +174,10 @@
                   <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="Narration" formControlName="Narration" placeholder=""
-                  class="custom-input-field sm" />
+                  class="custom-input-field sm"
+                  [attr.maxlength]="LIMITS.header.Narration"
+                  appExpandText="Narration"
+                  title="Double-click or press Enter twice to expand" />
                 <label for="Narration" class="input-label">Narration
                   <i
                     *ngIf="reverseVoucherForm?.get('Narration')?.value"
@@ -315,7 +318,10 @@
             <aside class="col-md-3">
               <div class="custom-form-group">
                 <textarea id="Remarks" placeholder="" rows="1" class="custom-input-field sm"
-                  formControlName="Remarks"></textarea>
+                  formControlName="Remarks"
+                  [attr.maxlength]="LIMITS.header.Remarks"
+                  appExpandText="Remarks"
+                  title="Double-click to expand"></textarea>
                 <label for="Remarks" class="input-label">Remarks
                   <i
                     *ngIf="reverseVoucherForm?.get('Remarks')?.value"

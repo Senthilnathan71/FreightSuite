@@ -190,6 +190,11 @@ export interface BookingProductData extends PdfProductItem {
 // CRO (Container Release Order) PDF DATA
 // =====================
 export interface CroPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
   cro: {
     croNumber?: string;
     releaseOrderDate?: Date | string;

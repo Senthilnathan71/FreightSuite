@@ -651,6 +651,8 @@
                     class="custom-input-field sm"
                     formControlName="Remarks"
                     placeholder=""
+                    appExpandText="Remarks"
+                    title="Double-click to expand"
                     readonly
                   />
                   <label class="input-label">Remarks</label>
@@ -1463,7 +1465,7 @@
         "
       >
         <!-- Company Info -->
-        <app-print-header></app-print-header>
+        <app-print-header [showTaxRegistration]="true"></app-print-header>
 
         <!-- Invoice Title -->
         <div
@@ -1477,13 +1479,13 @@
           <h3 style="margin: 2px 0; font-weight: bolder; font-size: 20px">
             <strong>{{ creditNotePrintData?.invoiceTitle }}</strong>
           </h3>
-          <p
+          <!-- <p
             style="font-size: 12px; margin: 2px 0"
             *ngIf="currentCompanyCountryCode === 'in'"
           >
             <strong>GST Code :</strong>
             {{ creditNotePrintData?.GSTCode }}
-          </p>
+          </p> -->
         </div>
 
         <!-- Billing Info -->

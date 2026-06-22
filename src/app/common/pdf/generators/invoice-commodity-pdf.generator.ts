@@ -212,18 +212,21 @@
       });
     }
 
+    const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
+    const addressLine2 = branch?.addressLine2 || company?.addressLine2;
+    const postalCode = branch?.postalCode;
+    const phone = branch?.phoneNumber || company?.phoneNumber;
     const addressLine1 = branch?.addressLine1 || company?.addressLine1;
     if (addressLine1) {
+      const hasMoreAddressDetails = !!(addressLine2 || cityName || postalCode || phone);
       companyInfoStack.push({
-        text: addressLine1,
+        text: isIndiaInvoice && hasMoreAddressDetails ? `${addressLine1},` : addressLine1,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
       });
     }
 
-    const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
-    const addressLine2 = branch?.addressLine2 || company?.addressLine2;
     const cityCountry = joinNonEmpty([addressLine2, cityName], ', ');
     if (cityCountry) {
       companyInfoStack.push({
@@ -234,7 +237,6 @@
       });
     }
 
-    const postalCode = branch?.postalCode;
       companyInfoStack.push({
         text: `Postal Code : ${postalCode}`,
         style: 'addressText',
@@ -243,7 +245,6 @@
       });
     
 
-    const phone = branch?.phoneNumber || company?.phoneNumber;
       companyInfoStack.push({
         text: `Phone No : ${phone}`,
         style: 'addressText',

@@ -47,6 +47,7 @@ import { ElementStateGuardDirective } from 'src/app/core/Directives/element-stat
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS, buildVoucherValidationConfig } from 'src/app/common/voucher-field-limits';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -63,7 +64,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     DecimalPrecisionDirective,
     SearchableDropdown,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [`

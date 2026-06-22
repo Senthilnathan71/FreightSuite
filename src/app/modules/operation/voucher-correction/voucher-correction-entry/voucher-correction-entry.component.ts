@@ -34,6 +34,7 @@ import { ReceiptService } from 'src/app/modules/accounts/services/receipt.servic
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 @Component({
   selector: 'app-voucher-correction-entry',
@@ -54,7 +55,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     DecimalPrecisionDirective,
     RouterModule,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './voucher-correction-entry.component.html',
   styleUrl: './voucher-correction-entry.component.scss',

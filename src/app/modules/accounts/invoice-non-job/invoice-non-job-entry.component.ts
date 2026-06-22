@@ -15,6 +15,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
@@ -61,6 +62,7 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
     DecimalPrecisionDirective,
     ElementStateGuardDirective,
     FormStateGuardDirective,
+    ExpandTextDirective,
     RouterModule,
   ],
   templateUrl: './invoice-non-job-entry.component.html',

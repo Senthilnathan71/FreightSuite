@@ -175,6 +175,21 @@ function buildMainTableLayout(
   };
 }
 
+function isAmountInWordsRow(row: ExcelRow): boolean {
+  const firstCellText = String(row.cells?.[0]?.value ?? '').trim().toLowerCase();
+  return firstCellText === 'amount in words';
+}
+
+function getAmountInWordsText(rows: ExcelRow[]): string {
+  return rows
+    .map(row => {
+      const valueCell = row.cells.find((cell, index) => index > 0 && String(cell?.value ?? '').trim());
+      return String(valueCell?.value ?? '').trim();
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
 export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const { exportConfig, company, branch, userData, logo, orientation } = data;
   const printSettings = getGenericHeaderPrintSettings();
@@ -490,10 +505,12 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   }));
 
   // --- D) Data rows with right-aligned numeric values ---
-  const hasDataRows = exportConfig.rows.some(r => r.style !== 'total' && r.style !== 'grandTotal' && r.style !== 'section');
+  const amountInWordsRows = exportConfig.rows.filter(isAmountInWordsRow);
+  const displayRows = exportConfig.rows.filter(row => !isAmountInWordsRow(row));
+  const hasDataRows = displayRows.some(r => r.style !== 'total' && r.style !== 'grandTotal' && r.style !== 'section');
   let bodyRows: any[][];
   if (hasDataRows) {
-    bodyRows = exportConfig.rows.map(row =>
+    bodyRows = displayRows.map(row =>
       buildPdfRow(
         row,
         colCount,
@@ -512,7 +529,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   }
   const mainRowMeta = [
     ...(includeTableHeaders ? [{ style: 'header', borderlessSection: false }] : []),
-    ...exportConfig.rows.map(r => {
+    ...displayRows.map(r => {
       const style = r.style || 'data';
       const text = String(r.cells?.[0]?.value ?? '').trim().toUpperCase();
       const borderlessSection =
@@ -543,6 +560,19 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       margin: [0, 0, 0, 10]
     }
   ];
+
+  const amountInWordsText = getAmountInWordsText(amountInWordsRows);
+  if (amountInWordsText) {
+    content.push({
+      columns: [
+        { text: 'Amount in words', width: 78, bold: true, fontSize: 8 },
+        { text: ':', width: 5, fontSize: 8 },
+        { text: amountInWordsText, width: '*', fontSize: 8 }
+      ],
+      columnGap: 0,
+      margin: [0, -6, 0, 8]
+    });
+  }
 
   // Notes section. When `notesEveryPage` is set the notes are rendered in the page
   // footer instead (repeated on every page), so skip the once-at-end block here.

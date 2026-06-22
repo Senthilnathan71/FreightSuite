@@ -89,6 +89,7 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 
@@ -127,6 +128,7 @@ interface rateComparison {
     DecimalPrecisionDirective,
     FormStateGuardDirective,
     ElementStateGuardDirective,
+    ExpandTextDirective,
     PrintHeaderComponent,
     PrintFooterComponent
    

@@ -86,7 +86,7 @@
       '';
     const estimatedBillingAddressLines = Math.ceil(String(billingAddressForHeader).length / 58);
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
-    const baseTopMargin = 150;
+    const baseTopMargin = 138;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIRNLine = isIndiaInvoice ? 14 : 0;
     const extraTopMarginForCustomerTaxLine = Math.min(
@@ -213,102 +213,136 @@
     const company = data.company;
     const branch = data.branch;
     const logo = data.logo;
-    const taxConfig = (data.taxDisplayConfig as any) || {};
-    const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
+    const printSettings = data.printSettings || {
+      logoPosition: 'left' as const,
+      companyPosition: 'center' as const,
+      companyAlignment: 'center' as const
+    };
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
 
     const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
 
-    const logoColumn = buildPdfLogoColumn(logo, LOGO_HEIGHT);
-
     const companyInfoStack: any[] = [];
 
     if (company?.companyName) {
       companyInfoStack.push({
-        text: company.companyName,
+        text: String(company.companyName).toUpperCase(),
         style: 'companyName',
-        alignment: 'right',
-        margin: [0, 0, 0, 6]
+        alignment: printSettings.companyAlignment,
+        margin: [0, 0, 0, 2]
       });
     }
 
-    const addressLine1 = branch?.addressLine1 || company?.addressLine1;
-    if (addressLine1) {
+    const branchName = branch?.branchName || (branch as any)?.BranchName || '';
+    if (branchName) {
       companyInfoStack.push({
-        text: addressLine1,
-        style: 'addressText',
-        alignment: 'right',
-        margin: [0, 0, 0, 6]
+        text: branchName,
+        style: 'branchName',
+        bold: true,
+        alignment: printSettings.companyAlignment,
+        margin: [0, 0, 0, 2]
       });
     }
 
     const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
     const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-    const branchName = branch?.branchName || (branch as any)?.BranchName || '';
-    const branchCode = (branch as any)?.branchCode || (branch as any)?.BranchCode || '';
-    const branchNameCode = branchName
-      ? `${branchName}${!isIndiaInvoice && branchCode ? ` - ${branchCode}` : ''}`
-      : '';
-    const cityCountry = joinNonEmpty([addressLine2, isIndiaInvoice ? (branchName || cityName) : (branchNameCode || cityName)], ', ');
-    if (cityCountry) {
-      companyInfoStack.push({
-        text: cityCountry,
-        style: 'addressText',
-        alignment: 'right',
-        margin: [0, 0, 0, 6]
-      });
-    }
-
     const postalCode = branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode;
-    if (isIndiaInvoice && postalCode) {
-      companyInfoStack.push({
-        text: `Postal Code : ${postalCode}`,
-        style: 'addressText',
-        alignment: 'right',
-        margin: [0, 0, 0, 6]
-      });
-    }
-
-     if (!isIndiaInvoice && postalCode) {
-      companyInfoStack.push({
-        text: `Postal Code : ${postalCode}`,
-        style: 'addressText',
-        alignment: 'right',
-        margin: [0, 0, 0, 6]
-      });
-    }
-
     const phone = branch?.phoneNumber || company?.phoneNumber;
-    if (isIndiaInvoice || phone) {
+    const companyCountryCode = String((data as any)?.companyCountryCode || company?.countryCode || branch?.countryCode || '').toLowerCase();
+    const addressLine1 = branch?.addressLine1 || company?.addressLine1;
+    if (addressLine1) {
+      const hasMoreAddressDetails = !!(addressLine2 || cityName || postalCode || phone);
       companyInfoStack.push({
-        text: `Phone No : ${phone || ''}`,
+        text: companyCountryCode === 'in' && hasMoreAddressDetails ? `${addressLine1},` : addressLine1,
         style: 'addressText',
-        alignment: 'right',
-        margin: [0, 0, 0, 6]
+        alignment: printSettings.companyAlignment,
+        margin: [0, 0, 0, 2]
       });
     }
 
-    
-    const registrationNo = (
-      isIndiaInvoice
-        ? data.companyGstCode
-        : data.companyPan || (data as any)?.companyVatNo
-    ) || '';
-    if (!isIndiaInvoice || registrationNo) {
+    const detailLine: any[] = [];
+    const appendDetail = (value: string | any[]) => {
+      if (detailLine.length) detailLine.push({ text: ', ' });
+      if (Array.isArray(value)) {
+        detailLine.push(...value);
+      } else {
+        detailLine.push({ text: value });
+      }
+    };
+
+    if (addressLine2) appendDetail(addressLine2);
+    if (cityName) appendDetail(cityName);
+    if (postalCode) appendDetail([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
+    if (phone) appendDetail([{ text: 'Ph.no : ', bold: true }, { text: phone }]);
+
+    if (detailLine.length) {
       companyInfoStack.push({
-        text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
+        text: detailLine,
         style: 'addressText',
-        alignment: 'right'
+        alignment: printSettings.companyAlignment,
+        margin: [0, 0, 0, 2]
       });
     }
+
+    const registrationNo = (
+      companyCountryCode === 'in'
+        ? data.companyGstCode || (branch as any)?.taxRegistrationNo || (company as any)?.GST_VAT
+        : data.companyPan || (data as any)?.companyVatNo || (company as any)?.Pan || (company as any)?.PAN || (company as any)?.GST_VAT || (branch as any)?.taxRegistrationNo
+    ) || '';
+    if (companyCountryCode !== 'in' || registrationNo) {
+      companyInfoStack.push({
+        text: `${companyCountryCode === 'in' ? 'GST No' : 'VAT No'} : ${registrationNo}`,
+        style: 'addressText',
+        alignment: printSettings.companyAlignment
+      });
+    }
+
+    const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
+      left: 'left',
+      center: 'center',
+      right: 'right'
+    };
+
+    const buildLogo = (slot: 'left' | 'center' | 'right'): any => {
+      const logoColumn = buildPdfLogoColumn(logo, LOGO_HEIGHT);
+      return {
+        ...logoColumn,
+        alignment: slotAlign[slot],
+        margin: slot === 'right' ? [0, 0, 10, 0] : slot === 'left' ? [8, 0, 0, 0] : [0, 0, 0, 0]
+      };
+    };
+
+    const buildSlot = (slot: 'left' | 'center' | 'right') => {
+      const stack: any[] = [];
+
+      if (printSettings.logoPosition === slot && logo) {
+        stack.push(buildLogo(slot));
+      }
+
+      if (printSettings.companyPosition === slot) {
+        const companyMargin = slot === 'right'
+          ? (stack.length ? [0, 4, 10, 0] : [0, 0, 10, 0])
+          : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
+        stack.push({ stack: companyInfoStack, margin: companyMargin });
+      }
+
+      return { stack };
+    };
 
     const headerTable = {
       table: {
-        widths: ['auto', '*', 10],
-        body: [[logoColumn, { stack: companyInfoStack }, { text: '' }]]
+        widths: getInvoiceHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
+        body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
       },
-      layout: 'noBorders',
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: () => 0,
+        paddingRight: () => 0,
+        paddingTop: () => 0,
+        paddingBottom: () => 0
+      },
       margin: [0, 5, 0, 3]
     };
 
@@ -325,6 +359,25 @@
     };
 
     return [headerTable, bottomLine];
+  }
+
+  function getInvoiceHeaderWidths(
+    logoPosition: 'left' | 'center' | 'right',
+    companyPosition: 'left' | 'center' | 'right'
+  ): any[] {
+    if (companyPosition === 'center' && logoPosition !== 'center') {
+      return [110, '*', 110];
+    }
+
+    if (companyPosition === 'right' && logoPosition === 'left') {
+      return [110, '*', 300];
+    }
+
+    if (companyPosition === 'left' && logoPosition === 'right') {
+      return [300, '*', 110];
+    }
+
+    return ['33%', '34%', '33%'];
   }
 
 
@@ -559,7 +612,7 @@
         lineWidth: 0.5
       }
     ],
-    margin: [0, isIndiaInvoice ? 6 : 2, 0, 3]
+    margin: [0, isIndiaInvoice ? 10 : 6, 0, 3]
   };
 
   return {
@@ -1672,6 +1725,11 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       cargoDetails?: any;
       invoicePrintData?: any; // CRITICAL: The formatted print data
       containerTypeList?: any[];
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
     }
   ): InvoicePdfData {
     const invoice = apiData;
@@ -1877,6 +1935,11 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       isVATMode: options?.isVATMode,
       authorisedSignatory: true,
       cargoDetails: options?.cargoDetails,
+      printSettings: options?.printSettings || {
+        logoPosition: 'left',
+        companyPosition: 'center',
+        companyAlignment: 'center'
+      },
       invoicePrintData: options?.invoicePrintData  // Pass through invoicePrintData
     };
 

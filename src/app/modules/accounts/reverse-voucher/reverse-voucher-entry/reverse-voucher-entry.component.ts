@@ -37,6 +37,8 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
+import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -56,7 +58,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     SearchableDropdown,
     NgbDropdownModule,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './reverse-voucher-entry.component.html',
   styleUrl: './reverse-voucher-entry.component.scss',
@@ -67,6 +70,7 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
   ],
 })
 export class ReverseVoucherEntryComponent {
+  protected readonly LIMITS = VOUCHER_FIELD_LIMITS;
   userData: any;
   currUserEmail: string | null = null;
   currentCompany: any;

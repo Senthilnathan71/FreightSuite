@@ -2,18 +2,19 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
-import { LogoService } from 'src/app/core/services/logo.service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../../operation.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 @Component({
   selector: 'app-vendor-invoice-print',
   standalone: true,
-  imports: [CommonModule, CustomDatePipe],
+  imports: [CommonModule, CustomDatePipe, PrintHeaderComponent],
   templateUrl: './vendor-invoice-print.component.html',
   styles: ``
 })
@@ -41,13 +42,13 @@ export class VendorInvoicePrintComponent {
 
   constructor(
     public activeModal: NgbActiveModal,
-    public logoService: LogoService,
     private pdfMakeService: PdfMakeService,
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private companySettings: CompanySettingsManagerService
   ) {}
 
   // Template compatibility alias
@@ -208,6 +209,7 @@ export class VendorInvoicePrintComponent {
       invoiceTitle: this.vendorInvoiceData?.invoiceTitle || 'Vendor Invoice',
       isSeaMode: this.isSeaDepartment(),
       isVATMode: this.getTaxDisplayConfig().showVAT,
+      printSettings: this.companySettings.getPrintSettings(),
       companyVatNo:
         this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
       shipmentDetails: {
