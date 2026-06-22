@@ -259,6 +259,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       this.allItems = rawItems.map((item: any) => ({
         ...item,
         BookingNo: item?.BookingHeader?.BookingNo || '',
+        MasterNumber: item?.masterJob?.MasterJobNumber || '',
         VoucherDateRaw: item?.VoucherDate,
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
         PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
