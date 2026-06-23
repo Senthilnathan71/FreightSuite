@@ -1534,38 +1534,93 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('POO')?.value">
-              <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
-                [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
-                [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
-              </dofi-searchable-dropdown>
-              <!-- <input type="text" class="custom-input-field sm" placeholder="" formControlName="POO"> -->
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyPOOFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="POO" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('POO','isProxyPOOFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyPOOFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('POO','isProxyPOOFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
               <label class="input-label">POO</label>
             </div>
           </aside>
           <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ProxyPOL')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyPOLFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyPOL" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOL','isProxyPOLFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyPOLFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="ProxyPOL" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOL','isProxyPOLFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">POL</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ProxyPOD')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyPODFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyPOD" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOD','isProxyPODFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyPODFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="ProxyPOD" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOD','isProxyPODFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">POD</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('FPD')?.value">
-              <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
-                [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
-                [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
-              </dofi-searchable-dropdown>
-              <!-- <input type="text" class="custom-input-field sm" placeholder="" formControlName="FPD"> -->
-              <label class="input-label">FPD</label>
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyFPDFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="FPD" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('FPD','isProxyFPDFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyFPDFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('FPD','isProxyFPDFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">FDC</label>
             </div>
           </aside>
            <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('VesselName')?.value">
-              <!-- <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
-                [displayFields]="vesselVoyageConfig.displayFields" [displayLabels]="vesselVoyageConfig.displayLabels"
-                [labelFields]="vesselVoyageConfig.labelFields" bindValue="VesselName"
-                (itemSelected)="onProxyVesselChange($event)">
-              </dofi-searchable-dropdown> -->
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="VesselName">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ProxyVesselName')?.value">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyVesselName">
               <label class="input-label">Vessel Name</label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="VoyageNo">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyVoyageNo">
               <label class="input-label">Voyage No</label>
             </div>
           </aside>
@@ -3965,7 +4020,7 @@
           </div> -->
          <div class="d-flex align-items-center mb-1">
             <div class="fw-bold" style="width: 180px;">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
             </div>
           </div>
@@ -3991,19 +4046,19 @@
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Vessel</div>
-            <div class="col-12 col-md-6">: {{housejobData?.VesselName}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Voyage </div>
-            <div class="col-12 col-md-6">: {{housejobData?.VoyageNo}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Loading</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POL}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Discharge</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">ETD</div>
@@ -4015,7 +4070,7 @@
           </div>
           <div class="row">
             <div class="col-12 col-md-6 fw-semibold">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
         </div>
  
@@ -4317,7 +4372,7 @@
           </div> -->
          <div class="d-flex align-items-center mb-1">
             <div class="fw-bold" style="width: 180px;">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
             </div>
           </div>
@@ -4366,19 +4421,19 @@
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Vessel</div>
-            <div class="col-12 col-md-6">: {{housejobData?.VesselName}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Voyage </div>
-            <div class="col-12 col-md-6">: {{housejobData?.VoyageNo}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Loading</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POL}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Discharge</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">ETD</div>
@@ -4390,7 +4445,7 @@
           </div>
           <div class="row">
             <div class="col-12 col-md-6 fw-semibold">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
         </div>
  
@@ -4673,7 +4728,7 @@
     >
       <div class="d-flex flex-column mb-1 text-center">
         <div><strong>Port of Loading</strong></div>
-        <span class="text-center">{{ housejobData?.POL }}</span>
+        <span class="text-center">{{ getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL')) }}</span>
       </div>
     </div>
     <div
@@ -4701,7 +4756,7 @@
       <div class="d-flex flex-column mb-1 text-center">
         <div><strong>Vessel / Voyage No</strong></div>
         <span class="text-center">
-          {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
+          {{ getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName')) }} {{ getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo')) }}
         </span>
       </div>
     </div>
@@ -4711,7 +4766,7 @@
     >
       <div class="d-flex flex-column mb-1 text-center">
         <div><strong>Port of Discharge</strong></div>
-        <span class="text-center">{{ housejobData?.POD }}</span>
+        <span class="text-center">{{ getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD')) }}</span>
       </div>
     </div>
     <div
@@ -5009,11 +5064,11 @@
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Port of Loading</strong></div>
-              <div>: {{housejobData?.POL}}</div>
+              <div>: {{getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Final Destination</strong></div>
-              <div>: {{housejobData?.FPD}}</div>
+              <div>: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>ETD</strong></div>
@@ -5021,7 +5076,7 @@
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Carrier</strong></div>
-              <div>: {{housejobData?.CarrierName}}</div>
+              <div>: {{getHblPrintValue(housejobData?.CarrierName, getHouseJobProxyValue('CarrierName'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Service Type</strong></div>
@@ -5044,7 +5099,7 @@
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Port of Discharge</strong></div>
-              <div>: {{housejobData?.POD}}</div>
+              <div>: {{getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Place of Delivery</strong></div>
@@ -5056,7 +5111,7 @@
             </div>
                 <div class="d-flex mb-1">
    <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
-   <div style="padding-left: 5px;" [innerHTML]="formatVesselVoyage(housejobData?.VesselName, housejobData?.VoyageNo)"></div>
+   <div style="padding-left: 5px;" [innerHTML]="formatVesselVoyage(getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName')), getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo')))"></div>
  </div>
 
             <div class="d-flex mb-1">
@@ -5253,8 +5308,8 @@
           <!-- VESSEL DETAILS -->
           <div class="p-3  rounded" style="border: 1px solid black;">
             <div class="row gy-2">
-              <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
-              <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
+              <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName'))}}</div>
+              <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo'))}}</div>
               <div class="d-flex"><strong class="w-50">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
               <div class="d-flex"><strong class="w-50"> Date</strong>: </div>
               <div class="d-flex"><strong class="w-50">Container No</strong>: </div>
@@ -5926,14 +5981,14 @@
           <div class="col-md-4" style="border-bottom: 1px solid black; border-top: 1px solid black;">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Vessel Name / Voyage No</strong></div>
-              <span class="text-center"> {{ housejobData?.VesselName }} & {{ housejobData?.VoyageNo }} </span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName')) }} & {{ getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo')) }} </span>
             </div>
           </div>
           <div class="col-md-4"
             style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black; border-top: 1px solid black;">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Port of Discharge</strong></div>
-              <span class="text-center"> {{ housejobData?.POD }}</span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD')) }}</span>
             </div>
           </div>
         </div>
@@ -5942,13 +5997,13 @@
             style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black; ">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Place of Loading</strong></div>
-              <span class="text-center"> {{ housejobData?.POL }} </span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL')) }} </span>
             </div>
           </div>
           <div class="col-md-4" style="border-bottom: 1px solid black; ">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Final Destination</strong></div>
-              <span class="text-center"> {{ housejobData?.FPD }} </span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD')) }} </span>
             </div>
           </div>
           <div class="col-md-4"

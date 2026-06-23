@@ -1300,6 +1300,10 @@ existsInList(list: any[], value: any) {
   return false;
 }
 
+existsInPortList(value: any): boolean {
+  return !!value && (this.portList?.some(port => port.PortCode === value) ?? false);
+}
+
   onIncoChange(selectedInco: any): void {
     if (!selectedInco) {
     return; // Do nothing if incoterm is cleared
@@ -1604,9 +1608,11 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ShipperAddress: [null],
       ConsigneeName: [null],
       ConsigneeAddress: [null],
-      VesselName: [null],
-      VoyageNo: [null],
+      ProxyVesselName: [null],
+      ProxyVoyageNo: [null],
       POO: [null],
+      ProxyPOL: [null],
+      ProxyPOD: [null],
       FPD: [null],
       CarrierName: [null],
       isProxyCustomerFreeText: [false],
@@ -1614,6 +1620,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       isProxyShipperFreeText: [false],
       isProxyConsigneeFreeText: [false],
       isProxyCarrierFreeText: [false],
+      isProxyPOOFreeText: [false],
+      isProxyPOLFreeText: [false],
+      isProxyPODFreeText: [false],
+      isProxyFPDFreeText: [false],
     });
 
     this.proxyForm.get('SwitchBL')?.valueChanges.subscribe((checked) => {
@@ -2640,13 +2650,20 @@ private loadMasterJobDetails(masterJobSid: number): void {
       ShipperAddress: proxyData?.ShipperAddress || null,
       ConsigneeName: proxyData?.ConsigneeName || null,
       ConsigneeAddress: proxyData?.ConsigneeAddress || null,
-      VesselName: proxyData?.VesselName || null,
-      VoyageNo: proxyData?.VoyageNo || null,
+      ProxyVesselName: proxyData?.VesselName || null,
+      ProxyVoyageNo: proxyData?.VoyageNo || null,
       POO: proxyData?.POO || null,
+      ProxyPOL: proxyData?.POL || null,
+      ProxyPOD: proxyData?.POD || null,
       FPD: proxyData?.FPD || null,
       CarrierName: proxyData?.CarrierName || null,
+      // Show as free-text input when the saved value is a manual entry (not a Port Master code).
+      isProxyPOOFreeText: !!proxyData?.POO && !this.existsInPortList(proxyData.POO),
+      isProxyPOLFreeText: !!proxyData?.POL && !this.existsInPortList(proxyData.POL),
+      isProxyPODFreeText: !!proxyData?.POD && !this.existsInPortList(proxyData.POD),
+      isProxyFPDFreeText: !!proxyData?.FPD && !this.existsInPortList(proxyData.FPD),
     }, { emitEvent: false });
-    
+
     this.evaluateDropdownOrFreeText();
 
     this.productDataLength = flatProducts.length;
@@ -4007,9 +4024,11 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       ShipperAddress: proxyFormValue.ShipperAddress || null,
       ConsigneeName: proxyFormValue.ConsigneeName || null,
       ConsigneeAddress: proxyFormValue.ConsigneeAddress || null,
-      VesselName: proxyFormValue.VesselName || null,
-      VoyageNo: proxyFormValue.VoyageNo || null,
+      VesselName: proxyFormValue.ProxyVesselName || null,
+      VoyageNo: proxyFormValue.ProxyVoyageNo || null,
       POO: proxyFormValue.POO || null,
+      POL: proxyFormValue.ProxyPOL || null,
+      POD: proxyFormValue.ProxyPOD || null,
       FPD: proxyFormValue.FPD || null,
       CarrierName: proxyFormValue.CarrierName || null,
     }] : [],
@@ -4150,6 +4169,57 @@ getHblPrintValue(primaryValue: any, proxyValue: any): string {
 
   const text = String(selectedValue).trim();
   return text;
+}
+
+private getPrintableHouseJobData(): any {
+  const source = this.housejobData || {};
+  const proxy =
+    source?.HouseJobProxy?.[0] ||
+    source?.houseJobProxy?.[0] ||
+    source?.Proxy?.[0] ||
+    null;
+
+  const printableData = { ...source };
+  const printableFields = [
+    'AgentName',
+    'AgentAddress',
+    'ShipperName',
+    'ShipperAddress',
+    'ConsigneeName',
+    'ConsigneeAddress',
+    'VesselName',
+    'VoyageNo',
+    'POO',
+    'POL',
+    'POD',
+    'FPD',
+    'CarrierName',
+  ];
+
+  printableFields.forEach((fieldName) => {
+    printableData[fieldName] = this.getHblPrintValue(source?.[fieldName], proxy?.[fieldName]);
+  });
+
+  if (proxy && this.isSwitchBLPrintEnabled()) {
+    const printableProxy = { ...proxy };
+    printableFields.forEach((fieldName) => {
+      printableProxy[fieldName] = printableData[fieldName];
+    });
+
+    if (Array.isArray(source?.HouseJobProxy) && source.HouseJobProxy.length) {
+      printableData.HouseJobProxy = [printableProxy, ...source.HouseJobProxy.slice(1)];
+    }
+
+    if (Array.isArray(source?.houseJobProxy) && source.houseJobProxy.length) {
+      printableData.houseJobProxy = [printableProxy, ...source.houseJobProxy.slice(1)];
+    }
+
+    if (Array.isArray(source?.Proxy) && source.Proxy.length) {
+      printableData.Proxy = [printableProxy, ...source.Proxy.slice(1)];
+    }
+  }
+
+  return printableData;
 }
 
 private isFclOrLclImportDepartment(): boolean {
@@ -4936,31 +5006,37 @@ private loadAndSelectCustomerBranch(customerMasterSid: number, preselectBranchSi
       ShipperAddress: '',
       ConsigneeName: null,
       ConsigneeAddress: '',
-      VesselName: null,
-      VoyageNo: '',
-      POO: '',
-      FPD: '',
+      ProxyVesselName: null,
+      ProxyVoyageNo: null,
+      POO: null,
+      ProxyPOL: null,
+      ProxyPOD: null,
+      FPD: null,
       CarrierName: null,
       isProxyCustomerFreeText: false,
       isProxyAgentFreeText: false,
       isProxyShipperFreeText: false,
       isProxyConsigneeFreeText: false,
       isProxyCarrierFreeText: false,
+      isProxyPOOFreeText: false,
+      isProxyPOLFreeText: false,
+      isProxyPODFreeText: false,
+      isProxyFPDFreeText: false,
     }, { emitEvent: false });
   }
 
   onProxyVesselChange(vesselVoyage: any) {
     if (!vesselVoyage) {
       this.proxyForm.patchValue({
-        VesselName: null,
-        VoyageNo: ''
+        ProxyVesselName: null,
+        ProxyVoyageNo: ''
       }, { emitEvent: false });
       return;
     }
 
     this.proxyForm.patchValue({
-      VesselName: vesselVoyage.VesselName || null,
-      VoyageNo: vesselVoyage.VoyageNo || ''
+      ProxyVesselName: vesselVoyage.VesselName || null,
+      ProxyVoyageNo: vesselVoyage.VoyageNo || ''
     }, { emitEvent: false });
   }
 
@@ -5798,16 +5874,22 @@ resetForm() {
     ShipperAddress: '',
     ConsigneeName: null,
     ConsigneeAddress: '',
-    VesselName: null,
-    VoyageNo: '',
-    POO: '',
-    FPD: '',
+    ProxyVesselName: null,
+    ProxyVoyageNo: null,
+    POO: null,
+    ProxyPOL: null,
+    ProxyPOD: null,
+    FPD: null,
     CarrierName: null,
     isProxyCustomerFreeText: false,
     isProxyAgentFreeText: false,
     isProxyShipperFreeText: false,
     isProxyConsigneeFreeText: false,
     isProxyCarrierFreeText: false,
+    isProxyPOOFreeText: false,
+    isProxyPOLFreeText: false,
+    isProxyPODFreeText: false,
+    isProxyFPDFreeText: false,
   });
   this.applyExportToImportFieldLocks();
   this.resetDirtyState();
@@ -6741,7 +6823,7 @@ ${this.userData['userName']}`;
           scrollable: true,
         })
           this.hblModalRef = modalRef;
-          modalRef.componentInstance.housejobData = this.housejobData || [];
+          modalRef.componentInstance.housejobData = this.getPrintableHouseJobData();
           modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
           modalRef.componentInstance.agentList = this.agentList || [];
           modalRef.componentInstance.selectedReport = type;
