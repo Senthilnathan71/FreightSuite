@@ -112,6 +112,7 @@ export class ReverseVoucherEntryComponent {
     return !!this.headerId && !this.isViewMode;
   }
   currencyList: any[] = [];
+  ledgerList: any[][] = [];
   chargeList: any[] = [];
   hssacList: any[] = [];
   subledgerList: any[] = [];
@@ -747,6 +748,7 @@ export class ReverseVoucherEntryComponent {
         COAMasterSid: detail.COAMasterSid,
         LedgerMasterSid: detail.LedgerMasterSid,
       }));
+      this.fetchLedgerForCOA({ COAMasterSid: detail.COAMasterSid }, this.details.length - 1, true);
     });
 
     const voucherOthersSource = data.VoucherOthers
@@ -1568,6 +1570,7 @@ export class ReverseVoucherEntryComponent {
         });
         console.log(`Created form group for detail ${index}:`, row.value);
         this.details.push(row);
+        this.fetchLedgerForCOA({ COAMasterSid: detail.COAMasterSid }, this.details.length - 1, true);
         console.log(`Pushed row to details array, new length: ${this.details.length}`);
       });
       console.log('Finished populating details. Final length:', this.details.length);
@@ -1680,6 +1683,40 @@ export class ReverseVoucherEntryComponent {
   get isDraft(): boolean {
     return !this.reverseVoucherData?.PostStatus || this.reverseVoucherData?.PostStatus === 'U';
   }
+
+  fetchLedgerForCOA(coa: any, detailIndex: number, isPatching: boolean = true) {
+  const ledgerCtrl = (this.details.at(detailIndex) as FormGroup).get('LedgerMasterSid');
+  if (!coa) return;
+
+  // Resolve full COA object — during patch the row only carries COAMasterSid
+  const coaSid = coa.COAMasterSid ?? coa;
+  const fullCoa = this.coaList.find(c => c.COAMasterSid === coaSid) || coa;
+
+  if (fullCoa.SubledgerName === 'Y') {
+    this.accountService
+      .getLedgerByCOAMasterSid({
+        COAMasterSid: fullCoa.COAMappedId || fullCoa.COAMasterSid,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      })
+      .subscribe((resp: any) => {
+        if (resp.status) {
+          this.ledgerList[detailIndex] = resp.data || [];
+          // Keep the existing value if it's present in the fetched list
+          const currentValue = ledgerCtrl?.getRawValue();
+          const exist = this.ledgerList[detailIndex].find(
+            (l) => l.SubledgerMasterSid === currentValue
+          );
+          if (!isPatching && !exist) {
+            ledgerCtrl?.setValue(null);
+          }
+        } else {
+          this.appSettingService.showError('Error fetching ledger for COA');
+        }
+      });
+  } else {
+    this.ledgerList[detailIndex] = [];
+  }
+}
 
 
   onReset() {
