@@ -197,7 +197,7 @@
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select mt-md-1"  [class.filled]="!!edocform.get('EdocStatus')?.value">
                                     <ng-select formControlName="EdocStatus" [items]="edocStatusOptions" bindLabel="name"
-                                        bindValue="id">
+                                        bindValue="id" appendTo="body">
                                     </ng-select>
                                     <label for="" class="input-label">Status <span class="text-danger"></span></label>
                                     <div class="error-message"

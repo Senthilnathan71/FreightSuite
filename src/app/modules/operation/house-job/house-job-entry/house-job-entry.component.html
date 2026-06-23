@@ -1534,38 +1534,93 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('POO')?.value">
-              <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
-                [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
-                [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
-              </dofi-searchable-dropdown>
-              <!-- <input type="text" class="custom-input-field sm" placeholder="" formControlName="POO"> -->
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyPOOFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="POO" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('POO','isProxyPOOFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyPOOFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('POO','isProxyPOOFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
               <label class="input-label">POO</label>
             </div>
           </aside>
           <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ProxyPOL')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyPOLFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyPOL" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOL','isProxyPOLFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyPOLFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="ProxyPOL" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOL','isProxyPOLFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">POL</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ProxyPOD')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyPODFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyPOD" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOD','isProxyPODFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyPODFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="ProxyPOD" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ProxyPOD','isProxyPODFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">POD</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('FPD')?.value">
-              <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
-                [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
-                [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
-              </dofi-searchable-dropdown>
-              <!-- <input type="text" class="custom-input-field sm" placeholder="" formControlName="FPD"> -->
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyFPDFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="FPD" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('FPD','isProxyFPDFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyFPDFreeText')?.value">
+                <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('FPD','isProxyFPDFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
               <label class="input-label">FPD</label>
             </div>
           </aside>
            <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('VesselName')?.value">
-              <!-- <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
-                [displayFields]="vesselVoyageConfig.displayFields" [displayLabels]="vesselVoyageConfig.displayLabels"
-                [labelFields]="vesselVoyageConfig.labelFields" bindValue="VesselName"
-                (itemSelected)="onProxyVesselChange($event)">
-              </dofi-searchable-dropdown> -->
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="VesselName">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ProxyVesselName')?.value">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyVesselName">
               <label class="input-label">Vessel Name</label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="VoyageNo">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ProxyVoyageNo">
               <label class="input-label">Voyage No</label>
             </div>
           </aside>
