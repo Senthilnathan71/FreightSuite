@@ -186,6 +186,17 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     });
   }
 
+  const branchName = branch?.branchName || (branch as any)?.BranchName || '';
+  if (branchName) {
+    companyInfoStack.push({
+      text: branchName,
+      style: 'branchName',
+      bold: true,
+      alignment: companyAlignment,
+      margin: [0, 0, 0, 4]
+    });
+  }
+
   const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
   const addressLine2 = branch?.addressLine2 || company?.addressLine2;
   const postalCode = branch?.postalCode || company?.postalCode;
