@@ -4,9 +4,9 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <!-- <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
+        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')" *ngIf="mps.canPrint('Pre Alert','Print')">
             <i class="fas fa-print me-1"></i> Print
-        </button> -->
+        </button>
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" *ngIf="mps.canPrint('Pre Alert','Download')">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
@@ -63,8 +63,8 @@
                 margin-top:2px;
                 padding-bottom:10px;
             ">
-                                {{ getAgentName(masterJobData?.DestinationAgent) }}<br>
-                                {{ masterJobData.DestinationAgentAddress }}
+                                {{ getDestinationAgentNameForPrint() }}<br>
+                                {{ getDestinationAgentAddressForPrint() }}
                             </div>
                         </div>
                     </div>
@@ -146,8 +146,8 @@
             padding-left:35px;
             margin-top:3px;
         ">
-                            {{ getAgentName(masterJobData?.OriginAgent) }}<br>
-                            {{ getAgentAddress(masterJobData?.OriginAgent) }}
+                            {{ getOriginAgentNameForPrint() }}<br>
+                            {{ getOriginAgentAddressForPrint() }}
                         </div>
                     </div>
 
@@ -188,24 +188,22 @@
                         <div style="display:flex; margin-bottom:0.25rem;">
                             <div style="width:80px; white-space:nowrap;font-weight:bolder; "><strong>Vessel</strong>
                             </div>
-                            <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}
-                                {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+                            <p style="margin:0;">: {{getVesselNameForPrint()}} {{getVoyageNoForPrint()}}</p>
                         </div>
                         }@else{
                         <div style="display:flex; margin-bottom:0.25rem;">
                             <div style="width:80px; white-space:nowrap;font-weight:bolder; "><strong>Flight</strong>
                             </div>
-                            <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}
-                                {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+                            <p style="margin:0;">: {{getVesselNameForPrint()}} {{getVoyageNoForPrint()}}</p>
                         </div>
                         }
                         <div style="display:flex; margin-bottom:0.25rem;">
                             <div style="width:80px; white-space:nowrap;font-weight:bolder; "><strong>POL</strong></div>
-                            <p style="margin:0;">: {{getPortName(masterJobData.POL)}}</p>
+                            <p style="margin:0;">: {{getPortName(getPOLForPrint())}}</p>
                         </div>
                         <div style="display:flex; margin-bottom:0.25rem;">
                             <div style="width:80px; white-space:nowrap;font-weight:bolder; "><strong>POD</strong></div>
-                            <p style="margin:0;">: {{getPortName(masterJobData.POD)}}</p>
+                            <p style="margin:0;">: {{getPortName(getPODForPrint())}}</p>
                         </div>
                         <div style="display:flex; margin-bottom:0.25rem;">
                             <div style="width:80px; white-space:nowrap;font-weight:bolder; "><strong>ETD</strong></div>
@@ -220,7 +218,7 @@
                         <div style="display:flex; margin-bottom:0.25rem;">
                             <div style="width:120px; white-space:nowrap;font-weight:bolder; "><strong>Carrier</strong>
                             </div>
-                            <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.CarrierName}}</p>
+                            <p style="margin:0;">: {{getCarrierNameForPrint()}}</p>
                         </div>
                         <div style="display:flex; margin-bottom:0.25rem;">
                             <div style="width:120px; white-space:nowrap;font-weight:bolder; "><strong>Carrier
@@ -377,22 +375,22 @@
                             @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Vessel</strong></div>
-                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
+                                <p style="margin:0;">: {{getVesselNameForPrint()}}</p>
                             </div>
 
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Voyage No</strong></div>
-                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+                                <p style="margin:0;">: {{getVoyageNoForPrint()}}</p>
                             </div>
                             }@else{
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Flight No</strong></div>
-                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VesselName}}</p>
+                                <p style="margin:0;">: {{getVesselNameForPrint()}}</p>
                             </div>
 
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Flight Name</strong></div>
-                                <p style="margin:0;">: {{masterJobData?.voyages?.[0]?.VoyageNo}}</p>
+                                <p style="margin:0;">: {{getVoyageNoForPrint()}}</p>
                             </div>
                             }
 
@@ -449,16 +447,16 @@
                         <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:14px">
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Load Port</strong></div>
-                                <p style="margin:0;">: {{getPortName(masterJobData.POL)}}</p>
+                                <p style="margin:0;">: {{getPortName(getPOLForPrint())}}</p>
                             </div>
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Discharge Port</strong></div>
-                                <p style="margin:0;">: {{getPortName(masterJobData.POD)}}</p>
+                                <p style="margin:0;">: {{getPortName(getPODForPrint())}}</p>
                             </div>
 
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Delivery Port</strong></div>
-                                <p style="margin:0;">: {{getPortName(masterJobData.FPD)}}</p>
+                                <p style="margin:0;">: {{getPortName(getFPDForPrint())}}</p>
                             </div>
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Master PP/CC</strong></div>

@@ -125,15 +125,104 @@ export class CargoManifestComponent {
 
 
 
+  private hasValue(value: any): boolean {
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  }
+
+  private firstValue(...values: any[]): string {
+    const value = values.find(item => this.hasValue(item));
+    return this.hasValue(value) ? String(value).trim() : '';
+  }
+
+  private getFirstHouseJob(): any {
+    return this.masterJobData?.houseJob?.[0] || this.masterJobData?.HouseJob?.[0] || null;
+  }
+
+  private getFirstVoyage(): any {
+    return this.masterJobData?.voyages?.[0] || this.masterJobData?.Voyages?.[0] || null;
+  }
+
   getAgentName(AgentSid: number) {
     if (!AgentSid || this.agentList.length === 0) return '';
-    const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
-    return agent ? agent.CustomerName : '';
+    const agent = this.agentList.find(agent => Number(agent.CustomerMasterSid) === Number(AgentSid));
+    return agent ? (agent.CustomerName || agent.customerName || '') : '';
   }
+
   getAgentAddress(AgentSid: number) {
     if (!AgentSid || this.agentList.length === 0) return '';
-    const agent = this.agentList.find(agent => agent.CustomerMasterSid === AgentSid);
-    return agent ? agent.Address : '';
+    const agent = this.agentList.find(agent => Number(agent.CustomerMasterSid) === Number(AgentSid));
+    return agent ? (agent.Address || agent.CustomerAddress || agent.CustomerAddress1 || '') : '';
+  }
+
+  getDestinationAgentNameForPrint(): string {
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(
+      this.getAgentName(this.masterJobData?.DestinationAgent),
+      this.masterJobData?.DestinationAgentName,
+      this.masterJobData?.AgentName,
+      houseJob?.AgentName,
+      houseJob?.DestinationAgentName,
+    );
+  }
+
+  getDestinationAgentAddressForPrint(): string {
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(
+      this.masterJobData?.DestinationAgentAddress,
+      this.getAgentAddress(this.masterJobData?.DestinationAgent),
+      this.masterJobData?.AgentAddress,
+      houseJob?.AgentAddress,
+      houseJob?.DestinationAgentAddress,
+    );
+  }
+
+  getOriginAgentNameForPrint(): string {
+    return this.firstValue(
+      this.getAgentName(this.masterJobData?.OriginAgent),
+      this.masterJobData?.OriginAgentName,
+      this.masterJobData?.ForwarderName,
+    );
+  }
+
+  getOriginAgentAddressForPrint(): string {
+    return this.firstValue(
+      this.getAgentAddress(this.masterJobData?.OriginAgent),
+      this.masterJobData?.OriginAgentAddress,
+      this.masterJobData?.ForwarderAddress,
+    );
+  }
+
+  getVesselNameForPrint(): string {
+    const voyage = this.getFirstVoyage();
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(houseJob?.VesselName, this.masterJobData?.VesselName, voyage?.VesselName);
+  }
+
+  getVoyageNoForPrint(): string {
+    const voyage = this.getFirstVoyage();
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(houseJob?.VoyageNo, this.masterJobData?.VoyageNo, voyage?.VoyageNo);
+  }
+
+  getCarrierNameForPrint(): string {
+    const voyage = this.getFirstVoyage();
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(houseJob?.CarrierName, this.masterJobData?.CarrierName, voyage?.CarrierName);
+  }
+
+  getPOLForPrint(): string {
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(houseJob?.POL, this.masterJobData?.POL);
+  }
+
+  getPODForPrint(): string {
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(houseJob?.POD, this.masterJobData?.POD);
+  }
+
+  getFPDForPrint(): string {
+    const houseJob = this.getFirstHouseJob();
+    return this.firstValue(houseJob?.FPD, this.masterJobData?.FPD);
   }
 
   get totalNoOfPkg(): number {

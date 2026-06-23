@@ -4171,6 +4171,57 @@ getHblPrintValue(primaryValue: any, proxyValue: any): string {
   return text;
 }
 
+private getPrintableHouseJobData(): any {
+  const source = this.housejobData || {};
+  const proxy =
+    source?.HouseJobProxy?.[0] ||
+    source?.houseJobProxy?.[0] ||
+    source?.Proxy?.[0] ||
+    null;
+
+  const printableData = { ...source };
+  const printableFields = [
+    'AgentName',
+    'AgentAddress',
+    'ShipperName',
+    'ShipperAddress',
+    'ConsigneeName',
+    'ConsigneeAddress',
+    'VesselName',
+    'VoyageNo',
+    'POO',
+    'POL',
+    'POD',
+    'FPD',
+    'CarrierName',
+  ];
+
+  printableFields.forEach((fieldName) => {
+    printableData[fieldName] = this.getHblPrintValue(source?.[fieldName], proxy?.[fieldName]);
+  });
+
+  if (proxy && this.isSwitchBLPrintEnabled()) {
+    const printableProxy = { ...proxy };
+    printableFields.forEach((fieldName) => {
+      printableProxy[fieldName] = printableData[fieldName];
+    });
+
+    if (Array.isArray(source?.HouseJobProxy) && source.HouseJobProxy.length) {
+      printableData.HouseJobProxy = [printableProxy, ...source.HouseJobProxy.slice(1)];
+    }
+
+    if (Array.isArray(source?.houseJobProxy) && source.houseJobProxy.length) {
+      printableData.houseJobProxy = [printableProxy, ...source.houseJobProxy.slice(1)];
+    }
+
+    if (Array.isArray(source?.Proxy) && source.Proxy.length) {
+      printableData.Proxy = [printableProxy, ...source.Proxy.slice(1)];
+    }
+  }
+
+  return printableData;
+}
+
 private isFclOrLclImportDepartment(): boolean {
   const departmentName = (
     this.selectedDepartment?.departmentName ||
@@ -6772,7 +6823,7 @@ ${this.userData['userName']}`;
           scrollable: true,
         })
           this.hblModalRef = modalRef;
-          modalRef.componentInstance.housejobData = this.housejobData || [];
+          modalRef.componentInstance.housejobData = this.getPrintableHouseJobData();
           modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
           modalRef.componentInstance.agentList = this.agentList || [];
           modalRef.componentInstance.selectedReport = type;

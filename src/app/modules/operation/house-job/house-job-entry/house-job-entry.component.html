@@ -1609,7 +1609,7 @@
                   <i class="fas fa-exchange-alt"></i>
                 </button>
               </div>
-              <label class="input-label">FPD</label>
+              <label class="input-label">FDC</label>
             </div>
           </aside>
            <aside class="col-md-3">
@@ -4020,7 +4020,7 @@
           </div> -->
          <div class="d-flex align-items-center mb-1">
             <div class="fw-bold" style="width: 180px;">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
             </div>
           </div>
@@ -4046,19 +4046,19 @@
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Vessel</div>
-            <div class="col-12 col-md-6">: {{housejobData?.VesselName}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Voyage </div>
-            <div class="col-12 col-md-6">: {{housejobData?.VoyageNo}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Loading</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POL}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Discharge</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">ETD</div>
@@ -4070,7 +4070,7 @@
           </div>
           <div class="row">
             <div class="col-12 col-md-6 fw-semibold">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
         </div>
  
@@ -4372,7 +4372,7 @@
           </div> -->
          <div class="d-flex align-items-center mb-1">
             <div class="fw-bold" style="width: 180px;">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
             </div>
           </div>
@@ -4421,19 +4421,19 @@
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Vessel</div>
-            <div class="col-12 col-md-6">: {{housejobData?.VesselName}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">Voyage </div>
-            <div class="col-12 col-md-6">: {{housejobData?.VoyageNo}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Loading</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POL}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold"> Port of Discharge</div>
-            <div class="col-12 col-md-6">: {{housejobData?.POD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD'))}}</div>
           </div>
           <div class="row mb-1">
             <div class="col-12 col-md-6 fw-semibold">ETD</div>
@@ -4445,7 +4445,7 @@
           </div>
           <div class="row">
             <div class="col-12 col-md-6 fw-semibold">Final Destination</div>
-            <div class="col-12 col-md-6">: {{housejobData?.FPD}}</div>
+            <div class="col-12 col-md-6">: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
           </div>
         </div>
  
@@ -4728,7 +4728,7 @@
     >
       <div class="d-flex flex-column mb-1 text-center">
         <div><strong>Port of Loading</strong></div>
-        <span class="text-center">{{ housejobData?.POL }}</span>
+        <span class="text-center">{{ getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL')) }}</span>
       </div>
     </div>
     <div
@@ -4756,7 +4756,7 @@
       <div class="d-flex flex-column mb-1 text-center">
         <div><strong>Vessel / Voyage No</strong></div>
         <span class="text-center">
-          {{ housejobData?.VesselName }} {{ housejobData?.VoyageNo }}
+          {{ getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName')) }} {{ getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo')) }}
         </span>
       </div>
     </div>
@@ -4766,7 +4766,7 @@
     >
       <div class="d-flex flex-column mb-1 text-center">
         <div><strong>Port of Discharge</strong></div>
-        <span class="text-center">{{ housejobData?.POD }}</span>
+        <span class="text-center">{{ getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD')) }}</span>
       </div>
     </div>
     <div
@@ -5064,11 +5064,11 @@
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Port of Loading</strong></div>
-              <div>: {{housejobData?.POL}}</div>
+              <div>: {{getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Final Destination</strong></div>
-              <div>: {{housejobData?.FPD}}</div>
+              <div>: {{getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>ETD</strong></div>
@@ -5076,7 +5076,7 @@
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Carrier</strong></div>
-              <div>: {{housejobData?.CarrierName}}</div>
+              <div>: {{getHblPrintValue(housejobData?.CarrierName, getHouseJobProxyValue('CarrierName'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Service Type</strong></div>
@@ -5099,7 +5099,7 @@
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Port of Discharge</strong></div>
-              <div>: {{housejobData?.POD}}</div>
+              <div>: {{getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD'))}}</div>
             </div>
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>Place of Delivery</strong></div>
@@ -5111,7 +5111,7 @@
             </div>
                 <div class="d-flex mb-1">
    <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
-   <div style="padding-left: 5px;" [innerHTML]="formatVesselVoyage(housejobData?.VesselName, housejobData?.VoyageNo)"></div>
+   <div style="padding-left: 5px;" [innerHTML]="formatVesselVoyage(getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName')), getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo')))"></div>
  </div>
 
             <div class="d-flex mb-1">
@@ -5308,8 +5308,8 @@
           <!-- VESSEL DETAILS -->
           <div class="p-3  rounded" style="border: 1px solid black;">
             <div class="row gy-2">
-              <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{housejobData?.VesselName}}</div>
-              <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{housejobData?.VoyageNo}}</div>
+              <div class="d-flex"><strong class="w-50">Vessel Name</strong>: {{getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName'))}}</div>
+              <div class="d-flex"><strong class="w-50"> Voyage No</strong>: {{getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo'))}}</div>
               <div class="d-flex"><strong class="w-50">ETA</strong>: {{ housejobData?.ETA | formatDate }}</div>
               <div class="d-flex"><strong class="w-50"> Date</strong>: </div>
               <div class="d-flex"><strong class="w-50">Container No</strong>: </div>
@@ -5981,14 +5981,14 @@
           <div class="col-md-4" style="border-bottom: 1px solid black; border-top: 1px solid black;">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Vessel Name / Voyage No</strong></div>
-              <span class="text-center"> {{ housejobData?.VesselName }} & {{ housejobData?.VoyageNo }} </span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.VesselName, getHouseJobProxyValue('VesselName')) }} & {{ getHblPrintValue(housejobData?.VoyageNo, getHouseJobProxyValue('VoyageNo')) }} </span>
             </div>
           </div>
           <div class="col-md-4"
             style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black; border-top: 1px solid black;">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Port of Discharge</strong></div>
-              <span class="text-center"> {{ housejobData?.POD }}</span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.POD, getHouseJobProxyValue('POD')) }}</span>
             </div>
           </div>
         </div>
@@ -5997,13 +5997,13 @@
             style="border-bottom: 1px solid black; border-right: 1px solid black;border-left: 1px solid black; ">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Place of Loading</strong></div>
-              <span class="text-center"> {{ housejobData?.POL }} </span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.POL, getHouseJobProxyValue('POL')) }} </span>
             </div>
           </div>
           <div class="col-md-4" style="border-bottom: 1px solid black; ">
             <div class="d-flex flex-column mb-1 text-center">
               <div><strong>Final Destination</strong></div>
-              <span class="text-center"> {{ housejobData?.FPD }} </span>
+              <span class="text-center"> {{ getHblPrintValue(housejobData?.FPD, getHouseJobProxyValue('FPD')) }} </span>
             </div>
           </div>
           <div class="col-md-4"

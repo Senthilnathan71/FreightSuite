@@ -4850,14 +4850,57 @@ onETDDateSelect(): void {
   private normalizeHouseJobForPrint(houseJob: any): any {
     const proxy = houseJob?.HouseJobProxy?.[0] || houseJob?.houseJobProxy?.[0] || houseJob?.Proxy?.[0] || null;
     const useProxy = this.isSwitchBLPrintEnabled(houseJob);
-
-    return {
+    const printableHouseJob = {
       ...houseJob,
+      AgentName: this.getPrintableValue(houseJob?.AgentName, proxy?.AgentName, useProxy),
+      AgentAddress: this.getPrintableValue(houseJob?.AgentAddress, proxy?.AgentAddress, useProxy),
       ShipperName: this.getPrintableValue(houseJob?.ShipperName, proxy?.ShipperName, useProxy),
       ShipperAddress: this.getPrintableValue(houseJob?.ShipperAddress, proxy?.ShipperAddress, useProxy),
       ConsigneeName: this.getPrintableValue(houseJob?.ConsigneeName, proxy?.ConsigneeName, useProxy),
       ConsigneeAddress: this.getPrintableValue(houseJob?.ConsigneeAddress, proxy?.ConsigneeAddress, useProxy),
+      VesselName: this.getPrintableValue(houseJob?.VesselName, proxy?.VesselName, useProxy),
+      VoyageNo: this.getPrintableValue(houseJob?.VoyageNo, proxy?.VoyageNo, useProxy),
+      POO: this.getPrintableValue(houseJob?.POO, proxy?.POO, useProxy),
+      POL: this.getPrintableValue(houseJob?.POL, proxy?.POL, useProxy),
+      POD: this.getPrintableValue(houseJob?.POD, proxy?.POD, useProxy),
+      FPD: this.getPrintableValue(houseJob?.FPD, proxy?.FPD, useProxy),
+      CarrierName: this.getPrintableValue(houseJob?.CarrierName, proxy?.CarrierName, useProxy),
     };
+
+    if (proxy && useProxy) {
+      const printableProxy = { ...proxy };
+      [
+        'AgentName',
+        'AgentAddress',
+        'ShipperName',
+        'ShipperAddress',
+        'ConsigneeName',
+        'ConsigneeAddress',
+        'VesselName',
+        'VoyageNo',
+        'POO',
+        'POL',
+        'POD',
+        'FPD',
+        'CarrierName',
+      ].forEach((fieldName) => {
+        printableProxy[fieldName] = printableHouseJob[fieldName];
+      });
+
+      if (Array.isArray(houseJob?.HouseJobProxy) && houseJob.HouseJobProxy.length) {
+        printableHouseJob.HouseJobProxy = [printableProxy, ...houseJob.HouseJobProxy.slice(1)];
+      }
+
+      if (Array.isArray(houseJob?.houseJobProxy) && houseJob.houseJobProxy.length) {
+        printableHouseJob.houseJobProxy = [printableProxy, ...houseJob.houseJobProxy.slice(1)];
+      }
+
+      if (Array.isArray(houseJob?.Proxy) && houseJob.Proxy.length) {
+        printableHouseJob.Proxy = [printableProxy, ...houseJob.Proxy.slice(1)];
+      }
+    }
+
+    return printableHouseJob;
   }
 
   private getPrintableMasterJobData(): any {
