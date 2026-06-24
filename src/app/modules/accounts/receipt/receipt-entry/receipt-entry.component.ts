@@ -1598,6 +1598,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         'Inter Branch is enabled — add at least one branch allocation, or turn it off before saving.',
       );
       if (resolve) resolve(false);
+      this.isSaving = false; // re-enable Save — this guard ran after isSaving was set true
       return;
     }
 

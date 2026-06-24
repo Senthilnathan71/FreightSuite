@@ -1472,6 +1472,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         'Inter Branch is enabled — add at least one branch allocation, or turn it off before saving.',
       );
       if (resolve) resolve(false);
+      this.isSaving = false; // defensive: keep Save enabled on this guard (consistent with receipt)
       return;
     }
 
