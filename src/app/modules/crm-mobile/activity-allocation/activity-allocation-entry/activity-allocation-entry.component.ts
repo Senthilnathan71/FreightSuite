@@ -21,6 +21,7 @@ import {
 } from '../activity-allocation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 import Swal from 'sweetalert2';
 import * as bootstrap from 'bootstrap';
 import { Subject } from 'rxjs';
@@ -117,6 +118,7 @@ export class ActivityAllocationEntryComponent
     private activityService: ActivityAllocationService,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
+    private operationService: OperationService,
   ) {}
 
   ngOnInit(): void {
@@ -133,6 +135,7 @@ export class ActivityAllocationEntryComponent
     this.loadData();
 
     this.loadCSUsers();
+    this.loadAllocateUsers();
 
     setTimeout(() => {
       this.showKeyboardHints = true;
@@ -203,7 +206,6 @@ export class ActivityAllocationEntryComponent
       .subscribe({
         next: res => {
           this.rows = res.data || [];
-          this.allocateUsers = res.availableUsers || [];
           this.total = res.total || 0;
           this.page = res.page || this.page;
           this.pageSize = res.limit || this.pageSize;
@@ -224,11 +226,35 @@ export class ActivityAllocationEntryComponent
         error: err => {
           console.error('❌ [Entry] Error loading workload details', err);
           this.rows = [];
-          this.allocateUsers = [];
           this.total = 0;
           this.totalPages = 1;
           this.handleApiError(err, 'Failed to load workload details');
           this.isLoading = false;
+        },
+      });
+  }
+
+  // Allocate dropdown is populated from the salesperson/resource-person list
+  private loadAllocateUsers(): void {
+    const companyMasterSid =
+      this.appSettingService.getCurrentCompanyInfo()?.CompanyMasterSid;
+    if (!companyMasterSid) return;
+
+    this.operationService
+      .getAllSalesman(companyMasterSid)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp: any) => {
+          const users = resp?.data || resp || [];
+          this.allocateUsers = Array.isArray(users)
+            ? users.map((u: any) => ({
+                userSid: u.UserMasterSid ?? u.userSid,
+                userName: u.userName,
+              }))
+            : [];
+        },
+        error: () => {
+          console.error('Failed to load salesperson list');
         },
       });
   }
@@ -715,7 +741,7 @@ export class ActivityAllocationEntryComponent
     this.allocatingRowIds.add(row.activityId);
 
     this.activityService
-      .allocate(row.activityId, selectedUserSid)
+      .allocate(row.activityId, selectedUserSid, row.stage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: res => {
@@ -821,7 +847,7 @@ export class ActivityAllocationEntryComponent
 
     rowsToAllocate.forEach(row => {
       this.activityService
-        .allocate(row.activityId, this.bulkSelectedUserSid as number)
+        .allocate(row.activityId, this.bulkSelectedUserSid as number, row.stage)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: res => {
@@ -1127,6 +1153,20 @@ Status: ${this.selectedRowForDetail.status || 'Pending'}
       this.searchBoxRef.nativeElement.focus();
       this.searchBoxRef.nativeElement.select();
     }
+  }
+
+  // Header label for the stage-specific document-number column
+  documentNoLabel(): string {
+    const labels: Record<string, string> = {
+      RateRequest: 'Enquiry No',
+      Quotation: 'Quotation No',
+      Booking: 'Booking No',
+      LoadPlan: 'Booking No',
+      MasterJob: 'Master Job No',
+      HouseJob: 'House Job No',
+      Job: 'House Job No',
+    };
+    return labels[this.stage] || 'Document No';
   }
 
   getStatusLabel(row: WorkloadRow | null | undefined): string {

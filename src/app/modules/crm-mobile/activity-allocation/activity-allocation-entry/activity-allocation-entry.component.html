@@ -22,16 +22,6 @@
               <i class="fas fa-layer-group" aria-hidden="true"></i>
               Stage: <strong>{{ stage }}</strong>
             </span>
-            <span class="meta-divider">•</span>
-            <span class="meta-item">
-              <i class="fas fa-filter" aria-hidden="true"></i>
-              Filter: <strong>{{ mode }}</strong>
-            </span>
-            <span *ngIf="lastRefreshed" class="meta-divider">•</span>
-            <span *ngIf="lastRefreshed" class="meta-item">
-              <i class="fas fa-clock" aria-hidden="true"></i>
-              Updated: {{ lastRefreshed | date: 'dd-MMM-yyyy HH:mm' }}
-            </span>
           </div>
         </div>
       </div>
@@ -83,34 +73,6 @@
 
         
         <div class="action-buttons-right">
-          <select
-            class="form-select form-select-sm etd-filter-select"
-            [(ngModel)]="advancedFilters.etdStatus"
-            aria-label="Filter by ETD status"
-          >
-            <option value="">All ETD</option>
-            <option value="overdue">Overdue</option>
-            <option value="within15days">Within 15 Days</option>
-            <option value="beyond15days">Beyond 15 Days</option>
-            <option value="jobNotClosed">Job Not Closed</option>
-          </select>
-
-          <button
-            type="button"
-            class="btn-action btn-export"
-            [disabled]="isExporting || !rows?.length"
-            (click)="onExportClick()"
-          >
-            <ng-container *ngIf="!isExporting">
-              <i class="fas fa-file-export" aria-hidden="true"></i>
-              Export
-            </ng-container>
-            <ng-container *ngIf="isExporting">
-              <span class="spinner-border spinner-border-sm me-1"></span>
-              Exporting...
-            </ng-container>
-          </button>
-
           <button
             type="button"
             class="btn-action btn-reset"
@@ -233,45 +195,6 @@
           </div>
         </div>
       </div>
-
-      
-      <div class="metric-card metric-success">
-        <div class="metric-icon" aria-hidden="true">
-          <i class="fas fa-bolt"></i>
-        </div>
-        <div class="metric-details">
-          <div class="metric-label">In Progress</div>
-          <div class="metric-value">
-            {{ inProgressCount || 0 }}
-          </div>
-        </div>
-      </div>
-
-      
-      <div class="metric-card metric-warning">
-        <div class="metric-icon" aria-hidden="true">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="metric-details">
-          <div class="metric-label">Overdue</div>
-          <div class="metric-value">
-            {{ getOverdueCount() }}
-          </div>
-        </div>
-      </div>
-
-      
-      <div class="metric-card metric-completion">
-        <div class="metric-icon" aria-hidden="true">
-          <i class="fas fa-percent"></i>
-        </div>
-        <div class="metric-details">
-          <div class="metric-label">Completion %</div>
-          <div class="metric-value">
-            {{ completionPercent | number: '1.0-0' }}%
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -368,23 +291,12 @@
               <th
                 scope="col"
                 class="sortable"
-                [class.active]="sortColumn === 'quotationNo'"
-                (click)="sortBy('quotationNo')"
+                [class.active]="sortColumn === 'documentNo'"
+                (click)="sortBy('documentNo')"
               >
                 <div class="th-content">
-                  <span>Quotation No</span>
-                  <i [class]="getSortIconClass('quotationNo')" aria-hidden="true"></i>
-                </div>
-              </th>
-              <th
-                scope="col"
-                class="sortable"
-                [class.active]="sortColumn === 'bookingNo'"
-                (click)="sortBy('bookingNo')"
-              >
-                <div class="th-content">
-                  <span>Booking No</span>
-                  <i [class]="getSortIconClass('bookingNo')" aria-hidden="true"></i>
+                  <span>{{ documentNoLabel() }}</span>
+                  <i [class]="getSortIconClass('documentNo')" aria-hidden="true"></i>
                 </div>
               </th>
               <th
@@ -405,28 +317,10 @@
                 (click)="sortBy('salesPersonName')"
               >
                 <div class="th-content">
-                  <span>Sales Person</span>
+                  <span>Resource Person</span>
                   <i [class]="getSortIconClass('salesPersonName')" aria-hidden="true"></i>
                 </div>
               </th>
-              <th *ngIf="visibleColumns?.customerService" scope="col">
-                Customer Service
-              </th>
-              <th *ngIf="visibleColumns?.documentation" scope="col">
-                Documentation
-              </th>
-              <th
-                scope="col"
-                class="sortable"
-                [class.active]="sortColumn === 'etd'"
-                (click)="sortBy('etd')"
-              >
-                <div class="th-content">
-                  <span>ETD</span>
-                  <i [class]="getSortIconClass('etd')" aria-hidden="true"></i>
-                </div>
-              </th>
-              <th scope="col">ETD Status</th>
               <th scope="col" class="col-actions">Allocate</th>
             </tr>
           </thead>
@@ -446,61 +340,11 @@
                   (change)="toggleRowSelection(row, $event)"
                 />
               </td>
-              <td>{{ row.quotationNo || '—' }}</td>
-              <td>
-                <span
-                  class="badge-custom"
-                  [ngClass]="getBookingStatusClass(row)"
-                >
-                  <i
-                    class="fas"
-                    [ngClass]="{
-                      'fa-check-circle': isBookingCreated(row),
-                      'fa-exclamation-triangle': !isBookingCreated(row)
-                    }"
-                    aria-hidden="true"
-                  ></i>
-                  {{ getBookingStatusLabel(row) }}
-                </span>
-              </td>
+              <td>{{ row.documentNo || '—' }}</td>
               <td>{{ row.customerName || '—' }}</td>
               <td>{{ row.salesPersonName || '—' }}</td>
-              <td *ngIf="visibleColumns?.customerService">
-                <ng-select
-                  [items]="csUsers"
-                  bindLabel="userName"
-                  bindValue="userSid"
-                  [(ngModel)]="selectedCSByActivityId[row.activityId]"
-                  (change)="onCSPersonChange(row, $event)"
-                  placeholder="Select CS"
-                  [clearable]="true"
-                  appendTo="body"
-                  class="cs-select-sm">
-                </ng-select>
-              </td>
-              <td *ngIf="visibleColumns?.documentation">
-                {{ row.documentationName || '—' }}
-              </td>
-              <td>{{ row.etd | date: 'dd-MMM-yyyy' }}</td>
-              <td>
-                <span
-                  class="badge-status"
-                  [ngClass]="getEtdBadgeClass(row)"
-                >
-                  <i [class]="getEtdIconClass(row)" aria-hidden="true"></i>
-                  {{ getEtdLabel(row) }}
-                </span>
-              </td>
               <td class="col-actions">
                 <div class="action-buttons-group">
-                  <button
-                    type="button"
-                    class="btn-action-icon btn-view"
-                    title="View details"
-                    (click)="openDetailModal(row)"
-                  >
-                    <i class="fas fa-eye" aria-hidden="true"></i>
-                  </button>
                   <div class="btn-group">
                     <select
                       class="form-select form-select-sm allocate-select"

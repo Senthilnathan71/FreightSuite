@@ -14,9 +14,9 @@
     </div>
   </header>
 
-  <!-- Branch Selector -->
+  <!-- Branch Selector + Actions -->
   <section class="branch-selector mb-1">
-    <div class="card mt-1"mb-1>
+    <div class="card mt-1">
       <div class="card-body py-1">
         <div class="row align-items-center g-2">
           <div class="col-auto">
@@ -36,7 +36,14 @@
               [clearable]="false">
             </ng-select>
           </div>
-          <div class="col d-flex justify-content-end">
+          <div class="col d-flex justify-content-end gap-2">
+            <button
+              type="button"
+              class="btn btn-success"
+              [disabled]="!selectedBranchSid || showCreateForm"
+              (click)="openCreateForm()">
+              <i class="fas fa-plus me-1"></i> Create
+            </button>
             <button
               type="button"
               class="btn btn-info"
@@ -48,6 +55,57 @@
               <ng-container *ngIf="isSaving">
                 <i class="fas fa-spinner fa-spin me-1"></i> Saving...
               </ng-container>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Create New Configuration -->
+  <section *ngIf="showCreateForm" class="create-config mb-1">
+    <div class="card create-card">
+      <div class="create-card-header d-flex align-items-center justify-content-between">
+        <span class="title">
+          <i class="fas fa-plus-circle me-2"></i> New Resource Allocation
+        </span>
+        <button type="button" class="btn-close-create" (click)="cancelCreate()" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="card-body py-3">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label mb-1 fw-semibold">
+              <i class="fas fa-list me-1 text-primary"></i> Menu <span class="text-danger">*</span>
+            </label>
+            <ng-select
+              [items]="availableMenus"
+              bindLabel="MenuDisplay"
+              bindValue="MenuMasterSid"
+              [(ngModel)]="newMenuSid"
+              placeholder="Select Menu"
+              [clearable]="true"
+              appendTo="body">
+            </ng-select>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label mb-1 fw-semibold">
+              <i class="fas fa-user me-1 text-primary"></i> Assigned User
+            </label>
+            <ng-select
+              [items]="users"
+              bindLabel="userName"
+              bindValue="UserMasterSid"
+              [(ngModel)]="newUserSid"
+              placeholder="Select User"
+              [clearable]="true"
+              appendTo="body">
+            </ng-select>
+          </div>
+          <div class="col-md-2 d-grid">
+            <button type="button" class="btn btn-success" (click)="addConfiguration()">
+              <i class="fas fa-check me-1"></i> Add
             </button>
           </div>
         </div>
