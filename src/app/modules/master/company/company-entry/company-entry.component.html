@@ -258,7 +258,7 @@
             <aside class="col-md-4">
               <div class="custom-form-group">
                 <textarea type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                  formControlName="addressLine1" [textWithNumbers]="500" rowspan="2" rows="1"></textarea>
+                  formControlName="addressLine1" maxlength="500" rowspan="2" rows="1"></textarea>
                 <label for="text-input" class="input-label">Address <span class="text-danger">*</span></label>
 
                 <!--  Validation -->
@@ -1091,7 +1091,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchAddressLine1" placeholder="" class="custom-input-field sm"
-                              formControlName="branchAddressLine1" [textWithNumbers]="500">
+                              formControlName="branchAddressLine1"  maxlength="500" >
                             <label for="branchAddressLine1" class="input-label">Address <span
                                 class="text-danger">*</span></label>
                             @if(branchForm.get('branchAddressLine1')?.touched &&
@@ -1111,7 +1111,7 @@
                         <aside class="col-md-4">
                           <div class="custom-form-group">
                             <input type="text" id="branchAddressLine2" placeholder="" class="custom-input-field sm"
-                              formControlName="branchAddressLine2" [textWithNumbers]="500">
+                              formControlName="branchAddressLine2" maxlenght="500">
                             <label for="branchAddressLine2" class="input-label">Address 2</label>
                             @if(branchForm.get('branchAddressLine2')?.touched &&
                             branchForm.get('branchAddressLine2')?.invalid){
@@ -2160,7 +2160,7 @@
           <aside class="col-12 col-sm-6 col-md-4">
             <div class="custom-form-group">
               <input type="text" id="bankAddress" placeholder="" class="custom-input-field sm"
-                formControlName="BankAddress" [textWithNumbers]="500">
+                formControlName="BankAddress" maxlenght="500">
               <label for="bankAddress" class="input-label">Bank Address</label>
               @if(branchBankForm.get('BankAddress')?.touched && branchBankForm.get('BankAddress')?.invalid){
               <div class="error-message">

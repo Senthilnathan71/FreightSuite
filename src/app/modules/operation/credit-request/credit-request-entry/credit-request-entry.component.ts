@@ -955,12 +955,16 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
 
   canEditApprovalStatus(creditIndex: number): boolean {
     const credit = this.creditRequest.at(creditIndex);
-    if (!credit || this.isApprovedRow(credit) || !this.getCreditDocumentSid(creditIndex)) {
+    if (!credit || this.isCreditApprovalPersistedApproved(creditIndex) || !this.getCreditDocumentSid(creditIndex)) {
       return false;
     }
 
     const details = this.getCreditAuthorizerDetails(creditIndex);
     return !!details?.canAuthorize || !this.isAuthorizationRequiredForCredit(creditIndex);
+  }
+
+  private isCreditApprovalPersistedApproved(creditIndex: number): boolean {
+    return this.normalizeApprovalStatus(this.getSavedCreditApprovalStatus(creditIndex)) === 'approved';
   }
 
   shouldShowAuthorizationMessage(creditIndex: number): boolean {
