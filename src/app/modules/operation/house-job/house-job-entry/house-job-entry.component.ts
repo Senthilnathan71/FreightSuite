@@ -1576,6 +1576,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       InsuranceAmount: [''],
       ValuationCharge: [''],
       HandlingInformation: [''],
+      // Overflow of the commodity description beyond the first 500 chars. Derived
+      // and persisted by the backend; shown read-only on the Other tab.
+      RiderCommodityDescription: [{ value: '', disabled: true }],
       BacktoBack: [false],
       Depo: [''],
       ROValidity: [''],
@@ -2624,6 +2627,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
         InsuranceAmount: otherData?.InsuranceAmount,
         ValuationCharge: otherData?.ValuationCharge,
         HandlingInformation: otherData?.HandlingInformation,
+        RiderCommodityDescription: otherData?.RiderCommodityDescription || '',
         BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
         Depo: otherData?.Depo,
         ROValidity: otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
@@ -3991,6 +3995,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       CargoCurrency: cargoCurrencyValue,
       CargoValue: parseFloat(otherFormValue.CargoValue) || 0,
       HandlingInformation: otherFormValue.HandlingInformation || '',
+      RiderCommodityDescription: otherFormValue.RiderCommodityDescription || '',
       ValueForInsurance: otherFormValue.ValueForInsurance || 0,
       InsuranceAmount: otherFormValue.InsuranceAmount || 0,
       ValuationCharge: otherFormValue.ValuationCharge || 0,
@@ -6381,8 +6386,10 @@ ${this.userData['userName']}`;
     const firstCargo = this.houseJobCargos.at(0) as FormGroup;
     firstCargo.patchValue({
       CommodityDescription: data?.cargoDescription || data?.cargoDetails || firstCargo.get('CommodityDescription')?.value,
+      MarksAndNumber: data?.marksAndNumbers || firstCargo.get('MarksAndNumber')?.value,
       NoOfPackage: this.parseBillNumber(data?.numberOfPackages) || firstCargo.get('NoOfPackage')?.value,
       GrossWeight: this.parseBillNumber(data?.grossWeight) || firstCargo.get('GrossWeight')?.value,
+      NetWeight: this.parseBillNumber(data?.netWeight) || firstCargo.get('NetWeight')?.value,
       Volume: this.parseBillNumber(data?.measurement) || firstCargo.get('Volume')?.value,
       FreightTerms: data?.freightTerms || firstCargo.get('FreightTerms')?.value,
     });

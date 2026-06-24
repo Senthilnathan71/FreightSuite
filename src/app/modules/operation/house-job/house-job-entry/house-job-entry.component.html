@@ -3106,6 +3106,14 @@
                   </div>
                 </aside>
 
+                <aside class="col-md-6">
+                  <div class="custom-form-group" [class.filled]="!!otherForm.get('RiderCommodityDescription')?.value">
+                    <textarea id="rider-commodity-desc" rows="2" placeholder="" readonly
+                      class="custom-input-field sm" formControlName="RiderCommodityDescription"></textarea>
+                    <label for="rider-commodity-desc" class="input-label">Rider Commodity Description <span class="text-danger"></span></label>
+                  </div>
+                </aside>
+
           <aside class="col-md-3">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"

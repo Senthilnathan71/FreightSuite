@@ -231,8 +231,9 @@ export interface BillOfLadingData {
   numberOfPackages: string;
   packageType: string;
   grossWeight: string;
+  netWeight: string;
   measurement: string;
-  
+
   // Container Information
   containerDetails: string;
   containerType?: string;

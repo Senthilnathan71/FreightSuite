@@ -1182,7 +1182,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       ContainerNumber: this.extractBolContainerNumber(data.containerDetails),
       ContainerType: data.containerTypeMasterSid || null,
       cargo: {
-        CommodityDescription: data.cargoDescription || data.cargoDetails || '',
+        // Master-job house cargo column is 200 chars (no Rider overflow on this path); cap to fit.
+        CommodityDescription: (data.cargoDescription || data.cargoDetails || '').substring(0, 200),
         NoOfPackage: this.parseBillNumber(data.numberOfPackages) || 0,
         GrossWeight: this.parseBillNumber(data.grossWeight) || 0,
         Volume: this.parseBillNumber(data.measurement) || 0,
@@ -1213,7 +1214,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       ContainerNumber: containerNumber,
       ContainerType: containerType,
       LineSeal: this.extractBolSealNumber(data?.containerDetails),
-      CommodityDescription: data?.cargoDescription || data?.cargoDetails || '',
+      // MasterJobContainer.CommodityDescription is VarChar(500); cap to fit.
+      CommodityDescription: (data?.cargoDescription || data?.cargoDetails || '').substring(0, 500),
       GrossWeight: this.parseBillNumber(data?.grossWeight) || 0,
       NoOfPkg: this.parseBillNumber(data?.numberOfPackages) || 0,
       Volume: this.parseBillNumber(data?.measurement) || 0,
