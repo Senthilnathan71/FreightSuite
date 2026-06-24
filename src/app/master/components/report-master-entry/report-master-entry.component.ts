@@ -244,6 +244,7 @@ private parseExcludedCompanyIds(raw: any): number[] {
       DropDownValue: [dropDownValue],
       ValidationRules: [validationRules],
       ParameterQuery: [data.ParameterQuery || ''],
+      DependsOnParameter: [data.DependsOnParameter || ''],
       Status: [data.Status || 'A']
     });
   }
@@ -401,6 +402,7 @@ private parseExcludedCompanyIds(raw: any): number[] {
     ParameterFieldType: detail.ParameterFieldType || null,
     DropDownValue: dropDownValue,
     ValidationRules: validationRules,
+    DependsOnParameter: detail.DependsOnParameter || null,
     ParameterQuery: detail.ParameterQuery || null,
     Status: detail.Status || 'A'
   };

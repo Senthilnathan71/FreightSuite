@@ -4,18 +4,18 @@
 
 // Voucher/Job number link — used in cost-entry, payment-entry, and similar entry tables
 .voucher-number-link {
-  color: #0649d4;
+  color: #05608d;
   font-size: 0.8rem;
   font-weight: 700;
-  text-decoration: underline;
+  // text-decoration: underline;
   display: inline-block;
-  padding: 4px 8px;
+  // padding: 4px 8px;
   transition: all 0.2s ease;
   cursor: pointer;
 
   &:hover {
     color: #0338a6;
-    text-decoration: underline;
+    // text-decoration: underline;
     background-color: rgba(6, 73, 212, 0.08);
   }
 }

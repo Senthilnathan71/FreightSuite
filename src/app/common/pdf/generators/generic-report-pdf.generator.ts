@@ -26,6 +26,11 @@ interface GenericHeaderPrintSettings {
   companyAlignment: 'left' | 'center' | 'right';
 }
 
+interface AdditionalInfoLayoutResult {
+  node: any | null;
+  rowCount: number;
+}
+
 /** Compact table layout with reduced padding to fit more columns */
 const COMPACT_TABLE_LAYOUT = {
   hLineWidth: () => 0.5,
@@ -190,6 +195,83 @@ function getAmountInWordsText(rows: ExcelRow[]): string {
     .join(' ');
 }
 
+function buildAdditionalInfoLayout(
+  items: { label: string; value: string }[] | undefined,
+  isLandscape: boolean,
+  fontSize: number
+): AdditionalInfoLayoutResult {
+  if (!items?.length) {
+    return { node: null, rowCount: 0 };
+  }
+
+  const columnCount = Math.min(2, items.length);
+  const rowCount = Math.ceil(items.length / columnCount);
+  const labelWidth = isLandscape ? 56 : 62;
+
+  // Split into a left group (first rowCount items) and a right group (the rest).
+  const leftItems = items.slice(0, rowCount);
+  const rightItems = columnCount > 1 ? items.slice(rowCount) : [];
+
+  // Each group is a borderless table [ label | : | value ]. An 'auto' value column
+  // makes the table shrink to its actual content width, so when the right group is
+  // anchored to the page end (via a '*' spacer) it truly hugs the right edge with no
+  // trailing gap, while the table grid keeps every label/colon/value aligned.
+  const groupLayout = {
+    defaultBorder: false,
+    paddingLeft: () => 0,
+    paddingRight: () => 4,
+    paddingTop: () => 1,
+    paddingBottom: () => 1
+  };
+
+  const buildGroupTable = (groupItems: { label: string; value: string }[]) => ({
+    table: {
+      widths: [labelWidth, 'auto', 'auto'],
+      body: groupItems.map(item => [
+        { text: item?.label || '', bold: true, fontSize, noWrap: true },
+        { text: ':', fontSize, alignment: 'center' },
+        { text: item?.value || '', fontSize }
+      ])
+    },
+    layout: groupLayout
+  });
+
+  return {
+    rowCount,
+    node: {
+      columns: [
+        { width: 'auto', ...buildGroupTable(leftItems) },
+        { width: '*', text: '' },
+        rightItems.length
+          ? { width: 'auto', ...buildGroupTable(rightItems) }
+          : { width: 0, text: '' }
+      ],
+      columnGap: 0
+    }
+  };
+}
+
+function estimateHeaderTopMargin(opts: {
+  isLandscape: boolean;
+  hasLogo: boolean;
+  companyLineCount: number;
+  hasTitle: boolean;
+  parameterRows: number;
+}): number {
+  const lineHeight = opts.isLandscape ? 8 : 9;
+  const logoHeight = opts.hasLogo ? 42 : 0;
+  const companyHeight = opts.companyLineCount * lineHeight;
+  const headerBlockHeight = Math.max(logoHeight, companyHeight);
+  const titleHeight = opts.hasTitle ? (opts.isLandscape ? 18 : 22) : 0;
+  const paramsHeight = opts.parameterRows > 0
+    ? opts.parameterRows * (opts.isLandscape ? 16 : 22) + (opts.isLandscape ? 10 : 18)
+    : 0;
+  const padding = opts.isLandscape ? 24 : 34;
+
+  const computed = Math.ceil(15 + headerBlockHeight + titleHeight + paramsHeight + padding);
+  return opts.isLandscape ? computed : Math.max(170, computed);
+}
+
 export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const { exportConfig, company, branch, userData, logo, orientation } = data;
   const printSettings = getGenericHeaderPrintSettings();
@@ -219,33 +301,13 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   }
 
   // --- B) Build repeating header function ---
-  const infoContent: any[] = [];
-  if (exportConfig.reportHeader.additionalInfo?.length) {
-    const items = exportConfig.reportHeader.additionalInfo;
-    const numCols = 2;
-    const numRows = Math.ceil(items.length / numCols);
-    const tableBody: any[][] = [];
-    for (let r = 0; r < numRows; r++) {
-      const leftIdx = r;
-      const rightIdx = r + numRows;
-      const leftItem = leftIdx < items.length ? items[leftIdx] : null;
-      const rightItem = rightIdx < items.length ? items[rightIdx] : null;
-      tableBody.push([
-        { text: leftItem?.label || '', bold: true, fontSize: 8 },
-        { text: leftItem ? `: ${leftItem.value || ''}` : '', fontSize: 8 },
-        { text: rightItem?.label || '', bold: true, fontSize: 8 },
-        { text: rightItem ? `: ${rightItem.value || ''}` : '', fontSize: 8 }
-      ]);
-    }
-    infoContent.push({
-      table: { widths: ['auto', '*', 'auto', 'auto'], body: tableBody },
-      layout: 'noBorders',
-      margin: [0, 0, 0, 20]
-    });
-  }
+  const landscapeAdditionalInfo = buildAdditionalInfoLayout(
+    exportConfig.reportHeader.additionalInfo,
+    true,
+    8
+  );
 
   const reportTitle = exportConfig.reportHeader.reportTitle || '';
-  const lineWidth = isLandscape ? 782 : 535;
 
   function portraitHeader(data: GenericReportPdfData): any {
     const { company, branch, logo, exportConfig } = data;
@@ -347,28 +409,35 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     }
 
     // Additional info (parameters)
-    if (exportConfig.reportHeader.additionalInfo?.length) {
-      const items = exportConfig.reportHeader.additionalInfo;
-      const numCols = 2;
-      const numRows = Math.ceil(items.length / numCols);
-      const tableBody: any[][] = [];
+    // Portrait-only layout: a single full-width two-column table. Because the
+    // table spans the full printable width (no auto-sized side tables that can
+    // collide in the narrow portrait page), every parameter renders on its own
+    // row — including ones with an empty value (label shown with a blank value).
+    const paramItems = exportConfig.reportHeader.additionalInfo || [];
+    if (paramItems.length) {
+      const numRows = Math.ceil(paramItems.length / 2);
+      const body: any[][] = [];
       for (let r = 0; r < numRows; r++) {
-        const leftIdx = r;
-        const rightIdx = r + numRows;
-        const leftItem = leftIdx < items.length ? items[leftIdx] : null;
-        const rightItem = rightIdx < items.length ? items[rightIdx] : null;
-
-        tableBody.push([
-          { text: leftItem?.label || '', bold: true, fontSize: 9 },
-          { text: leftItem ? `: ${leftItem.value || ''}` : '', fontSize: 9 },
-          { text: rightItem?.label || '', bold: true, fontSize: 9, alignment: 'right' },
-          { text: rightItem ? `: ${rightItem.value || ''}` : '', fontSize: 9 }
+        const left = paramItems[r];
+        const right = paramItems[r + numRows];
+        body.push([
+          { text: left?.label || '', bold: true, fontSize: 9, noWrap: true },
+          { text: left ? ':' : '', fontSize: 9, alignment: 'center' },
+          { text: left?.value || '', fontSize: 9 },
+          { text: right?.label || '', bold: true, fontSize: 9, noWrap: true },
+          { text: right ? ':' : '', fontSize: 9, alignment: 'center' },
+          { text: right?.value || '', fontSize: 9 }
         ]);
       }
-
       stack.push({
-        table: { widths: [110, '*', 110, '*'], body: tableBody },
-        layout: 'noBorders',
+        table: { widths: [62, 8, '*', 62, 8, '*'], body },
+        layout: {
+          defaultBorder: false,
+          paddingLeft: () => 0,
+          paddingRight: () => 4,
+          paddingTop: () => 1,
+          paddingBottom: () => 1
+        },
         margin: [0, 6, 0, 6],
       });
     }
@@ -478,8 +547,11 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     }
 
     // Parameters
-    if (infoContent.length) {
-      stack.push(...infoContent);
+    if (landscapeAdditionalInfo.node) {
+      stack.push({
+        ...landscapeAdditionalInfo.node,
+        margin: [0, 2, 0, 6]
+      });
     }
 
     // Thin divider line
@@ -711,10 +783,22 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   }
 
   // Keep a visible gap between header parameter info and table content.
-  const paramCount = exportConfig.reportHeader.additionalInfo?.length || 0;
-  const paramRows = Math.ceil(paramCount / 2);
-  const headerBaseHeight = isLandscape ? 140 : 150;
-  const topMargin = headerBaseHeight + (paramRows * (isLandscape ? 11 : 18)) + 12;
+  const companyLineCount = [
+    company?.companyName,
+    branch?.branchName,
+    branch?.addressLine1 || company?.addressLine1,
+    branch?.addressLine2 || branch?.cityMaster?.cityName || branch?.cityName || branch?.postalCode || (branch as any)?.ZipCode || branch?.phoneNumber || (branch as any)?.Phone
+  ].filter(Boolean).length;
+  const parameterRows = isLandscape
+    ? landscapeAdditionalInfo.rowCount
+    : buildAdditionalInfoLayout(exportConfig.reportHeader.additionalInfo, false, 9).rowCount;
+  const topMargin = estimateHeaderTopMargin({
+    isLandscape,
+    hasLogo: !!logo,
+    companyLineCount,
+    hasTitle: !!reportTitle,
+    parameterRows
+  });
 
   // Reserve extra bottom margin when notes repeat in the footer, so the legend never
   // overlaps the table (default footer needs ~30pt; each note line ~9pt).

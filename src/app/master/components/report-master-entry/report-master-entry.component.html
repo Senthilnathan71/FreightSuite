@@ -243,6 +243,7 @@
                                 <th class="bg-transparent text-light" style="min-width: 250px">Dropdown Value (JSON)</th>
                                 <th class="bg-transparent text-light" style="min-width: 250px">Parameter Query</th>
                                 <th class="bg-transparent text-light" style="min-width: 250px">Validation Rules</th>
+                                <th class="bg-transparent text-light" style="min-width: 250px">Depends On Parameter</th>
                             </tr>
                         </thead>
                         <tbody formArrayName="parameters">
@@ -287,9 +288,13 @@
                                         rows="1" placeholder='{"key1":"value1","key2":"value2"}'>
                                     </textarea>
                                 </td>
+                                <td>
+                                    <textarea class="form-control form-control-sm" formControlName="DependsOnParameter"
+                                        rows="1" placeholder=''>
+                                    </textarea>
                             </tr>
                             <tr *ngIf="parameters.length === 0">
-                                <td colspan="5" class="text-center text-muted py-3">
+                                <td colspan="7" class="text-center text-muted">
                                     No parameters added. Click "Add Parameter" to add one.
                                 </td>
                             </tr>
