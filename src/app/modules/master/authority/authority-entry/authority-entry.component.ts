@@ -169,7 +169,7 @@ auditLogs: any[] = []; // Stores audit logs
       companies: this.masterService.getAllCompanies(),
       departments: this.masterService.getAllDepartments(CompanyMasterSid),
       menus: this.settingsService.getAllMenu(),
-      users: this.masterService.getAllFfUser(),
+      users: this.masterService.getAllFfUserByCompany(CompanyMasterSid),
       // branches: this.masterService.getAllBranches()
     }).subscribe(({ companies, departments, menus, users}) => {
       this.companyResults = companies;
