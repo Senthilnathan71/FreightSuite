@@ -143,34 +143,32 @@
                       *ngIf="c.cargoType">{{ c.cargoType }}</span>
               </div>
 
-              <div class="pq-cargo-strip">
-                <div class="pq-cargo-strip-main">
-                  <span>Cargo</span>
-                  <strong>{{ c.cargoType || '-' }}</strong>
-                </div>
-                <div class="pq-cargo-strip-metrics">
-                  <span class="pq-cargo-stat pq-cargo-stat-gross">
-                    <small>Gross Weight</small>
-                    <strong>{{ c.grossWeight ?? '-' }}</strong>
-                  </span>
-                  <span class="pq-cargo-stat pq-cargo-stat-net">
-                    <small>Net Weight</small>
-                    <strong>{{ c.netWeight ?? '-' }}</strong>
-                  </span>
-                  <span class="pq-cargo-stat pq-cargo-stat-cbm">
-                    <small>Volume</small>
-                    <strong>{{ c.cbm ?? '-' }}</strong>
-                  </span>
-                  <span class="pq-cargo-stat pq-cargo-stat-terms">
-                    <small>Shipment Terms</small>
-                    <strong>{{ c.shipmentTerms || '-' }}</strong>
-                  </span>
-                </div>
+              <div class="pq-cargo-summary-wrap">
+                <table class="pq-cargo-summary-table">
+                  <thead>
+                    <tr>
+                      <th>Cargo</th>
+                      <th>Gross Weight</th>
+                      <th>Net Weight</th>
+                      <th>Volume</th>
+                      <th>Shipment Terms</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ c.cargoType || '-' }}</td>
+                      <td class="pq-num">{{ c.grossWeight == null ? '-' : (c.grossWeight | number:'1.3-3') }}</td>
+                      <td class="pq-num">{{ c.netWeight == null ? '-' : (c.netWeight | number:'1.3-3') }}</td>
+                      <td class="pq-num">{{ c.cbm == null ? '-' : (c.cbm | number:'1.3-3') }}</td>
+                      <td>{{ c.shipmentTerms || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               <div class="pq-grid-table-wrap" *ngIf="c.products.length">
                 <table class="pq-grid-table">
-                  <thead>
+                  <thead class="bg-info">
                     <tr>
                       <th>Product</th>
                       <th class="pq-num">Gross Weight.</th>
@@ -181,9 +179,9 @@
                   <tbody>
                     <tr *ngFor="let p of c.products">
                       <td>{{ p.productName || '-' }}</td>
-                      <td class="pq-num">{{ p.grossWeight ?? '-' }}</td>
-                      <td class="pq-num">{{ p.netWeight ?? '-' }}</td>
-                      <td class="pq-num">{{ p.volume ?? '-' }}</td>
+                      <td class="pq-num">{{ p.grossWeight == null ? '-' : (p.grossWeight | number:'1.3-3') }}</td>
+                      <td class="pq-num">{{ p.netWeight == null ? '-' : (p.netWeight | number:'1.3-3') }}</td>
+                      <td class="pq-num">{{ p.volume == null ? '-' : (p.volume | number:'1.3-3') }}</td>
                     </tr>
                   </tbody>
                 </table>
