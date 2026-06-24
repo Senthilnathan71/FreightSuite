@@ -355,7 +355,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   matchingCursors = new Map<number, {
     branchSid: number; branchName: string; isSource: boolean;
     skip: number; hasMore: boolean; includeFullyPaid: boolean;
-    take: number; partyLedgerSid?: number; stagedMatches?: any[];
+    take: number; partyLedgerSid?: number; stagedMatches?: any[]; voucherDateTo?: string;
   }>();
   /** BranchMasterSid of the matching tab currently shown (null until the source cursor is seeded). */
   activeMatchingBranchSid: number | null = null;
@@ -1040,6 +1040,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // ControlValueAccessor writes CustomerBranchSid automatically via bindValue
   }
 
+  /** Format any date value to a naive YYYY-MM-DD (local Y/M/D), or undefined.
+   *  Naive avoids the @db.Date off-by-one a toISOString() of local-midnight would cause. */
+  private toAsOfDate(v: any): string | undefined {
+    const d = v ? new Date(v) : null;
+    if (!d || isNaN(d.getTime())) return undefined;
+    return `${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, '0')}-${`${d.getDate()}`.padStart(2, '0')}`;
+  }
+
+  /** The voucher date as a naive YYYY-MM-DD — caps outstanding at VoucherDate <= this (item 6). */
+  private get outstandingAsOfDate(): string | undefined {
+    return this.toAsOfDate(this.paymentForm.get('VoucherDate')?.getRawValue());
+  }
+
   async searchOutstanding() {
     const form = this.searchOutstandingForm.getRawValue();
 
@@ -1048,6 +1061,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       IncludeFullyPaid: form.IncludeFullyPaid,
       LedgerType: 'Sy Cr',
+      VoucherDateTo: this.outstandingAsOfDate,
     };
 
     switch (form.SearchType) {
@@ -1166,6 +1180,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           LedgerMasterSid: cursor.partyLedgerSid ?? this.paymentForm.get('PartyMasterSid')?.value,
           IncludeFullyPaid: cursor.includeFullyPaid,
           LedgerType: 'Sy Cr',
+          // cursor.voucherDateTo (source voucher's date) wins on edit-load — the form's VoucherDate is
+          // still the default (today) when this fires in parallel with the header fetch.
+          VoucherDateTo: cursor.voucherDateTo ?? this.outstandingAsOfDate,
           Skip: cursor.skip,
           Take: cursor.take,
         };
@@ -1448,6 +1465,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+    // Inter Branch enabled must carry at least one owning-branch allocation.
+    const mbOn = this.paymentForm.get('MultiBranch')?.value;
+    if ((mbOn === true || mbOn === 'Y') && this.interBranches.length === 0) {
+      this.appSettingService.showWarning(
+        'Inter Branch is enabled — add at least one branch allocation, or turn it off before saving.',
+      );
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.paymentForm.invalid) {
       errorLoggerWithToastr(this.paymentForm, this.toastr, this.paymentValidationConfig);
       this.paymentForm.markAllAsTouched();
@@ -1601,6 +1628,73 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+    // Item 3 — with Inter Branch ON, the source tab may only match (party amount − Σ allocated to other
+    // branches); each owning branch's invoices are matched in its own tab. Backstop for the live guard.
+    const matchCur = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
+    if (
+      formValue.PartyMasterSid &&
+      toNumber(this.getFormattedAndPaddedAmount(toNumber(matchingAmt), matchCur)) > this.sourceMatchableCap
+    ) {
+      this.appSettingService.showError(
+        `Source-branch matching can't exceed ${this.getFormattedAndPaddedAmount(this.sourceMatchableCap, matchCur)} — the rest is allocated to other branches.`
+      );
+      if (resolve) resolve(false);
+      this.isSaving = false;
+      return;
+    }
+
+    // Item 5 — each owning branch's matched total must not exceed its allotted amount.
+    const vmRows5 = this.voucherMatchings.getRawValue();
+    for (const ib of this.interBranches.controls) {
+      const sid = ib.get('BranchMasterSid')?.value;
+      const allottedRaw = Number(ib.get('Amount')?.value) || 0;
+      const allotted = toNumber(this.getFormattedAndPaddedAmount(allottedRaw, matchCur));
+      const branchMatched = toNumber(
+        this.getFormattedAndPaddedAmount(
+          vmRows5.filter((vm) => vm.allotmentBranchSid === sid).reduce((s, vm) => s + (Number(vm.matchPartyAmt) || 0), 0),
+          matchCur,
+        ),
+      );
+      if (branchMatched > allotted) {
+        this.appSettingService.showError(
+          `Matching for ${ib.get('BranchName')?.value} (${this.getFormattedAndPaddedAmount(branchMatched, matchCur)}) cannot exceed its allotted ${this.getFormattedAndPaddedAmount(allottedRaw, matchCur)}.`
+        );
+        if (resolve) resolve(false);
+        this.isSaving = false;
+        return;
+      }
+    }
+
+    // Item 6 (edit mode) — block save if a MATCHED invoice is dated AFTER the payment date (e.g. the date
+    // was moved earlier in-month). That invoice is no longer valid outstanding for this payment.
+    const asOfDate = this.outstandingAsOfDate;
+    if (asOfDate) {
+      const toYmd = (d: any) => {
+        const x = d ? new Date(d) : null;
+        return x && !isNaN(x.getTime())
+          ? `${x.getFullYear()}-${`${x.getMonth() + 1}`.padStart(2, '0')}-${`${x.getDate()}`.padStart(2, '0')}`
+          : null;
+      };
+      const stale = this.voucherMatchings.getRawValue().find((m) => {
+        // "Matched" = a non-zero matched amount. A ticked row with 0 amount settles nothing and isn't
+        // saved as a match, so it must not trip this block.
+        const matched = toNumber(m.matchCurrAmt) || toNumber(m.matchLocalAmt) || toNumber(m.matchPartyAmt);
+        const d = toYmd(m.voucherDate);
+        return matched && d && d > asOfDate;
+      });
+      if (stale) {
+        this.appSettingService.showError(
+          `${stale.voucherNo} (dated ${toYmd(stale.voucherDate)}) is after the payment date (${asOfDate}).<br/>` +
+          `Remove (un-match) it and settle it on a new payment dated on/after the invoice date.`,
+          'Oops!',
+          { closeButton: true, enableHtml: true },
+        );
+        if (resolve) resolve(false);
+        this.isSaving = false;
+        return;
+      }
+    }
+
     if (this.matchingError) {
       this.appSettingService.showError(this.matchingError);
       if (resolve) resolve(false);
@@ -1657,7 +1751,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       CashOrBank: formValue.CashOrBank,
-      MultiBranch: formValue.MultiBranch ? 'Y' : 'N',
+      // 'Y' only when allocations actually exist — so removing the last branch (or toggling off)
+      // never leaves the header flagged multi-branch with zero rows (bug #2: toggle stuck on).
+      MultiBranch: formValue.MultiBranch && this.interBranches.length > 0 ? 'Y' : 'N',
       VoucherDate: formValue.VoucherDate,
       YearMasterSid: this.currentYearId,
       Narration: formValue.Narration,
@@ -2135,7 +2231,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       {
         VoucherNumber: headerInfo.VoucherNumber,
         CashOrBank: headerInfo.CashOrBank,
-        MultiBranch: headerInfo.MultiBranch === 'Y',
+        // MultiBranch is NOT patched from the header — loadInterBranchAllocations() is the single
+        // source of truth (toggle ON iff allocations exist). Patching it here raced that parallel
+        // call and left the toggle stuck ON with an empty branch dropdown on edit (header 'Y' + 0 rows).
         VoucherDate: headerInfo.VoucherDate,
         BankCOA: headerInfo.BankCOA,
         CurrencyMasterSid: headerInfo.CurrencyMasterSid,
@@ -3550,6 +3648,61 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     );
   }
 
+  /**
+   * For the active matching tab (Multi Branch on): the inter-branch allotted amount on an owning-branch
+   * tab, or the source-side applicable amount (party PartyAmount − Σ allocated) on the source tab.
+   * Null when Multi Branch is off.
+   */
+  get activeTabAllotment(): { label: string; amount: number } | null {
+    const mb = this.paymentForm.get('MultiBranch')?.value;
+    if (!(mb === true || mb === 'Y')) return null;
+    const alloc = this.interBranches.controls.find(
+      (c) => c.get('BranchMasterSid')?.value === this.activeMatchingBranchSid,
+    );
+    return alloc
+      ? { label: 'Allotted', amount: Number(alloc.get('Amount')?.value) || 0 }
+      : { label: 'Applicable', amount: this.sourceMatchableCap };
+  }
+
+  /** True when the active matching tab is an owning (inter-branch) tab — the Refresh button targets these. */
+  get activeMatchingTabIsOwning(): boolean {
+    const c = this.matchingCursors.get(this.activeMatchingBranchSid as number);
+    return !!c && !c.isSource;
+  }
+
+  /**
+   * Re-fetch an owning tab's outstanding (e.g. to pull a voucher created in that branch mid-session) while
+   * KEEPING the rows currently ticked on that tab. The short-list sentinel won't auto-load these, so this
+   * is a manual refresh: capture current ticks → drop the tab's rows → reset cursor → reload + re-tick.
+   */
+  refreshMatchingTab(branchSid: number | null = this.activeMatchingBranchSid): void {
+    if (branchSid == null || this.isLoadingMatching) return;
+    const cursor = this.matchingCursors.get(branchSid);
+    if (!cursor || cursor.isSource) return; // owning (inter-branch) tabs only
+    const staged = this.voucherMatchings.controls
+      .filter((c) => c.get('allotmentBranchSid')?.value === branchSid && c.get('isTicked')?.value)
+      .map((c) => ({
+        VoucherTransactionSid: c.get('VoucherTransactionSid')?.value,
+        MatchingCurrency: c.get('matchCurr')?.value,
+        MatchingAmount: toNumber(c.get('matchCurrAmt')?.value),
+        MatchingLocalAmount: toNumber(c.get('matchLocalAmt')?.value),
+        PartyAmount: toNumber(c.get('matchPartyAmt')?.value),
+      }));
+    for (let i = this.voucherMatchings.length - 1; i >= 0; i--) {
+      if ((this.voucherMatchings.at(i).get('allotmentBranchSid')?.value ?? null) === branchSid) {
+        this.voucherMatchings.removeAt(i);
+      }
+    }
+    cursor.skip = 0;
+    cursor.hasMore = true;
+    cursor.take = 100000; // one page, all rows — no sentinel needed
+    cursor.includeFullyPaid = false;
+    cursor.stagedMatches = staged;
+    cursor.voucherDateTo = this.outstandingAsOfDate; // refresh uses the CURRENT (possibly edited) date
+    this.spinner.show();
+    this.loadMatchingData(branchSid);
+  }
+
   /** Remove only source-branch rows, preserving owning (inter-branch) rows (used on edit-load). */
   private clearSourceMatchingRows(): void {
     for (let i = this.voucherMatchings.length - 1; i >= 0; i--) {
@@ -3726,10 +3879,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (recalPartyAmt) {
       this.calculatePartyAmount(index);
     }
-    // Manual matched-amount edits on an owning-branch row refresh its inter-branch memo.
-    if (this.voucherMatchings.at(index)?.get('allotmentBranchSid')?.value) {
+    // Validate AFTER amounts recompute. Owning rows refresh their memo; source rows first enforce the
+    // party / inter-branch total cap (priority), then fall through to the per-row OS limit. We call
+    // validateMatchLimits HERE (not from the template) so the OS message can't pre-empt the
+    // party-amount message.
+    const vmRow = this.voucherMatchings.at(index) as FormGroup;
+    if (vmRow.get('allotmentBranchSid')?.value) {
+      if (this.enforceOwningMatchCap(vmRow)) return; // item 5: per-branch owning cap
       this.recomputeInterBranchMemo();
+    } else if (this.enforceSourceMatchCap(vmRow)) {
+      return;
     }
+    this.validateMatchLimits(index);
   }
 
   recalculateAllMatchingPartyAmounts() {
@@ -4300,11 +4461,103 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return Math.max(this.totalCredits || 0, this.totalDebits || 0);
   }
 
+  /** Max the matching may total on the source side = party-row PartyAmount − Σ inter-branch allotments. */
+  get sourceMatchableCap(): number {
+    const allocated = this.interBranches.controls.reduce(
+      (s, r) => s + (Number(r.get('Amount')?.value) || 0),
+      0,
+    );
+    const cur = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
+    return Math.max(
+      toNumber(this.getFormattedAndPaddedAmount(toNumber(this.getPartyDetailAmount()) - allocated, cur)),
+      0,
+    );
+  }
+
+  /**
+   * Item 3 — after a SOURCE-row match changes (tick OR manual amount entry), if the source matched total
+   * exceeds the cap (party amount − Σ inter-branch allotments), revert this row and warn. Returns true if
+   * reverted. Owning rows are handled by item 5; skipped during edit-load patching.
+   */
+  private enforceSourceMatchCap(row: FormGroup): boolean {
+    if (this.isPatching) return false;
+    if (row.get('allotmentBranchSid')?.value) return false;
+    const cur = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
+    const partyAmt = toNumber(this.getPartyDetailAmount());
+    if (partyAmt <= 0) return false; // payment amount not entered yet — nothing to cap against
+    const sourceTotal = toNumber(
+      this.getFormattedAndPaddedAmount(toNumber(this.getTotalMatchPartyAmt()), cur),
+    );
+    if (sourceTotal <= this.sourceMatchableCap) return false;
+    // Revert ONLY the offending matching row — do NOT touch the party/bank detail rows. Calling
+    // updateDetailAmountsFromMatching() here would rewrite the party Amount to the cleared source total,
+    // collapsing the cap base (party amount) to 0 on the next read.
+    row.patchValue({ matchCurrAmt: null, matchLocalAmt: null, matchPartyAmt: null, isLimitErrorShown: false });
+    row.get('isTicked')?.setValue(false);
+    row.get('matchCurrAmt')?.setErrors(null);
+    row.get('matchLocalAmt')?.setErrors(null);
+    const allocated = this.interBranches.controls.reduce((s, r) => s + (Number(r.get('Amount')?.value) || 0), 0);
+    const cap = this.getFormattedAndPaddedAmount(this.sourceMatchableCap, cur);
+    this.appSettingService.showWarning(
+      allocated > 0
+        ? `You can match at most ${cap} on the source branch — the rest is allocated to other branches.`
+        : `Matching total exceeds the party's Payment amount (${cap}).`,
+    );
+    return true;
+  }
+
+  /**
+   * Item 5 — per owning branch, the matched total cannot exceed that branch's allotted Amount. After an
+   * owning-row match changes (tick OR manual amount entry), if the branch's Σ matched exceeds its
+   * allotment, revert this row and warn. Returns true if reverted. Source rows → enforceSourceMatchCap;
+   * skipped during edit-load patching.
+   */
+  private enforceOwningMatchCap(row: FormGroup): boolean {
+    if (this.isPatching) return false;
+    const sid = row.get('allotmentBranchSid')?.value;
+    if (!sid) return false; // source rows handled by enforceSourceMatchCap
+    const alloc = this.interBranches.controls.find((c) => c.get('BranchMasterSid')?.value === sid);
+    const cur = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
+    const allottedRaw = Number(alloc?.get('Amount')?.value) || 0;
+    const allotted = toNumber(this.getFormattedAndPaddedAmount(allottedRaw, cur));
+    const matched = toNumber(
+      this.getFormattedAndPaddedAmount(
+        this.voucherMatchings
+          .getRawValue()
+          .filter((vm) => vm.allotmentBranchSid === sid)
+          .reduce((s, vm) => s + (Number(vm.matchPartyAmt) || 0), 0),
+        cur,
+      ),
+    );
+    if (matched <= allotted) return false;
+    row.patchValue({ matchCurrAmt: null, matchLocalAmt: null, matchPartyAmt: null, isLimitErrorShown: false });
+    row.get('isTicked')?.setValue(false);
+    row.get('matchCurrAmt')?.setErrors(null);
+    row.get('matchLocalAmt')?.setErrors(null);
+    const branchName = alloc?.get('BranchName')?.value || 'this branch';
+    this.appSettingService.showWarning(
+      `Matching for ${branchName} cannot exceed its allotted ${this.getFormattedAndPaddedAmount(allottedRaw, cur)}.`,
+    );
+    this.recomputeInterBranchMemo();
+    return true;
+  }
+
   get interBranchPartyCurrency(): { CurrencyMasterSid: number; currencyCode: string } {
     return {
       CurrencyMasterSid: this.paymentForm.get('CurrencyMasterSid')?.value,
       currencyCode: this.paymentForm.get('CurrencyCode')?.getRawValue(),
     };
+  }
+
+  /**
+   * Re-evaluate unsaved-changes from the real form delta. Inter Branch tab edits (toggle, add/remove
+   * branch, allotment-amount edits) don't reliably flow through the debounced / isPatching-gated
+   * `valueChanges` subscription, so recompute the same deep-equal here. Using deep-equal (not a forced
+   * `true`) means toggling/editing back to the saved state correctly reports NO unsaved changes.
+   */
+  private refreshDirtyState(): void {
+    if (this.initialFormValue == null) return; // baseline not captured yet (mid-load)
+    this.isDirty = !this.deepEqual(this.initialFormValue, this.paymentForm.getRawValue());
   }
 
   onMultiBranchToggle(on: boolean): void {
@@ -4315,6 +4568,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.interBranches.clear();
       this.removeOwningBranchMatchingRows();
     }
+    this.refreshDirtyState();
   }
 
   private loadInterBranchBranches(): void {
@@ -4332,7 +4586,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.interBranchService.getAllocations(headerId).subscribe(
       (allocations: any[]) => {
         this.interBranches.clear();
-        if (!allocations || !allocations.length) return;
+        if (!allocations || !allocations.length) {
+          // No staged allocations → the toggle must be OFF (defensive: also corrects any header
+          // wrongly left 'Y' with zero rows — bug #2).
+          this.paymentForm.get('MultiBranch')?.setValue(false);
+          return;
+        }
         if (!this.interBranchBranches.length) this.loadInterBranchBranches();
         this.paymentForm.get('MultiBranch')?.setValue(true);
         this.ensureSourceMatchingTab(); // edit: source tab alongside the owning tabs
@@ -4374,6 +4633,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
                 take: 100000,
                 partyLedgerSid,
                 stagedMatches: a.matches || [],
+                // Source voucher's date (timing-independent of the header fetch) — item 6 cap on edit-load.
+                voucherDateTo: this.toAsOfDate(a.sourceVoucher?.VoucherDate),
               });
               this.loadMatchingData(a.AllotmentBranchSid);
             }
@@ -4430,16 +4691,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       partyLedgerSid,
     });
     this.activeMatchingBranchSid = branchSid; // focus the newly added branch's tab
+    this.refreshDirtyState(); // the allocation row is already pushed by the child
     this.spinner.show();
     this.loadMatchingData(branchSid);
   }
 
   onOwningBranchRemoved(branchSid: number): void {
     this.removeOwningBranchMatchingRows(branchSid);
+    this.refreshDirtyState();
   }
 
   onInterBranchAllocationsChanged(): void {
     this.recomputeInterBranchMemo();
+    this.refreshDirtyState(); // amount edits / add / remove from the child tab
   }
 
   /** Strip owning-branch rows + drop their tab cursors (one branch, or all when no arg). */
@@ -4513,10 +4777,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   /** After the payment is saved, persist its inter-branch allocations + matches. */
   stageInterBranchIfNeeded(headerId: number, done?: () => void): void {
+    if (!headerId) { done?.(); return; }
     const on = this.paymentForm.get('MultiBranch')?.value;
-    if (!(on === true || on === 'Y') || !headerId) { done?.(); return; }
-    const allocations = this.buildInterBranchAllocations();
-    if (!allocations.length) { done?.(); return; }
+    // Always POST: when Multi-Branch is OFF, an empty allocation set clears any previously-staged
+    // VoucherInterBranch + inter-branch MatchingDetail rows for this header (bug #2 — disabling used to
+    // leave orphans that reappeared on reload).
+    const allocations = on === true || on === 'Y' ? this.buildInterBranchAllocations() : [];
     this.interBranchService
       .stageAllocations({
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -5783,6 +6049,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       matchLocalAmt: this.getFormattedAndPaddedAmount(osLocalAmt, currencySid),
     });
     this.calculatePartyAmount(index);
+    if (this.enforceSourceMatchCap(row)) return; // item 3: source cap (no-op for owning rows)
+    if (this.enforceOwningMatchCap(row)) return; // item 5: per-branch owning cap (no-op for source rows)
     row.get('isTicked')?.setValue(checked);
     isOwningRow ? this.recomputeInterBranchMemo() : this.updateDetailAmountsFromMatching();
 
@@ -5874,20 +6142,20 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const violatesLocal = localAmt > osLocal;
 
     if (violatesCurr || violatesLocal) {
-      // SHOW ERROR ONLY ONCE
+      // SHOW ERROR ONLY ONCE — only the line(s) actually violated. (This runs on matchCurrAmt input
+      // BEFORE the local amount is recomputed, so typing the Curr amount must not also claim the Local
+      // line is wrong.)
       if (!row.get('isLimitErrorShown')?.value) {
-        const msg = `
-        Matching Curr. Amount cannot be greater than OS Curr.
-        Matching Local Amount cannot be greater than OS Local Amount.
-      `;
-
-        this.toastr.error(msg, 'Validation Error');
+        const lines: string[] = [];
+        if (violatesCurr) lines.push('Matching Curr. Amount cannot be greater than OS Curr. Amount.');
+        if (violatesLocal) lines.push('Matching Local Amount cannot be greater than OS Local Amount.');
+        this.toastr.error(lines.join('\n'), 'Validation Error');
 
         row.patchValue({ isLimitErrorShown: true });
 
-        // Set field errors
-        row.get('matchCurrAmt')?.setErrors({ limitExceeded: true });
-        row.get('matchLocalAmt')?.setErrors({ limitExceeded: true });
+        // Set field errors only on the violated control(s)
+        if (violatesCurr) row.get('matchCurrAmt')?.setErrors({ limitExceeded: true });
+        if (violatesLocal) row.get('matchLocalAmt')?.setErrors({ limitExceeded: true });
       }
 
       return; // do not clear error until corrected

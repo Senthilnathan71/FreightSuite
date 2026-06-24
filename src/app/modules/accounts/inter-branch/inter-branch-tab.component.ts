@@ -43,6 +43,7 @@ export class InterBranchTabComponent implements OnChanges {
   @Input() isPosted = false;
   @Input() multiBranch = false;
   @Input() localCurrencyCode = ''; // company local currency code — for Local Amount formatting
+  @Input() partySelected = false; // a party must be chosen before adding a branch (matching is party-scoped)
 
   @Output() multiBranchToggled = new EventEmitter<boolean>();
   @Output() branchAdded = new EventEmitter<number>();
@@ -119,11 +120,16 @@ export class InterBranchTabComponent implements OnChanges {
 
   onToggle(checked: boolean) {
     this.multiBranch = checked;
+    this.refreshAvailableBranches(); // parent may have cleared interBranches on the previous OFF
     this.multiBranchToggled.emit(checked);
   }
 
   addSelectedBranch() {
     if (this.isPosted) return;
+    if (!this.partySelected) {
+      this.toastr.warning('Select the party first — inter-branch matching is fetched for that party.');
+      return;
+    }
     const sid = this.selectedBranchSid;
     if (!sid) {
       this.toastr.warning('Select a branch to add');

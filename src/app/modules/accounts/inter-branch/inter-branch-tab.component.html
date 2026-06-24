@@ -75,7 +75,13 @@
         ></ng-select>
         <label class="input-label">Owning Branch</label>
       </div>
-      <button type="button" class="btn btn-info btn-sm" (click)="addSelectedBranch()">
+      <button
+        type="button"
+        class="btn btn-info btn-sm"
+        (click)="addSelectedBranch()"
+        [disabled]="!partySelected"
+        [title]="!partySelected ? 'Select the party first — matching is fetched for that party' : ''"
+      >
         <i class="fas fa-plus me-1"></i> Add
       </button>
     </div>

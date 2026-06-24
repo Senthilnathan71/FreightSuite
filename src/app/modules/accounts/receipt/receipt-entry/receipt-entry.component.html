@@ -1263,18 +1263,39 @@
     >
       <!-- Per-branch matching tabs (source + each inter-branch) + active branch's branch-wise total -->
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2" *ngIf="showMatchingTabs">
-        <ul class="nav nav-pills gap-1 mb-0">
-          <li class="nav-item" *ngFor="let t of matchingTabs">
-            <button
-              type="button"
-              class="nav-link py-1 px-3"
-              [class.active]="activeMatchingBranchSid === t.branchSid"
-              (click)="selectMatchingTab(t.branchSid)"
-            >
-              {{ t.branchName }}
-            </button>
-          </li>
-        </ul>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <ul class="nav nav-pills gap-1 mb-0">
+            <li class="nav-item" *ngFor="let t of matchingTabs">
+              <button
+                type="button"
+                class="nav-link py-1 px-3"
+                [class.active]="activeMatchingBranchSid === t.branchSid"
+                (click)="selectMatchingTab(t.branchSid)"
+              >
+                {{ t.branchName }}
+              </button>
+            </li>
+          </ul>
+          <!-- Allotted (owning tab) / Applicable (source tab) amount — chip -->
+          <span
+            *ngIf="activeTabAllotment as a"
+            class="badge rounded-pill text-bg-light border border-info text-info px-3 py-2"
+            style="font-size: 0.72rem"
+          >
+            <i class="fas fa-coins me-1"></i>{{ a.label }}:
+            <span class="fw-bold">{{ a.amount | number : "1.2-2" }} {{ receiptForm.get('CurrencyCode')?.getRawValue() }}</span>
+          </span>
+          <!-- Refresh this owning branch's outstanding (pull vouchers created mid-session) -->
+          <button
+            type="button"
+            class="btn btn-outline-info btn-sm py-1 px-2"
+            *ngIf="activeMatchingTabIsOwning"
+            (click)="refreshMatchingTab()"
+            title="Refresh this branch's outstanding (pull newly-created vouchers)"
+          >
+            <i class="fas fa-sync"></i>
+          </button>
+        </div>
         <!-- Branch-wise total for the active branch tab -->
         <div class="position-relative px-2 rounded border border-info text-end" style="padding-top:0.9rem; padding-bottom:0.2rem; font-size:0.8rem;">
           <span class="position-absolute fw-semibold text-info" style="font-size:0.6rem; top:0.1rem; right:0.4rem;">{{ activeBranchMatchingTotal.branchName }} ({{ receiptForm.get('CurrencyCode')?.getRawValue() }})</span>
@@ -1571,7 +1592,6 @@
                 <input
                   type="text"
                   formControlName="matchCurrAmt"
-                  (input)="validateMatchLimits(i)"
                   class="custom-input-field sm text-end"
                   DecimalPrecision
                   [DecimalPrecisionBefore]="9"
@@ -1588,7 +1608,6 @@
                 <input
                   type="text"
                   formControlName="matchLocalAmt"
-                  (input)="validateMatchLimits(i)"
                   class="custom-input-field sm text-end"
                   DecimalPrecision
                   [DecimalPrecisionBefore]="9"
@@ -1698,6 +1717,7 @@
           [headerExRate]="r['ExchangeRate']?.value || 1"
           [localCurrencyCode]="companyCurrency?.code"
           [isPosted]="isPosted"
+          [partySelected]="!!r['PartyMasterSid']?.value"
           [multiBranch]="r['MultiBranch']?.value === true || r['MultiBranch']?.value === 'Y'"
           (multiBranchToggled)="onMultiBranchToggle($event)"
           (branchAdded)="onOwningBranchAdded($event)"
