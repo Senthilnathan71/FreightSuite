@@ -619,25 +619,6 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
 }
 
 
-.user-cell-clickable {
-  cursor: pointer;
-  transition: $transition-fast;
-
-  &:hover {
-    background: rgba($primary-blue, 0.08) !important;
-
-    strong {
-      color: $primary-blue;
-      text-decoration: underline;
-    }
-  }
-
-  &:active {
-    background: rgba($primary-blue, 0.12) !important;
-  }
-}
-
-
 .count-badge {
   display: inline-block;
   padding: 0.3rem 0.7rem;

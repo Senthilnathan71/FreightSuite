@@ -21,7 +21,6 @@ export interface ResourceSummaryRow {
   rateRequestCount: number;
   quotationCount: number;
   bookingCount: number;
-  loadPlanCount: number;
   masterJobCount: number;
   houseJobCount: number;
 }
@@ -32,6 +31,8 @@ export interface WorkloadRow {
   userName: string;
   stage: Stage;
   status: WorkStatus;
+  // Stage-specific primary document number (Enquiry/Quotation/Booking/Master Job/House Job No)
+  documentNo: string;
   quotationNo: string;
   bookingNo: string;
   customerName: string;
@@ -138,10 +139,14 @@ export class ActivityAllocationService {
   allocate(
     activityId: number,
     allocateToUserSid?: number,
+    stage?: Stage,
   ): Observable<AllocateApiResponse> {
     const body: any = { activitySid: activityId };
     if (allocateToUserSid) {
       body.userSid = allocateToUserSid;
+    }
+    if (stage) {
+      body.stage = stage;
     }
 
     return this.http

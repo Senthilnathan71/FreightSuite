@@ -1,7 +1,6 @@
 import {
   Component,
   OnInit,
-  HostListener,
   ElementRef,
   OnDestroy,
   ChangeDetectorRef,
@@ -23,7 +22,6 @@ type SummarySortColumn =
   | 'rateRequestCount'
   | 'quotationCount'
   | 'bookingCount'
-  | 'loadPlanCount'
   | 'masterJobCount'
   | 'houseJobCount'
   | 'jobCount'
@@ -65,7 +63,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
   animatedTotalActivities = 0;
   animatedPendingCount = 0;
   animatedProcessedCount = 0;
-  animatedOverdueCount = 0;
   animatedTotalUsersCount = 0;
   animatedCompletedThisWeek = 0;
 
@@ -94,18 +91,9 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
 
     this.checkNavigationReturn();
 
-    // Read mode from navigation state if returning from entry
-    const navigation = this.router.getCurrentNavigation();
-    const stateMode = navigation?.extras?.state?.['mode'] as SummaryMode;
-    if (stateMode) {
-      this.mode = stateMode;
-    }
-
+    // This screen only ever shows the Pending workload
+    this.mode = 'Pending';
     this.loadSummaryForMode(this.mode);
-
-    if (this.mode === 'All') {
-      this.triggerGlobalLoad();
-    }
   }
 
   ngOnDestroy(): void {
@@ -255,7 +243,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
         (r.rateRequestCount || 0) +
         (r.quotationCount || 0) +
         (r.bookingCount || 0) +
-        (r.loadPlanCount || 0) +
         (r.masterJobCount || 0) +
         (r.houseJobCount || 0),
       0,
@@ -270,49 +257,9 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
 
  
 
-  onModeChange(newMode: SummaryMode): void {
-    if (this.mode === newMode) {
-      return;
-    }
-
-    this.mode = newMode;
-    this.syncAnimatedCounts(true);
-    this.loadSummaryForMode(this.mode);
-
-    if (this.mode === 'All') {
-      this.triggerGlobalLoad();
-    }
-  }
-
-  
-  onModeDropdownChange(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    const value = selectElement.value as SummaryMode;
-    console.log('📋 [Dropdown] Selected:', value);
-    this.onModeChange(value);
-  }
 
   
 
-  @HostListener('window:keydown', ['$event'])
-  handleGlobalKeydown(event: KeyboardEvent): void {
-    if (!event.ctrlKey && !event.metaKey) return;
-
-    switch (event.key) {
-      case '1':
-        event.preventDefault();
-        this.onModeChange('Pending');
-        break;
-      case '2':
-        event.preventDefault();
-        this.onModeChange('Processed');
-        break;
-      case '3':
-        event.preventDefault();
-        this.onModeChange('All');
-        break;
-    }
-  }
 
   
 
@@ -376,13 +323,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     return (this.processedCount / total) * 100;
   }
 
-  get overdueCount(): number {
-    
-    if (this.mode === 'Pending') return Math.floor(this.totalActivities * 0.08);
-    if (this.mode === 'All') return Math.floor(this.pendingCount * 0.08);
-    return 0;
-  }
-
   get completedThisWeek(): number {
     if (this.mode === 'Processed') return Math.floor(this.totalActivities * 0.18);
     return 0;
@@ -401,7 +341,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
       (row.rateRequestCount || 0) +
       (row.quotationCount || 0) +
       (row.bookingCount || 0) +
-      (row.loadPlanCount || 0) +
       (row.masterJobCount || 0) +
       (row.houseJobCount || 0)
     );
@@ -439,7 +378,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
         r.rateRequestCount,
         r.quotationCount,
         r.bookingCount,
-        r.loadPlanCount,
         r.masterJobCount,
         r.houseJobCount
       ];
@@ -540,28 +478,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     });
   }
 
-  openUserWorkload(row: ResourceSummaryRow): void {
-    
-    let stage = 'RateRequest';
-    if (row.rateRequestCount > 0) stage = 'RateRequest';
-    else if (row.quotationCount > 0) stage = 'Quotation';
-    else if (row.bookingCount > 0) stage = 'Booking';
-    else if (row.loadPlanCount > 0) stage = 'LoadPlan';
-    else if (row.masterJobCount > 0) stage = 'MasterJob';
-    else if (row.houseJobCount > 0) stage = 'HouseJob';
-
-    this.openWorkload(stage, row);
-  }
-
-  onReportClick(): void {
-    if (!this.displayRows.length) {
-      this.appSettingService.showWarning('No data available to export.');
-      return;
-    }
-    
-    this.appSettingService.showSuccess('Export initiated.');
-  }
-
   onResetClick(): void {
     this.searchText = '';
     this.sortColumn = 'userName';
@@ -585,7 +501,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
       this.animatedTotalActivities = 0;
       this.animatedPendingCount = 0;
       this.animatedProcessedCount = 0;
-      this.animatedOverdueCount = 0;
       this.animatedTotalUsersCount = 0;
       this.animatedCompletedThisWeek = 0;
     }
@@ -593,7 +508,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     this.animateCount('animatedTotalActivities', this.totalActivities);
     this.animateCount('animatedPendingCount', this.pendingCount);
     this.animateCount('animatedProcessedCount', this.processedCount);
-    this.animateCount('animatedOverdueCount', this.overdueCount);
     this.animateCount('animatedTotalUsersCount', this.totalUsersCount);
     this.animateCount('animatedCompletedThisWeek', this.completedThisWeek);
   }
@@ -603,7 +517,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
       | 'animatedTotalActivities'
       | 'animatedPendingCount'
       | 'animatedProcessedCount'
-      | 'animatedOverdueCount'
       | 'animatedTotalUsersCount'
       | 'animatedCompletedThisWeek',
     target: number,

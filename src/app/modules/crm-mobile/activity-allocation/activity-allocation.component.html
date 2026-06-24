@@ -48,35 +48,10 @@
           <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </div>
-
-      
-      <div class="status-filter d-flex align-items-center gap-2">
-        <label for="modeSelect" class="status-label mb-0 text-muted small">Filter</label>
-        <select
-          id="modeSelect"
-          class="form-select form-select-sm"
-          [(ngModel)]="mode"
-          (change)="onModeDropdownChange($event)"
-          aria-label="Filter by status"
-        >
-          <option value="Pending">Pending</option>
-          <option value="Processed">Processed</option>
-          <option value="All">All</option>
-        </select>
-      </div>
       </div>
      
 
       <div class=" d-flex gap-2">
-        <button
-          type="button"
-          class="btn btn-sm btn-info"
-          [disabled]="!displayRows.length"
-          (click)="onReportClick()"
-        >
-          <i class="fas fa-file-export me-1" aria-hidden="true"></i> Export
-        </button>
-
         <button
           type="button"
           class="btn btn-sm btn-outline-secondary"
@@ -97,17 +72,9 @@
 
  
   <section class="kpi-section mb-2" *ngIf="!isLoading">
-    
-    <div class="row g-3" *ngIf="mode === 'Pending'">
-      <div class="col-lg-3 col-md-6">
-        <div
-          class="kpi-card kpi-border kpi-primary interactive"
-          (click)="onModeChange('All')"
-          role="button"
-          tabindex="0"
-          (keydown.enter)="onModeChange('All')"
-          (keydown.space)="onModeChange('All')"
-        >
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="kpi-card kpi-border kpi-primary">
           <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">TOTAL ACTIVITIES</div>
@@ -116,7 +83,7 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6">
+      <div class="col-md-4">
         <div class="kpi-card kpi-border kpi-warning">
           <div class="kpi-icon-inline"><i class="fas fa-hourglass-half"></i></div>
           <div class="kpi-details">
@@ -126,17 +93,7 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card kpi-border kpi-danger">
-          <div class="kpi-icon-inline"><i class="fas fa-exclamation-triangle"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">OVERDUE</div>
-            <div class="kpi-value">{{ animatedOverdueCount }}</div>
-            <div class="kpi-sublabel">Past deadline</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-6">
+      <div class="col-md-4">
         <div class="kpi-card kpi-border kpi-info">
           <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
           <div class="kpi-details">
@@ -146,152 +103,6 @@
         </div>
       </div>
     </div>
-
-   
-    <div class="row g-3" *ngIf="mode === 'Processed'">
-      <div class="col-lg-3 col-md-6">
-        <div
-          class="kpi-card kpi-border kpi-primary interactive"
-          (click)="onModeChange('All')"
-          role="button"
-          tabindex="0"
-          (keydown.enter)="onModeChange('All')"
-          (keydown.space)="onModeChange('All')"
-        >
-          <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">TOTAL ACTIVITIES</div>
-            <div class="kpi-value">{{ animatedTotalActivities }}</div>
-            <div class="kpi-sublabel">Processed view</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card kpi-border kpi-success">
-          <div class="kpi-icon-inline"><i class="fas fa-check-circle"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">PROCESSED</div>
-            <div class="kpi-value">{{ animatedProcessedCount }}</div>
-            <div class="kpi-sublabel">100% of view</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card kpi-border kpi-info">
-          <div class="kpi-icon-inline"><i class="fas fa-calendar-week"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">THIS WEEK</div>
-            <div class="kpi-value">{{ animatedCompletedThisWeek }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-6">
-        <div class="kpi-card kpi-border kpi-info">
-          <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">USERS</div>
-            <div class="kpi-value">{{ animatedTotalUsersCount }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    
-    <div class="row g-3" *ngIf="mode === 'All'">
-      <div class="col-lg col-md-6">
-        <div class="kpi-card kpi-border kpi-primary">
-          <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">TOTAL</div>
-            <div class="kpi-value">{{ animatedTotalActivities }}</div>
-            <div class="kpi-sublabel">All activities</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg col-md-6">
-        <div
-          class="kpi-card kpi-border kpi-warning interactive"
-          (click)="onModeChange('Pending')"
-          role="button"
-          tabindex="0"
-          (keydown.enter)="onModeChange('Pending')"
-          (keydown.space)="onModeChange('Pending')"
-        >
-          <div class="kpi-icon-inline"><i class="fas fa-hourglass-half"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">PENDING</div>
-            <div class="kpi-value">
-              <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
-                {{ animatedPendingCount }}
-              </ng-container>
-            </div>
-            <div class="kpi-sublabel">
-              <ng-container *ngIf="!isLoadingGlobalCounts">
-                {{ pendingPercent | number:'1.0-0' }}% of view
-              </ng-container>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg col-md-6">
-        <div
-          class="kpi-card kpi-border kpi-success interactive"
-          (click)="onModeChange('Processed')"
-          role="button"
-          tabindex="0"
-          (keydown.enter)="onModeChange('Processed')"
-          (keydown.space)="onModeChange('Processed')"
-        >
-          <div class="kpi-icon-inline"><i class="fas fa-check-circle"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">PROCESSED</div>
-            <div class="kpi-value">
-              <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
-                {{ animatedProcessedCount }}
-              </ng-container>
-            </div>
-            <div class="kpi-sublabel">
-              <ng-container *ngIf="!isLoadingGlobalCounts">
-                {{ processedPercent | number:'1.0-0' }}% of view
-              </ng-container>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg col-md-6">
-        <div class="kpi-card kpi-border kpi-danger">
-          <div class="kpi-icon-inline"><i class="fas fa-exclamation-triangle"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">OVERDUE</div>
-            <div class="kpi-value">
-              <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
-                {{ animatedOverdueCount }}
-              </ng-container>
-            </div>
-            <div class="kpi-sublabel">Past deadline</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg col-md-6">
-        <div class="kpi-card kpi-border kpi-info">
-          <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
-          <div class="kpi-details">
-            <div class="kpi-label">USERS</div>
-            <div class="kpi-value">{{ animatedTotalUsersCount }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <ng-template #kpiLoading>
-      <div class="spinner-border spinner-border-sm text-secondary" role="status">
-        <span class="sr-only">Loading...</span>
-      </div>
-    </ng-template>
   </section>
 
  
@@ -342,13 +153,6 @@
               </div>
             </th>
 
-            <th class="col-count" (click)="changeSort('loadPlanCount')">
-              <div class="th-content">
-                <span><i class="fas fa-boxes me-1 text-success"></i>Load Plan</span>
-                <i class="fas" [ngClass]="getSortIcon('loadPlanCount')"></i>
-              </div>
-            </th>
-
             <th class="col-count" (click)="changeSort('masterJobCount')">
               <div class="th-content">
                 <span><i class="fas fa-layer-group me-1 text-purple"></i>Master Job</span>
@@ -373,7 +177,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let row of displayRows" class="summary-row">
-            <td class="col-user user-cell-clickable" (click)="openUserWorkload(row)">
+            <td class="col-user">
               <strong>{{ row.userName }}</strong>
             </td>
 
@@ -408,17 +212,6 @@
                 {{ row.bookingCount }}
               </span>
               <span *ngIf="!row.bookingCount" class=" badge-empty">0</span>
-            </td>
-
-            <td class="col-count">
-              <span
-                *ngIf="row.loadPlanCount > 0"
-                class=" badge-success"
-                (click)="$event.stopPropagation(); openWorkload('LoadPlan', row)"
-              >
-                {{ row.loadPlanCount }}
-              </span>
-              <span *ngIf="!row.loadPlanCount" class=" badge-empty">0</span>
             </td>
 
             <td class="col-count">

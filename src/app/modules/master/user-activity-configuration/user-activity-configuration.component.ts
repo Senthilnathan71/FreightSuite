@@ -23,6 +23,7 @@ interface MenuOption {
   MenuMasterSid: number;
   MenuCode: string;
   MenuName: string;
+  MenuDisplay?: string;
 }
 
 interface UserMenuConfigRow {
@@ -48,6 +49,11 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
 
   users: UserOption[] = [];
   menus: MenuOption[] = [];
+  allMenus: MenuOption[] = [];
+  // Stable array reference for the create dropdown — recomputed only when the
+  // menu list or existing rows change. Must NOT be a getter: ng-select breaks
+  // mouse selection if [items] returns a new array on every change detection.
+  availableMenus: MenuOption[] = [];
 
   currentCompany: any;
   currentBranch: any;
@@ -55,6 +61,11 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
   configRows: UserMenuConfigRow[] = [];
   isLoading = false;
   isSaving = false;
+
+  // Create-new-configuration form state
+  showCreateForm = false;
+  newMenuSid: number | null = null;
+  newUserSid: number | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -71,6 +82,7 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
     this.loadBranches();
     this.loadUsers();
     this.loadMenus();
+    this.loadAllMenus();
   }
 
   ngOnDestroy(): void {
@@ -157,6 +169,104 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Load the full menu list (used by the "Create" configuration dropdown).
+  private loadAllMenus(): void {
+    this.masterService
+      .getAllMenus()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (list: any[]) => {
+          this.allMenus = Array.isArray(list)
+            ? list.map((m: any) => ({
+              MenuMasterSid: m.MenuMasterSid,
+              MenuCode: m.MenuCode,
+              MenuName: m.MenuName,
+              MenuDisplay: m.MenuCode ? `${m.MenuName} (${m.MenuCode})` : m.MenuName,
+            }))
+            : [];
+          this.computeAvailableMenus();
+        },
+        error: () => {
+          this.allMenus = [];
+          this.appSettingService.showError('Failed to load menus.');
+        },
+      });
+  }
+
+  // Recompute the menus not yet present in the current rows (duplicate guard by
+  // MenuMasterSid). Builds a fresh array intentionally — assigned to a stable
+  // field so the reference only changes when this is explicitly called.
+  private computeAvailableMenus(): void {
+    const existingSids = new Set(
+      this.configRows.map((r) => Number(r.MenuMasterSid)).filter((sid) => sid > 0)
+    );
+    this.availableMenus = this.allMenus.filter(
+      (m) => !existingSids.has(Number(m.MenuMasterSid))
+    );
+  }
+
+  openCreateForm(): void {
+    this.computeAvailableMenus();
+    this.showCreateForm = true;
+    this.newMenuSid = null;
+    this.newUserSid = null;
+  }
+
+  cancelCreate(): void {
+    this.showCreateForm = false;
+    this.newMenuSid = null;
+    this.newUserSid = null;
+  }
+
+  addConfiguration(): void {
+    if (!this.selectedBranchSid) {
+      this.appSettingService.showError('Please select a branch first.');
+      return;
+    }
+    if (!this.newMenuSid) {
+      this.appSettingService.showError('Please select a menu.');
+      return;
+    }
+
+    // Duplicate check on MenuMasterSid against the existing rows.
+    const isDuplicate = this.configRows.some(
+      (r) => Number(r.MenuMasterSid) === Number(this.newMenuSid)
+    );
+    if (isDuplicate) {
+      this.appSettingService.showError('A configuration for this menu already exists.');
+      return;
+    }
+
+    const menu = this.allMenus.find(
+      (m) => Number(m.MenuMasterSid) === Number(this.newMenuSid)
+    );
+    if (!menu) {
+      this.appSettingService.showError('Selected menu was not found.');
+      return;
+    }
+
+    const user = this.users.find(
+      (u) => Number(u.UserMasterSid) === Number(this.newUserSid)
+    );
+
+    // Append a new dirty row; the existing Save Configuration flow persists it.
+    this.configRows = [
+      ...this.configRows,
+      {
+        MenuMasterSid: menu.MenuMasterSid,
+        MenuCode: menu.MenuCode,
+        MenuName: menu.MenuName,
+        UserMasterSid: user?.UserMasterSid ?? null,
+        userName: user?.userName || '',
+        ResourceConfigurationSid: undefined,
+        dirty: true,
+      },
+    ];
+
+    this.computeAvailableMenus();
+    this.cancelCreate();
+  }
+
   onBranchChange(): void {
     this.loadConfig();
   }
@@ -192,7 +302,10 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
   }
 
   private buildConfigRows(existingConfigs: any[]): void {
-    this.configRows = this.menus.map((m) => {
+    const matchedConfigSids = new Set<number>();
+    const matchedConfigKeys = new Set<string>();
+
+    const rows = this.menus.map((m) => {
       const existing = existingConfigs.find((c: any) => {
         const branchMatches = Number(c.BranchMasterSid) === Number(this.selectedBranchSid);
         if (!branchMatches) return false;
@@ -204,6 +317,13 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
         }
         return false;
       });
+
+      if (existing?.ResourceConfigurationSid != null) {
+        matchedConfigSids.add(Number(existing.ResourceConfigurationSid));
+      } else if (existing?.stage) {
+        matchedConfigKeys.add(String(existing.stage));
+      }
+
       return {
         MenuMasterSid: m.MenuMasterSid,
         MenuCode: m.MenuCode,
@@ -214,6 +334,27 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
         dirty: false,
       };
     });
+
+    const configOnlyRows = existingConfigs
+      .filter((c: any) => {
+        const branchMatches = Number(c.BranchMasterSid) === Number(this.selectedBranchSid);
+        if (!branchMatches) return false;
+        if (c.ResourceConfigurationSid != null) {
+          return !matchedConfigSids.has(Number(c.ResourceConfigurationSid));
+        }
+        return c.stage && !matchedConfigKeys.has(String(c.stage));
+      })
+      .map((c: any) => ({
+        MenuMasterSid: c.MenuMasterSid ?? 0,
+        MenuCode: c.MenuCode || c.stage || '',
+        MenuName: c.MenuName || c.stage || '',
+        UserMasterSid: c.UserMasterSid ?? null,
+        userName: c.userName || '',
+        ResourceConfigurationSid: c.ResourceConfigurationSid,
+        dirty: false,
+      }));
+
+    this.configRows = [...rows, ...configOnlyRows];
   }
 
   onUserChange(row: UserMenuConfigRow, user: UserOption | null): void {

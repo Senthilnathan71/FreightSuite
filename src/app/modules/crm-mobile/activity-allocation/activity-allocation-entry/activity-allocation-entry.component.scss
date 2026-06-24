@@ -586,7 +586,7 @@ $shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.15);
 
 .metrics-container {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.65rem;
 }
 
@@ -1496,7 +1496,7 @@ $shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.15);
 
 @media (max-width: 1400px) {
   .metrics-container {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
