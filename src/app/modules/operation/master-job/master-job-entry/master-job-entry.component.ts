@@ -2473,6 +2473,10 @@ onETDDateSelect(): void {
     return this.masterJobForm.get('ExportToImport')?.value === 'Y';
   }
 
+  get isImportDepartment(): boolean {
+    return (this.selectedDepartment?.ExportImport || '').toString().toLowerCase() === 'import';
+  }
+
   private isFclOrLclImportDepartment(): boolean {
     const departmentName = (
       this.selectedDepartment?.departmentName ||
