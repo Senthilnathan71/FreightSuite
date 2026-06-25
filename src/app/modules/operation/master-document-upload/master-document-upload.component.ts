@@ -286,6 +286,9 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
   @Input() defaultDepartmentSid: number | null = null;
   @Input() companyMasterSid: number | null = null;
   @Input() mode: 'master' | 'house' = 'master';
+  // MBL-only upload (Master Job only): hides the Customer dropdown and drops its
+  // required validator. The parent does not create a House Job in this mode.
+  @Input() mblOnly = false;
 
   // Dropdown display configs (reused from the main screens)
   readonly portConfig = DROPDOWN_CONFIGS['PORT'];
@@ -333,6 +336,14 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
     );
     
     this.subscriptions.push(progressSub);
+
+    // MBL-only flow: the Customer is not captured here, so drop its required
+    // validator (the field is hidden in the template).
+    if (this.mblOnly) {
+      const customerCtrl = this.billOfLadingForm.get('CustomerMasterSid');
+      customerCtrl?.clearValidators();
+      customerCtrl?.updateValueAndValidity();
+    }
 
     // Apply the default department (from the parent screen) if its list is present.
     this.applyDefaultDepartment();
@@ -798,10 +809,13 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
     return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   }
 
-  /** Save is allowed only when Department, both required ports and Customer are set. */
+  /**
+   * Save is allowed only when Department and both required ports are set. The
+   * Customer is also required for the MBL/HBL flow, but not for MBL-only (mblOnly).
+   */
   get canSave(): boolean {
     return !!this.billOfLadingForm.get('DepartmentMasterSid')?.value &&
-      !!this.billOfLadingForm.get('CustomerMasterSid')?.value &&
+      (this.mblOnly || !!this.billOfLadingForm.get('CustomerMasterSid')?.value) &&
       !!this.billOfLadingForm.get('POLSid')?.value &&
       !!this.billOfLadingForm.get('PODSid')?.value &&
       !!this.extractedData;
@@ -844,6 +858,14 @@ export class MasterDocumentUploadComponent implements OnInit, OnDestroy {
     if (this.billOfLadingForm.valid && this.canSave) {
       const formData = {
         ...this.billOfLadingForm.value,
+        // These are extracted by the backend but not shown as editable controls,
+        // so forward them explicitly so the parent (House/Master Job) can patch them.
+        netWeight: this.extractedData?.netWeight ?? '',
+        marksAndNumbers: this.extractedData?.marksAndNumbers ?? '',
+        sealNumber: this.extractedData?.sealNumber ?? '',
+        // Raw text passed through so the parent can re-scan for fields (e.g. seal)
+        // that are not surfaced as dedicated controls.
+        extractedText: this.extractedData?.extractedText ?? '',
         confidence: this.extractedData?.confidence || 0,
         // Resolved selections for the parent screen to apply directly.
         departmentMasterSid: this.selectedDepartment?.DepartmentMasterSid ?? this.billOfLadingForm.get('DepartmentMasterSid')?.value,

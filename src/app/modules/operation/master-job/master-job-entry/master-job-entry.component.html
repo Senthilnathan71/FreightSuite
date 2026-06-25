@@ -101,8 +101,10 @@
                         Upload
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
+                        <button class="text-dark" ngbDropdownItem (click)="uploadMBL()"
+                            [disabled]="isLoading || isJobClosed">MBL</button>
                         <button class="text-dark" ngbDropdownItem (click)="uploadPDF()"
-                            [disabled]="isLoading || isJobClosed">HBL</button>
+                            [disabled]="isLoading || isJobClosed">MBL/HBL</button>
                         <button class="text-dark" ngbDropdownItem (click)="uploadManifest()"
                             [disabled]="isLoading || isJobClosed">Manifest</button>
                     </div>
