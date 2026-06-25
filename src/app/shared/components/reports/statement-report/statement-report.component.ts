@@ -567,7 +567,6 @@ export class StatementReportComponent {
       { key: 'osLocalAmt', label: 'O/S Local Amt' },
       { key: 'cumulative', label: 'Cumulative' },
       { key: 'ageingDays', label: 'Ageing Days' },
-      { key: 'creditDays', label: 'Credit Days' },
       { key: 'dueDate', label: 'Due Date' },
     ];
 
@@ -595,7 +594,6 @@ export class StatementReportComponent {
         { value: '' },
         { value: '' },
         { value: this.formatNumber(openingBalance) },
-        { value: '' },
         { value: '' },
         { value: '' },
       ];
@@ -626,7 +624,6 @@ export class StatementReportComponent {
         { value: this.formatNumber(item?.signedoutstandingLocalAmount) },
         { value: this.formatNumber(item?.cumulativeOutstanding) },
         { value: item?.ageingDays },
-        { value: item?.creditDays },
         { value: this.formatDate(item?.dueDate) },
       ];
 
@@ -716,6 +713,7 @@ export class StatementReportComponent {
                 : ''
             }${this.fullData?.contactNo || ''}`,
           },
+           { label: 'Credit Terms', value: this.fullData?.creditDays || '' },
         ],
       },
       tableHeaders,

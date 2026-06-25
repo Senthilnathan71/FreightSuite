@@ -44,6 +44,10 @@
                         {{ fullData?.contactNo }}
                     </span>
                 </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">Credit Terms </strong>
+                    <span class="ms-1 my-0">: {{ fullData?.creditDays }}</span>
+                </div>
             </div>
         </div>
 
@@ -70,7 +74,6 @@
                         <th class="bg-transparent text-light text-center">O/S Local Amt</th>
                         <th class="bg-transparent text-light text-center">Cumulative</th>
                         <th class="bg-transparent text-light text-center">Ageing Days</th>
-                        <th class="bg-transparent text-light text-center">Credit Days</th>
                         <th class="bg-transparent text-light text-center">Overdue Date</th>
                     </tr>
                 </thead>
@@ -113,13 +116,10 @@
                         <td>
 
                         </td>
-                        <td>
-
-                        </td>
                     </tr>
-                    <tr *ngFor="let item of fullData?.transactions; let i = index" style="white-space: nowrap;">
-                        <td>{{item?.voucherNumber}}</td>
-                        <td>{{item?.voucherDate | formatDate}}</td>
+                    <tr *ngFor="let item of fullData?.transactions; let i = index">
+                        <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
+                        <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
                         <td class="text-center">{{item?.voucherType}}</td>
                         <!-- <td>{{item?.MasterJobNumber}}</td>
                         <td></td>
@@ -141,9 +141,6 @@
                         </td>
                         <td style="text-align: center;">
                             {{item.ageingDays}}
-                        </td>
-                        <td style="text-align: center;">
-                            {{item.creditDays}}
                         </td>
                         <td style="text-align: center;">
                             {{item.dueDate | formatDate}}
