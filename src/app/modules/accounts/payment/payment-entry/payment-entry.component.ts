@@ -5288,7 +5288,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const row = this.detailItems.at(index) as FormGroup;
     const coaSid = row.get('COAMasterSid')?.value;
     const coa = this.coaList.find((c: any) => c.COAMasterSid === coaSid);
-    return coa?.Category === 'Expense' && coa?.HSNRequire === 'Y';
+    // Any ledger flagged HSNRequire='Y' needs an HS/SAC code (not just Expense category).
+    return coa?.HSNRequire === 'Y';
   }
 
   updateHSSACEnabledState(index: number): void {
@@ -5298,8 +5299,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (!hssacCtrl) return;
     if (this.isHSSACEnabledForRow(index)) {
       hssacCtrl.enable({ emitEvent: false });
+      // HSN-required ledger → HS/SAC must be picked before save (blocked by the form-invalid gate).
+      hssacCtrl.setValidators([Validators.required]);
     } else {
       hssacCtrl.disable({ emitEvent: false });
+      hssacCtrl.clearValidators();
       // During patching, coaList may not be loaded yet — preserve the saved value
       // so it can display correctly once coaList arrives and the control is re-enabled.
       if (!this.isPatching) {
@@ -5314,6 +5318,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.updateInvoiceTypeRequired();
       }
     }
+    hssacCtrl.updateValueAndValidity({ emitEvent: false });
   }
 
   onPaymentHSSACChange(index: number): void {

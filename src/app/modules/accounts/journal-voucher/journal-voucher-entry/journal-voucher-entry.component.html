@@ -438,27 +438,27 @@
                 <table class="table table-hover align-middle no-wrap table-sm pt-3 mb-0">
                     <thead class="bg-info">
                         <tr>
-                            <th class="bg-transparent text-light" style="min-width:130px">Dept</th>
-                            <th class="bg-transparent text-light" style="min-width:150px">Charge</th>
+                            <th *ngIf="hasJobChargeColumns()" class="bg-transparent text-light" style="min-width:130px">Dept</th>
+                            <th *ngIf="hasJobChargeColumns()" class="bg-transparent text-light" style="min-width:150px">Charge</th>
                             <th class="bg-transparent text-light" style="min-width:90px">HS/SAC</th>
-                            <th class="bg-transparent text-light" style="min-width:120px">Master Job</th>
-                            <th class="bg-transparent text-light" style="min-width:120px">House Job</th>
-                            <th class="bg-transparent text-light" style="min-width:70px">Tax%</th>
+                            <th *ngIf="hasJobChargeColumns()" class="bg-transparent text-light" style="min-width:120px">Master Job</th>
+                            <th *ngIf="hasJobChargeColumns()" class="bg-transparent text-light" style="min-width:120px">House Job</th>
+                            <th class="bg-transparent text-light" style="min-width:140px">Tax Applied</th>
                             <th class="bg-transparent text-light" style="min-width:90px">Tax Amt</th>
-                            <th class="bg-transparent text-light" style="min-width:130px">Cost Center</th>
-                            <th class="bg-transparent text-light" style="min-width:130px">Profit Center</th>
+                            <th *ngIf="hasJobChargeColumns()" class="bg-transparent text-light" style="min-width:130px">Cost Center</th>
+                            <th *ngIf="hasJobChargeColumns()" class="bg-transparent text-light" style="min-width:130px">Profit Center</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         <tr *ngFor="let row of details.controls; let i = index" [formGroupName]="i">
-                            <td>
+                            <td *ngIf="hasJobChargeColumns()">
                                 <ng-select formControlName="departmentMasterSid" [items]="departmentList"
                                     bindLabel="departmentName" bindValue="DepartmentMasterSid" appendTo="body"
                                     (change)="filterDetailsWithDept($event,i)" placeholder="">
                                 </ng-select>
                             </td>
-                            <td>
+                            <td *ngIf="hasJobChargeColumns()">
                                 <ng-select formControlName="chargeMasterSid" [items]="(filteredChargeList[i] || [])"
                                     bindLabel="chargeCode" bindValue="ChargeMasterSid" appendTo="body" placeholder="">
                                 </ng-select>
@@ -466,22 +466,27 @@
                             <td>
                                 <ng-select [items]="(hssacList[i] || [])" bindLabel="HSSACCode"
                                     bindValue="HSSACMasterSid" placeholder="" formControlName="hssacMasterSid"
-                                    appendTo="body">
+                                    appendTo="body" (change)="onHssacChange(i, $event)">
+                                    <ng-template ng-label-tmp let-item="item">{{ item.HSSACCode }}</ng-template>
+                                    <ng-template ng-option-tmp let-item="item">
+                                        {{ item.HSSACCode }} - {{ item.TaxType }}
+                                    </ng-template>
                                 </ng-select>
                             </td>
-                            <td>
+                            <td *ngIf="hasJobChargeColumns()">
                                 <ng-select formControlName="masterJobSid" [items]="masterJobList[i]"
                                     (change)="onMasterJobChange(i,$event)" bindLabel="MasterJobNumber"
                                     bindValue="MasterJobSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>
-                            <td>
+                            <td *ngIf="hasJobChargeColumns()">
                                 <ng-select formControlName="houseJobSid" [items]="(houseJobList[i] || [])"
                                     bindLabel="HBLNo" bindValue="HouseJobSid" appendTo="body" placeholder="">
                                 </ng-select>
                             </td>
                             <td>
-                                <input type="number" step="0.01" formControlName="taxPercentage" class="form-control" readOnly />
+                                <input type="text" class="custom-input-field sm text-center"
+                                    [value]="getJvTaxLabel(i)" [title]="getJvTaxLabel(i)" readonly />
                             </td>
                             <td>
                                 <input type="text" formControlName="taxAmount" class="custom-input-field sm text-end"
@@ -489,13 +494,13 @@
                                     [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('currencyMasterSid')?.value)"
                                      [readonly]="isTaxAmountReadonly(i)" />
                             </td>
-                            <td>
+                            <td *ngIf="hasJobChargeColumns()">
                                 <ng-select formControlName="costCenterMasterSid" [items]="costCenterList"
                                     bindLabel="CostCenterName" bindValue="CostCenterMasterSid" appendTo="body"
                                     placeholder="">
                                 </ng-select>
                             </td>
-                            <td>
+                            <td *ngIf="hasJobChargeColumns()">
                                 <ng-select formControlName="profitCenterMasterSid" [items]="profitCenterList"
                                     bindLabel="ProfitCenterName" bindValue="ProfitCenterMasterSid" appendTo="body"
                                     placeholder="">
