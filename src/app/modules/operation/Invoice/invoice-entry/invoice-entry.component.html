@@ -587,7 +587,7 @@
                             <tr [formGroupName]="i">
                               <!-- Delete Button -->
                               <td *ngIf="showDetailDeleteColumn">
-                                <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
+                                <button type="button" class="btn btn-sm pt-0" [disabled]="isDeletingDetail" (click)="removeDetailRow(i)">
                                   <i class="fas fa-trash text-danger"></i>
                                 </button>
                               </td>

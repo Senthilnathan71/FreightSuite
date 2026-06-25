@@ -308,6 +308,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   // Unsaved changes related varaible declarations
   isDirty : boolean = false;
   isSaving : boolean = false;
+  // True while a single-line soft-delete is in flight — disables every row's delete button so
+  // only one delete runs at a time (concurrent deletes would each recompute the header total
+  // without seeing the other's removal, leaving a stale header).
+  isDeletingDetail : boolean = false;
   private initialFormValue : any = null;
   private _isInitialLoad = false;
   private destroy$ = new Subject<void>();
@@ -2028,6 +2032,7 @@ isSeaDepartment(): boolean {
     return department?.departmentName || '-';
   }
   async removeDetailRow(index: number) {
+    if (this.isDeletingDetail) return;   // a delete is already in flight — ignore (one at a time)
     if (this.showBlockedAction(this.getDetailMutationBlockedReason())) return;
 
     const row = this.details.at(index) as FormGroup;
@@ -2047,14 +2052,26 @@ isSeaDepartment(): boolean {
     );
     if (!confirmed) return;
 
+    // Recompute the header total over the surviving rows (all rows except the one being deleted),
+    // using the same formula as Save, and persist it alongside the soft-delete so the header
+    // doesn't go stale until the next Save.
+    const remainingRows = this.details.controls
+      .filter((_, i) => i !== index)
+      .map((c) => c.getRawValue());
+    const { Amount, LocalAmount } = this.computeHeaderAmounts(remainingRows);
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       UpdatedBy: this.currUserEmail,
+      Amount,        // header total in party currency, surviving lines only
+      LocalAmount,   // header total in local currency, surviving lines only
     };
 
+    this.isDeletingDetail = true;
     this.invoiceService.deleteInvoiceDetail(Number(voucherDetailSid), payload).subscribe({
       next: (resp: any) => {
+        this.isDeletingDetail = false;
         if (resp?.status) {
           this.dropDetailFromBaseline(Number(voucherDetailSid));
           this.spliceDetailRow(index);
@@ -2063,7 +2080,10 @@ isSeaDepartment(): boolean {
           this.appSettingService.showError(resp?.message || 'Failed to delete charge line.');
         }
       },
-      error: () => this.appSettingService.showError('Failed to delete charge line.'),
+      error: () => {
+        this.isDeletingDetail = false;
+        this.appSettingService.showError('Failed to delete charge line.');
+      },
     });
   }
 
@@ -2084,6 +2104,33 @@ isSeaDepartment(): boolean {
     this.initialFormValue.voucherDetails = details.filter(
       (d: any) => Number(d?.VoucherDetailSid) !== Number(voucherDetailSid),
     );
+  }
+
+  /**
+   * Header Amount (party currency) + LocalAmount (local currency) computed from the given detail
+   * rows. This is the single source of truth for the header total — used both by the Save payload
+   * and by the single-line delete, so deleting a charge line never diverges from a Save.
+   * Header currency context (local ccy, party ccy, exchange rate) is read from the form.
+   */
+  private computeHeaderAmounts(
+    rows: Array<{ LocalAmount: any; TaxAmount1: any; TaxAmount2: any; DrCr: any }>,
+  ): { Amount: number; LocalAmount: number } {
+    const raw = this.invoiceForm.getRawValue();
+    const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
+    const headerCurrencySid = raw.CurrencyMasterSid;
+    const headerExchangeRate = raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1;
+
+    let totalLocalAmountWithTax = 0;
+    for (const r of rows) {
+      const rowTotal = toNumber(r.LocalAmount) + toNumber(r.TaxAmount1) + toNumber(r.TaxAmount2);
+      totalLocalAmountWithTax += r.DrCr === 'C' ? rowTotal : -rowTotal;
+    }
+
+    const LocalAmount = toNumber(this.getFormattedAmount(totalLocalAmountWithTax, localCurrencySid));
+    const Amount = localCurrencySid === headerCurrencySid
+      ? LocalAmount
+      : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
+    return { Amount, LocalAmount };
   }
 
   onDetailChange(index: number, field?: string) {
@@ -2739,23 +2786,8 @@ isSeaDepartment(): boolean {
       this.buildVoucherOthersPayload(rawVoucherOthers);
 
     // Calculate header Amount (party currency) and LocalAmount (local currency)
-    const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
-    const headerCurrencySid = raw.CurrencyMasterSid;
-    const headerExchangeRate = raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1;
-
-    let totalLocalAmountWithTax = 0;
-    for (const vd of voucherDetailArray) {
-      const localAmt = toNumber(vd.LocalAmount);
-      const tax1 = toNumber(vd.TaxAmount1);
-      const tax2 = toNumber(vd.TaxAmount2);
-      const rowTotal = localAmt + tax1 + tax2;
-      totalLocalAmountWithTax += vd.DrCr === 'C' ? rowTotal : -rowTotal;
-    }
-
-    const headerLocalAmount = toNumber(this.getFormattedAmount(totalLocalAmountWithTax, localCurrencySid));
-    const headerAmount = localCurrencySid === headerCurrencySid
-      ? headerLocalAmount
-      : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
+    const { Amount: headerAmount, LocalAmount: headerLocalAmount } =
+      this.computeHeaderAmounts(voucherDetailArray);
 
     const payload: any = {
       ...(this.isEditMode
