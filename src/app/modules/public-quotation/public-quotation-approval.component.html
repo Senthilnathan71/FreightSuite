@@ -240,21 +240,23 @@
                 <div class="pq-decision-row">
                   <label>
                     <span>Authorization Status</span>
-                    <select [(ngModel)]="d.status" name="status-{{ ri }}-{{ i }}">
+                    <select [(ngModel)]="d.status" name="status-{{ ri }}-{{ i }}"
+                            [disabled]="isDecisionLocked(d)">
                       <option value="">Select Status</option>
                       <option value="Approved">Approved</option>
                       <option value="Rejected">Rejected</option>
                     </select>
+                    <small class="pq-muted" *ngIf="isDecisionLocked(d)">Already approved &mdash; cannot be changed.</small>
                   </label>
                   <label>
                     <span>Authorized By <small *ngIf="d.status">*</small></span>
                     <input type="text" maxlength="20" [(ngModel)]="d.approvedBy"
-                           [disabled]="!d.status" name="approvedBy-{{ ri }}-{{ i }}" placeholder="Your name" />
+                           [disabled]="!d.status || isDecisionLocked(d)" name="approvedBy-{{ ri }}-{{ i }}" placeholder="Your name" />
                   </label>
                   <label class="pq-remarks">
                     <span>Remarks</span>
                     <input type="text" maxlength="100" [(ngModel)]="d.remarks"
-                           [disabled]="!d.status" name="remarks-{{ ri }}-{{ i }}" placeholder="Optional" />
+                           [disabled]="!d.status || isDecisionLocked(d)" name="remarks-{{ ri }}-{{ i }}" placeholder="Optional" />
                   </label>
                 </div>
               </div>

@@ -133,6 +133,11 @@ export class PublicQuotationApprovalComponent implements OnInit {
   return this.drafts.filter((d) => d.route === route);
 }
 
+  /** Already-approved carriers are locked — their status cannot be changed. */
+  isDecisionLocked(draft: CarrierDecisionDraft): boolean {
+    return draft.carrier.approvalStatus === 'Approved';
+  }
+
   private classifyError(err: HttpErrorResponse): ErrorCode {
     const code = err?.error?.code;
     if (code === 'NOT_FOUND' || code === 'EXPIRED' || code === 'ALREADY_USED') {

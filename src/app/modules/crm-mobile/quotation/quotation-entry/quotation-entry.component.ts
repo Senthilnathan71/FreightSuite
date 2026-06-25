@@ -6309,6 +6309,14 @@ ${this.userData.userName}`;
   }
 
   async sendManualMail(): Promise<void> {
+    // Block sending when every carrier has been rejected
+    if (this.areAllCarriersRejected()) {
+      this.appSettingService.showWarning(
+        'Authorization status of routes are rejected. Please change the approval status to Waiting for Approval before sending the mail.'
+      );
+      return;
+    }
+
     const leadCustomerValue = this.quotationForm.get('LeadOrCustomer')?.value;
     const isCustomer = leadCustomerValue === true || String(leadCustomerValue).toUpperCase() === 'C';
     const preCustomerMasterSid =
@@ -6361,7 +6369,7 @@ ${this.userData.userName}`;
         leadEmail: resolvedLeadEmail,
         toEmail: resolvedToEmail,
         customerBranchSid: this.quotationData?.CustomerBranchSid || null,
-        approvalLink: this.getApprovalUrl(),
+        approvalLink: this.areAllCarriersApproved() ? '' : `Click here to approve: ${this.getApprovalUrl()}`,
         menuMasterSid: this.MenuMasterSid,
         resourceSid: this.QuoteHeaderSid
       }
@@ -7064,6 +7072,29 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
   }
 
 
+  /**
+   * Returns true when there is at least one carrier and every carrier (across
+   * all routes) has an ApprovalStatus of 'Rejected'. Used to block mail sending.
+   */
+  private areAllCarriersRejected(): boolean {
+    const routes = this.selectedItem?.quoteRoute || this.quotationData?.quoteRoute || [];
+    const allCarriers = routes.flatMap((route: any) => route?.quoteCarrier || []);
+    return allCarriers.length > 0 &&
+      allCarriers.every((carrier: any) => carrier?.ApprovalStatus === 'Rejected');
+  }
+
+  /**
+   * Returns true when there is at least one carrier and every carrier (across
+   * all routes) has an ApprovalStatus of 'Approved'. Used to suppress the
+   * approval link when no further approval is required.
+   */
+  private areAllCarriersApproved(): boolean {
+    const routes = this.selectedItem?.quoteRoute || this.quotationData?.quoteRoute || [];
+    const allCarriers = routes.flatMap((route: any) => route?.quoteCarrier || []);
+    return allCarriers.length > 0 &&
+      allCarriers.every((carrier: any) => carrier?.ApprovalStatus === 'Approved');
+  }
+
   async sendEmail() {
     try {
       // Step 1: Validate email FIRST (before expensive PDF generation)
@@ -7121,7 +7152,6 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
 Please find enclosed the quotation as requested.
 Kindly review the details at your convenience.
 Looking forward to your feedback and the opportunity to work together.
-Approval Hyperlink: <a href="${this.getApprovalUrl(this.QuoteHeaderSid)}" target="_blank" rel="noopener noreferrer" style="color:#0b6aa1;font-weight:600;">Click here to approve</a>
 Best Regards,
 ${this.userData['userEmail']}`;
       const mailHtml = this.emailTriggerService.buildCommonTemplate(
