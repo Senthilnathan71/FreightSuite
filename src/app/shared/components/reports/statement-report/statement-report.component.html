@@ -36,14 +36,18 @@
                     <strong style="width: 100px;">Subledger </strong>
                     <span class="ms-1 my-0">: {{ fullData?.subledgerName }}</span>
                 </div>
-                 <div class="d-flex align-items-center">
-                <strong style="width: 100px;">Address</strong>
-                <span class="ms-1 my-0">
-                    : {{ fullData?.customerAddress }}
-                    <span *ngIf="fullData?.customerAddress && fullData?.contactNo">, </span>
-                    {{ fullData?.contactNo }}
-                </span>
-              </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">Address</strong>
+                    <span class="ms-1 my-0">
+                        : {{ fullData?.customerAddress }}
+                        <span *ngIf="fullData?.customerAddress && fullData?.contactNo">, </span>
+                        {{ fullData?.contactNo }}
+                    </span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">Credit Terms </strong>
+                    <span class="ms-1 my-0">: {{ fullData?.creditDays }}</span>
+                </div>
             </div>
         </div>
 
@@ -51,7 +55,7 @@
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
-                    <tr class="bg-info text-center">
+                    <tr class="bg-info text-center" style="white-space: nowrap;">
                         <th class="bg-transparent text-light text-center">Voucher No</th>
                         <th class="bg-transparent text-light text-center">Voucher Date</th>
                         <th class="bg-transparent text-light text-center">Type</th>
@@ -69,6 +73,8 @@
                         <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
                         <th class="bg-transparent text-light text-center">O/S Local Amt</th>
                         <th class="bg-transparent text-light text-center">Cumulative</th>
+                        <th class="bg-transparent text-light text-center">Ageing Days</th>
+                        <th class="bg-transparent text-light text-center">Overdue Date</th>
                     </tr>
                 </thead>
 
@@ -97,12 +103,18 @@
                         <td class="text-end">
                             {{fullData?.openingBalance | number:"1.2-2"}}
                         </td>
-                         <td>
+                        <td>
 
                         </td>
                         <td></td>
                         <td class="text-end">
                             {{fullData?.openingBalance | number:"1.2-2"}}
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+
                         </td>
                     </tr>
                     <tr *ngFor="let item of fullData?.transactions; let i = index">
@@ -127,6 +139,12 @@
                         <td style="text-align: right;">
                             {{item.cumulativeOutstanding | number:'1.2-2'}}
                         </td>
+                        <td style="text-align: center;">
+                            {{item.ageingDays}}
+                        </td>
+                        <td style="text-align: center;">
+                            {{item.dueDate | formatDate}}
+                        </td>
                     </tr>
 
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
@@ -142,8 +160,7 @@
                         <!-- Total O/S Currency -->
                         <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'outstandingCurrencyAmount') | number:'1.2-2'
                             }}</td> -->
-                        <td></td>
-                        <td></td>
+
 
                         <!-- Total O/S Local -->
                         <!-- <td style="text-align: right;">
@@ -151,14 +168,27 @@
                         </td> -->
 
                         <!-- Cumulative Total (same as total outstanding local) -->
-                        <td style="text-align: right;">{{ fullData?.transactions?.[fullData.transactions.length -
+                        <td style="text-align: right;" colspan="3">
+                            {{ fullData?.transactions?.[fullData.transactions.length -
                             1]?.cumulativeOutstanding
                             | number:'1.2-2' }}
-
                         </td>
+                        <td colspan="3"></td>
                     </tr>
 
-                    <tr *ngIf="(!fullData?.transactions || fullData.transactions.length === 0) && (!fullData?.openingBalance || fullData?.openingBalance === 0)">
+                    <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData?.creditOrCash === 'Credit'">
+                        <td colspan="10" class="text-end">CURRENT AMT</td>
+                        <td style="text-align: right;"> {{ fullData?.totalCurrentAmount | number:'1.2-2' }}</td>
+                        <td colspan="3"></td>
+                    </tr>
+                    <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
+                        <td colspan="10" class="text-end">OVERDUE AMT</td>
+                        <td style="text-align: right;"> {{ fullData?.totalOverdueAmount | number:'1.2-2' }}</td>
+                        <td colspan="3"></td>
+                    </tr>
+
+                    <tr
+                        *ngIf="(!fullData?.transactions || fullData.transactions.length === 0) && (!fullData?.openingBalance || fullData?.openingBalance === 0)">
                         <td colspan="15" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
@@ -196,11 +226,13 @@
         Note :
         <ul>
             <li>This Statement of Accounts report includes only posted voucher transactions.</li>
+            <li>Overdue Amount : Includes vouchers with Ageing Days greater than Credit Days.</li>
+            <li>Current Amount : Includes vouchers with Ageing Days less than or equal to Credit Days.</li>
         </ul>
     </div>
 
-       <div *ngIf="showBankDetails" class="px-3" style="font-size:14px">
-        <h5 class="fw-bold"><strong>Bank Details</strong></h5>
+    <div *ngIf="showBankDetails" class="px-3" style="font-size:14px">
+        <h5 class="fw-bold">Bank Details</h5>
 
         <div *ngIf="isBankDetailsLoading" class="d-flex align-items-center gap-2 py-2">
             <div class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></div>
@@ -213,38 +245,40 @@
                     width: bankDetails.length === 1 ? 'auto' : '100%',
                     'table-layout': bankDetails.length === 1 ? 'auto' : 'fixed'
                 }">
-    
+
                 <thead>
                     <tr>
                         <th
                             style="width:180px;padding:0px;color:#000;border-color:#000;text-align:center;border:0.5px solid #000; background-color: #05608d; color: #FFFFFF;">
-                            <strong>Details</strong>
+                            Details
                         </th>
                         <th *ngFor="let bankDetail of bankDetails"
                             style="padding:0px 6px;color:#000;border-color:#000;text-align:start;border:0.5px solid #000;background-color: #05608d; color: #FFFFFF;">
-                            <strong>Bank ({{ getBankCurrencyCode(bankDetail) }})</strong>
+                            Bank ({{ getBankCurrencyCode(bankDetail) }})
                         </th>
                     </tr>
                 </thead>
-    
+
                 <tbody>
                     <tr>
-                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Beneficiary Name</strong>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Beneficiary
+                                Name</strong>
                         </th>
                         <td *ngFor="let bankDetail of bankDetails"
                             style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
                             {{ bankDetail.BeneficiaryName }}
                         </td>
                     </tr>
-    
+
                     <tr>
-                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Account No.</strong></th>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Account No.</strong>
+                        </th>
                         <td *ngFor="let bankDetail of bankDetails"
                             style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
                             {{ bankDetail.BankAccountNo }}
                         </td>
                     </tr>
-    
+
                     <tr>
                         <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>IFSC</strong></th>
                         <td *ngFor="let bankDetail of bankDetails"
@@ -252,7 +286,7 @@
                             {{ bankDetail.IFSCCode }}
                         </td>
                     </tr>
-    
+
                     <tr>
                         <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Swift Code</strong></th>
                         <td *ngFor="let bankDetail of bankDetails"
@@ -260,7 +294,7 @@
                             {{ bankDetail.BankCode }}
                         </td>
                     </tr>
-    
+
                     <tr>
                         <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Bank Name</strong></th>
                         <td *ngFor="let bankDetail of bankDetails"
@@ -268,7 +302,7 @@
                             {{ bankDetail.BankName }}
                         </td>
                     </tr>
-    
+
                     <tr>
                         <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Branch</strong></th>
                         <td *ngFor="let bankDetail of bankDetails"
