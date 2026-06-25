@@ -1578,7 +1578,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       HandlingInformation: [''],
       // Overflow of the commodity description beyond the first 500 chars. Derived
       // and persisted by the backend; shown read-only on the Other tab.
-      RiderCommodityDescription: [{ value: '', disabled: true }],
+      RiderCommodityDescription: [null],
       BacktoBack: [false],
       Depo: [''],
       ROValidity: [''],
@@ -6384,7 +6384,11 @@ ${this.userData['userName']}`;
     }
 
     const firstCargo = this.houseJobCargos.at(0) as FormGroup;
-    firstCargo.patchValue({
+    // The BoL data targets the first cargo; make it the active cargo so the product
+    // grid (which renders the active cargo's products) reflects the staged product.
+    this.houseJobCargoActiveIndex = 0;
+    this.cargoForm = firstCargo;
+    const cargoPatch: any = {
       CommodityDescription: data?.cargoDescription || data?.cargoDetails || firstCargo.get('CommodityDescription')?.value,
       MarksAndNumber: data?.marksAndNumbers || firstCargo.get('MarksAndNumber')?.value,
       NoOfPackage: this.parseBillNumber(data?.numberOfPackages) || firstCargo.get('NoOfPackage')?.value,
@@ -6392,7 +6396,111 @@ ${this.userData['userName']}`;
       NetWeight: this.parseBillNumber(data?.netWeight) || firstCargo.get('NetWeight')?.value,
       Volume: this.parseBillNumber(data?.measurement) || firstCargo.get('Volume')?.value,
       FreightTerms: data?.freightTerms || firstCargo.get('FreightTerms')?.value,
+    };
+
+    // FCL only: the Container Type & No of Container are required for FCL cargo and
+    // are not shown for LCL/AIR. Patch them from the BoL's resolved container type so
+    // the cargo is valid and the product's Container No. dropdown filters correctly.
+    if (this.selectedCargoMode === 'FCL' && data?.containerTypeMasterSid) {
+      cargoPatch.ContainerType = data.containerTypeMasterSid;
+      if (!firstCargo.get('NoofContainers')?.value) {
+        cargoPatch.NoofContainers = 1;
+      }
+    }
+
+    // Patch the cargo (incl. ContainerType) BEFORE staging the product, so the
+    // container-type change does not wipe the product's container mapping.
+    firstCargo.patchValue(cargoPatch);
+    this.clearFilteredMasterJobContainerCache();
+
+    // Stage ONE product under the cargo from the Bill of Lading so the cargo's
+    // product grid is populated on upload (commodity, packages, weights, marks).
+    this.addBillOfLadingProduct(firstCargo, data);
+  }
+
+  /**
+   * Adds ONE product to the cargo from the Bill of Lading. Only runs when the
+   * cargo has no products yet (avoids duplicates on re-upload). Weight/volume use
+   * manual override so the dimensional auto-calc does not wipe the patched values
+   * (the BoL has no L/W/H, so Volumetric is seeded from the CBM volume).
+   */
+  private addBillOfLadingProduct(cargoGroup: FormGroup, data: any): void {
+    const products = cargoGroup.get('bookingProducts') as FormArray;
+    if (!products || products.length > 0) {
+      return;
+    }
+
+    const commodity = String(data?.cargoDescription || data?.cargoDetails || '').trim();
+    const marks = data?.marksAndNumbers || '';
+    const grossWeight = this.parseBillNumber(data?.grossWeight) || 0;
+    const netWeight = this.parseBillNumber(data?.netWeight) || 0;
+    const volume = this.parseBillNumber(data?.measurement) || 0;
+    const noOfPackages = this.parseBillNumber(data?.numberOfPackages) || 0;
+    const containerNo = this.extractBillOfLadingContainerNumber(data?.containerDetails);
+    const packageType = this.matchBillOfLadingPackageType(data?.packageType);
+
+    // Nothing meaningful to stage -> skip (keeps the grid empty rather than adding
+    // an invalid, all-zero product row).
+    if (!commodity && !grossWeight && !volume && !noOfPackages) {
+      return;
+    }
+
+    // Map the BoL container to a Master Job container (when one matches) so the
+    // product's "Container No." dropdown shows it selected, not just populated.
+    const matchedContainer = (this.masterJobContainers || []).find(
+      (container) => this.normalizeContainerNumberText(container?.ContainerNumber) === this.normalizeContainerNumberText(containerNo)
+    );
+
+    const productGroup = this.createBookingProductGroup({
+      ProductName: commodity,
+      isProductFreeText: true,
+      ProductDescription: commodity,
+      ExternaPkg: packageType,
+      ExternlQty: noOfPackages || '',
+      GrossWeight: grossWeight,
+      NetWeight: netWeight,
+      Volume: volume,
+      Volumetric: volume,
+      isGrossWeightManualOverride: true,
+      isVolumeManualOverride: true,
+      isVolumetricManualOverride: true,
+      MarksAndNumber: marks,
+      MarksAndNumbers: marks,
+      MasterJobContainerSid: matchedContainer?.MasterJobContainerSid ?? null,
+      ContainerNo: matchedContainer?.ContainerNumber || containerNo,
+      UomMasterSid: 2,
+    }, true);
+
+    products.push(productGroup);
+    this.productDataLength = this.bookingProducts.length;
+    // Refresh the inline product grid (it renders from slicedProductArr).
+    this.updateProductPagination();
+  }
+
+  /** Extracts the ISO container number (e.g. "TLXU5405052") from the BoL text. */
+  private extractBillOfLadingContainerNumber(value: any): string {
+    const match = String(value || '').toUpperCase().replace(/\s+/g, '').match(/[A-Z]{4}\d{7}/);
+    return match ? match[0] : '';
+  }
+
+  /** Normalises a container number for comparison (strips spaces/punctuation, uppercases). */
+  private normalizeContainerNumberText(value: any): string {
+    return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  }
+
+  /** Matches the BoL package type (e.g. "CARTONS") against the package-type master. */
+  private matchBillOfLadingPackageType(value: any): string {
+    const raw = String(value || '').trim();
+    if (!raw || !this.packageTypeList?.length) {
+      return raw;
+    }
+    const normalized = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const singular = normalized.replace(/S$/, '');
+    const match = this.packageTypeList.find(pkg => {
+      const name = String(pkg?.UOMName || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      return !!name && (name === normalized || name === singular || name.startsWith(singular) || normalized.startsWith(name));
     });
+    return match?.UOMName || raw;
   }
 
   private findPortFromBillOfLadingValue(value: string): any {
@@ -6456,9 +6564,27 @@ ${this.userData['userName']}`;
       return { vesselName: '', voyageNo: '' };
     }
 
-    const parts = text.split(/[/-]/).map(part => part.trim()).filter(Boolean);
-    if (parts.length >= 2) {
-      return { vesselName: parts[0], voyageNo: parts.slice(1).join('/') };
+    // Prefer an explicit '/' separator (e.g. "X-PRESS EUPHRATES / 22015W").
+    // Vessel names can contain hyphens (e.g. "X-PRESS EUPHRATES"), so NEVER
+    // split on '-' or the vessel/voyage are mis-parsed.
+    if (text.includes('/')) {
+      const idx = text.lastIndexOf('/');
+      const vesselName = text.slice(0, idx).trim();
+      const voyageNo = text.slice(idx + 1).trim();
+      if (vesselName) {
+        return { vesselName, voyageNo };
+      }
+    }
+
+    // No separator: the voyage is the trailing token when it looks like a voyage
+    // code (contains a digit), e.g. "X-PRESS EUPHRATES 22015E" -> vessel
+    // "X-PRESS EUPHRATES", voyage "22015E".
+    const tokens = text.split(/\s+/);
+    if (tokens.length >= 2 && /\d/.test(tokens[tokens.length - 1])) {
+      return {
+        vesselName: tokens.slice(0, -1).join(' ').trim(),
+        voyageNo: tokens[tokens.length - 1],
+      };
     }
 
     return { vesselName: text, voyageNo: '' };
@@ -7859,8 +7985,12 @@ prepopulateFromMasterJob(masterJobData: any): void {
     // Load master job details
     if (masterJobData.MasterJobSid) {
       this.loadMasterJobDetails(masterJobData.MasterJobSid);
+      // Load the Master Job's containers so the product "Container No." dropdown is
+      // populated when creating a House Job from a Master Job (edit mode already
+      // loads these via loadHouseById).
+      this.loadAllMasterJobContainers();
     }
-    
+
     // this.appSettingService.showSuccess('Master job data loaded successfully');
   }, 300); // Increased timeout to ensure department change completes
 }

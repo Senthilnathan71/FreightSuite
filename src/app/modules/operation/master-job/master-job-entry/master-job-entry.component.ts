@@ -1025,6 +1025,42 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
 
 
+  /**
+   * MBL-only upload: parses the MBL PDF and patches ONLY the Master Job (and its
+   * Container). Unlike MBL/HBL, no House Job is staged, so on Save the backend
+   * creates just the Master Job + MasterJobContainer. The Customer dropdown in the
+   * modal is hidden/not required for this flow (mblOnly).
+   */
+  uploadMBL() {
+    const modalRef = this.modalService.open(MasterDocumentUploadComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      centered: true,
+    });
+
+    // Same master data/context as MBL/HBL, but flagged MBL-only so the modal hides
+    // the Customer dropdown and drops its required validator.
+    modalRef.componentInstance.mode = 'master';
+    modalRef.componentInstance.mblOnly = true;
+    modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.departmentList = this.departments || [];
+    modalRef.componentInstance.customerList = this.customerList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.defaultDepartmentSid =
+      this.masterJobForm.get('DepartmentMasterSid')?.value || this.selectedDepartment?.DepartmentMasterSid || null;
+    modalRef.componentInstance.companyMasterSid = this.currentCompany?.CompanyMasterSid || null;
+
+    modalRef.result.then(
+      (billOfLadingData: any) => {
+        if (billOfLadingData) {
+          // stageHouseJob = false -> Master Job + Container only, no linked House Job.
+          this.applyBillOfLadingToMasterJob(billOfLadingData, false);
+        }
+      },
+      () => {}
+    );
+  }
+
   uploadPDF() {
     const modalRef = this.modalService.open(MasterDocumentUploadComponent, {
       size: 'xl',
@@ -1052,7 +1088,12 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     );
   }
 
-  private applyBillOfLadingToMasterJob(data: any): void {
+  /**
+   * Patches the Master Job from a Bill of Lading.
+   * @param stageHouseJob when true (MBL/HBL) a linked House Job is staged for creation
+   *   on Save; when false (MBL only) no House Job is staged.
+   */
+  private applyBillOfLadingToMasterJob(data: any, stageHouseJob: boolean = true): void {
     // Set the Department first (from the modal). onDeptChange rebuilds the route/port
     // filters and clears route selections, so it MUST run before the ports are patched.
     if (data?.departmentMasterSid && data?.department) {
@@ -1131,11 +1172,18 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.addContainerFromBillOfLading(data);
 
     // Stage the house-level data so that, on Save, the backend also creates ONE
-    // linked House Job (shipper/consignee/notify/cargo) under this master.
-    this.stageBillOfLadingHouseJob(data, vessel);
+    // linked House Job (shipper/consignee/notify/cargo) under this master. For the
+    // MBL-only flow this is skipped so only the Master Job + Container are created.
+    if (stageHouseJob) {
+      this.stageBillOfLadingHouseJob(data, vessel);
+    } else {
+      this.billOfLadingHouseJob = null;
+    }
 
     this.masterJobForm.markAsDirty();
-    this.toastr.success('Bill of Lading loaded. On Save, the Master Job, its Container and a linked House Job will be created.');
+    this.toastr.success(stageHouseJob
+      ? 'Bill of Lading loaded. On Save, the Master Job, its Container and a linked House Job will be created.'
+      : 'MBL loaded. On Save, only the Master Job and its Container will be created.');
   }
 
   /** Splits "VESSEL NAME / VOYAGE" into its parts. */
@@ -1213,7 +1261,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.addContainer({
       ContainerNumber: containerNumber,
       ContainerType: containerType,
-      LineSeal: this.extractBolSealNumber(data?.containerDetails),
+      // Resolve the line seal from every available source (backend seal field,
+      // raw extracted text, then the container-details text).
+      LineSeal: this.resolveBolSeal(data),
       // MasterJobContainer.CommodityDescription is VarChar(500); cap to fit.
       CommodityDescription: (data?.cargoDescription || data?.cargoDetails || '').substring(0, 500),
       GrossWeight: this.parseBillNumber(data?.grossWeight) || 0,
@@ -1235,6 +1285,50 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     const withoutContainer = String(value || '').toUpperCase().replace(/[A-Z]{4}\s*\d{7}/, ' ');
     const match = withoutContainer.match(/\b\d{5,10}\b/);
     return match ? match[0] : '';
+  }
+
+  /** Cleans the backend-extracted seal number to fit the LineSeal field (max 10 chars). */
+  private normalizeBolSeal(value: any): string {
+    return String(value || '').toUpperCase().replace(/[^A-Z0-9-]/g, '').substring(0, 10);
+  }
+
+  /**
+   * Resolves the container line seal from every available source, in order:
+   * 1) the backend-extracted `sealNumber` field,
+   * 2) the raw extracted text (labeled "Seal No"/"A.S.No" or container-table form),
+   * 3) the container-details text.
+   */
+  private resolveBolSeal(data: any): string {
+    const direct = this.normalizeBolSeal(data?.sealNumber ?? data?.SealNo ?? data?.sealNo);
+    if (direct) {
+      return direct;
+    }
+    const fromText = this.extractSealFromText(data?.extractedText);
+    if (fromText) {
+      return fromText;
+    }
+    return this.extractBolSealNumber(data?.containerDetails);
+  }
+
+  /** Extracts a seal number from raw BoL text (labeled forms + container-table form). */
+  private extractSealFromText(value: any): string {
+    const text = String(value || '').toUpperCase().replace(/[`'’"]/g, ' ');
+    if (!text) {
+      return '';
+    }
+    const labeled = text.match(
+      /(?:LINE\s*SEAL\s*(?:NO\.?)?|CARRIER\s*SEAL|AGENT\s*SEAL|A\.?\s*S\.?\s*NO|SEAL\s*NO\.?|SEALNO)\s*[:.\s]*([A-Z]{0,4}\d{4,}[A-Z0-9-]*)/
+    );
+    if (labeled?.[1]) {
+      return this.normalizeBolSeal(labeled[1]);
+    }
+    const table = text.match(
+      /[A-Z]{4}\d{7}[\s\/]*(?:1\s*X\s*)?(?:20|40|45)\s*(?:HC|HQ|GP|DC|DV|RF|RH|RE|OT|FR|TK|FL|PW)\s+([A-Z]{0,4}\d{4,}[A-Z0-9-]*)/
+    );
+    if (table?.[1]) {
+      return this.normalizeBolSeal(table[1]);
+    }
+    return '';
   }
 
   private normalizeBillOfLadingFreightTerms(value: any): string {

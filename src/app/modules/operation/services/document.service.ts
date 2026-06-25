@@ -238,6 +238,7 @@ export interface BillOfLadingData {
   containerDetails: string;
   containerType?: string;
   consolNumber: string;
+  sealNumber: string;
 
   // System Fields
   confidence: number;

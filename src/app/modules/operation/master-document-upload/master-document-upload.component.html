@@ -84,7 +84,7 @@
       <!-- Job & Routing: Department drives Import/Export, which decides the Customer -->
       <div class="col-md-12" *ngIf="extractedData">
         <div class="form-section-header">
-          <h5 class="my-1">Job &amp; Customer</h5>
+          <h5 class="my-1">{{ mblOnly ? 'Job' : 'Job &amp; Customer' }}</h5>
         </div>
         <div class="row compact-form">
           <aside class="col-md-6">
@@ -107,7 +107,7 @@
             </div>
           </aside>
 
-          <aside class="col-md-6">
+          <aside class="col-md-6" *ngIf="!mblOnly">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!billOfLadingForm.get('CustomerMasterSid')?.value">
               <dofi-searchable-dropdown
                 [items]="customerList"
