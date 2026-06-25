@@ -509,11 +509,31 @@ export class ActivityAllocationEntryComponent
     if (this.selectedActivityIds.size > 0) {
       Swal.fire({
         title: 'Discard selections?',
-        text: 'You have selected activities. Going back will clear these selections.',
+        html: `
+          <div class="discard-confirm">
+            <div class="discard-confirm__pill">
+              <span>${this.selectedActivityIds.size}</span>
+              selected
+            </div>
+            <div class="discard-confirm__message">
+              Going back will clear these selections.
+            </div>
+          </div>
+        `,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, discard and go back',
         cancelButtonText: 'Stay here',
+        customClass: {
+          popup: 'allocation-confirm-popup discard-confirm-popup',
+          icon: 'allocation-confirm-icon discard-confirm-icon',
+          title: 'allocation-confirm-title',
+          htmlContainer: 'allocation-confirm-html',
+          actions: 'allocation-confirm-actions',
+          confirmButton: 'allocation-confirm-btn discard-confirm-btn-primary',
+          cancelButton: 'allocation-confirm-btn allocation-confirm-btn-secondary',
+        },
+        buttonsStyling: false,
       }).then(res => {
         if (res.isConfirmed) {
           this.selectedActivityIds.clear();
@@ -716,24 +736,38 @@ export class ActivityAllocationEntryComponent
     const targetUser = this.allocateUsers.find(
       u => u.userSid === selectedUserSid,
     );
+    const activityNo = row.bookingNo || row.quotationNo || 'N/A';
+    const targetUserName = targetUser?.userName || 'Unknown User';
 
     const result = await Swal.fire({
       title: 'Confirm Allocation',
       html: `
-        <p>Allocate activity to</p>
-        <p class="text-primary fs-5">
-          <strong>${targetUser?.userName || 'Unknown User'}</strong>
-        </p>
-        <p class="text-muted small">
-          Activity: ${row.bookingNo || row.quotationNo || 'N/A'}
-        </p>
+        <div class="allocation-confirm">
+          <div class="allocation-confirm__lead">Allocate this activity to</div>
+          <div class="allocation-confirm__user">
+            <i class="fas fa-user-check"></i>
+            <span>${targetUserName}</span>
+          </div>
+          <div class="allocation-confirm__activity">
+            <span class="allocation-confirm__label">Activity</span>
+            <strong>${activityNo}</strong>
+          </div>
+        </div>
       `,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Yes, Allocate',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#0056b3',
-      cancelButtonColor: '#6c757d',
+      customClass: {
+        popup: 'allocation-confirm-popup',
+        icon: 'allocation-confirm-icon',
+        title: 'allocation-confirm-title',
+        htmlContainer: 'allocation-confirm-html',
+        actions: 'allocation-confirm-actions',
+        confirmButton: 'allocation-confirm-btn allocation-confirm-btn-primary',
+        cancelButton: 'allocation-confirm-btn allocation-confirm-btn-secondary',
+      },
+      buttonsStyling: false,
     });
 
     if (!result.isConfirmed) return;
@@ -824,19 +858,38 @@ export class ActivityAllocationEntryComponent
     const result = await Swal.fire({
       title: 'Confirm Bulk Allocation',
       html: `
-        <div style="text-align: left; margin: 1rem 0;">
-          <p style="margin-bottom: 0.75rem;">
-            You are about to allocate <strong>${count}</strong> ${activityText} 
-            from <strong>${fromUser}</strong> to <strong class="text-primary">${toUser}</strong>.
-          </p>
+        <div class="bulk-confirm">
+          <div class="bulk-confirm__summary">
+            <span class="bulk-confirm__count">${count}</span>
+            <span>${activityText}</span>
+          </div>
+          <div class="bulk-confirm__flow">
+            <div class="bulk-confirm__person">
+              <span class="bulk-confirm__label">From</span>
+              <strong>${fromUser}</strong>
+            </div>
+            <i class="fas fa-arrow-right bulk-confirm__arrow"></i>
+            <div class="bulk-confirm__person bulk-confirm__person--target">
+              <span class="bulk-confirm__label">To</span>
+              <strong>${toUser}</strong>
+            </div>
+          </div>
         </div>
       `,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, Allocate All',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#0056b3',
-      cancelButtonColor: '#6c757d',
+      customClass: {
+        popup: 'allocation-confirm-popup bulk-confirm-popup',
+        icon: 'allocation-confirm-icon bulk-confirm-icon',
+        title: 'allocation-confirm-title',
+        htmlContainer: 'allocation-confirm-html',
+        actions: 'allocation-confirm-actions',
+        confirmButton: 'allocation-confirm-btn allocation-confirm-btn-primary',
+        cancelButton: 'allocation-confirm-btn allocation-confirm-btn-secondary',
+      },
+      buttonsStyling: false,
     });
 
     if (!result.isConfirmed) return;
