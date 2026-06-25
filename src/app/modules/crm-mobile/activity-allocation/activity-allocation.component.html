@@ -54,7 +54,7 @@
       <div class=" d-flex gap-2">
         <button
           type="button"
-          class="btn btn-sm btn-outline-secondary"
+          class="btn btn-secondary btn-sm"
           (click)="onResetClick()"
         >
           <i class="fas fa-sync-alt me-1" aria-hidden="true"></i> Reset
@@ -134,35 +134,35 @@
 
             <th class="col-count" (click)="changeSort('rateRequestCount')">
               <div class="th-content">
-                <span><i class="fas fa-comments me-1 text-primary"></i>Enquiry</span>
+                <span>Enquiry</span>
                 <i class="fas" [ngClass]="getSortIcon('rateRequestCount')"></i>
               </div>
             </th>
 
             <th class="col-count" (click)="changeSort('quotationCount')">
               <div class="th-content">
-               <span><i class="fas fa-file-alt me-1 text-info"></i>Quotation</span>
+               <span>Quotation</span>
                 <i class="fas" [ngClass]="getSortIcon('quotationCount')"></i>
               </div>
             </th>
 
             <th class="col-count" (click)="changeSort('bookingCount')">
               <div class="th-content">
-                <span><i class="fas fa-ship me-1 text-warning"></i>Booking</span>
+                <span>Booking</span>
                 <i class="fas" [ngClass]="getSortIcon('bookingCount')"></i>
               </div>
             </th>
 
             <th class="col-count" (click)="changeSort('masterJobCount')">
               <div class="th-content">
-                <span><i class="fas fa-layer-group me-1 text-purple"></i>Master Job</span>
+                <span>Master Job</span>
                 <i class="fas" [ngClass]="getSortIcon('masterJobCount')"></i>
               </div>
             </th>
 
             <th class="col-count" (click)="changeSort('houseJobCount')">
               <div class="th-content">
-                <span><i class="fas fa-layer-group me-1 text-purple"></i>House Job</span>
+                <span>House Job</span>
                 <i class="fas" [ngClass]="getSortIcon('houseJobCount')"></i>
               </div>
             </th>

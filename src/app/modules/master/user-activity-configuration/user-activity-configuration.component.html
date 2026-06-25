@@ -1,6 +1,6 @@
 <div class="user-activity-config-page">
   <!-- Header -->
-  <header class="page-header d-flex justify-content-between align-items-center mb-1 p-2">
+  <header class="page-header d-flex justify-content-between align-items-center mb-1">
     <div>
       <h4 class="page-title mb-0">
         <i class="fas fa-user-cog me-2" aria-hidden="true"></i>
@@ -8,7 +8,7 @@
       </h4>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <button type="button" class="btn btn-sm btn-outline-light header-action" (click)="goBack()">
+      <button type="button" class="btn btn-sm btn-secondary header-action" (click)="goBack()">
         <i class="fas fa-arrow-left me-1" aria-hidden="true"></i> Back
       </button>
     </div>
@@ -16,12 +16,12 @@
 
   <!-- Branch Selector + Actions -->
   <section class="branch-selector mb-1">
-    <div class="card mt-1">
+    <div class="card mb-0">
       <div class="card-body py-1">
         <div class="row align-items-center g-2">
           <div class="col-auto">
             <label for="branchSelect" class="form-label mb-0 fw-semibold">
-              <i class="fas fa-code-branch me-1 text-primary"></i> Branch:
+              <i class="fas fa-building me-1 text-primary"></i> Branch:
             </label>
           </div>
           <div class="col-md-4">
@@ -39,7 +39,7 @@
           <div class="col d-flex justify-content-end gap-2">
             <button
               type="button"
-              class="btn btn-success"
+              class="btn btn-info"
               [disabled]="!selectedBranchSid || showCreateForm"
               (click)="openCreateForm()">
               <i class="fas fa-plus me-1"></i> Create
@@ -63,7 +63,8 @@
   </section>
 
   <!-- Create New Configuration -->
-  <section *ngIf="showCreateForm" class="create-config mb-1">
+  <section *ngIf="showCreateForm" class="create-config-modal" role="dialog" aria-modal="true">
+    <div class="create-config-backdrop"></div>
     <div class="card create-card">
       <div class="create-card-header d-flex align-items-center justify-content-between">
         <span class="title">
@@ -73,9 +74,9 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-      <div class="card-body py-3">
+      <div class="card-body">
         <div class="row g-3 align-items-end">
-          <div class="col-md-5">
+          <div class="col-md-12">
             <label class="form-label mb-1 fw-semibold">
               <i class="fas fa-list me-1 text-primary"></i> Menu <span class="text-danger">*</span>
             </label>
@@ -86,10 +87,10 @@
               [(ngModel)]="newMenuSid"
               placeholder="Select Menu"
               [clearable]="true"
-              appendTo="body">
+              dropdownPosition="bottom">
             </ng-select>
           </div>
-          <div class="col-md-5">
+          <div class="col-md-12">
             <label class="form-label mb-1 fw-semibold">
               <i class="fas fa-user me-1 text-primary"></i> Assigned User
             </label>
@@ -100,11 +101,14 @@
               [(ngModel)]="newUserSid"
               placeholder="Select User"
               [clearable]="true"
-              appendTo="body">
+              dropdownPosition="bottom">
             </ng-select>
           </div>
-          <div class="col-md-2 d-grid">
-            <button type="button" class="btn btn-success" (click)="addConfiguration()">
+          <div class="col-md-12 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="cancelCreate()">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-info" (click)="addConfiguration()">
               <i class="fas fa-check me-1"></i> Add
             </button>
           </div>

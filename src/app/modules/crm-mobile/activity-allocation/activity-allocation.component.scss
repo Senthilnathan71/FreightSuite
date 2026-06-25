@@ -452,45 +452,51 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
 }
 
 .table-card {
-  background: white;
-  border-radius: $border-radius-lg;
-  box-shadow: $shadow-sm;
+  background: #ffffff;
+  border: 1px solid rgba(5, 96, 141, 0.14);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(5, 96, 141, 0.1);
   overflow: hidden;
   margin-bottom: 1rem;
 }
 
 .table-card-header {
-  background: white;
-  padding:5px;
+  background: linear-gradient(180deg, #ffffff 0%, #f6fbfe 100%);
+  padding: 0.55rem 0.85rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  // border-bottom: 1px solid $gray-200;
+  border-top: 4px solid #05608d;
+  border-bottom: 1px solid rgba(5, 96, 141, 0.12);
 
   .table-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: $gray-900;
     display: flex;
     align-items: center;
 
     i {
-      color: $primary-blue;
+      color: #05608d;
       margin-right: 0.5rem;
       font-size: 0.95rem;
     }
   }
 
   .table-info {
-    font-size: 0.8125rem;
-    color: $gray-600;
-    font-weight: 500;
+    color: #05608d !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: rgba(5, 96, 141, 0.08);
+    border: 1px solid rgba(5, 96, 141, 0.12);
+    border-radius: 999px;
+    padding: 0.18rem 0.55rem;
   }
 }
 
 .table-wrapper {
   overflow-x: auto;
-  max-height: 50vh;
+  max-height: 52vh;
 }
 
 .activity-table {
@@ -502,17 +508,17 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
     position: sticky;
     top: 0;
     z-index: 10;
-    background: $primary-blue;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.1);
+    background: linear-gradient(90deg, #05608d 0%, #0876a8 100%);
+    box-shadow: 0 2px 8px rgba(5, 96, 141, 0.18);
 
     th {
-      padding: 5px;
+      padding: 0.48rem 0.7rem;
       text-align: left;
       font-weight: 700;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: white;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0;
       white-space: nowrap;
       cursor: pointer;
       user-select: none;
@@ -544,12 +550,12 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
       }
 
       &.col-user {
-        min-width: 140px;
+        min-width: 150px;
       }
 
       &.col-count {
         text-align: center;
-        min-width: 100px;
+        min-width: 92px;
 
         .th-content {
           justify-content: center;
@@ -563,7 +569,7 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
         //   $primary-blue-dark,
         //   darken($primary-blue-dark, 15%)
         // );
-        min-width: 90px;
+        min-width: 82px;
 
         .th-content {
           justify-content: center;
@@ -575,10 +581,15 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
   tbody {
     tr {
       border-bottom: 1px solid $gray-100;
-      transition: background 0.2s;
+      transition: background 0.2s, box-shadow 0.2s;
 
       &:hover {
-        background: #f9fafb;
+        background: #f2fbff;
+        box-shadow: inset 4px 0 0 #05608d;
+      }
+
+      &:nth-child(even) {
+        background: #fbfdff;
       }
 
       &:last-child {
@@ -587,16 +598,16 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
     }
 
     td {
-      padding: 5px;
+      padding: 0.46rem 0.7rem;
       font-size: 0.85rem;
-      color: black;
+      color: #111827;
       font-weight: 600;
       vertical-align: middle;
 
       &.col-user {
         strong {
-          color: $gray-900;
-          font-weight: 600;
+          color: #172033;
+          font-weight: 700;
         }
       }
 
@@ -609,8 +620,16 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
         // background: rgba($gray-100, 0.5);
 
         .total-count {
-          color: $primary-blue;
-          // font-size: 1.1rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 38px;
+          min-height: 26px;
+          padding: 0.16rem 0.62rem;
+          color: #ffffff;
+          background: #05608d;
+          border-radius: 999px;
+          box-shadow: 0 6px 14px rgba(5, 96, 141, 0.18);
           font-weight: 700;
         }
       }
@@ -620,28 +639,32 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
 
 
 .count-badge {
-  display: inline-block;
-  padding: 0.3rem 0.7rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
   cursor: pointer;
   transition: $transition-base;
-  min-width: 40px;
+  min-width: 28px;
+  min-height: 22px;
   text-align: center;
   background: transparent;
-  color: #0056b3;
+  color: #05608d;
   text-decoration: none;
 
   &:not(.badge-empty) {
-    color: #0056b3;
-    background: rgba(0, 86, 179, 0.06);
-    border: 1px solid rgba(0, 86, 179, 0.15);
+    color: #ffffff;
+    background: #05608d;
+    border: 1px solid rgba(5, 96, 141, 0.18);
+    box-shadow: 0 6px 14px rgba(5, 96, 141, 0.16);
 
     &:hover {
-      color: #003d80;
-      text-decoration: underline;
-      background: rgba(0, 86, 179, 0.12);
+      color: #ffffff;
+      text-decoration: none;
+      background: #0876a8;
       transform: translateY(-1px);
     }
 
@@ -652,11 +675,12 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
   }
 
   &.badge-empty {
-    background: $gray-100;
-    color: $gray-400;
+    background: #f1f5f9;
+    color: #94a3b8;
     cursor: default;
-    font-size: 0.75rem;
-    border: 1px solid $gray-200;
+    font-size: 0.74rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
 
     &:hover {
       transform: none;
@@ -673,9 +697,9 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
   &.badge-teal,
   &.badge-orange,
   &.badge-pink {
-    color: #0056b3;
-    background: rgba(0, 86, 179, 0.06);
-    border: 1px solid rgba(0, 86, 179, 0.15);
+    color: #ffffff;
+    background: #05608d;
+    border: 1px solid rgba(5, 96, 141, 0.18);
   }
 }
 
