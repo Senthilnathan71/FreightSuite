@@ -310,15 +310,11 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       PublishedDays: [data?.PublishedDays || 0],
       PublishedLimit: [data?.PublishedLimit || 0],
       EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : null, Validators.required],
-      EffectiveTo: [data?.EffectiveTo ? new Date(data.EffectiveTo) : null, Validators.required],
       ApprovalStatus: [data?.ApprovalStatus || 'Pending'],
       ApprovedBy: [data?.ApprovedBy || ''],
       Status: [data?.Status || 'A'],
       customerKyc: this.fb.array([])
     });
-    creditForm.get('EffectiveFrom')?.valueChanges.subscribe(() => {
-  creditForm.get('EffectiveTo')?.setValue(null);
-});
     // Add KYC records if available
     if (data?.customerKyc && data.customerKyc.length > 0) {
       const kycArray = creditForm.get('customerKyc') as FormArray;
@@ -425,22 +421,6 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
         });
     });
   }
-  getEffectiveToMinDate(index: number): any {
-  const effectiveFrom = this.creditRequest
-    .at(index)
-    .get('EffectiveFrom')?.value;
-
-  if (!effectiveFrom) return null;
-
-  const date = new Date(effectiveFrom);
-
-  return {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate()
-  };
-}
-
   createKycRow(data?: any): FormGroup {
     return this.fb.group({
       CustomerKycSid: [data?.CustomerKycSid || null],
@@ -710,7 +690,6 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       PublishedDays: req.PublishedDays,
       PublishedLimit: req.PublishedLimit,
       EffectiveFrom: req.EffectiveFrom,
-      EffectiveTo: req.EffectiveTo,
       ApprovalStatus: req.ApprovalStatus || 'Pending',
       ApprovedBy: req.ApprovedBy || null,
       Status: req.Status || 'A',
@@ -1163,7 +1142,6 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       'PublishedDays',
       'PublishedLimit',
       'EffectiveFrom',
-      'EffectiveTo',
       'Status'
     ];
 
@@ -1195,9 +1173,9 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
 
   isApprovedRowInvalid(credit: AbstractControl | null): boolean {
     if (!credit || !this.isApprovedRow(credit)) return false;
-    const effectiveTo = credit.get('EffectiveTo')?.value;
+    const effectiveFrom = credit.get('EffectiveFrom')?.value;
     const status = credit.get('Status')?.value;
-    return !effectiveTo || !status;
+    return !effectiveFrom || !status;
   }
 
  isSaveDisabled(): boolean {
@@ -1370,7 +1348,7 @@ getDepartmentName(deptId: number, rowIndex: number): string {
       .filter(item => item.index !== excludeRowIndex)
       .filter(item => this.normalizeBranchSid(item.value?.CustomerBranchSid) === normalizedBranchSid)
       .filter(item => String(item.value?.Status || 'A') === 'A')
-      .filter(item => this.normalizeDateValue(item.value?.EffectiveTo))
+      .filter(item => this.normalizeDateValue(item.value?.EffectiveFrom))
       .map(item => item.value);
   }
 
@@ -1379,8 +1357,8 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     if (!matches.length) return null;
 
     return matches.sort((a, b) => {
-      const aDate = this.normalizeDateValue(a?.EffectiveTo)?.getTime() || 0;
-      const bDate = this.normalizeDateValue(b?.EffectiveTo)?.getTime() || 0;
+      const aDate = this.normalizeDateValue(a?.EffectiveFrom)?.getTime() || 0;
+      const bDate = this.normalizeDateValue(b?.EffectiveFrom)?.getTime() || 0;
       return bDate - aDate;
     })[0];
   }
@@ -1389,23 +1367,26 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     const row = this.creditRequest.at(rowIndex) as FormGroup | null;
     if (!row) return;
 
+    // No end date anymore: the latest request stays effective until the next one
+    // starts. Suggest the new row's EffectiveFrom = latest EffectiveFrom + 1 day.
     const latest = this.getLatestMatchingActiveRequest(branchSid, rowIndex);
-    const latestTo = this.normalizeDateValue(latest?.EffectiveTo);
-    if (!latestTo) return;
+    const latestFrom = this.normalizeDateValue(latest?.EffectiveFrom);
+    if (!latestFrom) return;
 
     row.patchValue({
-      EffectiveFrom: this.addDays(latestTo, 1)
+      EffectiveFrom: this.addDays(latestFrom, 1)
     }, { emitEvent: false });
   }
 
   private validateCreditRequestContinuity(creditRequests: any[]): string | null {
+    // One active request per (branch, EffectiveFrom): the latest start-date wins, so
+    // two active rows on the same branch must not share the same EffectiveFrom.
     for (let i = 0; i < creditRequests.length; i++) {
       const current = creditRequests[i];
       const currentBranchSid = this.normalizeBranchSid(current?.CustomerBranchSid);
       const currentFrom = this.normalizeDateValue(current?.EffectiveFrom);
-      const currentTo = this.normalizeDateValue(current?.EffectiveTo);
 
-      if (!currentFrom || !currentTo) {
+      if (!currentFrom) {
         continue;
       }
 
@@ -1423,17 +1404,15 @@ getDepartmentName(deptId: number, rowIndex: number): string {
         }
 
         const otherFrom = this.normalizeDateValue(other?.EffectiveFrom);
-        const otherTo = this.normalizeDateValue(other?.EffectiveTo);
-        if (!otherFrom || !otherTo) {
+        if (!otherFrom) {
           continue;
         }
 
-        const overlap = currentFrom <= otherTo && currentTo >= otherFrom;
-        if (overlap) {
+        if (currentFrom.getTime() === otherFrom.getTime()) {
           if (currentBranchSid) {
-            return 'Credit request already exists for this branch within the selected effective dates.';
+            return 'A credit request already exists for this branch with the same Effective From date.';
           }
-          return 'Credit request already exists for this customer (no branch) within the selected effective dates.';
+          return 'A credit request already exists for this customer (no branch) with the same Effective From date.';
         }
       }
     }
