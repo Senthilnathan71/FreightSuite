@@ -38,6 +38,11 @@ function estimateWrappedLineCount(text: string, charsPerLine: number): number {
     .reduce((count, line) => count + Math.max(1, Math.ceil((line || '').length / charsPerLine)), 0);
 }
 
+function pickFirstString(...values: any[]): string {
+  const found = values.find(value => value !== null && value !== undefined && String(value).trim() !== '');
+  return found === null || found === undefined ? '' : String(found);
+}
+
 export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   // console.log(data, 'generateInvoiceDocument');
   const chargesCount = data.charges?.length || 0;
@@ -50,8 +55,9 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
   const extraTopMarginForIndiaInfo = isIndiaCompany ? 12 : 0;
   const extraTopMarginForGstCode = isIndiaCompany && (printData?.GSTCode || data.companyGstCode) ? 6 : 0;
-  const billedTo = String(printData?.BilledTo || data.credit?.customerName || '');
-  const billingAddress = String(printData?.BillingAddress || data.credit?.customerAddress || '');
+  const extraTopMarginForCreditInfo = isIndiaCompany ? 32 : 22;
+  const billedTo = pickFirstString(printData?.BilledTo, printData?.PartyName, data.credit?.customerName);
+  const billingAddress = pickFirstString(printData?.BillingAddress, printData?.PartyAddress, data.credit?.customerAddress);
   const billedToLines =
     estimateWrappedLineCount(billedTo, 34) +
     estimateWrappedLineCount(billingAddress, 52);
@@ -61,6 +67,7 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
     extraTopMarginForLogo +
     extraTopMarginForIndiaInfo +
     extraTopMarginForGstCode +
+    extraTopMarginForCreditInfo +
     extraTopMarginForBilledTo;
   const configuredMargins = data.config?.pageMargins as number[] | undefined;
   const resolvedPageMargins = configuredMargins
@@ -274,7 +281,7 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
       y1: 0,
       x2: PAGE_RIGHT,
       y2: 0,
-      lineWidth: 0.8
+      lineWidth: 0.5
     }],
     margin: [0, 0, 0, 6]
   };
@@ -341,12 +348,15 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
 
   // ✅ FIX: Correct field name — printData uses 'GSTVAT' or 'GST_VAT'
   const gstVatNo =
-    printData?.GSTVAT ||
-    printData?.GST_VAT ||
-    printData?.GSTNo ||
-    credit?.customerGstVat ||
-    (data as any)?.companyVatNo ||
-    '';
+    pickFirstString(
+      printData?.GST_VAT,
+      printData?.GSTVAT,
+      printData?.GSTNo,
+      printData?.CustomerGSTVAT,
+      printData?.CustomerTaxNo,
+      credit?.customerGstVat,
+      (credit as any)?.GST_VAT
+    );
 
   // ✅ FIX: All possible IRN field names
   const irnNumber =
@@ -360,30 +370,37 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
 
   // ✅ FIX: Correct date field — was using wrong printData field
   const creditDate =
-    printData?.InvoiceDate ||
     printData?.CreditDate ||
+    printData?.InvoiceDate ||
     printData?.VoucherDate ||
     credit?.invoiceDate ||
     '';
 
   const PAGE_LEFT = -10;
-  const PAGE_RIGHT = 565;
-  const RIGHT_LABEL_WIDTH = 110;
-  const COLON_WIDTH = 6;
+  const RIGHT_LABEL_WIDTH = 98;
+  const COLON_WIDTH = 10;
   const BILLED_TO_INDENT = 30;
 
   const buildInfoRow = (label: string, value: string, marginBottom = 5): any => ({
     columns: [
       { text: label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      { text: value ?? '', width: '*' }   // ✅ FIX: null-safe value
+      { text: ':', width: COLON_WIDTH, alignment: 'center' },
+      { text: value ?? '', width: '*', margin: [6, 0, 0, 0] }
     ],
     margin: [0, 0, 0, marginBottom]
   });
 
   // Left side
-  const billedTo = printData?.BilledTo || credit?.customerName || '';
-  const billingAddress = printData?.BillingAddress || credit?.customerAddress || '';
+  const billedTo = pickFirstString(
+    printData?.BilledTo,
+    printData?.PartyName,
+    credit?.customerName
+  );
+  const billingAddress = pickFirstString(
+    printData?.BillingAddress,
+    printData?.PartyAddress,
+    credit?.customerAddress
+  );
 
   const leftStack: any[] = [
     { text: 'BILLED TO', style: 'labelBold', margin: [0, 0, 0, 6] },
@@ -416,7 +433,7 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
   rightStack.push(
     buildInfoRow(
       'Credit No',
-      printData?.InvoiceNo || printData?.CreditNo || credit?.invoiceNo || ''
+      pickFirstString(printData?.CreditNo, printData?.InvoiceNo, credit?.invoiceNo)
     )
   );
 
@@ -452,13 +469,20 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
   };
 
   const bottomLine = {
-    canvas: [{
-      type: 'line',
-      x1: PAGE_LEFT, y1: 0,
-      x2: PAGE_RIGHT, y2: 0,
-      lineWidth: 0.8
-    }],
-    margin: [0, 4, 0, 0]
+    table: {
+      widths: ['*'],
+      body: [[{ text: '', border: [false, true, false, false], margin: [0, 0, 0, 0] }]]
+    },
+    layout: {
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0,
+      hLineColor: () => '#000',
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0
+    },
+    margin: [PAGE_LEFT, 6, -10, 0]
   };
 
   return {
@@ -476,7 +500,7 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
   const isSeaMode = data.isSeaMode !== false;
 
   const LEFT_LABEL_WIDTH = 88;
-  const RIGHT_LABEL_WIDTH = 110;
+  const RIGHT_LABEL_WIDTH = 100;
   const COLON_WIDTH = 5;
   // Left Column
   const leftItems: { label: string; value: string }[] = [];
@@ -1176,8 +1200,8 @@ function buildBankDetailsSection(data: CreditNotePdfData): any[] {
         dontBreakRows: true
       },
       layout: {
-        hLineWidth: () => 1,
-        vLineWidth: () => 1,
+        hLineWidth: () => 0.5,
+        vLineWidth: () => 0.5,
         hLineColor: () => '#000',
         vLineColor: () => '#000',
         paddingLeft: () => 3,
