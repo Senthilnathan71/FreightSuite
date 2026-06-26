@@ -201,6 +201,7 @@ export class ActivityAllocationEntryComponent
         this.mode,
         this.page,
         this.pageSize,
+        this.filterValue.trim(),
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -392,12 +393,17 @@ export class ActivityAllocationEntryComponent
       clearTimeout(this.searchDebounceTimeout);
     }
     this.searchDebounceTimeout = setTimeout(() => {
-      this.filterValue = this.filterValue;
-    }, 300);
+      // Search runs server-side across all pages — reset to the first page.
+      this.page = 1;
+      this.loadData();
+    }, 400);
   }
 
   clearSearch(): void {
+    if (!this.filterValue) return;
     this.filterValue = '';
+    this.page = 1;
+    this.loadData();
   }
 
   toggleAdvancedFilters(): void {
@@ -572,12 +578,13 @@ export class ActivityAllocationEntryComponent
 
     if (term) {
       data = data.filter(r => {
+        const d = (r.documentNo || '').toLowerCase();
         const q = (r.quotationNo || '').toLowerCase();
         const b = (r.bookingNo || '').toLowerCase();
         const c = (r.customerName || '').toLowerCase();
         const s = (r.salesPersonName || '').toLowerCase();
         return (
-          q.includes(term) || b.includes(term) || c.includes(term) || s.includes(term)
+          d.includes(term) || q.includes(term) || b.includes(term) || c.includes(term) || s.includes(term)
         );
       });
     }
@@ -733,6 +740,14 @@ export class ActivityAllocationEntryComponent
       return;
     }
 
+    const currentOwnerSid = row.userSid || this.userSid;
+    if (selectedUserSid === currentOwnerSid) {
+      const msg = 'This activity is already allocated to the selected user.';
+      this.error = msg;
+      this.appSettingService.showWarning(msg);
+      return;
+    }
+
     const targetUser = this.allocateUsers.find(
       u => u.userSid === selectedUserSid,
     );
@@ -821,6 +836,14 @@ export class ActivityAllocationEntryComponent
 
     if (!this.bulkSelectedUserSid) {
       const msg = 'Please select a user for bulk allocation.';
+      this.error = msg;
+      this.appSettingService.showWarning(msg);
+      this.autoHideError();
+      return;
+    }
+
+    if (this.bulkSelectedUserSid === this.userSid) {
+      const msg = 'These activities are already allocated to the selected user.';
       this.error = msg;
       this.appSettingService.showWarning(msg);
       this.autoHideError();

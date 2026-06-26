@@ -87,9 +87,13 @@ export class ActivityAllocationService {
     return this.appSettingService.getCurrentCompanyInfo()?.CompanyMasterSid;
   }
 
+  private getBranchId(): number | undefined {
+    return this.appSettingService.getCurrentBranchInfo()?.BranchMasterSid;
+  }
+
   getResourceSummary(mode: SummaryMode): Observable<ResourceSummaryRow[]> {
     return this.http
-      .post<ResponseData<ResourceSummaryRow[]>>(`${this.baseUrl}/summary`, { mode, companyId: this.getCompanyId() })
+      .post<ResponseData<ResourceSummaryRow[]>>(`${this.baseUrl}/summary`, { mode, companyId: this.getCompanyId(), branchId: this.getBranchId() })
       .pipe(
         map(res => {
           if (!res.data || !Array.isArray(res.data)) {
@@ -111,11 +115,12 @@ export class ActivityAllocationService {
     mode: SummaryMode,
     page: number = 1,
     limit: number = 100,
+    search: string = '',
   ): Observable<WorkloadDetailResponse> {
     return this.http
       .post<ResponseData<WorkloadDetailResponse>>(
         `${this.baseUrl}/workload-details`,
-        { userSid, stage, mode, page, limit, companyId: this.getCompanyId() },
+        { userSid, stage, mode, page, limit, search, companyId: this.getCompanyId(), branchId: this.getBranchId() },
       )
       .pipe(
         map(res => {
@@ -168,7 +173,7 @@ export class ActivityAllocationService {
 
   generateReport(mode: SummaryMode): Observable<any> {
     return this.http
-      .post<ResponseData<any>>(`${this.baseUrl}/report`, { mode, companyId: this.getCompanyId() })
+      .post<ResponseData<any>>(`${this.baseUrl}/report`, { mode, companyId: this.getCompanyId(), branchId: this.getBranchId() })
       .pipe(
         map(res => res.data),
         catchError(err => {
