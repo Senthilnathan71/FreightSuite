@@ -8,7 +8,7 @@
           </div>
           <h5 class="page-title mb-0 text-info">Credit Request</h5>
           @if(isEditMode){
-          <a class="text-info  d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+          <a class="text-info  d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
           }
@@ -328,7 +328,7 @@
                                 <input class="form-control" placeholder="DD-MMM-YYYY" ngbDatepicker #d2="ngbDatepicker"
                                   (click)="d2.toggle()" formControlName="EffectiveTo"
                                   [minDate]="getEffectiveToMinDate(i)" container="body" [disabled]="isApprovedRow(credit)" />
-                                <button class="btn px-0" (click)="d2.toggle()" type="button"
+                                <button class="btn px-0 btn-light" (click)="d2.toggle()" type="button"
                                   [disabled]="isApprovedRow(credit)">
                                   <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>

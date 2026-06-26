@@ -72,7 +72,23 @@
                   {{ i === 0 ? (v.VoucherDate | formatDate) : "" }}
                 </td>
                 <td>
-                  {{ c.vouchermactingNo }}
+                  <a
+                    *ngIf="
+                      getVoucherEntryLink(
+                        VoucherType.VOUCHER_MATCHING,
+                        c.VoucherMatchingHeaderSid
+                      ) as link;
+                      else voucherMatchingPlain
+                    "
+                    (click)="closeAllModal()"
+                    [routerLink]="link"
+                    class="voucher-number-link fw-bold"
+                  >
+                    {{ c.vouchermactingNo }}
+                  </a>
+                  <ng-template #voucherMatchingPlain>
+                    <span>{{ c.vouchermactingNo }}</span>
+                  </ng-template>
                 </td>
 
                 <td class="text-center">

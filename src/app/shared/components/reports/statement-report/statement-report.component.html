@@ -24,14 +24,12 @@
                     <strong style="width: 100px;">Branch </strong>
                     <span class="ms-1 my-0">: {{ fullData?.BranchInvolved || currentBranch?.branchName }}</span>
                 </div>
-            </div>
-
-            <div>
-                <div class="d-flex align-items-center">
+                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Ledger </strong>
                     <span class="ms-1 my-0"> : {{ fullData?.ledgerName }}</span>
                 </div>
-
+            </div>
+            <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Subledger </strong>
                     <span class="ms-1 my-0">: {{ fullData?.subledgerName }}</span>
@@ -45,8 +43,18 @@
                     </span>
                 </div>
                 <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">{{ taxRegistrationLabel }} </strong>
+                    <span class="ms-1 my-0"> : {{ fullData?.Vatno }}</span>
+                </div>
+                <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Credit Terms </strong>
-                    <span class="ms-1 my-0">: {{ fullData?.creditDays }}</span>
+                    <span class="ms-1 my-0">
+                    : {{
+                        fullData?.creditDays == null
+                        ? 'Cash'
+                        : fullData.creditDays 
+                    }} 
+                    </span>
                 </div>
             </div>
         </div>
@@ -57,7 +65,7 @@
                 <thead>
                     <tr class="bg-info text-center" style="white-space: nowrap;">
                         <th class="bg-transparent text-light text-center">Voucher No</th>
-                        <th class="bg-transparent text-light text-center">Voucher Date</th>
+                        <th class="bg-transparent text-light text-center">Date</th>
                         <th class="bg-transparent text-light text-center">Type</th>
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th>
@@ -70,11 +78,11 @@
                         <th class="bg-transparent text-light text-center">Cur</th>
                         <th class="bg-transparent text-light text-center">Amt</th>
                         <th class="bg-transparent text-light text-center">Local Amt</th>
-                        <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
+                        <th class="bg-transparent text-light text-center">O/S Cur Amt</th>
                         <th class="bg-transparent text-light text-center">O/S Local Amt</th>
                         <th class="bg-transparent text-light text-center">Cumulative</th>
-                        <th class="bg-transparent text-light text-center">Ageing Days</th>
-                        <th class="bg-transparent text-light text-center">Overdue Date</th>
+                        <th class="bg-transparent text-light text-center">Ageing</th>
+                        <th class="bg-transparent text-light text-center">Overdue</th>
                     </tr>
                 </thead>
 
@@ -176,11 +184,11 @@
                         <td colspan="3"></td>
                     </tr>
 
-                    <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData?.creditOrCash === 'Credit'">
+                    <!-- <tr class="fw-bold bg-light"  *ngIf="fullData?.creditDays !== 0 && fullData?.creditOrCash === 'Credit'">
                         <td colspan="10" class="text-end">CURRENT AMT</td>
                         <td style="text-align: right;"> {{ fullData?.totalCurrentAmount | number:'1.2-2' }}</td>
                         <td colspan="3"></td>
-                    </tr>
+                    </tr> -->
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
                         <td colspan="10" class="text-end">OVERDUE AMT</td>
                         <td style="text-align: right;"> {{ fullData?.totalOverdueAmount | number:'1.2-2' }}</td>
@@ -222,12 +230,12 @@
 
     </div>
 
-    <div class="pt-2">
+    <div class="pt-2" style="font-size: 14px;">
         Note :
         <ul>
             <li>This Statement of Accounts report includes only posted voucher transactions.</li>
             <li>Overdue Amount : Includes vouchers with Ageing Days greater than Credit Days.</li>
-            <li>Current Amount : Includes vouchers with Ageing Days less than or equal to Credit Days.</li>
+            <li *ngIf="fullData?.creditOrCash === 'Credit'">Current Amount : Includes vouchers with Ageing Days less than or equal to Credit Days.</li>
         </ul>
     </div>
 

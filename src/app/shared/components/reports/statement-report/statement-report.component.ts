@@ -553,21 +553,42 @@ export class StatementReportComponent {
     return total;
   }
 
+  get taxRegistrationLabel(): string {
+    const countryCode = this.getOrganizationCountryCode();
+    if (countryCode === 'in') {
+      return 'PAN No';
+    }
+    if (countryCode === 'ae') {
+      return 'VAT No';
+    }
+    return 'Tax No';
+  }
+
+  private getOrganizationCountryCode(): string {
+    return String(
+      this.fullData?.countryCode ||
+        this.fullData?.CountryCode ||
+        '',
+    )
+      .trim()
+      .toLowerCase();
+  }
+
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'voucherNo', label: 'Voucher No' },
-      { key: 'voucherDate', label: 'Voucher Date' },
+      { key: 'voucherDate', label: 'Date' },
       { key: 'voucherType', label: 'Type' },
       { key: 'desc', label: 'Narration' },
       { key: 'drCr', label: 'Dr/Cr' },
       { key: 'currency', label: 'Cur' },
       { key: 'amt', label: 'Amt' },
       { key: 'localAmt', label: 'Local Amt' },
-      { key: 'osCurrAmt', label: 'O/S Currency Amt' },
+      { key: 'osCurrAmt', label: 'O/S Cur Amt' },
       { key: 'osLocalAmt', label: 'O/S Local Amt' },
       { key: 'cumulative', label: 'Cumulative' },
-      { key: 'ageingDays', label: 'Ageing Days' },
-      { key: 'dueDate', label: 'Due Date' },
+      { key: 'ageingDays', label: 'Ageing ' },
+      { key: 'dueDate', label: 'Overdue' },
     ];
 
     const rows: ExcelRow[] = [];
@@ -654,19 +675,19 @@ export class StatementReportComponent {
       rows.push({ cells: totalCells, style: 'total' });
     }
 
-    if ( creditOrCash === 'Credit' && transactions && transactions.length > 0) {
-      const totalCells: ExcelCell[] = [
-        {
-          value: 'CURRENT AMT',
-          colspan: 10,
-          alignment: { horizontal: 'right' },
-        },
-        {
-          value: currentamt,
-        },
-      ];
-      rows.push({ cells: totalCells, style: 'total' });
-    }
+    // if ( creditOrCash === 'Credit' && transactions && transactions.length > 0 &&   currentamt > 0) {
+    //   const totalCells: ExcelCell[] = [
+    //     {
+    //       value: 'CURRENT AMT',
+    //       colspan: 10,
+    //       alignment: { horizontal: 'right' },
+    //     },
+    //     {
+    //       value: currentamt,
+    //     },
+    //   ];
+    //   rows.push({ cells: totalCells, style: 'total' });
+    // }
 
      if (transactions && transactions.length > 0) {
       const totalCells: ExcelCell[] = [
@@ -697,7 +718,7 @@ export class StatementReportComponent {
       sheetName: 'StatementReport',
       showFooterNote: true,
       reportHeader: {
-        companyName: this.currentCompany?.companyName || 'Company',
+        companyName: this.currentCompany?.companyName || '',
         reportTitle: `Statement of Acconuts`,
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
@@ -713,12 +734,36 @@ export class StatementReportComponent {
                 : ''
             }${this.fullData?.contactNo || ''}`,
           },
-           { label: 'Credit Terms', value: this.fullData?.creditDays || '' },
+          {
+            label: this.taxRegistrationLabel,
+            value: this.fullData?.Vatno || ''
+          },
+         {
+          label: 'Credit Terms',
+          value:
+            this.fullData?.creditDays == null || this.fullData?.creditDays === 0
+              ? 'CASH'
+              : `${this.fullData.creditDays}`,
+          },
         ],
       },
       tableHeaders,
       rows,
-      columnWidths: [20, 12, 4, 35, 4, 3, 13, 13, 13, 13, 13],
+      columnWidths: [
+        25, // Voucher No
+        12, // Date
+        8, // Type
+        40, // Narration
+        6, // Dr/Cr
+        8, // Cur
+        15, // Amt
+        15, // Local Amt
+        15, // O/S Cur Amt
+        15, // O/S Local Amt
+        15, // Cumulative
+        8, // Ageing
+        14, // Overdue
+      ],
       additionalTables:
         this.showBankDetails && this.bankDetails && this.bankDetails.length > 0
           ? [
@@ -794,7 +839,7 @@ export class StatementReportComponent {
       notes: [
         'This Statement of Accounts report includes only posted voucher transactions.',
         'Overdue Amount : Includes vouchers with Ageing Days greater than Credit Days.',
-        'Current Amount : Includes vouchers with Ageing Days less than or equal to Credit Days.'
+        'Current Amount : Includes vouchers with Ageing Days less than or equal to Credit Days.',
       ],
     };
   }

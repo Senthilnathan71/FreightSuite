@@ -257,7 +257,7 @@ export class AgeingReportComponent implements OnInit{
     sheetName: 'AgeingReport',
     reportHeader: {
       companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle: 'Customer Ageing',
+      reportTitle: `Customer Ageing on ${this.formatDate(this.fullData?.concludedUpto)}`,
       additionalInfo: [
         { label: 'To Date', value: this.formatDate(this.fullData?.concludedUpto) },
         { label: 'Branch', value: this.fullData?.branchInvolvedText || '' },
