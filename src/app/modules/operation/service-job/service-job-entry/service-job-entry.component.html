@@ -331,6 +331,16 @@
             </aside>
             <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!serviceJobForm.get('SalesmanSid')?.value">
+                <dofi-searchable-dropdown [items]="salesmanList" formControlName="SalesmanSid" placeholder=""
+                  [displayFields]="userLookupConfig.displayFields" [displayLabels]="userLookupConfig.displayLabels"
+                  [labelFields]="userLookupConfig.labelFields" bindValue="UserMasterSid">
+                </dofi-searchable-dropdown>
+                <label for="text-input" class="input-label">Sales Person <span class="text-danger"></span></label>
+              </div>
+            </aside>
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!serviceJobForm.get('POL')?.value">
                 <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POL" placeholder=""
                   [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
