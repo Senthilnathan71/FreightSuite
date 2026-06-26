@@ -2369,6 +2369,20 @@
           <label for="noteToShipper" class="input-label">Note to Shipper<span class="text-danger"></span></label>
         </div>
       </aside>
+
+      <div class="col-md-3">
+        <div class="custom-form-group custom-form-group-select-date">
+          <div class="input-group">
+            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #croContainerReleaseDate="ngbDatepicker"
+              [minDate]="minDate" (keydown.arrowDown)="croContainerReleaseDate.open()" (click)="croContainerReleaseDate.toggle()"
+              formControlName="ContainerReleaseDate" container="body" />
+            <button class="btn bi bi-calendar3 px-0" (click)="croContainerReleaseDate.toggle()" type="button">
+              <i-feather name="calendar" class="feather-sm"></i-feather>
+            </button>
+          </div>
+          <label for="croContainerReleaseDate" class="input-label">Container Release Date<span class="text-danger"></span></label>
+        </div>
+      </div>
     </div>
     
     <!-- Export Release Order Button -->
@@ -4012,6 +4026,10 @@
             <div class="d-flex flex-wrap mb-1">
               <div style="width: 200px;"><strong>Validity Date</strong></div>
               <div>: {{ (cr['ValidityDate']?.value | formatDate) || '' }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+              <div style="width: 200px;"><strong>Container Release Date</strong></div>
+              <div>: {{ (cr['ContainerReleaseDate']?.value | formatDate) || '' }}</div>
             </div>
             <div class="d-flex flex-wrap mb-1">
               <div style="width: 200px;"><strong>Transporter</strong></div>
