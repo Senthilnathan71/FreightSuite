@@ -86,7 +86,7 @@ export class AuthorityEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
   // Menus whose authorization is MENU-ONLY (department is not required when configuring them).
   // Matched against MenuName, case-insensitive. Quotation and all other menus stay department-based.
-  private readonly menusWithoutDepartmentRequirement = ['credit request'];
+  private readonly menusWithoutDepartmentRequirement = ['credit request', 'payment request'];
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
   currentDetailIndex : number;

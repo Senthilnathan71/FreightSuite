@@ -59,6 +59,11 @@
           <i class="fas fa-history  me-1"></i>
           <span>Logs</span>
         </button>
+          <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="openAuthority()" *ngIf="isEditMode">
+          <i class="fas fa-shield-alt me-1"></i>
+          <span>Authorize</span>
+        </button>
           <button
             type="button"
             class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -293,17 +298,22 @@
                 >
                   <ng-select
                     class="ng-select"
-                    [items]="requestStatusOptions"
+                    [items]="getRequestStatusOptions()"
                     bindLabel="label"
                     bindValue="value"
                     formControlName="PaymentRequestStatus"
                     [clearable]="false"
-                    [readonly]="!isEditMode"
+                    [readonly]="!canEditStatus()"
+                    (change)="onStatusChange($event)"
                   >
                   </ng-select>
                   <label class="input-label">
                     Request Status <span class="text-danger">*</span>
                   </label>
+                  <div *ngIf="authorizationChecked && authorizationRequired && !authorizerDetails?.canAuthorize && authorizationMessage"
+                       class="text-warning small mt-1">
+                    {{ authorizationMessage }}
+                  </div>
                 </div>
               </aside>
 
