@@ -321,22 +321,6 @@
                             </div>
                           </aside>
 
-                          <!-- Effective To -->
-                          <aside class="col">
-                            <div class="custom-form-group custom-form-group-select-date">
-                              <div class="input-group">
-                                <input class="form-control" placeholder="DD-MMM-YYYY" ngbDatepicker #d2="ngbDatepicker"
-                                  (click)="d2.toggle()" formControlName="EffectiveTo"
-                                  [minDate]="getEffectiveToMinDate(i)" container="body" [disabled]="isApprovedRow(credit)" />
-                                <button class="btn px-0 btn-light" (click)="d2.toggle()" type="button"
-                                  [disabled]="isApprovedRow(credit)">
-                                  <i-feather name="calendar" class="feather-sm"></i-feather>
-                                </button>
-                              </div>
-                              <label class="input-label">Effective To <span class="text-danger">*</span></label>
-                            </div>
-                          </aside>
-
                           <!-- Approval Status -->
                           <aside class="col">
                             <div class="custom-form-group custom-form-group-select"
