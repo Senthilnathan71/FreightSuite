@@ -115,6 +115,10 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
     return isColumnCustomizableReport(this.selectedReport?.ReportName);
   }
 
+  get selectedReportNotes(): string {
+    return this.selectedReport?.Notes?.trim() || '';
+  }
+
   /** Switch the report view between New and Classic (per-user override, remembered in this browser). */
   setViewMode(mode: ReportViewMode): void {
     this.viewMode = mode;

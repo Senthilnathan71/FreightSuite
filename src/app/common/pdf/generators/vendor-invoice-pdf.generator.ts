@@ -585,12 +585,13 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   /**
    * Build shipment details - using vendorInvoiceData
    */
- function buildShipmentDetails(data: VendorInvoicePdfData): any {
+function buildShipmentDetails(data: VendorInvoicePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData;
   const cargo = data.cargoDetails;
   const isSeaMode = data.isSeaMode !== false;
   const isNonJob = (printData?.CashOrBank || (data as any)?.invoiceData?.CashOrBank || '') === 'Y';
+  
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
 
@@ -608,6 +609,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       { label: isSeaMode ? 'Voyage No.' : 'Flight No.', value: printData?.VoyageNo || invoice?.voyageNo || '' }
     ]),
     { label: 'Bill No.', value: printData?.DocumentNumber || invoice?.shipperRefNo || '' },
+    { label: 'Bill Date', value: formatDate(printData?.DocumentDate)},
     ...(isNonJob ? [] : [
       { label: 'Loading Port', value: printData?.POL || invoice?.loadingPort || invoice?.pol || '' },
       { label: 'Final Destination', value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || '' },
@@ -642,7 +644,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   : []),
     ...(!isNonJob ? [{ label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' }] : []),
     ...(!isNonJob ? [{ label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' }] : []),
-    { label: 'Bill Date', value: formatDate(printData?.DocumentDate)},
+    { label: 'Naration', value:  printData?.Naration},
     ...(!isNonJob ? [{ label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' }] : []),
     // { label: 'Invoice Due Date', value: dueDate ? formatDate(dueDate) : '' },
     { label: 'Currency / Ex-Rate', value: currExRate }

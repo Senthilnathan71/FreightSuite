@@ -561,7 +561,7 @@ export class StatementReportComponent {
     if (countryCode === 'ae') {
       return 'VAT No';
     }
-    return 'Tax No';
+    return '';
   }
 
   private getOrganizationCountryCode(): string {
@@ -697,7 +697,7 @@ export class StatementReportComponent {
           alignment: { horizontal: 'right' },
         },
         {
-          value: overdueamt,
+          value: this.formatNumber(overdueamt),
         },
       ];
       rows.push({ cells: totalCells, style: 'total' });
@@ -836,11 +836,6 @@ export class StatementReportComponent {
               },
             ]
           : undefined,
-      notes: [
-        'This Statement of Accounts report includes only posted voucher transactions.',
-        'Overdue Amount : Includes vouchers with Ageing Days greater than Credit Days.',
-        'Current Amount : Includes vouchers with Ageing Days less than or equal to Credit Days.',
-      ],
     };
   }
 
