@@ -230,15 +230,6 @@
 
     </div>
 
-    <div class="pt-2" style="font-size: 14px;">
-        Note :
-        <ul>
-            <li>This Statement of Accounts report includes only posted voucher transactions.</li>
-            <li>Overdue Amount : Includes vouchers with Ageing Days greater than Credit Days.</li>
-            <li *ngIf="fullData?.creditOrCash === 'Credit'">Current Amount : Includes vouchers with Ageing Days less than or equal to Credit Days.</li>
-        </ul>
-    </div>
-
     <div *ngIf="showBankDetails" class="px-3" style="font-size:14px">
         <h5 class="fw-bold">Bank Details</h5>
 

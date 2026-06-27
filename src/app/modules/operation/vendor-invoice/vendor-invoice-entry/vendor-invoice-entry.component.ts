@@ -4569,6 +4569,7 @@ Please configure the missing mappings and try again.`
         MasterJobDate: masterJob?.MasterJobDate || '',
         DocumentNumber: this.vendorInvoiceData?.DocumentNumber || '',
         DocumentDate: this.vendorInvoiceData?.DocumentDate || '',
+        Naration: this.vendorInvoiceData?.Narration || '',
         ContainerType: masterJob?.containers?.[0]?.ContainerType || '',
         ContainerNumber: masterJob?.containers?.[0]?.ContainerNumber || '',
         DepartmentMasterSid: masterJob?.DepartmentMasterSid || '',

@@ -65,7 +65,7 @@ export const PDF_STYLES = {
 
   // Label Styles
   labelBold: {
-    fontSize: PDF_FONTS.sizes.medium,
+    fontSize: PDF_FONTS.sizes.normal,
     bold: true,
     color: PDF_COLORS.primary
   },

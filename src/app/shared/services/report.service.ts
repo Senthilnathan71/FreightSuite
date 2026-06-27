@@ -19,6 +19,7 @@ export interface ReportCard {
   ReportMenuSid: number;
   ReportFormat: string;
   ReportType: string;
+  Notes?: string;
   ReportExcludedCompany?: number[];
   Orientation ?: 'L' | 'P';
   ReportMasterDetail: ReportParameter[];
