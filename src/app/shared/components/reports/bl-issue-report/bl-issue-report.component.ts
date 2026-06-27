@@ -66,7 +66,7 @@ export class BlIssueReportComponent {
 
   const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
     const cells: ExcelCell[] = [
-      { value: item.HBLNo || '' },
+      { value: item.HBLNo || '', alignment:{horizontal:'left'} },
       { value: this.formatDate(item.HBLDate) , alignment:{horizontal:'center'} },
       { value: item.MBLNo || '' },
       { value: item.BookingNo || '' },

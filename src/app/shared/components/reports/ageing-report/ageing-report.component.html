@@ -12,18 +12,24 @@
 
   <!-- Header Fields -->
   <div style="margin-top: 1rem; font-size: 14px;">
-     <div class="d-flex align-items-center">
-      <strong style="width: 100px;">To Date</strong>
-      <span class="ms-1 my-0">: {{ fullData?.concludedUpto | formatDate }}</span>
-    </div>
-    <div class="d-flex align-items-center">
-      <strong style="width: 100px;">Branch</strong>
-      <span class="ms-1 my-0">: {{ fullData?.branchInvolvedText }}</span>
-    </div>
-
-    <div class="d-flex align-items-center">
-      <strong style="width: 100px;">Ledger</strong>
-      <span class="ms-1 my-0">: {{ fullData?.LedgerName }}</span>
+    <div style="display: flex; justify-content:space-between;">
+      <div>
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px;">To Date</strong>
+          <span class="ms-1 my-0">: {{ fullData?.concludedUpto | formatDate }}</span>
+        </div>
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px;">Branch</strong>
+          <span class="ms-1 my-0">: {{ fullData?.branchInvolvedText }}</span>
+        </div>
+      </div>
+    
+      <div>
+        <div class="d-flex align-items-center">
+          <strong style="width: 100px;">Ledger</strong>
+          <span class="ms-1 my-0">: {{ fullData?.LedgerName }}</span>
+        </div>
+      </div>
     </div>
     <!-- Table -->
     <div class="table-responsive">

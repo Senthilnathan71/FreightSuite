@@ -272,6 +272,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
+
+  salesmanList: any[] = [];
 
 
   /**
@@ -441,6 +444,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       isVesselFreeText: [false],
       isVoyageFreeText: [false],
       ShipmentNo : [],
+      SalesmanSid : [null],
       MasterJobNumber : [{ value: '', disabled: true }],
       HBLNo: [{value: '', disabled: true}],
       JobType: [null],
@@ -529,9 +533,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       ports: this.operationService.getAllPorts().pipe(catchError(err => of([]))),
       userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
       currencies : this.operationService.getAllCurrencies().pipe(catchError(err => of([]))),
+      salesmen: this.masterService.getAllSalesmans(CompanyMasterSid).pipe(catchError(err => of([]))),
 
     }).pipe(tap(({
-      departments, customers, shippers, consignees, ports, userCountry,currencies
+      departments, customers, shippers, consignees, ports, userCountry, currencies, salesmen
     }) => {
       if (!this.isEditMode) {
         this.spinner.hide();
@@ -551,6 +556,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
         ...c,
         countryName: c?.countryMaster?.countryName || ''
       }));
+      this.salesmanList = Array.isArray(salesmen) ? salesmen : [];
     }))
   }
 
@@ -629,7 +635,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       ETD: response.ETD ? new Date(response.ETD) : null,
       ETA: response.ETA ? new Date(response.ETA) : null,
       BookingStatus: response.BookingStatus,
-      ShipmentNo: response.ShipmentNo
+      ShipmentNo: response.ShipmentNo,
+      SalesmanSid: response.SalesmanSid ?? null
     })
     this.b['DepartmentMasterSid']?.disable();
     this.b['CustomerMasterSid']?.disable();
@@ -812,6 +819,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       ConsigneeName: serviceFormValue.ConsigneeName,
       ConsigneeAddress: serviceFormValue.ConsigneeAddress,
       ShipmentNo : serviceFormValue.ShipmentNo || "",
+      SalesmanSid: serviceFormValue.SalesmanSid ? Number(serviceFormValue.SalesmanSid) : null,
       FreightPPCC: cargoFormValue.FreightTerms || "Prepaid",
       status: serviceFormValue.status === 'Active' ? 'A' : 'S',
       houseJobCargo: {

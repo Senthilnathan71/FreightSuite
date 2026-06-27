@@ -507,6 +507,27 @@ export class OutstandingReportComponent {
     return total;
   }
 
+  get taxRegistrationLabel(): string {
+    const countryCode = this.getOrganizationCountryCode();
+    if (countryCode === 'in') {
+      return 'PAN No';
+    }
+    if (countryCode === 'ae') {
+      return 'VAT No';
+    }
+    return '';
+  }
+
+  private getOrganizationCountryCode(): string {
+    return String(
+      this.fullData?.countryCode ||
+        this.fullData?.CountryCode ||
+        '',
+    )
+      .trim()
+      .toLowerCase();
+  }
+
   getExcelData(): ComplexReportExportConfig {
 
     const rows: ExcelRow[] = [];
@@ -607,8 +628,10 @@ export class OutstandingReportComponent {
         additionalInfo: [
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
           { label: 'Branch', value: this.fullData?.brancesInvoled || '' },
+          { label: 'Ledger', value: this.fullData?.ledgerName || '' },
           { label: 'Subledger', value: this.fullData?.subledgerName || '' },
-          { label: 'Ledger', value: this.fullData?.ledgerName || '' }
+          { label: 'Address', value: this.fullData?.Address || '' },
+          { label: this.taxRegistrationLabel, value: this.fullData?.PanType || '' },
         ]
       },
 

@@ -162,7 +162,7 @@ getSignedTotal(transactions: any[]): number {
 
       const openingCells: ExcelCell[] = [
         { value: 'Opening Balance' , alignment:{horizontal:"center"}},
-        { value: this.formatDate(this.params?.FromDate) },
+        { value: this.formatDate(this.params?.FromDate) , alignment:{horizontal:'center'}},
         { value: '' },
         { value: '' },
         { value: '' },
@@ -182,7 +182,7 @@ getSignedTotal(transactions: any[]): number {
     transactions.forEach((item: any, index: number) => {
       const cells: ExcelCell[] = [
         { value: item?.voucherNumber || '' },
-        { value: this.formatDate(item?.voucherDate) },
+        { value: this.formatDate(item?.voucherDate) , alignment:{horizontal:'center'}},
         { value: item?.voucherType || '' , alignment:{horizontal:'center'}},
         { value: item?.partyname || '' },
         { value: item?.naration || '' },

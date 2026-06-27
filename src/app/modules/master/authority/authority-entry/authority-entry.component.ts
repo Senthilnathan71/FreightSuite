@@ -82,6 +82,11 @@ export class AuthorityEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   currentMenuId: any;
   isSaving = false;
   isDirty: boolean = false;
+  isDepartmentRequired: boolean = true;
+
+  // Menus whose authorization is MENU-ONLY (department is not required when configuring them).
+  // Matched against MenuName, case-insensitive. Quotation and all other menus stay department-based.
+  private readonly menusWithoutDepartmentRequirement = ['credit request', 'payment request'];
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
   currentDetailIndex : number;
@@ -110,6 +115,9 @@ auditLogs: any[] = []; // Stores audit logs
   ngOnInit(): void {
     this.initAuthorityForm();
     this.subscribeToFormChanges();
+    this.authorityForm.get('MenuMaster')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.updateDepartmentRequirement());
     
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
@@ -184,8 +192,29 @@ auditLogs: any[] = []; // Stores audit logs
       this.menuResults = menus;
       this.userResults = users.data;
       this.updateFilteredAuthorisers();
+      // Re-evaluate the department requirement now that menu names are available
+      // (covers the edit flow where MenuMaster is patched before menus finish loading).
+      this.updateDepartmentRequirement();
       // this.branchList = branches;
     });
+  }
+
+  private updateDepartmentRequirement(): void {
+    const menuSid = this.authorityForm.get('MenuMaster')?.value;
+    const menu = this.menuResults?.find((m: any) => m.MenuMasterSid === menuSid);
+    const menuName = String(menu?.MenuName || '').trim().toLowerCase();
+    const required = !this.menusWithoutDepartmentRequirement.includes(menuName);
+    this.isDepartmentRequired = required;
+
+    const deptCtrl = this.authorityForm.get('DepartmentMaster');
+    if (!deptCtrl) return;
+
+    if (required) {
+      deptCtrl.setValidators([Validators.required]);
+    } else {
+      deptCtrl.clearValidators();
+    }
+    deptCtrl.updateValueAndValidity({ emitEvent: false });
   }
 
   initAuthorityForm() {

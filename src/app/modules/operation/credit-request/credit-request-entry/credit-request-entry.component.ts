@@ -108,6 +108,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
   creditAuthorizationRequired: { [creditIndex: number]: boolean } = {};
   creditAuthorizationChecked: { [creditIndex: number]: boolean } = {};
   creditAuthorizationMessages: { [creditIndex: number]: { message: string; type: 'info' | 'warning' | 'success' } } = {};
+  private approvalStatusOptionsCache: { [creditIndex: number]: { key: string; options: any[] } } = {};
   auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
   allApprovalStatus = [
@@ -397,10 +398,32 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     this.creditRequest.removeAt(index);
     this.departmentListPerRow.splice(index, 1);
     this.salesmanListPerRow.splice(index, 1);
-    delete this.creditAuthorizationDetails[index];
-    delete this.creditAuthorizationRequired[index];
-    delete this.creditAuthorizationChecked[index];
-    delete this.creditAuthorizationMessages[index];
+    // The FormArray and the per-row arrays above shift down on removal, so the index-keyed
+    // authorization maps must shift too. A plain `delete` would leave higher keys in place
+    // and misalign authorization state with the wrong row.
+    this.reindexAuthorizationMapsAfterRemoval(index);
+  }
+
+  private reindexAuthorizationMapsAfterRemoval(removedIndex: number): void {
+    const maps: Array<{ [key: number]: any }> = [
+      this.creditAuthorizationDetails,
+      this.creditAuthorizationRequired,
+      this.creditAuthorizationChecked,
+      this.creditAuthorizationMessages,
+      this.approvalStatusOptionsCache
+    ];
+
+    maps.forEach(map => {
+      delete map[removedIndex];
+      Object.keys(map)
+        .map(Number)
+        .filter(key => key > removedIndex)
+        .sort((a, b) => a - b)
+        .forEach(key => {
+          map[key - 1] = map[key];
+          delete map[key];
+        });
+    });
   }
   getEffectiveToMinDate(index: number): any {
   const effectiveFrom = this.creditRequest
@@ -568,7 +591,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
                 DepartmentMasterSid: departmentObj.DepartmentMasterSid,
                 SalesmanSid: salesmanObj.UserMasterSid
               });
-              this.applySalesmenForRow(rowIndex);
+              this.applySalesmenForRow(rowIndex, false);
               this.refreshAuthorizationForCreditRequest(rowIndex);
 
               // Load file names for existing KYC attachments
@@ -667,9 +690,11 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
 
     const currentUserEmail = this.userData?.LoginId || this.appSettingService.userSettingSource.value['userEmail'];
     const approvalChanges = this.getCreditApprovalChanges();
+    // Resolve authorizer details from the per-row map (not the shared `authorizerDetails`,
+    // which is overwritten by whichever async authorizer check resolves last).
     const approvalAuthorizerDetails = approvalChanges.length
       ? this.getCreditAuthorizerDetails(approvalChanges[0]?.creditIndex)
-      : this.authorizerDetails;
+      : this.getCreditAuthorizerDetails(this.expandedIndex ?? 0);
 
     // Build payload with nested KYC
     const creditRequests = rawCreditRequests.map((req) => ({
@@ -759,6 +784,10 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
   }
 
   private applySavedCreditRequests(savedItems: any[]) {
+    // Capture existing dropdown data before reset so names survive the rebuild — the save
+    // response often omits nested department/salesman names.
+    const previousDepartmentLists = [...this.departmentListPerRow];
+
     // Reset arrays
     this.creditRequest.clear();
     this.departmentListPerRow = [];
@@ -776,9 +805,27 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       const fg = this.createCreditRequest(normalized);
       this.creditRequest.push(fg);
 
-      // Keep dropdown data if already loaded; otherwise leave empty
-      this.departmentListPerRow[rowIndex] = this.departmentListPerRow[rowIndex] || [];
-      this.salesmanListPerRow[rowIndex] = this.salesmanListPerRow[rowIndex] || [];
+      // Rebuild the Department dropdown for the row, resolving the name from the saved item or
+      // the pre-save list so the selection stays visible after save.
+      if (item.DepartmentMasterSid !== null && item.DepartmentMasterSid !== undefined) {
+        const departmentName =
+          item.department?.departmentName ||
+          item.departmentName ||
+          previousDepartmentLists[rowIndex]?.find((d: any) => d.DepartmentMasterSid === item.DepartmentMasterSid)?.departmentName ||
+          '';
+        this.departmentListPerRow[rowIndex] = [{ DepartmentMasterSid: item.DepartmentMasterSid, departmentName }];
+      } else {
+        this.departmentListPerRow[rowIndex] = previousDepartmentLists[rowIndex] || [];
+      }
+
+      // Rebuild the Sales Person dropdown (mirror getCustomerById): use the company list, falling
+      // back to the saved salesman so the selection shows after save without a branch change.
+      const salesmanObj = {
+        UserMasterSid: item.salesman?.UserMasterSid || item.SalesmanSid,
+        userName: item.salesman?.userName || item.SalesmanName || ''
+      };
+      this.salesmanListPerRow[rowIndex] = this.salesmanList.length ? this.salesmanList : [salesmanObj];
+      this.applySalesmenForRow(rowIndex, false);
 
       // Reload file names if attachment exists
       if (normalized?.customerKyc?.length) {
@@ -837,15 +884,6 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     return Number(sid) || null;
   }
 
-  private getCreditAuthorizationDepartment(creditIndex: number): { DepartmentMasterSid: number | null; departmentName: string } {
-    const row = this.creditRequest.at(creditIndex) as FormGroup;
-    const DepartmentMasterSid = Number(row?.get('DepartmentMasterSid')?.value) || null;
-    return {
-      DepartmentMasterSid,
-      departmentName: this.getDepartmentName(DepartmentMasterSid, creditIndex) || ''
-    };
-  }
-
   private refreshAuthorizationForCreditRequest(creditIndex: number): void {
     const menuMasterSid = Number(this.currentMenuId || this.MenuMasterSid || sessionStorage.getItem('currentMenuId') || 0);
     this.currentMenuId = menuMasterSid;
@@ -861,7 +899,6 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       return;
     }
 
-    const authorizationDepartment = this.getCreditAuthorizationDepartment(creditIndex);
     const documentSid = this.getCreditDocumentSid(creditIndex);
     this.creditAuthorizationDetails[creditIndex] = this.getDefaultAuthorizerDetails();
     this.creditAuthorizationRequired[creditIndex] = true;
@@ -869,14 +906,15 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     this.creditAuthorizationMessages[creditIndex] = { message: '', type: 'info' };
     this.applyAuthorizationControlState();
 
+    // Credit Request authorization is MENU-ONLY. Department is intentionally NOT sent,
+    // so the backend matches authorizers by Menu + Company + Branch only. This avoids the
+    // department-name mismatch that could otherwise silently disable approval gating.
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       MenuMasterSid: menuMasterSid,
       UserMasterSid: this.userData.UserMasterSid,
-      DocumentSid: documentSid,
-      DepartmentMasterSid: authorizationDepartment.DepartmentMasterSid,
-      DepartmentMaster: authorizationDepartment.departmentName
+      DocumentSid: documentSid
     };
 
     this.leadService.isUserAuthorizer(payload).subscribe({
@@ -945,12 +983,39 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
   }
 
   getApprovalStatusOptions(creditIndex: number): any[] {
-    if (!this.isAuthorizationRequiredForCredit(creditIndex)) {
-      return this.approvalStatus;
+    const required = this.isAuthorizationRequiredForCredit(creditIndex);
+    const isFinal = this.isFinalAuthorizer(creditIndex);
+    const currentValue = this.creditRequest.at(creditIndex)?.get('ApprovalStatus')?.value || '';
+
+    // This method is bound directly in the template, so Angular calls it on every change
+    // detection cycle. Returning a fresh array each time makes ng-select re-process its items
+    // and drop the user's click. Memoize on the inputs so the reference is stable until they change.
+    const cacheKey = `${required}|${isFinal}|${currentValue}`;
+    const cached = this.approvalStatusOptionsCache[creditIndex];
+    if (cached && cached.key === cacheKey) {
+      return cached.options;
     }
-    return this.isFinalAuthorizer(creditIndex)
-      ? this.finalApprovalStatusOptions
-      : this.nonFinalApprovalStatusOptions;
+
+    const baseOptions = !required
+      ? this.approvalStatus
+      : isFinal
+        ? this.finalApprovalStatusOptions
+        : this.nonFinalApprovalStatusOptions;
+
+    // Always include the row's current status so the dropdown can render it. The option subsets
+    // are filtered by authorizer level, so a persisted value (an already 'Approved' row, or
+    // 'WaitingForCustomerApproval') may not be in the subset; without this the field shows blank.
+    const options = this.withCurrentApprovalStatusOption(baseOptions, currentValue);
+    this.approvalStatusOptionsCache[creditIndex] = { key: cacheKey, options };
+    return options;
+  }
+
+  private withCurrentApprovalStatusOption(options: any[], currentValue: string): any[] {
+    if (!currentValue || options.some(option => option.value === currentValue)) {
+      return options;
+    }
+    const match = this.allApprovalStatus.find(option => option.value === currentValue);
+    return match ? [...options, match] : options;
   }
 
   canEditApprovalStatus(creditIndex: number): boolean {
@@ -1175,12 +1240,27 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     return Number.isFinite(value) ? value : null;
   }
 
-  private applySalesmenForRow(rowIndex: number) {
+  // autoSelect=true is for user actions (picking a branch / new row): convenience auto-fill of a
+  // single salesman. When restoring saved data (load / post-save), pass false so the saved value
+  // — including an intentionally-empty one — is preserved and not overwritten.
+  private applySalesmenForRow(rowIndex: number, autoSelect: boolean = true) {
     const branchSid = this.creditRequest.at(rowIndex).get('CustomerBranchSid')?.value;
-    this.salesmanListPerRow[rowIndex] = [...this.salesmanList];
+    const current = this.normalizeUserSid(this.creditRequest.at(rowIndex).get('SalesmanSid')?.value);
+    const previousList = this.salesmanListPerRow[rowIndex] || [];
+
+    // Base list = company salespeople; keep the currently-selected salesman so the dropdown can
+    // always display it even if it isn't in the company list.
+    const list = [...this.salesmanList];
+    if (current !== null && !list.some(s => this.normalizeUserSid(s.UserMasterSid) === current)) {
+      const preserved = previousList.find((s: any) => this.normalizeUserSid(s.UserMasterSid) === current);
+      if (preserved) list.push(preserved);
+    }
+    this.salesmanListPerRow[rowIndex] = list;
 
     if (!branchSid) {
-      this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
+      if (autoSelect) {
+        this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
+      }
       return;
     }
 
@@ -1199,10 +1279,9 @@ getDepartmentName(deptId: number, rowIndex: number): string {
       ids = [...new Set(ids)];
     }
 
-    const current = this.normalizeUserSid(this.creditRequest.at(rowIndex).get('SalesmanSid')?.value);
-    const isCurrentValid = current !== null && this.salesmanList.some(s => this.normalizeUserSid(s.UserMasterSid) === current);
+    const isCurrentValid = current !== null && list.some(s => this.normalizeUserSid(s.UserMasterSid) === current);
 
-    if (isCurrentValid) {
+    if (isCurrentValid || !autoSelect) {
       return;
     }
 
@@ -1388,7 +1467,7 @@ onDepartmentSelect(departmentSid: number, rowIndex: number) {
           userName: s.salesman?.userName || s.userName || s.SalesmanName || 'Unknown'
         }));
         this.creditRequest?.controls?.forEach((ctrl, idx) => {
-          this.applySalesmenForRow(idx);
+          this.applySalesmenForRow(idx, false);
         });
       },
       error: () => {
@@ -1513,7 +1592,9 @@ onDepartmentSelect(departmentSid: number, rowIndex: number) {
 
   openEDoc(creditIndex: number, kycIndex: number) {
     const kycArray = this.getKycArray(creditIndex);
-    const kycData = kycArray.at(kycIndex).value;
+    // Use getRawValue so KycDocNumber is captured even when the row is approved (disabled controls
+    // are omitted by .value), ensuring the Edoc Document No is always pre-filled.
+    const kycData = kycArray.at(kycIndex).getRawValue();
     const creditRequest = this.creditRequest.at(creditIndex).value;
 
     if (!creditRequest?.CustomerCreditRequestSid) {
@@ -1820,11 +1901,10 @@ if (this.isTermsAndConditionsEnabled) {
         this.appSettingService.showWarning('Please save the credit request before viewing authorization.');
         return;
       }
-      const authorizationDepartment = this.getCreditAuthorizationDepartment(creditIndex);
-      const modalRef = this.modalService.open(AuthorityLogComponent, { 
-        size: 'lg', 
-        centered: true, 
-        backdrop: 'static' 
+      const modalRef = this.modalService.open(AuthorityLogComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
       });
       modalRef.componentInstance.item = this.customerData;
       modalRef.componentInstance.idLabel = 'Credit Request Id';
@@ -1833,8 +1913,9 @@ if (this.isTermsAndConditionsEnabled) {
       modalRef.componentInstance.menuMasterSid = Number(this.currentMenuId || this.MenuMasterSid || sessionStorage.getItem('currentMenuId'));
       modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
       modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
-      modalRef.componentInstance.DepartmentMasterSid = authorizationDepartment.DepartmentMasterSid;
-      modalRef.componentInstance.DepartmentMaster = authorizationDepartment.departmentName;
+      // Menu-only authorization for Credit Request: do not scope the log by department.
+      modalRef.componentInstance.DepartmentMasterSid = null;
+      modalRef.componentInstance.DepartmentMaster = '';
     }
     
     openFollowup() {

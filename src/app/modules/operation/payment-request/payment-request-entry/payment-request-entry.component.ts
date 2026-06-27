@@ -38,6 +38,8 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
@@ -132,6 +134,15 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     { value: 'S', label: 'Suspend' }
   ];
 
+  // Authorization (menu-only, mirrors the Credit Request flow).
+  authorizerDetails: any = this.getDefaultAuthorizerDetails();
+  authorizationRequired = false;
+  authorizationChecked = false;
+  authorizationMessage = '';
+  private statusOptionsCache: { key: string; options: any[] } | null = null;
+  private readonly finalStatusValues = ['Approved', 'Rejected'];
+  private readonly nonFinalStatusValues = ['WaitingForFinalApproval', 'Rejected'];
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly route: ActivatedRoute,
@@ -146,6 +157,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     private readonly companySettings: CompanySettingsManagerService,
     public readonly mps: MenuPermissionService,
     private readonly toastr: ToastrService,
+    private readonly leadService: LeadService,
   ) {
     this.form = this.fb.group({
       PaymentRequestSid: [null],
@@ -627,6 +639,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         this.applyApprovalReadOnlyState(request.PaymentRequestStatus);
         this.scheduleDirtyTrackingSnapshot();
         this.subscribeToFormChanges();
+        this.refreshAuthorization();
       },
       error: () => {
         this.loading = false;
@@ -1077,12 +1090,23 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
 
     this.saving = true;
     const userEmail = this.userData?.userEmail;
+    // Only flag an authorization action when an authorizer actually changed the status.
+    const statusChanged =
+      this.isEditMode &&
+      String(raw.PaymentRequestStatus) !== String(this.paymentRequestData?.PaymentRequestStatus ?? '');
     const payload = {
       ...raw,
       ...(this.isEditMode ? { UpdatedBy: userEmail } : { CreatedBy: userEmail }),
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       detailItems: this.detailItems.getRawValue(),
+      authDetails: {
+        AuthorizationRequired: this.authorizationRequired,
+        canAuthorize: statusChanged && !!this.authorizerDetails?.canAuthorize,
+        AuthorityDetailSid: this.authorizerDetails?.AuthorityDetailSid || null,
+        ApprovedBy: this.authorizerDetails?.ApprovedBy || this.userData?.userName || userEmail,
+        Remarks: `PaymentRequest:${raw.PaymentRequestSid} Status:${raw.PaymentRequestStatus}`,
+      },
     };
 
     const request$ = this.isEditMode
@@ -1205,6 +1229,185 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     return new Date(value).toISOString().slice(0, 10);
   }
 
+
+  // ---------------------------------------------------------------------------
+  // Authorization (menu-only) — mirrors the Credit Request approval flow.
+  // ---------------------------------------------------------------------------
+  private getDefaultAuthorizerDetails(): any {
+    return {
+      isAuthorizer: false,
+      isAlreadyApproved: false,
+      canAuthorize: false,
+      AuthorityLevel: null,
+      AuthorityDetailSid: null,
+      ApprovedBy: this.userData?.userName || this.userData?.userEmail || '',
+      totalNumberOfAuthorizers: 0,
+      FinalAuthority: false,
+    };
+  }
+
+  private setAuthorizationDefault(): void {
+    this.authorizerDetails = this.getDefaultAuthorizerDetails();
+    this.authorizationRequired = false;
+    this.authorizationChecked = true;
+    this.authorizationMessage = '';
+    this.statusOptionsCache = null;
+    this.applyStatusControlState();
+  }
+
+  private refreshAuthorization(): void {
+    const menuMasterSid = Number(this.mps.getMenuId());
+    const documentSid = Number(this.form.get('PaymentRequestSid')?.value) || null;
+
+    if (
+      !this.userData?.UserMasterSid ||
+      !menuMasterSid ||
+      !this.currentCompany?.CompanyMasterSid ||
+      !this.currentBranch?.BranchMasterSid ||
+      !documentSid
+    ) {
+      this.setAuthorizationDefault();
+      return;
+    }
+
+    // Menu-only scope: department is intentionally NOT sent.
+    const payload = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch.BranchMasterSid,
+      MenuMasterSid: menuMasterSid,
+      UserMasterSid: this.userData.UserMasterSid,
+      DocumentSid: documentSid,
+    };
+
+    this.leadService.isUserAuthorizer(payload).subscribe({
+      next: (resp: any) => {
+        const data = resp?.data || {};
+        const total = Number(data?.totalNumberOfAuthorizers || 0);
+        const details = {
+          isAuthorizer: !!data?.canAuthorize,
+          isAlreadyApproved: !!data?.alreadyApproved,
+          canAuthorize: !!data?.canAuthorize && (!data?.alreadyApproved || this.hasPendingApproval()),
+          AuthorityLevel: data?.AuthorityLevel,
+          AuthorityDetailSid: data?.AuthorityDetailSid,
+          ApprovedBy: this.userData?.userName || this.userData?.userEmail || '',
+          totalNumberOfAuthorizers: total,
+          FinalAuthority: data?.FinalAuthority === 'Y' || data?.FinalAuthority === true || data?.isFinalAuthorizer === true,
+        };
+        const hasSetup = total > 0 || !!data?.canAuthorize || !!data?.AuthorityDetailSid || !!data?.AuthorityLevel;
+
+        this.authorizerDetails = details;
+        this.authorizationRequired = hasSetup;
+        this.authorizationChecked = true;
+        this.authorizationMessage = hasSetup && !details.canAuthorize && !this.isPersistedApproved()
+          ? 'You are not authorized to approve this payment request.'
+          : '';
+        this.statusOptionsCache = null;
+        this.applyStatusControlState();
+      },
+      error: () => this.setAuthorizationDefault(),
+    });
+  }
+
+  private hasPendingApproval(): boolean {
+    const status = this.form.get('PaymentRequestStatus')?.value || 'Pending';
+    return !['Approved', 'Rejected'].includes(String(status));
+  }
+
+  private isPersistedApproved(): boolean {
+    return this.isApprovedStatus(this.paymentRequestData?.PaymentRequestStatus);
+  }
+
+  isFinalAuthorizer(): boolean {
+    const d = this.authorizerDetails;
+    const level = Number(d?.AuthorityLevel || 0);
+    const total = Number(d?.totalNumberOfAuthorizers || 0);
+    return !!d?.FinalAuthority || (level > 0 && total > 0 && level === total);
+  }
+
+  getRequestStatusOptions(): any[] {
+    const required = this.authorizationRequired;
+    const isFinal = this.isFinalAuthorizer();
+    const currentValue = this.form.get('PaymentRequestStatus')?.value || '';
+
+    // Bound directly in the template — memoize so ng-select gets a stable array reference and
+    // doesn't drop the user's selection on every change-detection cycle.
+    const cacheKey = `${required}|${isFinal}|${currentValue}`;
+    if (this.statusOptionsCache && this.statusOptionsCache.key === cacheKey) {
+      return this.statusOptionsCache.options;
+    }
+
+    const base = !required
+      ? this.requestStatusOptions
+      : this.requestStatusOptions.filter((o) =>
+          (isFinal ? this.finalStatusValues : this.nonFinalStatusValues).includes(o.value),
+        );
+
+    const options = this.withCurrentStatusOption(base, currentValue);
+    this.statusOptionsCache = { key: cacheKey, options };
+    return options;
+  }
+
+  private withCurrentStatusOption(options: any[], currentValue: string): any[] {
+    if (!currentValue || options.some((o) => o.value === currentValue)) {
+      return options;
+    }
+    const match = this.requestStatusOptions.find((o) => o.value === currentValue);
+    return match ? [...options, match] : options;
+  }
+
+  canEditStatus(): boolean {
+    if (!this.isEditMode || this.isReadOnly) return false;
+    if (this.isPersistedApproved()) return false;
+    if (!this.form.get('PaymentRequestSid')?.value) return false;
+    return !!this.authorizerDetails?.canAuthorize || !this.authorizationRequired;
+  }
+
+  private applyStatusControlState(): void {
+    const ctrl = this.form.get('PaymentRequestStatus');
+    if (!ctrl) return;
+    if (this.canEditStatus()) {
+      ctrl.enable({ emitEvent: false });
+    } else {
+      ctrl.disable({ emitEvent: false });
+    }
+  }
+
+  onStatusChange(status: any): void {
+    if (!this.canEditStatus()) {
+      this.appSettingsService.showWarning(this.authorizationMessage || 'You are not authorized to approve this payment request.');
+      this.revertStatus();
+      return;
+    }
+
+    const selected = typeof status === 'string' ? status : status?.value;
+    if (selected === 'Approved' && this.authorizationRequired && !this.isFinalAuthorizer()) {
+      this.appSettingsService.showWarning('Only the final authorizer can approve the payment request.');
+      this.form.get('PaymentRequestStatus')?.setValue('WaitingForFinalApproval', { emitEvent: false });
+      this.statusOptionsCache = null;
+    }
+  }
+
+  private revertStatus(): void {
+    const saved = this.paymentRequestData?.PaymentRequestStatus || 'Pending';
+    this.form.get('PaymentRequestStatus')?.setValue(saved, { emitEvent: false });
+    this.statusOptionsCache = null;
+  }
+
+  openAuthority(): void {
+    const documentSid = Number(this.form.get('PaymentRequestSid')?.value) || null;
+    if (!documentSid) {
+      this.appSettingsService.showWarning('Please save the payment request before viewing authorization.');
+      return;
+    }
+    const modalRef = this.modalService.open(AuthorityLogComponent, { size: 'lg', centered: true, backdrop: 'static' });
+    modalRef.componentInstance.documentSid = documentSid;
+    modalRef.componentInstance.menuMasterSid = Number(this.mps.getMenuId());
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    // Menu-only authorization: do not scope the log by department.
+    modalRef.componentInstance.DepartmentMasterSid = null;
+    modalRef.componentInstance.DepartmentMaster = '';
+  }
 
   openAuditLogs() {
         if (!this.form.get('PaymentRequestSid')?.value) return;

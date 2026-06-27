@@ -142,7 +142,7 @@
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!authorityForm.get('DepartmentMaster')?.value">
                             <multi-select [control]="authorityForm.get('DepartmentMaster')" [items]="departmentResults" bindLabel="departmentName" bindValue="departmentName">
                             </multi-select>
-                            <label class="input-label">Departments <span class="text-danger">*</span></label>
+                            <label class="input-label">Departments <span class="text-danger" *ngIf="isDepartmentRequired">*</span></label>
                             @if(authorityForm.get('DepartmentMaster')?.touched &&
                             authorityForm.get('DepartmentMaster')?.invalid){
                             <div class="error-message">

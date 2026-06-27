@@ -19,18 +19,26 @@
                     <strong style="width: 100px;">Branch </strong>
                     <span class="ms-1 my-0">: {{ fullData?.brancesInvoled }}</span>
                 </div>
-
+                <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">Ledger </strong>
+                    <span class="ms-1 my-0"> : {{ fullData?.ledgerName }}</span>
+                </div>
             </div>
 
             <div>
-
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Subledger </strong>
                     <span class="ms-1 my-0">: {{ fullData?.subledgerName }}</span>
                 </div>
                 <div class="d-flex align-items-center">
-                    <strong style="width: 100px;">Ledger </strong>
-                    <span class="ms-1 my-0"> : {{ fullData?.ledgerName }}</span>
+                    <strong style="width: 100px;">Address</strong>
+                    <span class="ms-1 my-0">
+                        : {{ fullData?.Address }}
+                    </span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">{{ taxRegistrationLabel }} </strong>
+                    <span class="ms-1 my-0"> : {{ fullData?.PanType }}</span>
                 </div>
             </div>
         </div>

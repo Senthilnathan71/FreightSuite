@@ -264,7 +264,9 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
 
   private getDefaultFormValue(): any {
     return {
-      AttachDocmentNo: '',
+      // Keep the caller-provided document number (e.g. KYC's KycDocNumber) for new uploads,
+      // so it isn't wiped when the form resets into "add new document" mode.
+      AttachDocmentNo: this.formData?.AttachDocmentNo || '',
       DocumentDate: '',
       FileName: '',
       Documenttype: '',

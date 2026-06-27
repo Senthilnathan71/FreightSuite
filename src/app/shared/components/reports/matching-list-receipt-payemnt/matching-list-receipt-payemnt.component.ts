@@ -14,6 +14,8 @@ import {
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 import { RouterModule } from '@angular/router';
 import { PrintFooterComponent } from '../../print-footer/print-footer.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { getVoucherEntryLink, VoucherType } from 'src/app/common/voucher-route';
 
 @Component({
   selector: 'app-matching-list-receipt-payemnt',
@@ -23,6 +25,9 @@ import { PrintFooterComponent } from '../../print-footer/print-footer.component'
   styles: ``,
 })
 export class MatchingListReceiptPayemntComponent {
+  protected readonly getVoucherEntryLink = getVoucherEntryLink;
+  protected readonly VoucherType = VoucherType;
+
   currentCompany: any;
   currentBranch: any;
   orientation: 'portrait' | 'landscape' = 'portrait';
@@ -30,6 +35,7 @@ export class MatchingListReceiptPayemntComponent {
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService,
+    private modalService: NgbModal,
   ) {}
 
   ngOnInit(): void {
@@ -188,5 +194,9 @@ export class MatchingListReceiptPayemntComponent {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
+  }
+
+  closeAllModal(): void {
+    this.modalService.dismissAll();
   }
 }

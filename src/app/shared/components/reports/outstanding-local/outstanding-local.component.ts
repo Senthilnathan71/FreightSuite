@@ -291,7 +291,7 @@ export class OutstandingLocalComponent {
         rows.push({
           cells: [
             { value: item?.voucherNumber || '' },
-            { value: this.formatDate(item?.voucherDate) },
+            { value: this.formatDate(item?.voucherDate), alignment:{horizontal:'center'} },
             { value: item?.voucherType || '' , alignment:{horizontal:'center'} },
             { value: item?.naration || '' },
             { value: item?.drCr || '' , alignment:{horizontal:'center'} },
