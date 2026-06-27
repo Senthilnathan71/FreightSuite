@@ -4077,6 +4077,9 @@ createRateFormGroup(data?: any): FormGroup {
     const companyCurrency = this.companySettings.getCurrencySettings();
 
     const details = this.details.getRawValue();
+    // Refresh the customs-duty flag BEFORE building the narration so a customs-duty invoice resolves to
+    // the "Customs Duty" narration (autoGenerateNarration reads this.customsDutyChecked).
+    this.autoDetectCustomsDuty();
     const baseNarration = this.autoGenerateNarration();
     const docNarrParts: string[] = [baseNarration];
     if (rawValue.DocumentNumber?.toString().trim()) docNarrParts.push(`BillNo-${rawValue.DocumentNumber.toString().trim()}`);
@@ -4176,7 +4179,7 @@ createRateFormGroup(data?: any): FormGroup {
       ? headerLocalAmount
       : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
 
-    this.autoDetectCustomsDuty();
+    // customsDutyChecked was refreshed earlier (before narration); reuse it for the payload below.
 
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -4506,6 +4509,11 @@ createRateFormGroup(data?: any): FormGroup {
 
   private autoGenerateNarration(): string {
     const segment = this.parentFormValue?.Segment || '';
+    // Customs Duty invoice → narration is simply "Customs Duty", not the HBL/MBL/Booking string.
+    // Mirrors the CustomsDuty = 'Y' condition (UAE company + the selected customs-duty charge).
+    if (this.isUAECompany() && this.customsDutyChecked) {
+      return 'Customs Duty';
+    }
     if (this.currentCompany?.CompanyMasterSid === 12 || this.currentCompany?.CompanyMasterSid === 1) {
       if (this.screenName === 'Booking') {
         const BookingNo = this.parentFormValue?.BookingNumber || '';
