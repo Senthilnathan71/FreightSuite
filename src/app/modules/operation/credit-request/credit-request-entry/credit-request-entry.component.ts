@@ -351,12 +351,39 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     return this.creditRequest.at(creditIndex).get('customerKyc') as FormArray;
   }
 
+  // Earliest date a request may start: the day AFTER the latest active request on the
+  // same branch (so the new one supersedes it). null = no lower bound (first request
+  // for the branch). With [maxDate]="today", if a request already starts today the min
+  // becomes tomorrow > today and no date is selectable.
+  getEffectiveFromMinDate(index: number): any {
+    const branchSid = this.creditRequest.at(index)?.get('CustomerBranchSid')?.value;
+    const latest = this.getLatestMatchingActiveRequest(branchSid, index);
+    const latestFrom = this.normalizeDateValue(latest?.EffectiveFrom);
+    if (!latestFrom) return null;
+
+    const next = this.addDays(latestFrom, 1);
+    return {
+      year: next.getFullYear(),
+      month: next.getMonth() + 1,
+      day: next.getDate(),
+    };
+  }
+
   addCreditRequestRow(data?: any) {
     const sourceIndex = this.expandedIndex ?? (this.creditRequest.length ? this.creditRequest.length - 1 : null);
     const sourceBranchSid =
       data?.CustomerBranchSid ??
       (sourceIndex !== null ? this.creditRequest.at(sourceIndex)?.get('CustomerBranchSid')?.value : null) ??
       null;
+
+    // The branch already has a request effective today: the next start (latest + 1
+    // day) would be tomorrow, beyond the max (today). Warn the user — the row is still
+    // added but the datepicker's min > max means no date can be selected for it.
+    if (!data && this.nextEffectiveFromExceedsToday(sourceBranchSid)) {
+      this.appSettingService.showWarning(
+        'A credit request is already effective today for this branch. You can add the next one only from tomorrow.',
+      );
+    }
 
     const fg = this.createCreditRequest(data);
 
@@ -1363,15 +1390,36 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     })[0];
   }
 
+  // True when the next allowed start (latest active EffectiveFrom on the branch + 1 day)
+  // would fall after today — i.e. a request is already effective today on this branch.
+  private nextEffectiveFromExceedsToday(branchSid: any, excludeRowIndex?: number): boolean {
+    const latest = this.getLatestMatchingActiveRequest(branchSid, excludeRowIndex);
+    const latestFrom = this.normalizeDateValue(latest?.EffectiveFrom);
+    if (!latestFrom) return false;
+
+    const latestStart = new Date(latestFrom);
+    latestStart.setHours(0, 0, 0, 0);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    // next = latest + 1 day; exceeds today when the latest already starts today or later
+    return latestStart.getTime() >= todayStart.getTime();
+  }
+
   private applyNextEffectiveFrom(rowIndex: number, branchSid: any): void {
     const row = this.creditRequest.at(rowIndex) as FormGroup | null;
     if (!row) return;
 
     // No end date anymore: the latest request stays effective until the next one
-    // starts. Suggest the new row's EffectiveFrom = latest EffectiveFrom + 1 day.
+    // starts. Suggest the new row's EffectiveFrom = latest EffectiveFrom + 1 day —
+    // but never a future date (max is today); leave it blank so the picker blocks it.
     const latest = this.getLatestMatchingActiveRequest(branchSid, rowIndex);
     const latestFrom = this.normalizeDateValue(latest?.EffectiveFrom);
     if (!latestFrom) return;
+
+    if (this.nextEffectiveFromExceedsToday(branchSid, rowIndex)) {
+      row.patchValue({ EffectiveFrom: null }, { emitEvent: false });
+      return;
+    }
 
     row.patchValue({
       EffectiveFrom: this.addDays(latestFrom, 1)

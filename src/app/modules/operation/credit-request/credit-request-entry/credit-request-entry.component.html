@@ -311,7 +311,8 @@
                               <div class="input-group">
                                 <input class="form-control" placeholder="DD-MMM-YYYY" ngbDatepicker #d1="ngbDatepicker"
                                   (click)="d1.toggle()" formControlName="EffectiveFrom"
-                                  [disabled]="isApprovedRow(credit)" [minDate]="today" container="body" />
+                                  [disabled]="isApprovedRow(credit)" [minDate]="getEffectiveFromMinDate(i)"
+                                  [maxDate]="today" container="body" />
                                 <button class="btn px-0 btn-light" (click)="d1.toggle()" type="button"
                                   [disabled]="isApprovedRow(credit)">
                                   <i-feather name="calendar" class="feather-sm"></i-feather>
