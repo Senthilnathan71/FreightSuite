@@ -4992,13 +4992,38 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     // Cash multi-party: when any creditor (debit) row's amount changes and advances are present,
     // re-balance the single cash row. Covers both the main party and the advance rows.
-    if (!this.isPatching && this.paymentForm.get('CashOrBank')?.getRawValue() === 'C') {
+    const cashMultiParty =
+      this.paymentForm.get('CashOrBank')?.getRawValue() === 'C' &&
+      this.detailItems.controls.some((_, j) => this.isExtraAdvanceRow(j));
+    if (!this.isPatching && cashMultiParty) {
       const isDebitRow = this.detailItems.at(index)?.get('DrCr')?.getRawValue() === 'D';
-      const hasAdvances = this.detailItems.controls.some((_, j) => this.isExtraAdvanceRow(j));
-      if (isDebitRow && hasAdvances) {
+      if (isDebitRow) {
         this.syncCashToParties();
       }
+    } else if (!this.isPatching && this.isAutoPartyRow(index)) {
+      // Amount-first (simple bank / single-party cash): the bank/cash row mirrors the user-entered
+      // party amount (Dr = Cr) since matching no longer drives the detail amounts.
+      this.syncBankAmountToParty();
     }
+  }
+
+  /**
+   * Amount-first helper: copy the party row's Amount onto the bank/cash row so debits equal credits.
+   * Cash multi-party (advances present) is balanced by syncCashToParties instead. When the bank/cash
+   * row currency differs from the header it can't mirror 1:1, so it's zeroed (matching the prior
+   * updateDetailAmountsFromMatching behaviour). No-op during edit-load patching.
+   */
+  private syncBankAmountToParty(): void {
+    if (this.isPatching) return;
+    const partyIdx = this.detailItems.controls.findIndex((_, i) => this.isAutoPartyRow(i));
+    const bankIdx = this.detailItems.controls.findIndex((_, i) => this.isAutoBankRow(i));
+    if (partyIdx < 0 || bankIdx < 0) return;
+    const partyAmt = toNumber((this.detailItems.at(partyIdx) as FormGroup).get('Amount')?.getRawValue());
+    const bankRow = this.detailItems.at(bankIdx) as FormGroup;
+    const headerCurrency = this.r['CurrencyMasterSid']?.getRawValue();
+    const bankCurrency = bankRow.get('CurrencyMasterSid')?.getRawValue();
+    bankRow.patchValue({ Amount: headerCurrency === bankCurrency ? partyAmt : 0 });
+    this.calculateLocalAmount(bankIdx, true);
   }
 
   recalcPartyAmtForAllDetails() {
@@ -6044,7 +6069,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         matchPartyAmt: null,
       });
       row.get('isTicked')?.setValue(false);
-      isOwningRow ? this.recomputeInterBranchMemo() : this.updateDetailAmountsFromMatching();
+      // Amount-first: the party/cash amount is the user-entered ceiling, NOT driven by matching.
+      // Un-ticking only clears this row's allocation; owning rows still refresh their memo.
+      if (isOwningRow) this.recomputeInterBranchMemo();
       return;
     }
 
@@ -6066,7 +6093,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (this.enforceSourceMatchCap(row)) return; // item 3: source cap (no-op for owning rows)
     if (this.enforceOwningMatchCap(row)) return; // item 5: per-branch owning cap (no-op for source rows)
     row.get('isTicked')?.setValue(checked);
-    isOwningRow ? this.recomputeInterBranchMemo() : this.updateDetailAmountsFromMatching();
+    // Amount-first: matching allocates within the user-entered party amount and must NOT overwrite it
+    // (overwriting it collapses the cap so a 2nd voucher always "exceeds"). Owning rows refresh memo.
+    if (isOwningRow) this.recomputeInterBranchMemo();
 
     // this.calculateLocalAmountForMatchRow(index);
   }
