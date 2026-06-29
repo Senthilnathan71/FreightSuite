@@ -458,6 +458,14 @@
             </aside> -->
 
             <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  formControlName="Remarks">
+                <label for="text-input" class="input-label">Remarks<span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('status')?.value">
                 <ng-select formControlName="status" [items]="modeOfStatus" 

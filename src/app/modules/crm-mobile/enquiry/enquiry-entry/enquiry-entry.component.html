@@ -816,10 +816,12 @@
                                         </aside>
                                         <div class="col-md-6">
                                             <div class="custom-form-group">
-                                                <input type="text" id="CustomerRef"
-                                                    class="form-control custom-input-field sm"
-                                                    formControlName="CustomerRef" placeholder="">
+                                                <input type="text" id="CustomerRef" class="form-control custom-input-field sm" formControlName="CustomerRef"
+                                                    placeholder="">
                                                 <label for="dept" class="input-label">Customer Ref</label>
+                                                <div *ngIf="f['CustomerRef'].hasError('maxlength') && f['CustomerRef'].touched" class="text-danger">
+                                                    <span>Customer Ref cannot exceed 20 characters.</span>
+                                                </div>
                                             </div>
                                         </div>
                                         <aside class="col-md-6">

@@ -784,6 +784,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       CarrierRef: formValue.CarrierRef,
       AgentRef: formValue.AgentRef,
       ExportDoDate: formValue.ExportDoDate,
+      YardReceivedOn: formValue.YardReceivedOn,
       SOBDate: formValue.SOBDate,
       JobtoSubjob: formValue.JobtoSubjob,
       ExportToImport: formValue.ExportToImport || 'N'
@@ -1561,6 +1562,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       CoLoader: [{ value: '', disabled: true }],
       ExportDoNo: [''],
       ExportDoDate: [null],
+      YardReceivedOn: [null],
       SOBDate: [null],
       JobtoSubjob:[''],
       CarrierRef: [''],
@@ -2164,6 +2166,7 @@ onETDDateSelect(): void {
           ImportMasterJobSid: othersData.ImportMasterJobSid || null,
           ExportToImport: othersData.ExportToImport || 'N',
           ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
+          YardReceivedOn: othersData.YardReceivedOn ? new Date(othersData.YardReceivedOn) : null,
           SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
         });
         this.applyVoyageLock();
@@ -3414,6 +3417,7 @@ onETDDateSelect(): void {
       CarrierRef: formValue.CarrierRef,
       AgentRef: formValue.AgentRef,
       ExportDoDate: formValue.ExportDoDate,
+      YardReceivedOn: formValue.YardReceivedOn,
       SOBDate: formValue.SOBDate,
       JobtoSubjob: formValue.JobtoSubjob,
       ImportMasterJobSid: formValue.ImportMasterJobSid || null,

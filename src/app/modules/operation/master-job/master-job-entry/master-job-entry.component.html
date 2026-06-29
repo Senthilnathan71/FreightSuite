@@ -1121,7 +1121,10 @@
                     <div class="table-toolbar">
                         <div class="toolbar-left">
                             <div class="d-flex align-items-center gap-5">
-       
+                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)"
+                             [disabled]="isExportToImportCompleted || (selectedFCLLCL === 'FCL' && masterJobContainers.length >= getTotalAllowedContainers())">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
 
     <!-- master-job-entry.component.html - Add this in Container tab -->
 
@@ -1208,10 +1211,6 @@
         <i class="fas fa-times me-1"></i> Cancel
     </button>
 </div>
-                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)"
-                             [disabled]="isExportToImportCompleted || (selectedFCLLCL === 'FCL' && masterJobContainers.length >= getTotalAllowedContainers())">
-                                <i class="fas fa-plus"></i> Add
-                            </button>
                             <button class="table-action-btn export"
                              (click)="exportContainerData()"
                              [disabled]="masterJobContainers.length === 0">
@@ -1227,12 +1226,12 @@
                             <thead>
                                 <tr>
                                     <th width="3%"></th>
-                                    <th>Container Type</th>
-                                    <th>Container Number</th>
+                                    <th>Cont. Type</th>
+                                    <th>Cont. No.</th>
                                     <th>Line Seal</th>
                                     <th>Customs Seal</th>
                                     <th>HS Code</th>
-                                    <th>Commodity Description</th>
+                                    <th>Description</th>
                                     <th>Pkg Type</th>
                                     <th>No. of Pkg</th>
                                     <th>Gross Wt.</th>
@@ -1310,263 +1309,43 @@
             <div class="col-md-12">
                 <div class="row compact-form" [formGroup]="masterJobForm">
 
-
-                    <!-- Yard Field -->
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!masterJobForm.get('Yard')?.value">
-                            <!-- <ng-select [items]="yardList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                formControlName="Yard" placeholder="" (change)="onYardChange($event)" appendTo="body">
-                                <ng-template ng-option-tmp let-item="item">
-                                    <div>
-                                        <strong>{{ item.CustomerName }}</strong>
-                                        <div *ngIf="item.CustomerAddress1" class="small text-muted">
-                                            {{ item.CustomerAddress1 }}
-                                        </div>
-                                    </div>
-                                </ng-template>
-                                <ng-template ng-notfound-tmp>
-                                    <div class="text-center text-muted py-2">
-                                        No Yard found
-                                    </div>
-                                </ng-template>
-                            </ng-select> -->
-
-                            <dofi-searchable-dropdown [items]="yardList" formControlName="Yard" placeholder=""
-                        [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerMasterSid" (itemSelected)="onYardChange($event)"
-                        >
-                      </dofi-searchable-dropdown>
-
-                            <label class="input-label">Yard</label>
-                        </div>
-                    </aside>
-
-                    <!-- Yard Address Field - Auto-populated -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="YardAddress" class="custom-input-field sm"
-                                [textWithNumbers]="200" placeholder="" readonly>
-                            <label class="input-label">Yard Address</label>
-                        </div>
-                    </aside>
-
-
-                    <!-- Rest of your Others tab fields remain the same -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="Transporter" class="custom-input-field sm"
-                                placeholder="" [textWithNumbers]="100">
-                            <label class="input-label">Transporter</label>
+                            [class.filled]="!!masterJobForm.get('OriginAgent')?.value">
+                            <dofi-searchable-dropdown [items]="filteredOriginAgents" formControlName="OriginAgent"
+                                placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                                [displayLabels]="customerLookupConfig.displayLabels"
+                                [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                                bindValue="CustomerMasterSid" (itemSelected)="onOriginAgentChange($event)">
+                            </dofi-searchable-dropdown>
+                            <label class="input-label">Origin Agent</label>
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="HandlingInformation" class="custom-input-field sm"
-                                placeholder="" [textWithNumbers]="500">
-                            <label class="input-label">Handling Information</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="InternalNote" class="custom-input-field sm"
-                                placeholder="" [textWithNumbers]="500">
-                            <label class="input-label">Internal Note</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" formControlName="CarrierRef" class="custom-input-field sm"
-                                placeholder="" [textWithNumbers]="20">
+                            <input type="text" formControlName="CarrierRef" class="custom-input-field sm" placeholder=""
+                                [textWithNumbers]="20">
                             <label class="input-label">Carrier Ref</label>
                         </div>
                     </aside>
 
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="AgentRef" class="custom-input-field sm"
-                                placeholder="" [textWithNumbers]="20">
+                            <input type="text" formControlName="AgentRef" class="custom-input-field sm" placeholder=""
+                                [textWithNumbers]="20">
                             <label class="input-label">Agent Ref</label>
                         </div>
                     </aside>
 
-                     <!-- Origin Agent Field -->
-                                    <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!masterJobForm.get('OriginAgent')?.value">
-                                            <!-- <ng-select [items]="filteredOriginAgents" bindLabel="CustomerName"
-                                                bindValue="CustomerMasterSid" formControlName="OriginAgent"
-                                                placeholder="" (change)="onOriginAgentChange($event)" appendTo="body">
-                                                <ng-template ng-option-tmp let-item="item">
-                                                    <div>
-                                                        <strong>{{ item.CustomerName }}</strong><br>
-                                                        <small>{{ item.CustomerAddress1 }}</small>
-                                                    </div>
-                                                </ng-template>
-                                            </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="filteredOriginAgents" formControlName="OriginAgent" placeholder=""
-                        [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerMasterSid" (itemSelected)="onOriginAgentChange($event)"
-                        >
-                      </dofi-searchable-dropdown>
-                                            <label class="input-label">Origin Agent</label>
-                                        </div>
-                                    </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!masterJobForm.get('CFS')?.value">
-                            <!-- <ng-select [items]="cfsList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                formControlName="CFS" placeholder="" (change)="onCFSChange($event)" appendTo="body">
-                                <ng-template ng-option-tmp let-item="item">
-                                    <div>
-                                        <strong>{{ item.CustomerName }}</strong>
-                                        <div *ngIf="item.CustomerAddress1" class="small text-muted">
-                                            {{ item.CustomerAddress1 }}
-                                        </div>
-                                    </div>
-                                </ng-template>
-                                <ng-template ng-notfound-tmp>
-                                    <div class="text-center text-muted py-2">
-                                        No CFS found
-                                    </div>
-                                </ng-template>
-                            </ng-select> -->
-                            <dofi-searchable-dropdown [items]="cfsList" formControlName="CFS" placeholder=""
-                        [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerMasterSid" (itemSelected)="onCFSChange($event)"
-                        >
-                      </dofi-searchable-dropdown>
-                            <label class="input-label">CFS</label>
-                        </div>
-                    </aside>
-
-
-                    <!-- CFS Address Field - Auto-populated -->
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="CFSAddress" class="custom-input-field sm"
-                                [textWithNumbers]="200" placeholder="" readonly>
-                            <label class="input-label">CFS Address</label>
+                            <input type="text" formControlName="InternalNote" class="custom-input-field sm" placeholder=""
+                                [textWithNumbers]="500">
+                            <label class="input-label">Internal Note</label>
                         </div>
                     </aside>
 
-                    <div class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" 
-                                    formControlName="StuffingStartDate" ngbDatepicker
-                                    #stuffingStartDatePicker="ngbDatepicker" (click)="stuffingStartDatePicker.toggle()"
-                                    container="body" />
-                                <button class="btn bi bi-calendar3 px-0" (click)="stuffingStartDatePicker.toggle()"
-                                    type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                </button>
-                            </div>
-                            <label class="input-label">{{ isImportDepartment ? 'Destuffing Start Date' : 'Stuffing Start Date' }}</label>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" 
-                                    formControlName="StuffingEndDate" ngbDatepicker
-                                    #stuffingEndDatePicker="ngbDatepicker" (click)="stuffingEndDatePicker.toggle()"
-                                    container="body" />
-                                <button class="btn bi bi-calendar3 px-0" (click)="stuffingEndDatePicker.toggle()"
-                                    type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                </button>
-                            </div>
-                            <label class="input-label">{{ isImportDepartment ? 'Destuffing End Date' : 'Stuffing End Date' }}</label>
-                        </div>
-                    </div>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!masterJobForm.get('CurrencyCode')?.value">
-                            <!-- <ng-select [items]="currencyList" bindLabel="CurrencyCode" bindValue="CurrencyCode" 
-                              formControlName="CurrencyCode" placeholder="" appendTo="body">
-                    </ng-select> -->
-                            <dofi-searchable-dropdown [items]="currencyList" placeholder=""
-                                formControlName="CurrencyCode" [placeholder]="''"
-                                [displayFields]="CurrencyLookupConfig.displayFields"
-                                [displayLabels]="CurrencyLookupConfig.displayLabels"
-                                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'">
-                            </dofi-searchable-dropdown>
-                            <label class="input-label">Currency Code</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date">
-                            <input type="text" formControlName="SellExchangeRate" 
-                                class="custom-input-field sm" step="0.0001" min="0" [onlyNumbers]="10" placeholder="">
-                            <label class="input-label">Sell Exchange Rate</label>
-                        </div>
-                    </aside>
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date mt-1">
-                            <input type="text" formControlName="AgentExchangeRate"
-                                class="custom-input-field sm" step="0.0001" min="0" [onlyNumbers]="10" placeholder="">
-                            <label class="input-label">Agent Exchange Rate</label>
-                        </div>
-                    </aside>
-                      <aside class="col-md-3 d-flex align-items-center">
-                                        <div class="form-check form-check-inline p-0">
-                                            <div class="form-check d-flex align-items-center">
-                                                <input type="checkbox" id="hazCheckbox" formControlName="Haz"
-                                                    class="focus-ring form-check-input sm p-0">
-                                                <label for="hazCheckbox" class="form-check-label sm">Haz</label>
-                                            </div>
-                                        </div>
-                                    </aside>
-                    <aside class="col-md-3 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input type="checkbox" id="coloadCheckbox" placeholder="" formControlName="Coload"
-                                    class="focus-ring form-check-input sm p-0" (change)="onColoadChange()">
-                                <label for="coloadCheckbox" class="form-check-label sm">Coload</label>
-                            </div>
-                        </div>
-                    </aside>
-
-                    <!-- CoLoader Field - Conditionally enabled/disabled -->
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select mt-1"
-                            [class.filled]="!!masterJobForm.get('CoLoader')?.value"
-                            [class.disabled]="masterJobForm.get('CoLoader')?.disabled">
-                            <!-- <ng-select [items]="forwarderList" bindLabel="CustomerName" bindValue="CustomerName"
-                                class="ng-select" placeholder="" formControlName="CoLoader" [textWithNumbers]="20"
-                                appendTo="body" [disabled]="masterJobForm.get('CoLoader')?.disabled">
-                                <ng-template ng-option-tmp let-item="item">
-                                    <div>
-                                        <strong>{{ item.CustomerName }}</strong><br>
-                                        <small>{{ item.CustomerAddress1 }}</small>
-                                    </div>
-                                </ng-template>
-                            </ng-select> -->
-                            <dofi-searchable-dropdown [items]="forwarderList" formControlName="CoLoader" placeholder=""
-                        [displayFields]="customerLookupConfig.displayFields"
-                        [displayLabels]="customerLookupConfig.displayLabels"
-                        [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
-                        bindValue="CustomerName"
-                        >
-                      </dofi-searchable-dropdown>
-                            <label class="input-label">CoLoader</label>
-                        </div>
-                    </aside>
-                  
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="ExportDoNo" class="custom-input-field sm" placeholder=""
@@ -1574,49 +1353,14 @@
                             <label class="input-label">Export Do No</label>
                         </div>
                     </aside>
-                     <!-- HAZ Checkbox -->
-                                    
-                                     <!-- Show DG fields only if Haz = true -->
-                                    <div class="col-md-3" *ngIf="masterJobForm.get('Haz')?.value">
-                                        <!-- Changed to cargoForm -->
-                                        <div class="custom-form-group custom-form-group-select-date">
-                                            <div class="input-group">
-                                                <input class="form-control" placeholder="dd-mm-yyyy"
-                                                    formControlName="DGBookingDate" ngbDatepicker
-                                                    #dgBookingDatePicker="ngbDatepicker"
-                                                    (click)="dgBookingDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3 px-0"
-                                                    (click)="dgBookingDatePicker.toggle()" type="button">
-                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                                </button>
-                                            </div>
-                                            <label class="input-label">DG Booking Date</label>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-3" *ngIf="masterJobForm.get('Haz')?.value">
-                                        <!-- Changed to cargoForm -->
-                                        <div class="custom-form-group custom-form-group-select-date">
-                                            <div class="input-group">
-                                                <input class="form-control" placeholder="dd-mm-yyyy"
-                                                    formControlName="DGApprovedDate" ngbDatepicker
-                                                    #dgApprovedDatePicker="ngbDatepicker"
-                                                    (click)="dgApprovedDatePicker.toggle()" container="body" />
-                                                <button class="btn bi bi-calendar3 px-0"
-                                                    (click)="dgApprovedDatePicker.toggle()" type="button">
-                                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                                </button>
-                                            </div>
-                                            <label class="input-label">DG Approval Date</label>
-                                        </div>
-                                    </div>
-
+                    
+        
                     <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" 
-                                    formControlName="ExportDoDate" ngbDatepicker #exportDoDatePicker="ngbDatepicker"
-                                    (click)="exportDoDatePicker.toggle()" container="body" />
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ExportDoDate"
+                                    ngbDatepicker #exportDoDatePicker="ngbDatepicker" (click)="exportDoDatePicker.toggle()"
+                                    container="body" />
                                 <button class="btn bi bi-calendar3 px-0" (click)="exportDoDatePicker.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
@@ -1624,13 +1368,43 @@
                             <label class="input-label">Export Do Date</label>
                         </div>
                     </div>
-                    <!-- SOB Date Field - Added to Others tab -->
+
                     <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="SOBDate"
-                                    ngbDatepicker #sobDatePicker="ngbDatepicker" (click)="sobDatePicker.toggle()"
-                                    container="body" />
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="StuffingStartDate"
+                                    ngbDatepicker #stuffingStartDatePicker="ngbDatepicker"
+                                    (click)="stuffingStartDatePicker.toggle()" container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="stuffingStartDatePicker.toggle()"
+                                    type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">{{ isImportDepartment ? 'Destuffing Start Date' : 'Stuffing Start Date'
+                                }}</label>
+                        </div>
+                    </div>
+        
+                    <div class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="StuffingEndDate"
+                                    ngbDatepicker #stuffingEndDatePicker="ngbDatepicker"
+                                    (click)="stuffingEndDatePicker.toggle()" container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="stuffingEndDatePicker.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">{{ isImportDepartment ? 'Destuffing End Date' : 'Stuffing End Date'
+                                }}</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="SOBDate" ngbDatepicker
+                                    #sobDatePicker="ngbDatepicker" (click)="sobDatePicker.toggle()" container="body" />
                                 <button class="btn bi bi-calendar3 px-0" (click)="sobDatePicker.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
@@ -1638,20 +1412,7 @@
                             <label class="input-label">SOB Date <span class="text-danger"></span></label>
                         </div>
                     </div>
-                    <!-- ATA Field - Updated to Date Picker -->
-                    <div class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select-date">
-                            <div class="input-group">
-                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ATA" ngbDatepicker
-                                    #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()" container="body" />
-                                <button class="btn bi bi-calendar3 px-0" (click)="ataPicker.toggle()" type="button">
-                                    <i-feather name="calendar" class="feather-sm"></i-feather>
-                                </button>
-                            </div>
-                            <label class="input-label">ATA<span class="text-danger"></span></label>
-                        </div>
-                    </div>
-
+                    
                     <!-- ATD Field - Updated to Date Picker -->
                     <div class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
@@ -1666,71 +1427,214 @@
                         </div>
                     </div>
 
-                    
-                    <!-- Movement Type Field -->
-<aside class="col-md-3">
-    <div class="custom-form-group custom-form-group-select"
-        [class.filled]="!!masterJobForm.get('MovementType')?.value">
-        <ng-select 
-            [items]="modeOfMovementType" 
-            bindLabel="name" 
-            bindValue="name"
-            formControlName="MovementType" 
-            placeholder="" 
-            appendTo="body">
-        </ng-select>
-        <label class="input-label">Movement Type<span class="text-danger"></span></label>
-    </div>
-</aside>
+                    <!-- ATA Field - Updated to Date Picker -->
+                    <div class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ATA" ngbDatepicker
+                                    #ataPicker="ngbDatepicker" (click)="ataPicker.toggle()" container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="ataPicker.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">ATA<span class="text-danger"></span></label>
+                        </div>
+                    </div>
 
+                    <!-- Movement Type Field -->
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!masterJobForm.get('MovementType')?.value">
+                            <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name"
+                                formControlName="MovementType" placeholder="" appendTo="body">
+                            </ng-select>
+                            <label class="input-label">Movement Type<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+        
+                    <!-- Yard Field -->
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!masterJobForm.get('Yard')?.value">
+        
+                            <dofi-searchable-dropdown [items]="yardList" formControlName="Yard" placeholder=""
+                                [displayFields]="customerLookupConfig.displayFields"
+                                [displayLabels]="customerLookupConfig.displayLabels"
+                                [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                                bindValue="CustomerMasterSid" (itemSelected)="onYardChange($event)">
+                            </dofi-searchable-dropdown>
+        
+                            <label class="input-label">Yard</label>
+                        </div>
+                    </aside>
+        
+                    <!-- Yard Address Field - Auto-populated -->
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="YardAddress" class="custom-input-field sm"
+                                [textWithNumbers]="200" placeholder="" readonly>
+                            <label class="input-label">Yard Address</label>
+                        </div>
+                    </aside>
+                    
+                    <div class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="YardReceivedOn" ngbDatepicker
+                                    #yardReceivedOnPicker="ngbDatepicker" (click)="yardReceivedOnPicker.toggle()" container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="yardReceivedOnPicker.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">Received On<span class="text-danger"></span></label>
+                        </div>
+                    </div>
+        
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!masterJobForm.get('CFS')?.value">
+                            <dofi-searchable-dropdown [items]="cfsList" formControlName="CFS" placeholder=""
+                                [displayFields]="customerLookupConfig.displayFields"
+                                [displayLabels]="customerLookupConfig.displayLabels"
+                                [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                                bindValue="CustomerMasterSid" (itemSelected)="onCFSChange($event)">
+                            </dofi-searchable-dropdown>
+                            <label class="input-label">CFS</label>
+                        </div>
+                    </aside>
+        
+        
+                    <!-- CFS Address Field - Auto-populated -->
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="CFSAddress" class="custom-input-field sm"
+                                [textWithNumbers]="200" placeholder="" readonly>
+                            <label class="input-label">CFS Address</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="Transporter" class="custom-input-field sm" placeholder=""
+                                [textWithNumbers]="100">
+                            <label class="input-label">Transporter</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input type="text" formControlName="HandlingInformation" class="custom-input-field sm"
+                                placeholder="" [textWithNumbers]="500">
+                            <label class="input-label">Handling Information</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!masterJobForm.get('CurrencyCode')?.value">
+                            <dofi-searchable-dropdown [items]="currencyList" placeholder="" formControlName="CurrencyCode"
+                                [placeholder]="''" [displayFields]="CurrencyLookupConfig.displayFields"
+                                [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'currencyCode'">
+                            </dofi-searchable-dropdown>
+                            <label class="input-label">Currency Code</label>
+                        </div>
+                    </aside>
+        
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <input type="text" formControlName="SellExchangeRate" class="custom-input-field sm" step="0.0001"
+                                min="0" [onlyNumbers]="10" placeholder="">
+                            <label class="input-label">Sell Exchange Rate</label>
+                        </div>
+                    </aside>
+        
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select-date mt-1">
+                            <input type="text" formControlName="AgentExchangeRate" class="custom-input-field sm" step="0.0001"
+                                min="0" [onlyNumbers]="10" placeholder="">
+                            <label class="input-label">Agent Exchange Rate</label>
+                        </div>
+                    </aside>
+
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="coloadCheckbox" placeholder="" formControlName="Coload"
+                                    class="focus-ring form-check-input sm p-0" (change)="onColoadChange()">
+                                <label for="coloadCheckbox" class="form-check-label sm">Coload</label>
+                            </div>
+                        </div>
+                    </aside>
+        
+                    <!-- CoLoader Field - Conditionally enabled/disabled -->
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select mt-1"
+                            [class.filled]="!!masterJobForm.get('CoLoader')?.value"
+                            [class.disabled]="masterJobForm.get('CoLoader')?.disabled">
+                            <dofi-searchable-dropdown [items]="forwarderList" formControlName="CoLoader" placeholder=""
+                                [displayFields]="customerLookupConfig.displayFields"
+                                [displayLabels]="customerLookupConfig.displayLabels"
+                                [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                                bindValue="CustomerName">
+                            </dofi-searchable-dropdown>
+                            <label class="input-label">CoLoader</label>
+                        </div>
+                    </aside>
+    
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input type="checkbox" id="hazCheckbox" formControlName="Haz"
+                                    class="focus-ring form-check-input sm p-0">
+                                <label for="hazCheckbox" class="form-check-label sm">Haz</label>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- HAZ Checkbox -->
+        
+                    <!-- Show DG fields only if Haz = true -->
+                    <div class="col-md-3" *ngIf="masterJobForm.get('Haz')?.value">
+                        <!-- Changed to cargoForm -->
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="DGBookingDate"
+                                    ngbDatepicker #dgBookingDatePicker="ngbDatepicker" (click)="dgBookingDatePicker.toggle()"
+                                    container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="dgBookingDatePicker.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">DG Booking Date</label>
+                        </div>
+                    </div>
+        
+                    <div class="col-md-3" *ngIf="masterJobForm.get('Haz')?.value">
+                        <!-- Changed to cargoForm -->
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control" placeholder="dd-mm-yyyy" formControlName="DGApprovedDate"
+                                    ngbDatepicker #dgApprovedDatePicker="ngbDatepicker" (click)="dgApprovedDatePicker.toggle()"
+                                    container="body" />
+                                <button class="btn bi bi-calendar3 px-0" (click)="dgApprovedDatePicker.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">DG Approval Date</label>
+                        </div>
+                    </div>
+        
                     <!-- JobToSubjob Field -->
                     <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!masterJobForm.get('JobtoSubjob')">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!masterJobForm.get('JobtoSubjob')">
                             <ng-select [items]="jobToSubJobList" bindLabel="name" bindValue="name" formControlName="JobtoSubjob"
                                 placeholder="" readonly appendTo="body">
                             </ng-select>
                             <label class="input-label">ProRate<span class="text-danger"></span></label>
                         </div>
                     </aside>
-
-                           <aside class="col-md-3">
-                                        <div class="custom-form-group custom-form-group-select"
-                                            [class.filled]="!!masterJobForm.get('Status')?.value">
-                                            <ng-select *ngIf="isEditMode" formControlName="Status"
-                                                [items]="modeOfStatus" bindLabel="name" bindValue="name" placeholder=""
-                                                class="ng-select" appendTo="body"
-                                                (change)="onStatusChange()"></ng-select>
-                                            <input *ngIf="!isEditMode" type="text" name="Status"
-                                                class="custom-input-field sm" formControlName="Status" readonly>
-                                            <label class="input-label">Status</label>
-                                            @if(masterJobForm.get('Status')?.touched &&
-                                            masterJobForm.get('Status')?.invalid){
-                                            <div class="error-message">
-                                                @if(masterJobForm.get('Status')?.hasError('required')){
-                                                <span>Required</span>
-                                                }
-                                            </div>
-                                            }
-                                        </div>
-                    </aside>
-
-                <aside class="col-md-3">
-                        <div class="custom-form-group job-loss-reason-field">
-                            <input formControlName="JobLossReason" class="custom-input-field sm"
-                                placeholder="" rows="2" maxlength="300">
-                            <label class="input-label">Job Loss Reason</label>
-                            <div class="job-loss-reason-count small text-muted">
-                                {{ masterJobForm.get('JobLossReason')?.value?.length || 0 }}/300
-                            </div>
-                        </div>
-                    </aside>
-
-                    <!-- <aside class="col-md-3">
-                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobSid')?.value">
-                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobSid" readonly>
-                            <label class="input-label">Import Master Job Sid</label>
-                        </div>
-                    </aside> -->
 
                     <aside class="col-md-3">
                         <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobNumber')?.value">
@@ -1739,15 +1643,11 @@
                         </div>
                     </aside>
 
-                  <aside class="col-md-3 d-flex align-items-center">
+                    <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
-                                <input
-                                    type="checkbox"
-                                    id="exportToImportCheckbox"
-                                    class="focus-ring form-check-input sm p-0"
-                                    [checked]="masterJobForm.get('ExportToImport')?.value === 'Y'"
-                                    disabled>
+                                <input type="checkbox" id="exportToImportCheckbox" class="focus-ring form-check-input sm p-0"
+                                    [checked]="masterJobForm.get('ExportToImport')?.value === 'Y'" disabled>
                                 <label for="exportToImportCheckbox" class="form-check-label sm">Export To Import</label>
                             </div>
                         </div>
@@ -1759,18 +1659,14 @@
                                 <div class="col-md-3">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!selectedTransferCompanySid">
-                                        <dofi-searchable-dropdown
-                                            [items]="availableTransferCompanies"
+                                        <dofi-searchable-dropdown [items]="availableTransferCompanies"
                                             [(ngModel)]="selectedTransferCompanySid"
                                             [displayFields]="companyLookupConfig.displayFields"
                                             [displayLabels]="companyLookupConfig.displayLabels"
-                                            [labelFields]="companyLookupConfig.labelFields"
-                                            bindValue="CompanyMasterSid"
-                                            placeholder=""
-                                            [ngModelOptions]="{ standalone: true }"
+                                            [labelFields]="companyLookupConfig.labelFields" bindValue="CompanyMasterSid"
+                                            placeholder="" [ngModelOptions]="{ standalone: true }"
                                             (ngModelChange)="onTransferCompanyChange($event)"
-                                            [readonly]="isExportToImportCompleted || isJobClosed"
-                                            [clearable]="false">
+                                            [readonly]="isExportToImportCompleted || isJobClosed" [clearable]="false">
                                         </dofi-searchable-dropdown>
                                         <label class="input-label">Destination Company</label>
                                     </div>
@@ -1778,40 +1674,66 @@
                                 <div class="col-md-3">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!selectedTransferBranchSid">
-                                        <dofi-searchable-dropdown
-                                            [items]="filteredTransferBranches"
+                                        <dofi-searchable-dropdown [items]="filteredTransferBranches"
                                             [(ngModel)]="selectedTransferBranchSid"
                                             [displayFields]="branchLookupConfig.displayFields"
                                             [displayLabels]="branchLookupConfig.displayLabels"
-                                            [labelFields]="branchLookupConfig.labelFields"
-                                            bindValue="BranchMasterSid"
-                                            placeholder=""
-                                            [ngModelOptions]="{ standalone: true }"
-                                            [readonly]="isExportToImportCompleted || isJobClosed"
-                                            [clearable]="false">
+                                            [labelFields]="branchLookupConfig.labelFields" bindValue="BranchMasterSid"
+                                            placeholder="" [ngModelOptions]="{ standalone: true }"
+                                            [readonly]="isExportToImportCompleted || isJobClosed" [clearable]="false">
                                         </dofi-searchable-dropdown>
                                         <label class="input-label">Destination Branch</label>
                                     </div>
                                 </div>
                                 <div class="col-md-4 d-flex align-items-end mb-2 gap-1">
-                                    <button
-                                        class="btn btn-info btn-sm"
-                                        (click)="pullMasterJobToImportBranch()"
+                                    <button class="btn btn-info btn-sm" (click)="pullMasterJobToImportBranch()"
                                         [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferCompanySid || !selectedTransferBranchSid || isExportToImportCompleted || isJobClosed">
                                         <i class="fas fa-download me-1"></i>
-                                        <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Create Import') }}</span>
+                                        <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To
+                                            Import Successful' : 'Create Import') }}</span>
                                     </button>
                                     <div class="">
-                                    <small class="text-muted">
-                                        Select company and branch for the import-side job.
-                                    </small>
+                                        <small class="text-muted">
+                                            Select company and branch for the import-side job.
+                                        </small>
+                                    </div>
                                 </div>
-                                </div>
-                                
+        
                             </div>
                         </div>
                     </div>
 
+                    <aside class="col-md-3">
+                        <div class="custom-form-group job-loss-reason-field">
+                            <input formControlName="JobLossReason" class="custom-input-field sm" placeholder="" rows="2"
+                                maxlength="300">
+                            <label class="input-label">Job Loss Reason</label>
+                            <div class="job-loss-reason-count small text-muted">
+                                {{ masterJobForm.get('JobLossReason')?.value?.length || 0 }}/300
+                            </div>
+                        </div>
+                    </aside>
+        
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select"
+                            [class.filled]="!!masterJobForm.get('Status')?.value">
+                            <ng-select *ngIf="isEditMode" formControlName="Status" [items]="modeOfStatus" bindLabel="name"
+                                bindValue="name" placeholder="" class="ng-select" appendTo="body"
+                                (change)="onStatusChange()"></ng-select>
+                            <input *ngIf="!isEditMode" type="text" name="Status" class="custom-input-field sm"
+                                formControlName="Status" readonly>
+                            <label class="input-label">Status</label>
+                            @if(masterJobForm.get('Status')?.touched &&
+                            masterJobForm.get('Status')?.invalid){
+                            <div class="error-message">
+                                @if(masterJobForm.get('Status')?.hasError('required')){
+                                <span>Required</span>
+                                }
+                            </div>
+                            }
+                        </div>
+                    </aside>
+        
                 </div>
                 <div class="row mt-3" *ngIf="isTranshipment">
                     <div class="col-md-12 text-end">
@@ -1821,7 +1743,7 @@
                         </button>
                     </div>
                 </div>
-                  
+        
             </div>
         </div>
 
