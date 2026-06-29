@@ -1438,14 +1438,42 @@ private mapQuotationCargoForBooking(cargo: any): any {
       : `Approver Level ${level}${total ? ' of ' + total : ''}`;
   }
 
-  getApprovalStatusOptions(routeIndex?: number): any[] {
-    if (!this.isAuthorizationRequiredForRoute(routeIndex)) {
-      return this.approvalStatus;
+  private approvalStatusOptionsCache: { [key: string]: { key: string; options: any[] } } = {};
+
+  getApprovalStatusOptions(routeIndex?: number, carrierIndex?: number): any[] {
+    const baseOptions = !this.isAuthorizationRequiredForRoute(routeIndex)
+      ? this.approvalStatus
+      : this.isFinalAuthorizer(routeIndex)
+        ? this.finalApprovalStatusOptions
+        : this.nonFinalApprovalStatusOptions;
+
+    // Current status is per-carrier on the carrier dropdown, otherwise the route-level control.
+    const currentValue = Number.isInteger(carrierIndex)
+      ? this.quoteCarriers(routeIndex).at(carrierIndex)?.get('authorizerStatus')?.value || ''
+      : this.quoteRoutes.at(routeIndex)?.get('authorizerStatus')?.value || '';
+
+    // Memoize on the inputs so the reference stays stable across change detection,
+    // otherwise ng-select reprocesses items every cycle and drops the user's click.
+    const cacheKey = `${routeIndex}|${carrierIndex}`;
+    const cacheSig = `${baseOptions.length}|${currentValue}`;
+    const cached = this.approvalStatusOptionsCache[cacheKey];
+    if (cached && cached.key === cacheSig) {
+      return cached.options;
     }
 
-    return this.isFinalAuthorizer(routeIndex)
-      ? this.finalApprovalStatusOptions
-      : this.nonFinalApprovalStatusOptions;
+    // Always include the row's current status so the dropdown can render a persisted value
+    // (e.g. an already 'Approved' carrier) even when it is outside the authorizer-level subset.
+    const options = this.withCurrentApprovalStatusOption(baseOptions, currentValue);
+    this.approvalStatusOptionsCache[cacheKey] = { key: cacheSig, options };
+    return options;
+  }
+
+  private withCurrentApprovalStatusOption(options: any[], currentValue: string): any[] {
+    if (!currentValue || options.some(option => option.value === currentValue)) {
+      return options;
+    }
+    const match = this.allApprovalStatus.find(option => option.value === currentValue);
+    return match ? [...options, match] : options;
   }
 
   private isAuthorizationRequiredForRoute(routeIndex?: number): boolean {

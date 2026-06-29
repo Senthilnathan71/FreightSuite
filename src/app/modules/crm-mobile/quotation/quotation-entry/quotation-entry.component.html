@@ -1430,7 +1430,7 @@
                                               [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
                                               <ng-select class="authorization-status-select"
                                                 formControlName="authorizerStatus"
-                                                [items]="getApprovalStatusOptions(routeIndex)"
+                                                [items]="getApprovalStatusOptions(routeIndex, carrierIndex)"
                                                 bindLabel="name" bindValue="value"
                                                 [trackByFn]="trackApprovalStatusByValue"
                                                 (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"

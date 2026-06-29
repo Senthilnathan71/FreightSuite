@@ -66,6 +66,7 @@ import { extractBackendErrorMessage } from 'src/app/common/error-handling/payloa
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { CfsOutturnComponent } from '../reports/cfs-outturn/cfs-outturn.component';
 import { AllHBLDraftComponent } from '../reports/all-hbl-draft/all-hbl-draft.component';
 import { AllHBLComponent } from '../reports/all-hbl/all-hbl.component';
@@ -6152,9 +6153,31 @@ findElementByTextContent(selector: string, text: string): Element | null {
   
     modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
     modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
-    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
     modalRef.componentInstance.DocumentSid = this.masterJobSid;
   }
+
+  openAuthority() {
+    if (!this.masterJobData) return;
+    const menuMasterSid = Number(this.MenuMasterSid || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.masterJobData?.MasterJobSid || this.masterJobSid;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the master job before viewing authorization.');
+      return;
+    }
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.DepartmentMasterSid = this.masterJobData?.DepartmentMasterSid ?? null;
+    modalRef.componentInstance.allowAction = true;
+  }
+
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

@@ -817,6 +817,12 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     );
   }
 
+  authorizeDocument(payload: any) {
+    return this.http.post<{ data: any }>(`authority/authorize`, payload).pipe(
+      map((resp) => resp)
+    );
+  }
+
   getApprovalStatusByMenuAndDocument(
     menuMasterSid: number,
     documentSid: number,

@@ -4646,11 +4646,24 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
 
   openAuthority() {
     if (!this.bookingData) return;
+    const menuMasterSid = this.getCurrentBookingMenuMasterSid();
+    const documentSid = this.bookingData?.BookingHeaderSid || this.BookingHeaderSid;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the booking before viewing authorization.');
+      return;
+    }
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
-    })
+    });
+    modalRef.componentInstance.menuMasterSid = Number(menuMasterSid);
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.DepartmentMasterSid =
+      this.bookingData?.DepartmentMasterSid ?? this.b['DepartmentMasterSid']?.value ?? null;
+    modalRef.componentInstance.allowAction = true;
   }
   toggleQuickForm() {
     this.isQuickFormExpanded = !this.isQuickFormExpanded;
