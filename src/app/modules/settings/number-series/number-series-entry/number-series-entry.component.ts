@@ -41,6 +41,9 @@ export class NumberSeriesEntryComponent implements OnInit {
   loading = false;
   btnDisable = false;
 
+  /** Maximum allowed length of the generated document number. */
+  readonly MAX_DOC_LENGTH = 35;
+
   // Dropdown options
   separatorOptions = [
     { value: '/', label: '/ (Slash)' },
@@ -360,6 +363,13 @@ export class NumberSeriesEntryComponent implements OnInit {
       return;
     }
 
+    if (this.isPreviewOverLimit) {
+      this.appSettingService.showWarning(
+        `Document number format is ${this.previewLength} characters; the maximum allowed is ${this.MAX_DOC_LENGTH}. Please remove some components or reduce the sequence length.`
+      );
+      return;
+    }
+
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const formValue = this.configForm.value;
 
@@ -418,6 +428,16 @@ export class NumberSeriesEntryComponent implements OnInit {
 
   navigateBack(): void {
     this.router.navigate(['/settings/number-series/list']);
+  }
+
+  /** Length of the currently previewed document number. */
+  get previewLength(): number {
+    return this.previewResult?.preview?.length || 0;
+  }
+
+  /** True when the previewed number exceeds the allowed maximum length. */
+  get isPreviewOverLimit(): boolean {
+    return this.previewLength > this.MAX_DOC_LENGTH;
   }
 
   get isPolPodDisallowed(): boolean {

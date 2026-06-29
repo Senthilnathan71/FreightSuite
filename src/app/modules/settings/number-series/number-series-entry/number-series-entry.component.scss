@@ -21,6 +21,17 @@ code {
   letter-spacing: 1px;
 }
 
+// Generated-number preview — keep all 35 chars on a single line in the narrow panel
+.preview-number {
+  display: block;
+  white-space: nowrap;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Courier New', monospace;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 .sticky-top {
   z-index: 100;
 }
@@ -31,4 +42,49 @@ hr {
 
 input:disabled {
   background-color: #f8f9fa;
+}
+
+// Segmented single-select for the POL/POD mode (Only POL / Only POD / Both)
+.polpod-mode-group {
+  display: inline-flex;
+  border: 1px solid #cdd9e3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+
+  .polpod-mode-btn {
+    border: 0;
+    border-right: 1px solid #dde5ec;
+    background: transparent;
+    color: #5f7d97;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 7px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:last-child {
+      border-right: 0;
+    }
+
+    &:hover:not(.active) {
+      background: #eef5fb;
+      color: #116897;
+    }
+
+    &.active {
+      background: #116897;
+      color: #fff;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      box-shadow: inset 0 0 0 2px rgba(17, 104, 151, 0.35);
+    }
+  }
 }
