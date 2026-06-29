@@ -117,7 +117,10 @@ export class NumberSeriesEntryComponent implements OnInit {
       CompanyPrefix: [''],
       BranchFlagRequired: ['N'],
       BranchPrefix: [''],
+      OperationFlagRequired: ['N'],
+      OperationCode: [''],
       POLPODFlagRequired: ['N'],
+      POLPODMode: ['BOTH'],
       POLPODPortWiseCounter: ['Y'],
       DepartmentCodeRequired: ['N'],
       MonthFlagRequired: ['N'],
@@ -175,6 +178,13 @@ export class NumberSeriesEntryComponent implements OnInit {
       next: (resp: any) => {
         if (resp.data) {
           this.menuInfo = resp.data;
+          // Prefill Operation Code from the menu's MenuCode for new configs
+          // (editable suggestion only — never overwrite a saved value in edit mode)
+          if (!this.isEditMode && !this.configForm.get('OperationCode')?.value) {
+            this.configForm.patchValue({
+              OperationCode: (this.menuInfo.MenuCode || '').trim(),
+            });
+          }
         }
       },
       error: (err) => {
@@ -204,7 +214,10 @@ export class NumberSeriesEntryComponent implements OnInit {
               CompanyPrefix: config.CompanyPrefix || '',
               BranchFlagRequired: config.BranchFlagRequired || 'N',
               BranchPrefix: config.BranchPrefix || '',
+              OperationFlagRequired: config.OperationFlagRequired || 'N',
+              OperationCode: config.OperationCode || '',
               POLPODFlagRequired: config.POLPODFlagRequired || 'N',
+              POLPODMode: config.POLPODMode || 'BOTH',
               POLPODPortWiseCounter: config.POLPODPortWiseCounter || 'Y',
               DepartmentCodeRequired: config.DepartmentCodeRequired || 'N',
               MonthFlagRequired: config.MonthFlagRequired || 'N',
@@ -231,6 +244,19 @@ export class NumberSeriesEntryComponent implements OnInit {
   onToggleChange(controlName: string, event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     this.configForm.get(controlName)?.setValue(isChecked ? 'Y' : 'N');
+  }
+
+  /** Segmented single-select for the POL/POD mode — picking one replaces the others. */
+  setPolPodMode(mode: 'POL' | 'POD' | 'BOTH'): void {
+    this.configForm.get('POLPODMode')?.setValue(mode);
+  }
+
+  /** Resolve a 3-char port code for the live preview, or a fallback placeholder. */
+  private getPreviewPortCode(sid: number | null, fallback: string): string {
+    if (!sid) return fallback;
+    const port = this.portList.find((p) => p.PortMasterSid === sid);
+    const code = port?.PortCode;
+    return code ? (code.length > 3 ? code.slice(-3) : code) : fallback;
   }
 
   updatePreview(): void {
@@ -260,16 +286,22 @@ export class NumberSeriesEntryComponent implements OnInit {
       parts.push(formValue.BranchPrefix);
     }
 
-    // POL-POD segment
+    // Operation Code (shown after branch)
+    if (formValue.OperationFlagRequired === 'Y' && formValue.OperationCode) {
+      parts.push(formValue.OperationCode);
+    }
+
+    // POL/POD segment by mode (POL | POD | BOTH)
     if (formValue.POLPODFlagRequired === 'Y') {
-      if (this.selectedPOLForPreview && this.selectedPODForPreview) {
-        const pol = this.portList.find(p => p.PortMasterSid === this.selectedPOLForPreview);
-        const pod = this.portList.find(p => p.PortMasterSid === this.selectedPODForPreview);
-        const polCode = pol?.PortCode ? (pol.PortCode.length > 3 ? pol.PortCode.slice(-3) : pol.PortCode) : 'POL';
-        const podCode = pod?.PortCode ? (pod.PortCode.length > 3 ? pod.PortCode.slice(-3) : pod.PortCode) : 'POD';
-        parts.push(`${polCode}-${podCode}`);
+      const mode = formValue.POLPODMode || 'BOTH';
+      const polCode = this.getPreviewPortCode(this.selectedPOLForPreview, 'POL');
+      const podCode = this.getPreviewPortCode(this.selectedPODForPreview, 'POD');
+      if (mode === 'POL') {
+        parts.push(polCode);
+      } else if (mode === 'POD') {
+        parts.push(podCode);
       } else {
-        parts.push('POL-POD');
+        parts.push(`${polCode}-${podCode}`);
       }
     }
 
@@ -339,7 +371,10 @@ export class NumberSeriesEntryComponent implements OnInit {
       CompanyPrefix: formValue.CompanyPrefix,
       BranchFlagRequired: formValue.BranchFlagRequired,
       BranchPrefix: formValue.BranchPrefix,
+      OperationFlagRequired: formValue.OperationFlagRequired,
+      OperationCode: formValue.OperationCode,
       POLPODFlagRequired: formValue.POLPODFlagRequired,
+      POLPODMode: formValue.POLPODMode,
       POLPODPortWiseCounter: formValue.POLPODPortWiseCounter,
       DepartmentCodeRequired: formValue.DepartmentCodeRequired,
       MonthFlagRequired: formValue.MonthFlagRequired,
@@ -398,7 +433,11 @@ export class NumberSeriesEntryComponent implements OnInit {
 
     if (formValue.CompanyFlagRequired === 'Y') parts.push('Company');
     if (formValue.BranchFlagRequired === 'Y') parts.push('Branch');
-    if (formValue.POLPODFlagRequired === 'Y') parts.push('POL-POD');
+    if (formValue.OperationFlagRequired === 'Y') parts.push('Operation');
+    if (formValue.POLPODFlagRequired === 'Y') {
+      const mode = formValue.POLPODMode || 'BOTH';
+      parts.push(mode === 'POL' ? 'POL' : mode === 'POD' ? 'POD' : 'POL-POD');
+    }
     if (formValue.DepartmentCodeRequired === 'Y') parts.push('Dept');
     if (formValue.MonthFlagRequired === 'Y') parts.push('Month');
     if (formValue.YearFlagRequired === 'Y') parts.push('Year');

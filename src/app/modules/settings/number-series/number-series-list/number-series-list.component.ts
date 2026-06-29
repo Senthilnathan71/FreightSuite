@@ -17,6 +17,8 @@ interface NumberSeriesConfig {
   CompanyPrefix?: string;
   BranchFlagRequired?: string;
   BranchPrefix?: string;
+  OperationFlagRequired?: string;
+  OperationCode?: string;
   DepartmentCodeRequired?: string;
   MonthFlagRequired?: string;
   YearFlagRequired?: string;
@@ -24,6 +26,7 @@ interface NumberSeriesConfig {
   NumberLength?: number;
   ResetOption?: string;
   POLPODFlagRequired?: string;
+  POLPODMode?: string;
   POLPODPortWiseCounter?: string;
   DepartmentWiseCounter?: string;
   StartingNumber?: number;
@@ -117,6 +120,8 @@ export class NumberSeriesListComponent implements OnInit {
                   CompanyPrefix: config?.CompanyPrefix,
                   BranchFlagRequired: config?.BranchFlagRequired,
                   BranchPrefix: config?.BranchPrefix,
+                  OperationFlagRequired: config?.OperationFlagRequired,
+                  OperationCode: config?.OperationCode,
                   DepartmentCodeRequired: config?.DepartmentCodeRequired,
                   MonthFlagRequired: config?.MonthFlagRequired,
                   YearFlagRequired: config?.YearFlagRequired,
@@ -124,6 +129,7 @@ export class NumberSeriesListComponent implements OnInit {
                   NumberLength: config?.NumberLength,
                   ResetOption: config?.ResetOption,
                   POLPODFlagRequired: config?.POLPODFlagRequired,
+                  POLPODMode: config?.POLPODMode,
                   POLPODPortWiseCounter: config?.POLPODPortWiseCounter,
                   DepartmentWiseCounter: config?.DepartmentWiseCounter,
                   StartingNumber: config?.StartingNumber,
@@ -186,7 +192,11 @@ export class NumberSeriesListComponent implements OnInit {
 
     if (item.CompanyFlagRequired === 'Y' && item.CompanyPrefix) parts.push(item.CompanyPrefix);
     if (item.BranchFlagRequired === 'Y' && item.BranchPrefix) parts.push(item.BranchPrefix);
-    if (item.POLPODFlagRequired === 'Y') parts.push('POL-POD');
+    if (item.OperationFlagRequired === 'Y' && item.OperationCode) parts.push(item.OperationCode);
+    if (item.POLPODFlagRequired === 'Y') {
+      const mode = item.POLPODMode || 'BOTH';
+      parts.push(mode === 'POL' ? 'POL' : mode === 'POD' ? 'POD' : 'POL-POD');
+    }
     if (item.DepartmentCodeRequired === 'Y') parts.push('XX');
     if (item.MonthFlagRequired === 'Y') {
       const month = new Date().getMonth() + 1;
@@ -217,7 +227,11 @@ export class NumberSeriesListComponent implements OnInit {
     const parts: string[] = [];
     if (item.CompanyFlagRequired === 'Y') parts.push('Company');
     if (item.BranchFlagRequired === 'Y') parts.push('Branch');
-    if (item.POLPODFlagRequired === 'Y') parts.push('POL-POD');
+    if (item.OperationFlagRequired === 'Y') parts.push('Operation');
+    if (item.POLPODFlagRequired === 'Y') {
+      const mode = item.POLPODMode || 'BOTH';
+      parts.push(mode === 'POL' ? 'POL' : mode === 'POD' ? 'POD' : 'POL-POD');
+    }
     if (item.DepartmentCodeRequired === 'Y') parts.push('Dept');
     if (item.MonthFlagRequired === 'Y') parts.push('Month');
     if (item.YearFlagRequired === 'Y') parts.push('Year');

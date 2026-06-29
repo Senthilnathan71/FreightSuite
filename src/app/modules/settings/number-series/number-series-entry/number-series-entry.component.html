@@ -96,6 +96,37 @@
                 </div>
               </div>
 
+              <!-- Operation Code Flag — operation type shown after Branch -->
+              <div class="row mb-3 align-items-center">
+                <div class="col-md-4">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="OperationFlagRequired"
+                      [checked]="configForm.get('OperationFlagRequired')?.value === 'Y'"
+                      (change)="onToggleChange('OperationFlagRequired', $event)"
+                    />
+                    <label class="form-check-label" for="OperationFlagRequired">
+                      Operation Type
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    formControlName="OperationCode"
+                    placeholder="e.g., BKG, QTN, MJB"
+                    maxlength="10"
+                    [disabled]="configForm.get('OperationFlagRequired')?.value !== 'Y'"
+                  />
+                  <small class="text-muted">
+                    Operation code shown after Branch (prefilled from menu, editable)
+                  </small>
+                </div>
+              </div>
+
               <!-- POL / POD Flag — hidden for Enquiry / Quotation (multiple routes, no single port) -->
               <div class="row mb-3 align-items-center" *ngIf="!isPolPodDisallowed">
                 <div class="col-md-4">
@@ -108,13 +139,45 @@
                       (change)="onToggleChange('POLPODFlagRequired', $event)"
                     />
                     <label class="form-check-label" for="POLPODFlagRequired">
-                      Include POL &amp; POD
+                      Include POL / POD
                     </label>
                   </div>
                 </div>
                 <div class="col-md-8">
-                  <small class="text-muted">
-                    3-char port codes inserted after Branch prefix (e.g. MAA-CHE)
+                  <!-- Three-way mode (segmented single-select) — shown only when POL/POD is on -->
+                  <div *ngIf="configForm.get('POLPODFlagRequired')?.value === 'Y'">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="POL/POD mode">
+                      <button
+                        type="button"
+                        class="btn"
+                        [ngClass]="configForm.get('POLPODMode')?.value === 'POL' ? 'btn-info' : 'btn-outline-info'"
+                        (click)="setPolPodMode('POL')"
+                      >
+                        Only POL
+                      </button>
+                      <button
+                        type="button"
+                        class="btn"
+                        [ngClass]="configForm.get('POLPODMode')?.value === 'POD' ? 'btn-info' : 'btn-outline-info'"
+                        (click)="setPolPodMode('POD')"
+                      >
+                        Only POD
+                      </button>
+                      <button
+                        type="button"
+                        class="btn"
+                        [ngClass]="configForm.get('POLPODMode')?.value === 'BOTH' ? 'btn-info' : 'btn-outline-info'"
+                        (click)="setPolPodMode('BOTH')"
+                      >
+                        Both POL &amp; POD
+                      </button>
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                      Pick one — 3-char port code(s) shown after Branch prefix (e.g. MAA-CHE)
+                    </small>
+                  </div>
+                  <small class="text-muted" *ngIf="configForm.get('POLPODFlagRequired')?.value !== 'Y'">
+                    Turn on to include POL/POD port code(s) after Branch prefix
                   </small>
                 </div>
               </div>
@@ -363,32 +426,36 @@
               ></ng-select>
             </div>
 
-            <!-- POL / POD Selection for Preview -->
+            <!-- POL / POD Selection for Preview — gated by the selected mode -->
             <div class="mb-2" *ngIf="configForm.get('POLPODFlagRequired')?.value === 'Y'">
-              <label class="text-muted small mb-1">POL for Preview:</label>
-              <ng-select
-                [items]="portList"
-                bindLabel="PortCode"
-                bindValue="PortMasterSid"
-                [(ngModel)]="selectedPOLForPreview"
-                [ngModelOptions]="{standalone: true}"
-                (change)="onPOLPreviewChange()"
-                placeholder="Select POL"
-                appendTo="body"
-                class="custom-ng-select"
-              ></ng-select>
-              <label class="text-muted small mb-1 mt-1">POD for Preview:</label>
-              <ng-select
-                [items]="portList"
-                bindLabel="PortCode"
-                bindValue="PortMasterSid"
-                [(ngModel)]="selectedPODForPreview"
-                [ngModelOptions]="{standalone: true}"
-                (change)="onPODPreviewChange()"
-                placeholder="Select POD"
-                appendTo="body"
-                class="custom-ng-select"
-              ></ng-select>
+              <ng-container *ngIf="configForm.get('POLPODMode')?.value !== 'POD'">
+                <label class="text-muted small mb-1">POL for Preview:</label>
+                <ng-select
+                  [items]="portList"
+                  bindLabel="PortCode"
+                  bindValue="PortMasterSid"
+                  [(ngModel)]="selectedPOLForPreview"
+                  [ngModelOptions]="{standalone: true}"
+                  (change)="onPOLPreviewChange()"
+                  placeholder="Select POL"
+                  appendTo="body"
+                  class="custom-ng-select"
+                ></ng-select>
+              </ng-container>
+              <ng-container *ngIf="configForm.get('POLPODMode')?.value !== 'POL'">
+                <label class="text-muted small mb-1 mt-1">POD for Preview:</label>
+                <ng-select
+                  [items]="portList"
+                  bindLabel="PortCode"
+                  bindValue="PortMasterSid"
+                  [(ngModel)]="selectedPODForPreview"
+                  [ngModelOptions]="{standalone: true}"
+                  (change)="onPODPreviewChange()"
+                  placeholder="Select POD"
+                  appendTo="body"
+                  class="custom-ng-select"
+                ></ng-select>
+              </ng-container>
             </div>
 
             <!-- Preview Result -->
