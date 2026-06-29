@@ -14,7 +14,7 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'landscape',
-    pageMargins: [15, 108, 15, 46],
+    pageMargins: [15, 108, 15, 28],
     background: (_: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',
@@ -445,12 +445,13 @@ function buildChargeDetailRow(item: JobCardChargePdfRow): any[] {
 
 function buildRevenueExpenseSection(data: JobCardPdfData): any {
   return {
+    unbreakable: true,
     columns: [
       buildPartyAmountTable('Revenue', 'Sales Party', data.revenueByParty),
       buildPartyAmountTable('Expense', 'Cost Party', data.expenseByParty)
     ],
     columnGap: 8,
-    margin: [5, 0, 5, 8]
+    margin: [5, 0, 5, 3]
   };
 }
 
@@ -487,7 +488,7 @@ function buildInternalRemarks(data: JobCardPdfData): any {
       { text: ':', width: 8 },
       { text: data.internalRemarks || '', width: '*' }
     ],
-    margin: [5, 4, 5, 0]
+    margin: [5, 2, 5, 0]
   };
 }
 
