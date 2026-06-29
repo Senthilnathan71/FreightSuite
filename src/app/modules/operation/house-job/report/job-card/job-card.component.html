@@ -538,14 +538,14 @@
 
             </div>
 
-            <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 0px;">
+            <div style="display:flex; margin-bottom:8px;padding-top: 10px; padding-left: 0px; min-height: 24px;">
                 <div style="width:135px;font-weight: bolder;"><strong>Internal Remarks</strong></div>
                 <div>: {{ getInternalRemarks() }}</div>
             </div>
 
 
             <!-- Footer -->
-             <app-print-footer></app-print-footer>
+             <app-print-footer [position]="'static'" style="display:block;"></app-print-footer>
 
         </div>
 
