@@ -1994,7 +1994,9 @@ onETDDateSelect(): void {
           this.loadCustomsData(() => {
             setTimeout(() => this.resetDirtyState(), 0);
           });
-          this.loadLinkedMasterJobNumber(data?.others?.[0]?.ImportMasterJobSid || null);
+          // The backend resolves the linked import/export job number cross-company
+          // (the linked job lives in the destination company/branch).
+          this.masterJobForm.get('ImportMasterJobNumber')?.setValue(data?.ImportMasterJobNumber || '', { emitEvent: false });
         }
         else {
           this.appSettingsService.showError(responses.message || 'Access denied.');
@@ -2014,31 +2016,6 @@ onETDDateSelect(): void {
       }
     });
   }
-
-  private loadLinkedMasterJobNumber(importMasterJobSid: number | null): void {
-    const linkedControl = this.masterJobForm.get('ImportMasterJobNumber');
-    if (!importMasterJobSid) {
-      linkedControl?.setValue('');
-      return;
-    }
-
-    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const BranchMasterSid = this.currentCompany?.BranchMasterSid;
-    this.operationService.getMasterJobById({
-      MasterJobSid: importMasterJobSid,
-      screenName: 'Master Job',
-      CompanyMasterSid,
-      BranchMasterSid
-    }).subscribe({
-      next: (response: any) => {
-        linkedControl?.setValue(response?.data?.MasterJobNumber || '', { emitEvent: false });
-      },
-      error: () => {
-        linkedControl?.setValue('', { emitEvent: false });
-      }
-    });
-  }
-
 
   patchFormValues(data: any) {
 
@@ -2167,15 +2144,21 @@ onETDDateSelect(): void {
           SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
         });
         this.applyVoyageLock();
-        this.selectedTransferCompanySid = othersData.DestinationCompanyMasterSid || data.DestinationCompanyMasterSid || this.selectedTransferCompanySid;
-        this.selectedTransferBranchSid = othersData.DestinationBranchMasterSid || data.DestinationBranchMasterSid || null;
+        // Capture the saved branch first: onTransferCompanyChange() resets
+        // selectedTransferBranchSid to null while rebuilding the branch list,
+        // so it must be restored afterwards. The destination isn't persisted on
+        // the source job, so prefer the linked import job's own company/branch
+        // (resolved by the backend) before falling back to any stored values.
+        const savedTransferBranchSid = data.ImportMasterJobBranchMasterSid || othersData.DestinationBranchMasterSid || data.DestinationBranchMasterSid || null;
+        this.selectedTransferCompanySid = data.ImportMasterJobCompanyMasterSid || othersData.DestinationCompanyMasterSid || data.DestinationCompanyMasterSid || this.selectedTransferCompanySid;
+        this.selectedTransferBranchSid = savedTransferBranchSid;
         if (this.selectedTransferCompanySid) {
           this.onTransferCompanyChange(this.selectedTransferCompanySid);
-          if (this.selectedTransferBranchSid && !this.filteredTransferBranches.some(
-            (branch: any) => Number(branch?.BranchMasterSid) === Number(this.selectedTransferBranchSid)
-          )) {
-            this.selectedTransferBranchSid = null;
-          }
+          this.selectedTransferBranchSid = savedTransferBranchSid && this.filteredTransferBranches.some(
+            (branch: any) => Number(branch?.BranchMasterSid) === Number(savedTransferBranchSid)
+          )
+            ? savedTransferBranchSid
+            : null;
         }
         if (othersData.Coload === 'Y') {
           this.masterJobForm.get('CoLoader')?.enable();
@@ -2391,6 +2374,8 @@ onETDDateSelect(): void {
     });
 
     this.masterJobForm.get('MasterJobNumber')?.disable({ emitEvent: false });
+    // Linked import/export job number is display-only — keep it disabled.
+    this.masterJobForm.get('ImportMasterJobNumber')?.disable({ emitEvent: false });
 
     if (this.isEditMode) {
       this.masterJobForm.get('DepartmentMasterSid')?.disable({ emitEvent: false });
@@ -2806,8 +2791,10 @@ onETDDateSelect(): void {
         this.toastr.success(successMessage);
 
         if (createdMasterJobSid) {
-          this.masterJobSid = createdMasterJobSid;
-          this.loadMasterJobData(createdMasterJobSid);
+          // The created import job lives in the destination company/branch and
+          // cannot be loaded with the current company. Stay on the export job and
+          // reload it — it now carries ExportToImport='Y' and the linked import sid.
+          this.loadMasterJobData(this.masterJobSid);
         }
       },
       error: () => {
