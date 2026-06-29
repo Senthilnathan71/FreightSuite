@@ -669,10 +669,14 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       const ledgerCurrencyId = fullCoa?.LedgerCurrency;
       if (ledgerCurrencyId) {
         const currency = this.currencyList.find((item: any) => Number(item.CurrencyMasterSid) === Number(ledgerCurrencyId));
+        const ledgerCurrencyCode = currency?.currencyCode ?? ctrl.get('CurrencyCode')?.value;
         ctrl.patchValue({
           CurrencyMasterSid: ledgerCurrencyId,
-          CurrencyCode: currency?.currencyCode ?? ctrl.get('CurrencyCode')?.value,
+          CurrencyCode: ledgerCurrencyCode,
         }, { emitEvent: false });
+        // Ledger drove the row currency — refetch its exchange rate and recalc,
+        // same as the subledger/currency-dropdown change paths.
+        this.patchExchangeRateForDetail(ledgerCurrencyCode, this.currentCompanyCurrency.code, detailIndex);
       }
     }
 
@@ -936,7 +940,8 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
 
     const originalNavigate = this.nonJobRouter.navigate.bind(this.nonJobRouter);
     this.nonJobRouter.navigate = ((commands: any[], extras?: any) => {
-      if (Array.isArray(commands) && commands[0] === 'operation/invoice/entry' && commands[1]) {
+      const firstSegment = String(commands?.[0] ?? '').replace(/^\//, '');
+      if (Array.isArray(commands) && firstSegment === 'operation/invoice/entry' && commands[1]) {
         return originalNavigate(['/accounts/invoice-non-job/entry', commands[1]], extras);
       }
       return originalNavigate(commands, extras);

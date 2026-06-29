@@ -261,7 +261,7 @@
     </label>
     
     <!-- Add validation message -->
-    <div *ngIf="selectedDepartment?.ExportImport === 'Import' && b['HBLNo'].invalid && (b['HBLNo'].dirty || b['HBLNo'].touched)" 
+    <div *ngIf="selectedDepartment?.ExportImport === 'Import' && b['HBLNo'].hasError('required') && (b['HBLNo'].dirty || b['HBLNo'].touched)"
          class="invalid-feedback d-block">
       {{ houseDocumentNoLabel }} is required for Import
     </div>
