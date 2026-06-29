@@ -278,6 +278,37 @@
   }
 }
 
+
+.report-notes-card {
+  margin: 5px 0px;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #c9dceb;
+  border-left: 4px solid #0b6ea8;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fbfdff 0%, #eef6fb 100%);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+
+  &__body {
+    color: #111111;
+    // font-size: 0.90rem;
+    line-height: 1.6;
+  }
+}
+
+.report-notes-card__body p {
+  margin: 0 0 0.3rem;
+}
+
+.report-notes-card__body ul,
+.report-notes-card__body ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.report-notes-card__body li {
+  margin-bottom: 0.35rem;
+}
+
 @media (max-width: 576px) {
   .view-mode-switch {
     padding: 0.22rem 0.28rem;

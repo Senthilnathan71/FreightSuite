@@ -106,7 +106,7 @@ export function generateBalanceSheetReportDocument(data: BalanceSheetReportPdfDa
     }),
     header: () => buildHeader(data),
     footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
-    content: [buildPanelsTable(data), buildNoteSection()],
+    content: [buildPanelsTable(data)],
     styles: getStyles(),
     defaultStyle: {
       fontSize: 8,

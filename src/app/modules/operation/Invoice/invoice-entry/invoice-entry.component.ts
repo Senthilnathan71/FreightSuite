@@ -1704,6 +1704,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       Remarks : this.invoiceData?.Remarks,
       BankDetails : bankDetails,
       TermsAndConditions : tandc,
+      packageTypeList: this.uomList || [],
 
 
 

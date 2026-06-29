@@ -300,6 +300,11 @@ private handleAlert(message: string): void {
     return this.reportData && this.reportData.length > 0;
   }
 
+  get selectedReportNotes(): string {
+    return this.selectedReport?.Notes?.trim() || '';
+  }
+
+
   /**
    * Get available export formats for selected report
    */

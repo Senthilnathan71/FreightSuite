@@ -235,10 +235,7 @@ export class LedgarCurrenecyComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 8, 3, 30, 3, 3, 12, 12],
-      notes: [
-        'This ledger currency report includes only posted voucher transactions.',
-      ],
+      columnWidths: [12, 8, 3, 30, 3, 3, 12, 12]
     };
   }
 

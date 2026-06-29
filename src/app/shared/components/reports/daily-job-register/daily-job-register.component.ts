@@ -93,17 +93,17 @@ export class DailyJobRegisterComponent {
       return { cells, style: 'data' };
     });
 
-    const additionalTables: ComplexReportExportConfig['additionalTables'] = [];
+    // const additionalTables: ComplexReportExportConfig['additionalTables'] = [];
 
-    additionalTables.push({
-      title: 'Note :',
-      headers: ['Description'],
-      rows: this.getReportNotes().map((note) => ({
-        cells: [{ value: note }],
-        style: 'data',
-      })),
-      columnWidths: [120],
-    });
+    // additionalTables.push({
+    //   title: 'Note :',
+    //   headers: ['Description'],
+    //   rows: this.getReportNotes().map((note) => ({
+    //     cells: [{ value: note }],
+    //     style: 'data',
+    //   })),
+    //   columnWidths: [120],
+    // });
 
     return {
       fileName: 'DailyJobRegisterReport',
@@ -122,7 +122,7 @@ export class DailyJobRegisterComponent {
       tableHeaders,
       rows,
 
-      additionalTables,
+      // additionalTables,
 
       columnWidths: [30, 15, 15],
     };

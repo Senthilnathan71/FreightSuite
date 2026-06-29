@@ -26,7 +26,6 @@ export class LostCustomerReportComponent {
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('Outstanding Report Data:', this.data);
   }
 
   ngOnInit(): void {
@@ -92,8 +91,7 @@ export class LostCustomerReportComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [25, 25, 20, 24, 14, 14, 18, 12],
-      notes: ['Shipper/Customer who has booking earlier but no booking has been given between From and To Booking Date.']
+      columnWidths: [25, 25, 20, 24, 14, 14, 18, 12]
     };
   }
 

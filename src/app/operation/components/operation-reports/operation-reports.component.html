@@ -75,6 +75,13 @@
           [companyId]="companyId"
           (onGenerate)="onGenerateReport($event)"
         ></app-report-parameter-form>
+
+         <div *ngIf="selectedReportNotes" class="report-notes-card">
+          <div
+            class="report-notes-card__body"
+            [innerHTML]="selectedReportNotes"
+          ></div>
+        </div>
       </div>
     </div>
 

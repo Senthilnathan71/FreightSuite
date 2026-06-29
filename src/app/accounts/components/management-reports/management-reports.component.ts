@@ -112,4 +112,8 @@ export class ManagementReportsComponent implements OnInit, OnDestroy {
       this.appSettingService.showError('Invalid Report Name.');
     }
   }
+
+  get selectedReportNotes(): string {
+    return this.selectedReport?.Notes?.trim() || '';
+  }
 }

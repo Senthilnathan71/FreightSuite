@@ -561,7 +561,7 @@ export class StatementReportComponent {
     if (countryCode === 'ae') {
       return 'VAT No';
     }
-    return '';
+    return 'Tax No';
   }
 
   private getOrganizationCountryCode(): string {
@@ -587,17 +587,12 @@ export class StatementReportComponent {
       { key: 'osCurrAmt', label: 'O/S Cur Amt' },
       { key: 'osLocalAmt', label: 'O/S Local Amt' },
       { key: 'cumulative', label: 'Cumulative' },
-      { key: 'ageingDays', label: 'Ageing ' },
-      { key: 'dueDate', label: 'Overdue' },
     ];
 
     const rows: ExcelRow[] = [];
     const transactions = this.fullData?.transactions || [];
     const openingBalance = this.fullData?.openingBalance || 0;
     const amountInWordsLines = this.getOutstandingAmountInWordsLines();
-    const currentamt = this.fullData?.totalCurrentAmount || 0;
-    const overdueamt = this.fullData?.totalOverdueAmount || 0;
-    const creditOrCash = this.fullData?.creditOrCash || '';
 
     if (openingBalance !== 0) {
       const openingCells: ExcelCell[] = [
@@ -615,8 +610,6 @@ export class StatementReportComponent {
         { value: '' },
         { value: '' },
         { value: this.formatNumber(openingBalance) },
-        { value: '' },
-        { value: '' },
       ];
 
       rows.push({ cells: openingCells, style: 'data' });
@@ -644,8 +637,6 @@ export class StatementReportComponent {
         { value: this.formatNumber(item?.signedOutstandingCurrency) },
         { value: this.formatNumber(item?.signedoutstandingLocalAmount) },
         { value: this.formatNumber(item?.cumulativeOutstanding) },
-        { value: item?.ageingDays },
-        { value: this.formatDate(item?.dueDate) },
       ];
 
       rows.push({ cells, style: 'data' });
@@ -660,48 +651,21 @@ export class StatementReportComponent {
         // { value: this.formatNumber(this.getTotal(transactions, 'signedOriginalCurrency')) },
         { value: this.formatNumber(this.getLocalTotal(transactions)) },
         // { value: this.formatNumber(this.getTotal(transactions, 'signedOutstandingCurrency')) },
-        { value: '' },
-        { value: '' },
         // { value: this.formatNumber(this.getSignedTotal(transactions)) },
         {
           value: this.formatNumber(
             transactions.length > 0
               ? transactions[transactions.length - 1]?.cumulativeOutstanding
               : 0,
-          ),
+            ),
+            colspan:3
         },
       ];
 
       rows.push({ cells: totalCells, style: 'total' });
     }
 
-    // if ( creditOrCash === 'Credit' && transactions && transactions.length > 0 &&   currentamt > 0) {
-    //   const totalCells: ExcelCell[] = [
-    //     {
-    //       value: 'CURRENT AMT',
-    //       colspan: 10,
-    //       alignment: { horizontal: 'right' },
-    //     },
-    //     {
-    //       value: currentamt,
-    //     },
-    //   ];
-    //   rows.push({ cells: totalCells, style: 'total' });
-    // }
 
-     if (transactions && transactions.length > 0) {
-      const totalCells: ExcelCell[] = [
-        {
-          value: 'OVERDUE AMT',
-          colspan: 10,
-          alignment: { horizontal: 'right' },
-        },
-        {
-          value: this.formatNumber(overdueamt),
-        },
-      ];
-      rows.push({ cells: totalCells, style: 'total' });
-    }
 
     amountInWordsLines.forEach((amountInWords, index) => {
       rows.push({
@@ -738,22 +702,15 @@ export class StatementReportComponent {
             label: this.taxRegistrationLabel,
             value: this.fullData?.Vatno || ''
           },
-         {
-          label: 'Credit Terms',
-          value:
-            this.fullData?.creditDays == null || this.fullData?.creditDays === 0
-              ? 'CASH'
-              : `${this.fullData.creditDays}`,
-          },
         ],
       },
       tableHeaders,
       rows,
       columnWidths: [
         25, // Voucher No
-        12, // Date
+        10, // Date
         8, // Type
-        40, // Narration
+        42, // Narration
         6, // Dr/Cr
         8, // Cur
         15, // Amt
@@ -761,8 +718,6 @@ export class StatementReportComponent {
         15, // O/S Cur Amt
         15, // O/S Local Amt
         15, // Cumulative
-        8, // Ageing
-        14, // Overdue
       ],
       additionalTables:
         this.showBankDetails && this.bankDetails && this.bankDetails.length > 0
