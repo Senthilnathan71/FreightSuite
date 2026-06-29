@@ -23,13 +23,14 @@
                     <strong style="width: 100px;">Ledger </strong>
                     <span class="ms-1 my-0"> : {{ fullData?.ledgerName }}</span>
                 </div>
-            </div>
-
-            <div>
-                <div class="d-flex align-items-center">
+                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Subledger </strong>
                     <span class="ms-1 my-0">: {{ fullData?.subledgerName }}</span>
                 </div>
+            </div>
+
+            <div>
+               
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">Address</strong>
                     <span class="ms-1 my-0">
@@ -39,6 +40,16 @@
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">{{ taxRegistrationLabel }} </strong>
                     <span class="ms-1 my-0"> : {{ fullData?.PanType }}</span>
+                </div>
+                 <div class="d-flex align-items-center">
+                    <strong style="width: 100px;">Credit Terms </strong>
+                    <span class="ms-1 my-0">
+                    : {{
+                        fullData?.creditDays == null
+                        ? 'Cash'
+                        : fullData.creditDays 
+                    }} 
+                    </span>
                 </div>
             </div>
         </div>
@@ -64,6 +75,7 @@
                         <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
                         <th class="bg-transparent text-light text-center">O/S Local Amt</th>
                         <th class="bg-transparent text-light text-center">Cumulative</th>
+                        <th class="bg-transparent text-light text-center">Due Date</th>
                         <th class="bg-transparent text-light text-center">Ageing</th>
                     </tr>
                 </thead>
@@ -94,6 +106,9 @@
                             {{ item?.cumulativeOutstanding | number:'1.2-2'}}
                         </td>
                         <td style="text-align: center;">
+                            {{ item?.dueDate | formatDate }}
+                        </td>
+                        <td style="text-align: center;">
                             {{item?.ageingDays}}
                         </td>
                     </tr>
@@ -122,8 +137,12 @@
                         <td style="text-align: right;"> {{ fullData?.transactions?.[fullData.transactions.length -
                             1]?.cumulativeOutstanding
                             | number:'1.2-2' }}</td>
+                        <td colspan="2"></td>
                     </tr>
-
+                    <tr *ngIf="!fullData?.transactions || fullData.transactions.length !== 0" class="text-center fw-bold py-1">
+                        <td colspan="9" class="text-end">OVERDUE AMT</td>
+                        <td class="text-end">{{ fullData?.totalOverdueAmount | number:'1.2-2' }}</td>
+                    </tr>
                     <tr *ngIf="!fullData?.transactions || fullData.transactions.length === 0">
                         <td colspan="15" class="text-center fw-bold py-1">
                             No Record Found

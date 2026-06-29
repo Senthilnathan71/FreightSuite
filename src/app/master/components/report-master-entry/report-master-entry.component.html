@@ -130,7 +130,7 @@
                                 }
                             </div>
                         </aside>
-                        <aside class="col-md-4">
+                        <aside [ngClass]="showOrientationField ? 'col-md-2' : 'col-md-4'">
                             <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!reportForm.get('reportFormatId')?.value">
                                 <ng-select class="ng-select" [items]="modeofreportFormat"
@@ -140,6 +140,24 @@
                                         class="text-danger">*</span></label>
                                 @if(reportForm.get('reportFormatId').touched &&
                                 reportForm.get('reportFormatId').invalid){
+                                <div class="error-message">
+                                    @if(reportForm.get('reportFormatId').hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-2" *ngIf="showOrientationField">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!reportForm.get('Orientation')?.value">
+                                <ng-select class="ng-select" [items]="modeofreportOrientation"
+                                    formControlName="Orientation" bindValue="id" placeholder="" bindLabel="name">
+                                </ng-select>
+                                <label for="text-input" class="input-label">Orientation <span
+                                        class="text-danger">*</span></label>
+                                @if(reportForm.get('Orientation').touched &&
+                                reportForm.get('Orientation').invalid){
                                 <div class="error-message">
                                     @if(reportForm.get('reportFormatId').hasError('required')){
                                     <span>Required</span>
@@ -221,7 +239,6 @@
                         </aside>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -292,6 +309,7 @@
                                     <textarea class="form-control form-control-sm" formControlName="DependsOnParameter"
                                         rows="1" placeholder=''>
                                     </textarea>
+                                </td>
                             </tr>
                             <tr *ngIf="parameters.length === 0">
                                 <td colspan="7" class="text-center text-muted">

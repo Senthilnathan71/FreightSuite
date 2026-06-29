@@ -46,16 +46,6 @@
                     <strong style="width: 100px;">{{ taxRegistrationLabel }} </strong>
                     <span class="ms-1 my-0"> : {{ fullData?.Vatno }}</span>
                 </div>
-                <div class="d-flex align-items-center">
-                    <strong style="width: 100px;">Credit Terms </strong>
-                    <span class="ms-1 my-0">
-                    : {{
-                        fullData?.creditDays == null
-                        ? 'Cash'
-                        : fullData.creditDays 
-                    }} 
-                    </span>
-                </div>
             </div>
         </div>
 
@@ -81,8 +71,6 @@
                         <th class="bg-transparent text-light text-center">O/S Cur Amt</th>
                         <th class="bg-transparent text-light text-center">O/S Local Amt</th>
                         <th class="bg-transparent text-light text-center">Cumulative</th>
-                        <th class="bg-transparent text-light text-center">Ageing</th>
-                        <th class="bg-transparent text-light text-center">Overdue</th>
                     </tr>
                 </thead>
 
@@ -118,12 +106,6 @@
                         <td class="text-end">
                             {{fullData?.openingBalance | number:"1.2-2"}}
                         </td>
-                        <td>
-
-                        </td>
-                        <td>
-
-                        </td>
                     </tr>
                     <tr *ngFor="let item of fullData?.transactions; let i = index">
                         <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
@@ -146,12 +128,6 @@
                         <!-- CUMULATIVE -->
                         <td style="text-align: right;">
                             {{item.cumulativeOutstanding | number:'1.2-2'}}
-                        </td>
-                        <td style="text-align: center;">
-                            {{item.ageingDays}}
-                        </td>
-                        <td style="text-align: center;">
-                            {{item.dueDate | formatDate}}
                         </td>
                     </tr>
 
@@ -181,23 +157,10 @@
                             1]?.cumulativeOutstanding
                             | number:'1.2-2' }}
                         </td>
-                        <td colspan="3"></td>
                     </tr>
-
-                    <!-- <tr class="fw-bold bg-light"  *ngIf="fullData?.creditDays !== 0 && fullData?.creditOrCash === 'Credit'">
-                        <td colspan="10" class="text-end">CURRENT AMT</td>
-                        <td style="text-align: right;"> {{ fullData?.totalCurrentAmount | number:'1.2-2' }}</td>
-                        <td colspan="3"></td>
-                    </tr> -->
-                    <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
-                        <td colspan="10" class="text-end">OVERDUE AMT</td>
-                        <td style="text-align: right;"> {{ fullData?.totalOverdueAmount | number:'1.2-2' }}</td>
-                        <td colspan="3"></td>
-                    </tr>
-
                     <tr
                         *ngIf="(!fullData?.transactions || fullData.transactions.length === 0) && (!fullData?.openingBalance || fullData?.openingBalance === 0)">
-                        <td colspan="15" class="text-center fw-bold py-1">
+                        <td colspan="11" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>

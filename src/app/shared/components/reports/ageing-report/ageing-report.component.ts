@@ -277,11 +277,6 @@ export class AgeingReportComponent implements OnInit{
       12,
       12
     ],
-
-    notes: [
-      'Credit Days and Credit Limit are taken from Customer Credit Request. If multiple branches exist, then branch with the highest credit limit is considered.',
-      'Advance amounts are not included in the ageing buckets. They are recorded under On Account.'
-    ]
   };
 }
 

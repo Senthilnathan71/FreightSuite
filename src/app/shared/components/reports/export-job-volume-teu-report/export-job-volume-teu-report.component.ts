@@ -27,7 +27,6 @@ export class ExportJobVolumeTeuReportComponent {
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('Export Job Volume and TEU Report Data:', this.data);
   }
 
   ngOnInit(): void {
@@ -118,9 +117,6 @@ export class ExportJobVolumeTeuReportComponent {
       15, // Weight
       18  // Chargeable Wt
     ],
-    notes:[
-      'This report includes all records taken from the Export Master Job.'
-    ]
   };
 }
 

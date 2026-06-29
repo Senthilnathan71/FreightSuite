@@ -38,7 +38,6 @@
                         <th class="bg-transparent text-light text-center">Job No</th>
                         <th class="bg-transparent text-light text-center">Dept</th>
                         <th class="bg-transparent text-light text-center">MBL No</th>
-                        <th class="bg-transparent text-light text-center">House No</th>
                         <th class="bg-transparent text-light text-center">HBL No</th>
                         <th class="bg-transparent text-light text-center">House Status</th>
                         <th class="bg-transparent text-light text-center">Job Type</th>
@@ -72,7 +71,6 @@
                             <td>{{ item.JobNo }}</td>
                             <td>{{ item.deptName }}</td>
                             <td class="fw-bold">{{ item.MBLNo }}</td>
-                            <td class="fw-bold">{{item.houseNo}}</td>
                             <td colspan="4"></td>
                             <td>{{ item.OriginAgent }}</td>
                             <td>{{ item.DestinationAgent }}</td>
@@ -97,8 +95,7 @@
                         <tr *ngFor="let hj of item.houseWithCR" style="white-space: nowrap;">
                             <td></td>
                             <td></td>
-                            <td></td>
-                            <td></td>
+                            <td class="fw-bold">{{ item?.MBLNo}}</td>
                             <td class="fw-bold">{{hj.HBLNo}}</td>
                             <td>{{hj.houseStatus}}</td>
                             <td>{{hj.jobType}}</td>
@@ -133,12 +130,12 @@
                         </tr> -->
                     </ng-container>
                      <tr *ngIf="!fullData?.data || fullData.data.length === 0">
-                        <td colspan="28" class="text-center fw-bold py-1">
+                        <td colspan="27" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>
                     <tr style="font-weight: 800; background: #cfe2ff; white-space: nowrap;" *ngIf="!fullData?.data || fullData.data.length !== 0">
-                        <td colspan="21" class="text-end">GRAND TOTAL</td>
+                        <td colspan="20" class="text-end">GRAND TOTAL</td>
 
                         <td class="text-end">
                             {{ getGrandTotal('pSale') | number:'1.2-2' }}

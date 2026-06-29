@@ -114,29 +114,83 @@
 
         <div style="display:flex;margin-top:8px;font-size:16px;padding:0 20px;">
             <div style="flex:0 0 50%;max-width:50%;">
-                <div><strong>Shipper</strong> : {{ invoicePrintData?.ShipperName }}</div>
-                <div><strong>Consignee</strong> : {{ invoicePrintData?.ConsigneeName }}</div>
-                <div><strong>{{ isSeaDepartment() ? 'Vsl Name / Voy No.' : 'Flight Name / No.' }}</strong> : {{
-                    invoicePrintData?.Vessel }}<span *ngIf="invoicePrintData?.Vessel && invoicePrintData?.VoyageNo"> /
-                    </span>{{ invoicePrintData?.VoyageNo }}</div>
-                <div><strong>Loading Port</strong> : {{ invoicePrintData?.POL }}</div>
-                <div><strong>Final Destination</strong> : {{ invoicePrintData?.FPD }}</div>
-                <div><strong>ETD & ETA</strong> : {{ invoicePrintData?.ETD | formatDate }}<span
-                        *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA"> / </span>{{ invoicePrintData?.ETA |
-                    formatDate }}</div>
-                <div *ngIf="isUAECompany"><strong>BOE No.</strong> : {{ invoicePrintData?.BOENo }}</div>
-                <div *ngIf="isUAECompany"><strong>Declaration No.</strong> : {{ invoicePrintData?.DeclarationNo }}</div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Shipper</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.ShipperName }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Consignee</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.ConsigneeName }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>{{ isSeaDepartment() ? 'Vsl Name / Voy No.' : 'Flight Name / No.' }}</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.Vessel }}<span *ngIf="invoicePrintData?.Vessel && invoicePrintData?.VoyageNo"> / </span>{{ invoicePrintData?.VoyageNo }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Loading Port</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.POL }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Final Destination</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.FPD }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>ETD & ETA</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.ETD | formatDate }}<span *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA"> / </span>{{ invoicePrintData?.ETA | formatDate }}</div>
+                </div>
+                <div *ngIf="isUAECompany" style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>BOE No.</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.BOENo }}</div>
+                </div>
+                <div *ngIf="isUAECompany" style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Declaration No.</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.DeclarationNo }}</div>
+                </div>
             </div>
             <div style="flex:0 0 50%;max-width:50%;">
-                <div><strong>{{ isSeaDepartment() ? 'HBL' : 'HAWB' }}</strong> : {{ invoicePrintData?.HBLNo }}</div>
-                <div><strong>{{ isSeaDepartment() ? 'MBL' : 'MAWB' }}</strong> : {{ invoicePrintData?.MBLNo }}</div>
-                <div><strong>Job No.</strong> : {{ invoicePrintData?.MasterJobNumber }}</div>
-                <div><strong>Freight Terms</strong> : {{ invoicePrintData?.FreightTerms }}</div>
-                <div><strong>Booking No.</strong> : {{ invoicePrintData?.BookingNumber }}</div>
-                <div><strong>Invoice Due Date</strong> : {{ invoicePrintData?.InvoiceDueDate === 'Cash Invoice' ?
-                    invoicePrintData?.InvoiceDueDate : (invoicePrintData?.InvoiceDueDate | formatDate) }}</div>
-                <div><strong>Currency / Ex-Rate</strong> : {{ invoicePrintData?.CurrExRate }}</div>
-
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>{{ isSeaDepartment() ? 'HBL' : 'HAWB' }}</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.HBLNo }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>{{ isSeaDepartment() ? 'MBL' : 'MAWB' }}</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.MBLNo }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Job No.</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.MasterJobNumber }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Freight Terms</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.FreightTerms }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Booking No.</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.BookingNumber }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Invoice Due Date</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.InvoiceDueDate === 'Cash Invoice' ? invoicePrintData?.InvoiceDueDate : (invoicePrintData?.InvoiceDueDate | formatDate) }}</div>
+                </div>
+                <div style="display:flex;align-items:flex-start;margin-bottom:2px;">
+                    <div style="width:160px;font-weight:bolder;white-space:nowrap;"><strong>Currency / Ex-Rate</strong></div>
+                    <div style="width:15px;text-align:center;">:</div>
+                    <div style="flex:1;line-height:1.4;">{{ invoicePrintData?.CurrExRate }}</div>
+                </div>
             </div>
         </div>
 
@@ -147,7 +201,7 @@
                         
                         <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Pkg</strong>
                         </th>
-                        <th *ngIf="showHouseJobContainerColumns"
+                        <th *ngIf="showPkgTypeColumn"
                             style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Pkg Type</strong>
                         </th>
                         <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Gross
@@ -160,15 +214,15 @@
                         <th *ngIf="showHouseJobContainerColumns"
                             style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Container
                                 Type</strong></th>
-                                <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Commodity
-                                Desc</strong></th>
+                        <th *ngIf="showHouseJobContainerColumns" style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Commodity
+                             Desc</strong></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr style="font-size:12px;" *ngFor="let row of commodityRows">
                        
                         <td style="border:1px solid black;padding:2px 8px;text-align:right;">{{ row.pkg }}</td>
-                        <td *ngIf="showHouseJobContainerColumns" style="border:1px solid black;padding:2px 8px;">{{
+                        <td *ngIf="showPkgTypeColumn" style="border:1px solid black;padding:2px 8px;">{{
                             row.pkgtype }}</td>
                         <td style="border:1px solid black;padding:2px 8px;text-align:right;">{{ row.grosswt |
                             number:'1.3-3' }}</td>
@@ -180,7 +234,7 @@
                         <td *ngIf="showHouseJobContainerColumns"
                             style="border:1px solid black;padding:2px 8px;text-align:center;">{{ row.containerType }}
                         </td>
-                         <td style="border:1px solid black;padding:2px 8px;">{{ row.desc
+                         <td *ngIf="showHouseJobContainerColumns" style="border:1px solid black;padding:2px 8px;">{{ row.desc
                             }}</td>
                     </tr>
                 </tbody>

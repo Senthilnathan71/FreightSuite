@@ -118,11 +118,53 @@ export class InvoiceCommodityPrintComponent {
     );
   }
 
+  private resolvePackageTypeName(value: any): string {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
+    const packageTypes = Array.isArray(this.invoicePrintData?.packageTypeList)
+      ? this.invoicePrintData.packageTypeList
+      : [];
+    const numericValue = Number(value);
+    if (!Number.isNaN(numericValue) && packageTypes.length > 0) {
+      const match = packageTypes.find(
+        (item: any) => Number(item?.UOMMasterSid) === numericValue,
+      );
+      if (match?.UOMName) {
+        return match.UOMName;
+      }
+      if (match?.UOMCode) {
+        return match.UOMCode;
+      }
+    }
+
+    return String(value);
+  }
+
   get commodityRows(): any[] {
-    const products =
-      this.invoiceData?.houseJob?.Products ??
-      this.invoiceData?.Products ??
-      [];
+    const houseProducts = Array.isArray(this.invoiceData?.houseJob?.Products)
+      ? this.invoiceData.houseJob.Products
+      : [];
+    const isBookingInvoice = !!(
+      this.invoiceData?.BookingHeaderSid && this.invoiceData?.BookingHeader
+    );
+    const bookingProducts =
+      isBookingInvoice && Array.isArray(
+        this.invoiceData?.BookingHeader?.bookingProduct ??
+        this.invoiceData?.bookingHeader?.bookingProduct ??
+        this.invoiceData?.bookingProduct ??
+        this.invoiceData?.Products
+      )
+        ? (
+            this.invoiceData?.BookingHeader?.bookingProduct ??
+            this.invoiceData?.bookingHeader?.bookingProduct ??
+            this.invoiceData?.bookingProduct ??
+            this.invoiceData?.Products
+          )
+        : [];
+    const products = houseProducts.length > 0 ? houseProducts : bookingProducts;
+
     if (Array.isArray(products) && products.length > 0) {
       return products.map((p: any) => {
         const c = p?.masterJobContainer || {};
@@ -136,7 +178,9 @@ export class InvoiceCommodityPrintComponent {
         );
         return {
           pkg: Number(p?.ExternlQty ?? c?.NoOfPkg ?? 0),
-          pkgtype: p?.ExternaPkg || p?.PkgGroup || c?.PkgType || '',
+          pkgtype: this.resolvePackageTypeName(
+            p?.ExternaPkg ?? p?.PkgGroup ?? c?.PkgType ?? '',
+          ),
           desc:p?.ProductDescription || '',
           grosswt: Number(c?.GrossWeight ?? p?.GrossWeight ?? 0),
           metric: this.isSeaDepartment()
@@ -155,7 +199,7 @@ export class InvoiceCommodityPrintComponent {
       return [
         {
           pkg: Number(masterJob?.NoOfPkg ?? 0),
-          pkgtype: masterJob?.PkgGroup || '',
+          pkgtype: this.resolvePackageTypeName(masterJob?.PkgGroup || ''),
           desc: masterJob?.CommodityDescription || '',
           grosswt: Number(masterJob?.GrossWeight ?? 0),
           metric: this.isSeaDepartment()
@@ -168,7 +212,9 @@ export class InvoiceCommodityPrintComponent {
     return [
       {
         pkg: Number(this.invoicePrintData?.pkg ?? 0),
-        pkgtype: this.invoicePrintData?.pkgType ?? '',
+        pkgtype: this.resolvePackageTypeName(
+          this.invoicePrintData?.ExternaPkg ?? '',
+        ),
         desc: this.invoicePrintData?.desc ?? '',
         grosswt: Number(this.invoicePrintData?.grosswt ?? 0),
         metric: this.isSeaDepartment()
@@ -181,14 +227,38 @@ export class InvoiceCommodityPrintComponent {
   }
 
   get showHouseJobContainerColumns(): boolean {
-    const products =
-      this.invoiceData?.houseJob?.Products ??
-      this.invoiceData?.Products ??
-      [];
-    return Array.isArray(products) && products.length > 0;
+    const houseProducts = Array.isArray(this.invoiceData?.houseJob?.Products)
+      ? this.invoiceData.houseJob.Products
+      : [];
+    return houseProducts.length > 0;
+  }
+
+  get showPkgTypeColumn(): boolean {
+    const houseProducts = Array.isArray(this.invoiceData?.houseJob?.Products)
+      ? this.invoiceData.houseJob.Products
+      : [];
+    const isBookingInvoice = !!(
+      this.invoiceData?.BookingHeaderSid && this.invoiceData?.BookingHeader
+    );
+    const bookingProducts =
+      isBookingInvoice && Array.isArray(
+        this.invoiceData?.BookingHeader?.bookingProduct ??
+        this.invoiceData?.bookingHeader?.bookingProduct ??
+        this.invoiceData?.bookingProduct ??
+        this.invoiceData?.Products
+      )
+        ? (
+            this.invoiceData?.BookingHeader?.bookingProduct ??
+            this.invoiceData?.bookingHeader?.bookingProduct ??
+            this.invoiceData?.bookingProduct ??
+            this.invoiceData?.Products
+          )
+        : [];
+
+    return houseProducts.length > 0 || bookingProducts.length > 0;
   }
 
   get showCommodityDescColumn(): boolean {
-    return !this.showHouseJobContainerColumns;
+    return this.showHouseJobContainerColumns;
   }
 }

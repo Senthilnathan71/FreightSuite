@@ -54,6 +54,11 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
     { id: 3, name: "BOTH" }
   ];
 
+  modeofreportOrientation = [
+    { id: 'P', name: "PORTRAIT" },
+    { id: 'L', name: "LANDSCAPE" }
+  ];
+
   modeofreportType = [
     { id: 1, name: "OPERATION" },
     { id: 2, name: "ACCOUNTS" },
@@ -149,13 +154,24 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
   });
 }
 
-private parseExcludedCompanyIds(raw: any): number[] {
+  private parseExcludedCompanyIds(raw: any): number[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw.map(Number).filter(Boolean);
   if (typeof raw === 'object' && Array.isArray(raw.company)) return raw.company.map(Number).filter(Boolean);
   if (typeof raw === 'string') return raw.split(',').map(s => Number(s.trim())).filter(Boolean);
   return [];
 }
+
+  private normalizeOrientationValue(value: any): 'P' | 'L' | '' {
+    const normalized = String(value || '').trim().toUpperCase();
+    if (normalized === 'P' || normalized === 'PORTRAIT') {
+      return 'P';
+    }
+    if (normalized === 'L' || normalized === 'LANDSCAPE') {
+      return 'L';
+    }
+    return '';
+  }
 
   private subscribeToFormChanges(): void {
     this.reportForm.valueChanges
@@ -170,6 +186,27 @@ private parseExcludedCompanyIds(raw: any): number[] {
           this.reportForm.getRawValue()
         );
       });
+  }
+
+  get showOrientationField(): boolean {
+    const format = String(this.reportForm?.get('reportFormatId')?.value || '').trim().toUpperCase();
+    return format === 'PDF' || format === 'BOTH';
+  }
+
+  private updateOrientationValidation(): void {
+    const orientationControl = this.reportForm.get('Orientation');
+    if (!orientationControl) {
+      return;
+    }
+
+    if (this.showOrientationField) {
+      orientationControl.setValidators([Validators.required]);
+    } else {
+      orientationControl.setValue('', { emitEvent: false });
+      orientationControl.clearValidators();
+    }
+
+    orientationControl.updateValueAndValidity({ emitEvent: false });
   }
 
   private normalizeValue(value: any): any {
@@ -216,10 +253,17 @@ private parseExcludedCompanyIds(raw: any): number[] {
       reportMenuId: [null, Validators.required],
       reportFormatId: [null, Validators.required],
       reportType: ["", Validators.required],
+      Orientation: ["", Validators.required],
       excludedCompanyIds: [[]],
       Status: ['A'],
       parameters: this.fb.array([])
     });
+
+    this.reportForm.get('reportFormatId')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.updateOrientationValidation());
+
+    this.updateOrientationValidation();
   }
 
   // FormArray getter for parameters
@@ -314,6 +358,9 @@ private parseExcludedCompanyIds(raw: any): number[] {
           reportMenuId: resp.data.ReportMenuSid,
           reportFormatId: resp.data.ReportFormat,
           reportType: resp.data.ReportType,
+          Orientation: this.normalizeOrientationValue(
+            resp.data.Orientation ?? resp.data.ReportOrientation
+          ),
           excludedCompanyIds: this.parseExcludedCompanyIds(resp.data.ReportExcludedCompany)
         });
 
@@ -403,6 +450,7 @@ private parseExcludedCompanyIds(raw: any): number[] {
     DropDownValue: dropDownValue,
     ValidationRules: validationRules,
     DependsOnParameter: detail.DependsOnParameter || null,
+    Orentation: detail.Orientation || null,
     ParameterQuery: detail.ParameterQuery || null,
     Status: detail.Status || 'A'
   };
@@ -414,6 +462,7 @@ private parseExcludedCompanyIds(raw: any): number[] {
       ReportMenuSid: raw.reportMenuId,
       ReportFormat: raw.reportFormatId,
       ReportType: raw.reportType,
+      Orientation: raw.Orientation,
       ReportExcludedCompany: Array.isArray(raw.excludedCompanyIds) && raw.excludedCompanyIds.length
   ? raw.excludedCompanyIds          // already number[]
   : null,

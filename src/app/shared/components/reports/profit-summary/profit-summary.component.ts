@@ -27,14 +27,12 @@ export class ProfitSummaryComponent {
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('House Job Loss Report Data:', this.data);
+
   }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingsService.getCurrentCompanyInfo();
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
-    console.log('Current Company:', this.currentCompany);
-    console.log('Current Branch:', this.currentBranch);
     this.orientation = this.reportRegistryService.getReportConfig('profit-summary').pdfOrientation;
   }
 
@@ -96,7 +94,6 @@ getGrandTotal(field: string): number {
       { key: 'JobNo', label: 'Job No' },
       { key: 'Dept', label: 'Dept' },
       { key: 'MBLNo', label: 'MBL No' },
-      { key: 'HouseNo', label: 'House No' },
       { key: 'HBLNo', label: 'HBL No' },
       { key: 'HouseStatus', label: 'House Status' },
       { key: 'JobType', label: 'Job Type' },
@@ -137,7 +134,6 @@ getGrandTotal(field: string): number {
           { value: item.JobNo || '' },
           { value: item.deptName || '' },
           { value: item.MBLNo || '' },
-          { value: item.houseNo || '' },
           { value: '' },
           { value: '' },
           { value: '' },
@@ -175,14 +171,11 @@ getGrandTotal(field: string): number {
           cells: [
             { value: '' },
             { value: '' },
-            { value: '' },
-            { value: '' },
-
+            { value: item.MBLNo || '' },
             { value: hj.HBLNo || '' },
             { value: hj.houseStatus || '' },
             { value: hj.jobType || '' },
             { value: hj.customerName || '' },
-
             { value: hj.OriginAgent || '' },
             { value: hj.DestinationAgent || '' },
             { value: hj.POO || '' },
@@ -212,7 +205,7 @@ getGrandTotal(field: string): number {
 
     rows.push({
       cells: [
-        { value: 'GRAND TOTAL', colspan: 21 , alignment: { horizontal: 'right' } },
+        { value: 'GRAND TOTAL', colspan: 20 , alignment: { horizontal: 'right' } },
         { value: this.formatNumber(this.getGrandTotal('pSale')) },
         { value: this.formatNumber(this.getGrandTotal('pCost')) },
         { value: this.formatNumber(this.getGrandTotal('pGp')) },

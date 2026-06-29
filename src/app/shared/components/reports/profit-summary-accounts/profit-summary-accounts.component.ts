@@ -27,14 +27,11 @@ export class ProfitSummaryAccountsComponent {
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('House Job Loss Report Data:', this.data);
   }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingsService.getCurrentCompanyInfo();
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
-    console.log('Current Company:', this.currentCompany);
-    console.log('Current Branch:', this.currentBranch);
     this.orientation = this.reportRegistryService.getReportConfig('profit-summary-report').pdfOrientation;
   }
 
@@ -96,7 +93,6 @@ export class ProfitSummaryAccountsComponent {
       { key: 'JobNo', label: 'Job No' },
       { key: 'Dept', label: 'Dept' },
       { key: 'MBLNo', label: 'MBL No' },
-      { key: 'HouseNo', label: 'House No' },
       { key: 'HBLNo', label: 'HBL No' },
       { key: 'HouseStatus', label: 'House Status' },
       { key: 'JobType', label: 'Job Type' },
@@ -137,7 +133,6 @@ export class ProfitSummaryAccountsComponent {
           { value: item.JobNo || '' },
           { value: item.deptName || '' },
           { value: item.MBLNo || '' },
-          { value: item.houseNo || '' },
           { value: '' },
           { value: '' },
           { value: '' },
@@ -175,9 +170,7 @@ export class ProfitSummaryAccountsComponent {
           cells: [
             { value: '' },
             { value: '' },
-            { value: '' },
-            { value: '' },
-
+            { value: item.MBLNo || '' },
             { value: hj.HBLNo || '' },
             { value: hj.houseStatus || '' },
             { value: hj.jobType || '' },
@@ -212,7 +205,7 @@ export class ProfitSummaryAccountsComponent {
 
     rows.push({
       cells: [
-        { value: 'GRAND TOTAL', colspan: 21 },
+        { value: 'GRAND TOTAL', colspan: 20 },
         { value: this.formatNumber(this.getGrandTotal('pSale')) },
         { value: this.formatNumber(this.getGrandTotal('pCost')) },
         { value: this.formatNumber(this.getGrandTotal('pGp')) },

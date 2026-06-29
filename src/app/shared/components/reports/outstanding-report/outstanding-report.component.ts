@@ -58,7 +58,7 @@ export class OutstandingReportComponent {
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
-    this.loadSalesPerson();
+    // this.loadSalesPerson();
     this.orientation = this.reportRegistryService.getReportConfig('outstanding-report').pdfOrientation;
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
@@ -515,7 +515,7 @@ export class OutstandingReportComponent {
     if (countryCode === 'ae') {
       return 'VAT No';
     }
-    return '';
+    return 'Tax No';
   }
 
   private getOrganizationCountryCode(): string {
@@ -549,7 +549,8 @@ export class OutstandingReportComponent {
       { key: 'osCurrAmt', label: 'O/S Currency Amt' },
       { key: 'osLocalAmt', label: 'O/S Local Amt' },
       { key: 'cumulative', label: 'Cumulative' },
-      { key: 'ageingDays', label: 'Ageing' }
+      { key: 'dueDate', label: 'Due Date' },
+      { key: 'ageingDays', label: 'Ageing' },
     ];
 
     const columnWidths = [
@@ -564,7 +565,8 @@ export class OutstandingReportComponent {
       10, // O/S Currency
       10, // O/S Local
       10, // Cumulative
-      4   // Ageing
+      8,  // Due Date
+      4  // Ageing
     ];
 
 
@@ -582,6 +584,7 @@ export class OutstandingReportComponent {
           { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
           { value: this.formatNumber(item?.signedOutstandingLocal || 0) },
           { value: this.formatNumber(item?.cumulativeOutstanding || 0) },
+          { value: this.formatDate(item?.dueDate) || '' , alignment:{horizontal:'center'} },
           { value: item?.ageingDays || 0 , alignment:{horizontal:'center'} },
         ],
         style: 'data'
@@ -592,18 +595,24 @@ export class OutstandingReportComponent {
     rows.push({
       cells: [
         { value: 'TOTAL :', colspan: 7 , alignment:{horizontal:'right'} },
-
         { value: this.formatNumber(this.getLocalTotal(transactions)) },
         { value: '' },
         { value: this.formatNumber(this.getSignedTotal(transactions)) },
-
         {
           value: this.formatNumber(
             transactions?.[transactions.length - 1]?.cumulativeOutstanding || 0
           )
         },
+        { value: '' , colspan: 2 }
+      ],
+      style: 'total'
+    });
 
-        { value: '' }
+    rows.push({
+      cells: [
+        { value: 'OVERDUE AMT', colspan: 9 },
+        { value: this.formatNumber(this.fullData?.totalOverdueAmount || 0) },
+        { value: '' , colspan: 3 }
       ],
       style: 'total'
     });
@@ -632,13 +641,13 @@ export class OutstandingReportComponent {
           { label: 'Subledger', value: this.fullData?.subledgerName || '' },
           { label: 'Address', value: this.fullData?.Address || '' },
           { label: this.taxRegistrationLabel, value: this.fullData?.PanType || '' },
+          { label: 'Credit Terms', value: this.fullData?.creditDays == null || this.fullData?.creditDays === 0 ? 'Cash' : `${this.fullData.creditDays}` },
         ]
       },
 
       tableHeaders,
       columnWidths,
       rows,
-
       summaryTable: {
         headers: [
           'Currency',

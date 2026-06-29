@@ -571,16 +571,54 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   // Cargo Table (house-job/master-job mapping like commodity HTML)
   // -----------------------------
   const invoiceData: any = (data as any).apiData || {};
+  const packageTypeList = Array.isArray(printData?.packageTypeList)
+    ? printData.packageTypeList
+    : [];
+  const resolvePackageTypeName = (value: any): string => {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
+    const numericValue = Number(value);
+    if (!Number.isNaN(numericValue) && packageTypeList.length > 0) {
+      const match = packageTypeList.find(
+        (item: any) => Number(item?.UOMMasterSid) === numericValue,
+      );
+      if (match?.UOMName) {
+        return match.UOMName;
+      }
+      if (match?.UOMCode) {
+        return match.UOMCode;
+      }
+    }
+
+    return String(value);
+  };
   const houseProducts = Array.isArray(invoiceData?.houseJob?.Products)
     ? invoiceData.houseJob.Products
-    : Array.isArray(invoiceData?.Products)
-      ? invoiceData.Products
+    : [];
+  const isBookingInvoice = !!(invoiceData?.BookingHeaderSid && invoiceData?.BookingHeader);
+  const bookingProducts =
+    isBookingInvoice && Array.isArray(
+      invoiceData?.BookingHeader?.bookingProduct ??
+      invoiceData?.bookingHeader?.bookingProduct ??
+      invoiceData?.bookingProduct ??
+      invoiceData?.Products
+    )
+      ? (
+          invoiceData?.BookingHeader?.bookingProduct ??
+          invoiceData?.bookingHeader?.bookingProduct ??
+          invoiceData?.bookingProduct ??
+          invoiceData?.Products
+        )
       : [];
+  const products = houseProducts.length > 0 ? houseProducts : bookingProducts;
   const showHouseJobContainerColumns = houseProducts.length > 0;
-  const showCommodityDescColumn = !showHouseJobContainerColumns;
+  const showPkgTypeColumn = products.length > 0;
+  const showCommodityDescColumn = houseProducts.length > 0;
 
-  const commodityRows = showHouseJobContainerColumns
-    ? houseProducts.map((p: any) => {
+  const commodityRows = products.length > 0
+    ? products.map((p: any) => {
         const c = p?.masterJobContainer || {};
         const masterContainers = Array.isArray(invoiceData?.masterJob?.containers)
           ? invoiceData.masterJob.containers
@@ -592,7 +630,9 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         );
         return {
           pkg: Number(p?.ExternlQty ?? c?.NoOfPkg ?? 0),
-          pkgtype: p?.ExternaPkg || p?.PkgGroup || c?.PkgType || '',
+          pkgtype: resolvePackageTypeName(
+            p?.ExternaPkg ?? p?.PkgGroup ?? c?.PkgType ?? '',
+          ),
           desc: c?.ProductDescription || p?.ProductDescription || '',
           grosswt: Number(c?.GrossWeight ?? p?.GrossWeight ?? 0),
           metric: Number(isSeaMode ? (c?.Volume ?? p?.Volume ?? 0) : (c?.ChargeableWeight ?? p?.ChargeableWeight ?? 0)),
@@ -609,6 +649,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         if (masterJob) {
           return [{
             pkg: Number(masterJob?.NoOfPkg ?? 0),
+            pkgtype: resolvePackageTypeName(masterJob?.PkgGroup || ''),
             desc: masterJob?.CommodityDescription || '',
             grosswt: Number(masterJob?.GrossWeight ?? 0),
             metric: Number(isSeaMode ? (masterJob?.Volume ?? 0) : (masterJob?.ChargeableWeight ?? 0)),
@@ -618,6 +659,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         }
         return [{
           pkg: Number(printData?.pkg ?? cargo?.packages ?? 0),
+          pkgtype: resolvePackageTypeName(printData?.ExternaPkg ?? ''),
           desc: printData?.desc || cargo?.commodityDesc || '',
           grosswt: Number(printData?.grosswt ?? cargo?.grossWeight ?? 0),
           metric: Number(isSeaMode ? (printData?.cbm ?? cargo?.cbm ?? 0) : (printData?.ChargeableWeight ?? cargo?.chargeableWeight ?? 0)),
@@ -629,7 +671,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   const cargoHeaderRow: any[] = [
    
     { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
-    ...(showHouseJobContainerColumns ? [{ text: 'Pkg Type', style: 'tableHeader', alignment: 'center' }] : []),
+    ...(showPkgTypeColumn ? [{ text: 'Pkg Type', style: 'tableHeader', alignment: 'center' }] : []),
     { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
     { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' },
     ...(showHouseJobContainerColumns
@@ -638,12 +680,14 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           { text: 'Container Type', style: 'tableHeader', alignment: 'center' }
         ]
       : []),
-       { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' }
+    ...(showCommodityDescColumn
+      ? [{ text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' }]
+      : [])
   ];
 
   const cargoBodyRows = commodityRows.map((row: any) => ([
     { text: String(row.pkg ?? 0), alignment: 'right' },
-    ...(showHouseJobContainerColumns ? [{ text: row.pkgtype || '-' }] : []),
+    ...(showPkgTypeColumn ? [{ text: row.pkgtype || '-' }] : []),
     { text: formatNumberWithCommas(Number(row.grosswt) || 0, 3), alignment: 'right' },
     { text: formatNumberWithCommas(Number(row.metric) || 0, 3), alignment: 'right' },
     ...(showHouseJobContainerColumns
@@ -652,12 +696,14 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           { text: row.containerType || '-', alignment: 'center' }
         ]
       : []),
-       { text: row.desc || '' }
+    ...(showCommodityDescColumn ? [{ text: row.desc || '' }] : [])
   ]));
 
   const cargoWidths = showHouseJobContainerColumns
     ? ['8%', '11%', '12%', '10%', '18%', '16%', '25%']
-    : ['14%', '22%', '22%', '42%'];
+    : showPkgTypeColumn
+      ? ['18%', '24%', '26%', '32%']
+      : ['20%', '40%', '40%'];
 
   const cargoTableBlock = {
     table: {
@@ -843,7 +889,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         ...(showHsnSac ? [{ text: detail.HSSACCode || detail.hsnSacCode || '', style: 'tableCellSmall', alignment: 'center' }] : []),
         { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
         { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right', noWrap: true },
-        { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+        { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right' },
         { text: detail.ExchangeRate || formatNumberWithCommas(detail.roe || 1, 4), style: 'tableCellSmall', alignment: 'right', noWrap: true },
         { text: detail.TaxableAmount || formatNumberWithCommas(detail.taxableAmount || detail.amount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true }
       ];
@@ -887,7 +933,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         text: detail.LocalAmount || formatNumberWithCommas(detail.localAmount, 2),
         style: 'tableCellSmall',
         alignment: 'right',
-        noWrap: true
+       
       });
 
       if (invoiceCurr && invoiceCurr !== localCurrency) {
@@ -895,7 +941,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           text: detail.PartyAmount || formatNumberWithCommas(detail.partyAmount, 2),
           style: 'tableCellSmall',
           alignment: 'right',
-          noWrap: true
+         
         });
       }
 
@@ -955,7 +1001,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       },
       layout: compactMode ? compactBorderedLayout : PDF_TABLE_LAYOUTS.bordered,
       margin: [0, 0, 0, 2],
-      fontSize: compactMode ? 6.5 : undefined
+      fontSize: compactMode ? 6 : undefined
     };
   }
 
@@ -1037,11 +1083,10 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         : formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
       style: 'tableCellBoldSmall',
       alignment: 'right',
-      noWrap: true
     });
 
     if (hasForeignCurrencyColumn) {
-      totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+      totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right'});
     }
 
     return totalRow;

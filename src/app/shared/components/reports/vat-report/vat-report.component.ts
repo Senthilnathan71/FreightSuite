@@ -119,7 +119,6 @@ getExcelData(): ComplexReportExportConfig {
     tableHeaders,
     rows,
     columnWidths: [12, 22, 12, 16, 16, 30, 15, 15],
-    notes: ['VAT Receivable Report is generated based only on Vendor Invoice and Vendor Credit Note types.']
   };
 }
 
