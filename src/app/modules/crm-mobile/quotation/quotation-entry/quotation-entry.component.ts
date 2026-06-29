@@ -371,6 +371,7 @@ dataFromEnqPage:any;
     'ContactPerson',
     'ContactNumber',
     'CustomerRef',
+    'Remarks',
     'SalesmanSid',
     'AgreedRate',
     'IsContract'
@@ -736,6 +737,7 @@ dataFromEnqPage:any;
       'CustomerMasterSid',
       'CustomerBranchSid',
       'CustomerRef',
+      'Remarks',
       'CustomerName',
       'CustomerAddress',
       'ContactPerson',
@@ -1610,6 +1612,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
       CustomerMasterSid: [null],
       FreightPPCC : ["Prepaid"],
       CustomerRef: [''],
+      Remarks: [''],
       Email: [''],
       status: ['Active'],
       SalesmanSid: [null],
@@ -3466,6 +3469,7 @@ isRateLockDisabled(): boolean {
       CustomerMasterSid: formValue.CustomerMasterSid,
       CustomerBranchSid: formValue.CustomerBranchSid,
       CustomerRef: formValue.CustomerRef,
+      Remarks: formValue.Remarks,
       CustomerAddress: formValue.CustomerAddress,
       Email: formValue.Email,
       ContactPerson:formValue.ContactPerson,
@@ -5294,6 +5298,7 @@ canGetTariff(routeIndex: number): boolean {
       ContactPerson: 'Contact person',
       ContactNumber: 'Contact number',
       CustomerRef: 'Customer reference',
+      Remarks: 'Remarks',
       SalesmanSid: 'Salesman',
       AgreedRate: 'Rate agreed',
       IsContract: 'Contract',
@@ -5327,7 +5332,6 @@ canGetTariff(routeIndex: number): boolean {
       ImcoClass: 'IMCO class',
       UnNo: 'UN number',
       PkgGroup: 'Package group',
-      Remarks: 'Remarks'
     };
 
     const label = labels[fieldName] || fieldName;
@@ -6467,6 +6471,7 @@ ${this.userData.userName}`;
   this.quotationForm.reset({
     CustomerMasterSid: null,
     CustomerRef: '',
+    Remarks: '',
     Email: '',
     status: 'Active',
     SalesmanSid: null,
