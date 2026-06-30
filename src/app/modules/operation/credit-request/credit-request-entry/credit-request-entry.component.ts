@@ -309,7 +309,7 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       CreditLimit: [data?.CreditLimit || 0, [Validators.required, Validators.min(0)]],
       PublishedDays: [data?.PublishedDays || 0],
       PublishedLimit: [data?.PublishedLimit || 0],
-      EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : null, Validators.required],
+      EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : new Date(), Validators.required],
       ApprovalStatus: [data?.ApprovalStatus || 'Pending'],
       ApprovedBy: [data?.ApprovedBy || ''],
       Status: [data?.Status || 'A'],
@@ -351,22 +351,9 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     return this.creditRequest.at(creditIndex).get('customerKyc') as FormArray;
   }
 
-  // Earliest date a request may start: the day AFTER the latest active request on the
-  // same branch (so the new one supersedes it). null = no lower bound (first request
-  // for the branch). With [maxDate]="today", if a request already starts today the min
-  // becomes tomorrow > today and no date is selectable.
-  getEffectiveFromMinDate(index: number): any {
-    const branchSid = this.creditRequest.at(index)?.get('CustomerBranchSid')?.value;
-    const latest = this.getLatestMatchingActiveRequest(branchSid, index);
-    const latestFrom = this.normalizeDateValue(latest?.EffectiveFrom);
-    if (!latestFrom) return null;
-
-    const next = this.addDays(latestFrom, 1);
-    return {
-      year: next.getFullYear(),
-      month: next.getMonth() + 1,
-      day: next.getDate(),
-    };
+  // New requests are effective today only. Historical approved rows remain visible.
+  getEffectiveFromMinDate(_index: number): any {
+    return this.today;
   }
 
   addCreditRequestRow(data?: any) {
@@ -375,15 +362,6 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
       data?.CustomerBranchSid ??
       (sourceIndex !== null ? this.creditRequest.at(sourceIndex)?.get('CustomerBranchSid')?.value : null) ??
       null;
-
-    // The branch already has a request effective today: the next start (latest + 1
-    // day) would be tomorrow, beyond the max (today). Warn the user — the row is still
-    // added but the datepicker's min > max means no date can be selected for it.
-    if (!data && this.nextEffectiveFromExceedsToday(sourceBranchSid)) {
-      this.appSettingService.showWarning(
-        'A credit request is already effective today for this branch. You can add the next one only from tomorrow.',
-      );
-    }
 
     const fg = this.createCreditRequest(data);
 
@@ -405,7 +383,6 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
     this.salesmanListPerRow[this.expandedIndex] = this.salesmanList;
 
     if (!data) {
-      this.applyNextEffectiveFrom(this.expandedIndex, sourceBranchSid);
       if (sourceBranchSid) {
         this.onBranchSelect(sourceBranchSid, this.expandedIndex);
       }
@@ -1309,11 +1286,9 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     this.salesmanListPerRow[rowIndex] = [];
     this.creditRequest.at(rowIndex).get('DepartmentMasterSid')?.reset();
     this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
-    this.applyNextEffectiveFrom(rowIndex, null);
     return;
   }
 
-  this.applyNextEffectiveFrom(rowIndex, branchSid);
   this.applySalesmenForRow(rowIndex);
 
   const payload = {
@@ -1358,72 +1333,6 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     }
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
-  }
-
-  private addDays(date: Date, days: number): Date {
-    const next = new Date(date);
-    next.setUTCHours(0, 0, 0, 0);
-    next.setUTCDate(next.getUTCDate() + days);
-    return next;
-  }
-
-  private getMatchingActiveRequests(branchSid: any, excludeRowIndex?: number): any[] {
-    const normalizedBranchSid = this.normalizeBranchSid(branchSid);
-
-    return this.creditRequest.controls
-      .map((ctrl, index) => ({ index, value: ctrl.getRawValue() }))
-      .filter(item => item.index !== excludeRowIndex)
-      .filter(item => this.normalizeBranchSid(item.value?.CustomerBranchSid) === normalizedBranchSid)
-      .filter(item => String(item.value?.Status || 'A') === 'A')
-      .filter(item => this.normalizeDateValue(item.value?.EffectiveFrom))
-      .map(item => item.value);
-  }
-
-  private getLatestMatchingActiveRequest(branchSid: any, excludeRowIndex?: number): any | null {
-    const matches = this.getMatchingActiveRequests(branchSid, excludeRowIndex);
-    if (!matches.length) return null;
-
-    return matches.sort((a, b) => {
-      const aDate = this.normalizeDateValue(a?.EffectiveFrom)?.getTime() || 0;
-      const bDate = this.normalizeDateValue(b?.EffectiveFrom)?.getTime() || 0;
-      return bDate - aDate;
-    })[0];
-  }
-
-  // True when the next allowed start (latest active EffectiveFrom on the branch + 1 day)
-  // would fall after today — i.e. a request is already effective today on this branch.
-  private nextEffectiveFromExceedsToday(branchSid: any, excludeRowIndex?: number): boolean {
-    const latest = this.getLatestMatchingActiveRequest(branchSid, excludeRowIndex);
-    const latestFrom = this.normalizeDateValue(latest?.EffectiveFrom);
-    if (!latestFrom) return false;
-
-    const latestStart = new Date(latestFrom);
-    latestStart.setHours(0, 0, 0, 0);
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    // next = latest + 1 day; exceeds today when the latest already starts today or later
-    return latestStart.getTime() >= todayStart.getTime();
-  }
-
-  private applyNextEffectiveFrom(rowIndex: number, branchSid: any): void {
-    const row = this.creditRequest.at(rowIndex) as FormGroup | null;
-    if (!row) return;
-
-    // No end date anymore: the latest request stays effective until the next one
-    // starts. Suggest the new row's EffectiveFrom = latest EffectiveFrom + 1 day —
-    // but never a future date (max is today); leave it blank so the picker blocks it.
-    const latest = this.getLatestMatchingActiveRequest(branchSid, rowIndex);
-    const latestFrom = this.normalizeDateValue(latest?.EffectiveFrom);
-    if (!latestFrom) return;
-
-    if (this.nextEffectiveFromExceedsToday(branchSid, rowIndex)) {
-      row.patchValue({ EffectiveFrom: null }, { emitEvent: false });
-      return;
-    }
-
-    row.patchValue({
-      EffectiveFrom: this.addDays(latestFrom, 1)
-    }, { emitEvent: false });
   }
 
   private validateCreditRequestContinuity(creditRequests: any[]): string | null {
