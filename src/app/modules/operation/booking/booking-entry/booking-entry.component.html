@@ -2805,15 +2805,19 @@
 
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
-      <app-milestone 
-        #milestoneComponent 
-        screenName="Booking" 
+      <app-milestone
+        #milestoneComponent
+        screenName="Booking"
         [resetTrigger]="resetTriggerMilestone"
-        [shipmentNo]="bookingHeader?.ShipmentNo" 
+        [shipmentNo]="bookingHeader?.ShipmentNo"
+        [bookingHeaderSid]="bookingHeader?.BookingHeaderSid"
+        [houseJobSid]="bookingHeader?.HouseJobSid"
         [hblNo]="b['HBLNo']?.value"
+        [departmentName]="selectedDepartment?.departmentName"
+        [departmentSid]="selectedDepartment?.DepartmentMasterSid"
         [isFormDisabled]="isFormDisabled"
         (dataEmitter)="handleMilestoneChange($event)"
-        
+
       ></app-milestone>
     </div>
     <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">

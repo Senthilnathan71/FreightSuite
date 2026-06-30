@@ -889,6 +889,9 @@
         [resetTrigger]="resetTriggerMilestone"
         [isFormDisabled]="isFormDisabled"
         [shipmentNo]="serviceJobForm.get('ShipmentNo')?.value || serviceJobData?.ShipmentNo"
+        [houseJobSid]="serviceJobData?.HouseJobSid"
+        [departmentName]="selectedDepartment?.departmentName"
+        [departmentSid]="selectedDepartment?.DepartmentMasterSid"
         (dataEmitter)="handleMilestoneChange($event)">
       </app-milestone>
     </div>

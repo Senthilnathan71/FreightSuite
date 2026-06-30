@@ -2673,9 +2673,6 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.productDataLength = flatProducts.length;
     if (shouldDisableForms) {
       this.disableAllForms();
-      if (this.isEditMode && response.status !== 'A') {
-        this.houseJobForm.get('status')?.disable();
-      }
     }
     this.updateProductPagination();
 
@@ -2693,19 +2690,15 @@ private loadMasterJobDetails(masterJobSid: number): void {
       status: br.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
-    if (
-      this.isEditMode &&
-      this.bookingRateArr?.some(rate =>
-        rate.CostVoucherHeaderSid !== null || rate.RevenueVoucherHeaderSid !== null
-      )
-    ) {
-      this.houseJobForm.get('status')?.disable();
-    }
     this.syncFormValueWithRateComponent();
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
     this.applyExportToImportFieldLocks();
     this.applyProductTabLocks();
+    // Status (Suspend) enable/disable is decided in one place so it always reflects the
+    // real rule: editable only when the job is Active, not closed and detached from its
+    // Master Job. Runs after disableAllForms()/bookingRateArr so it has the final say.
+    this.applyStatusControlState(response);
     
     setTimeout(() => {
       const otherData = response.Others[0];
@@ -8162,11 +8155,42 @@ getProductFormGroup(index: number): FormGroup {
   return this.bookingProducts.at(index) as FormGroup;
 }
 
+  /**
+   * Centralised enable/disable for the Status (Active/Suspend) control.
+   * Suspend is only meaningful once the House Job has been detached from its Master Job,
+   * so the field is editable only for an Active, non-closed, detached House Job. While the
+   * job is still attached to a Master Job (or is closed/already suspended) the control is
+   * disabled — the user must detach from the Master Job first. Booking linkage and
+   * voucher-linked rates no longer gate this field (clearing them is handled on suspend).
+   */
+  private applyStatusControlState(response: any): void {
+    const statusControl = this.houseJobForm?.get('status');
+    if (!statusControl || !this.isEditMode) {
+      return;
+    }
+
+    const isActive = (response?.status ?? 'A') === 'A';
+    const isJobClosed = this.isClosedJobStatus(response?.masterJob?.JobStatus);
+    const isMasterJobAttached = !!(response?.MasterJobSid ?? this.houseJobForm.get('MasterJobSid')?.getRawValue());
+
+    const canEditStatus = isActive && !isJobClosed && !isMasterJobAttached;
+
+    if (canEditStatus) {
+      statusControl.enable({ emitEvent: false });
+    } else {
+      statusControl.disable({ emitEvent: false });
+    }
+  }
+
   onStatusChange() {
     const status = this.b['status']?.getRawValue();
-    if (this.housejobData?.bookingHeader && (status === 'Suspended' || !status)) {
+    // Suspend is only blocked while the House Job is still attached to a Master Job.
+    // A Booking linkage alone no longer prevents suspension — once detached from the
+    // Master Job the House Job can be suspended, which releases its Booking link.
+    const masterJobSid = this.houseJobForm.get('MasterJobSid')?.getRawValue() ?? this.housejobData?.MasterJobSid;
+    if (masterJobSid && (status === 'Suspended' || !status)) {
       this.appSettingService.showWarning(
-        `This house cannot be suspended.\n\nBooking No: ${this.housejobData?.bookingHeader?.BookingNo} is associated with it.`
+        'Detach the House Job from Master Job before suspending.'
       );
       this.b['status']?.setValue('Active');
     }
