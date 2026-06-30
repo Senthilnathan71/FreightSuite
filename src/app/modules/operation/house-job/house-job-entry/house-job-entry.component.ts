@@ -1585,6 +1585,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       BlClause:[[]],
       CarrierBookingRef : [''],
       CarrierBookingDate : [''],
+      ClearanceDate : [''],
       DONo : [''],
       DODate : [''],
       SIConfirmationDate : [''],
@@ -2633,6 +2634,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
         ROValidity: otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
         CarrierBookingRef: otherData?.CarrierBookingRef,
         CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
+        ClearanceDate: otherData?.ClearanceDate ? new Date(otherData?.ClearanceDate) : null,
         DONo: otherData?.DONo || '',
         DODate: otherData?.DODate || '',
         SIConfirmationDate: otherData?.SIConfirmationDate ? new Date(otherData?.SIConfirmationDate) : null,
@@ -4011,6 +4013,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       SwitchLocation: proxyFormValue?.SwitchLocation || '',
       CarrierBookingRef: otherFormValue?.CarrierBookingRef || '',
       CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
+      ClearanceDate: otherFormValue?.ClearanceDate ? new Date(otherFormValue?.ClearanceDate) : null,
       // FIXED: DONo and DODate handling
       DONo: otherFormValue?.DONo || '',
       DODate: otherFormValue?.DODate ? new Date(otherFormValue?.DODate) : null,

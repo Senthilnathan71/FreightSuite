@@ -1148,11 +1148,18 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.vendorInvoiceForm.get('PartyAddress')?.setValue('');
     this.vendorInvoiceForm.get('PlaceOfSupply')?.setValue('');
     this.vendorInvoiceForm.get('GSTType')?.setValue('');
-    this.getVendorBranchByVendor(Number(vendorMasterSid));
+
+    // The selected vendor row is a specific branch — preselect that branch so
+    // its address patches as the Vendor Address.
+    const preselectBranchSid =
+      (typeof selected === 'object' && selected !== null)
+        ? selected.CustomerBranchSid
+        : undefined;
+    this.getVendorBranchByVendor(Number(vendorMasterSid), preselectBranchSid);
   }
 
   // Enhanced getVendorBranchByVendor method with callback
-  getVendorBranchByVendor(CustomerMasterSid: number) {
+  getVendorBranchByVendor(CustomerMasterSid: number, preselectBranchSid?: number) {
     if (!CustomerMasterSid) {
       this.vendorBranchList = [];
       return;
@@ -1162,7 +1169,23 @@ export class VendorInvoiceEntryComponent implements OnInit {
       next: (resp: any) => {
         if (resp?.status) {
           this.vendorBranchList = resp.data || [];
-        } 
+
+          // Each vendor dropdown row is a specific branch, so when the user
+          // selects a vendor, default the Vendor Address to that same branch
+          // and patch all the address-related fields without waiting for a
+          // manual branch pick.
+          if (preselectBranchSid && this.vendorBranchList.length) {
+            const branch = this.vendorBranchList.find(
+              b => Number(b.CustomerBranchSid) === Number(preselectBranchSid)
+            );
+            if (branch) {
+              this.vendorInvoiceForm
+                .get('CustomerBranchSid')
+                ?.setValue(branch.CustomerBranchSid);
+              this.onVendorBranchChange(branch);
+            }
+          }
+        }
       },
       error: (err) => {
         console.error('Error fetching vendor branches', err);
