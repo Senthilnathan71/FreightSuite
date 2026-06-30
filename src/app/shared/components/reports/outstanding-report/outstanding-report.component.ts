@@ -594,7 +594,7 @@ export class OutstandingReportComponent {
 
     rows.push({
       cells: [
-        { value: 'TOTAL :', colspan: 7 , alignment:{horizontal:'right'} },
+        { value: 'TOTAL', colspan: 7 , alignment:{horizontal:'right'} },
         { value: this.formatNumber(this.getLocalTotal(transactions)) },
         { value: '' },
         { value: this.formatNumber(this.getSignedTotal(transactions)) },
@@ -610,7 +610,7 @@ export class OutstandingReportComponent {
 
     rows.push({
       cells: [
-        { value: 'OVERDUE AMT', colspan: 9 },
+        { value: 'OVERDUE AMT', colspan: 9 , alignment:{horizontal:'right'} },
         { value: this.formatNumber(this.fullData?.totalOverdueAmount || 0) },
         { value: '' , colspan: 3 }
       ],

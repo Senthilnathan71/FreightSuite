@@ -93,6 +93,8 @@ export interface ComplexReportExportConfig {
     columnWidths?: number[];
   }>;
   notes?: string[];
+  /** Optional label for notes when a report wants a custom caption (e.g. Amount in words). */
+  notesLabel?: string;
   /**
    * PDF only: render `notes` inside the page footer so they repeat on EVERY page
    * (instead of once at the end of the document). Excel/preview are unaffected.
@@ -242,6 +244,17 @@ export class ExcelExportService {
 
       aoa.push(excelRow);
       currentRowIndex++;
+    }
+
+    if (config.notes?.length) {
+      aoa.push([]);
+      currentRowIndex++;
+
+      for (const note of config.notes) {
+        aoa.push([note]);
+        merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: totalCols - 1 } });
+        currentRowIndex++;
+      }
     }
 
     // Summary table (e.g., currency-wise summary in Outstanding Report)

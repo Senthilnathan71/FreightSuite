@@ -38,6 +38,7 @@ export class OperationReportsComponent implements OnInit, OnDestroy {
   selectedReport: ReportCard | null = null;
   reportData: any[] = [];
   reportParameters: any = {};
+  currentReportParameters: any = {};
 
   // Loading states
   loadingReports = false;
@@ -138,12 +139,18 @@ export class OperationReportsComponent implements OnInit, OnDestroy {
       this.selectedReport = null;
       this.reportData = [];
       this.reportParameters = {};
+      this.currentReportParameters = {};
     } else {
       // Select new report
       this.selectedReport = report;
       this.reportData = [];
       this.reportParameters = {};
+      this.currentReportParameters = {};
     }
+  }
+
+  onReportParametersChange(parameters: any): void {
+    this.currentReportParameters = parameters || {};
   }
 
   /**
@@ -301,6 +308,27 @@ private handleAlert(message: string): void {
   }
 
   get selectedReportNotes(): string {
+    if (this.selectedReport?.ReportName === 'not-booked-rates') {
+      const calculationType = this.currentReportParameters?.CalculationType;
+
+      if (calculationType === 'Cost') {
+        return `
+          Note :
+          <ul>
+            <li>This report includes only Revenue entries for House jobs that have not been booked as Cost.</li>
+          </ul>
+        `;
+      }
+
+      return `
+        Note :
+        <ul>
+          <li>This report includes only Cost entries for House jobs that have not been booked as Revenue.</li>
+          <li>House Jobs with no entries in the Rate tab are included in this report.</li>
+        </ul>
+      `;
+    }
+
     return this.selectedReport?.Notes?.trim() || '';
   }
 

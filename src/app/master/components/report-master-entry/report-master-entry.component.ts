@@ -254,6 +254,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
       reportFormatId: [null, Validators.required],
       reportType: ["", Validators.required],
       Orientation: ["", Validators.required],
+      Notes: [''],
       excludedCompanyIds: [[]],
       Status: ['A'],
       parameters: this.fb.array([])
@@ -358,6 +359,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
           reportMenuId: resp.data.ReportMenuSid,
           reportFormatId: resp.data.ReportFormat,
           reportType: resp.data.ReportType,
+          Notes: resp.data.Notes,
           Orientation: this.normalizeOrientationValue(
             resp.data.Orientation ?? resp.data.ReportOrientation
           ),
@@ -462,6 +464,7 @@ export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsaved
       ReportMenuSid: raw.reportMenuId,
       ReportFormat: raw.reportFormatId,
       ReportType: raw.reportType,
+      Notes: raw.Notes,
       Orientation: raw.Orientation,
       ReportExcludedCompany: Array.isArray(raw.excludedCompanyIds) && raw.excludedCompanyIds.length
   ? raw.excludedCompanyIds          // already number[]

@@ -235,4 +235,35 @@ describe('GenericTableReportComponent', () => {
     expect(total.credit).toBe(0);
     expect(total.naration).toBeUndefined(); // covered by the colspan, left blank
   });
+
+  it('renders amount in words outside the table when provided by sourceConfig', () => {
+    const cfg = {
+      reportHeader: {
+        companyName: 'ACME',
+        reportTitle: 'Statement of Accounts',
+        additionalInfo: [],
+      },
+      tableHeaders: [
+        { key: 'voucherNo', label: 'Voucher No' },
+        { key: 'amount', label: 'Amount' },
+      ],
+      rows: [
+        { style: 'data', cells: [{ value: 'V1' }, { value: 100 }] },
+        {
+          style: 'data',
+          cells: [
+            { value: 'Amount in words', colspan: 2 },
+            { value: 'One Hundred Only' },
+          ],
+        },
+      ],
+    };
+    const c = buildSource(cfg);
+
+    expect(c.rows.length).toBe(1);
+    expect(c.rows[0]).toEqual(jasmine.objectContaining({ voucherNo: 'V1', amount: 100 }));
+    expect(c.reportNotes).toEqual(['One Hundred Only']);
+    expect(c.getExcelData().notesLabel).toBe('Amount in words');
+    expect(c.getExcelData().notes).toEqual(['One Hundred Only']);
+  });
 });

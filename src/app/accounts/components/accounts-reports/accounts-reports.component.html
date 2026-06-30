@@ -79,6 +79,7 @@
           [module]="'accounts'"
           [companyId]="companyId"
           [branchId]="branchId"
+          (onValueChange)="onReportParametersChange($event)"
           (onGenerate)="onGenerateReport($event)"
         ></app-report-parameter-form>
 

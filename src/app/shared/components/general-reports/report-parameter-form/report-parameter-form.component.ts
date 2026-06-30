@@ -56,6 +56,7 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   @Input() reportDisplayName: string = '';
   @Output() onGenerate = new EventEmitter<any>();
   @Output() onReset = new EventEmitter<void>();
+  @Output() onValueChange = new EventEmitter<any>();
   fyMinDate: NgbDateStruct | null = null;
   fyMaxDate: NgbDateStruct | null = null;
   parameterForm!: FormGroup;
@@ -171,6 +172,7 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
 
     // Ageing Report: Salesman view is local-only, so lock CurrencyWise off when it is on.
     this.setupSalesmanCurrencyLock();
+    this.setupFormValueChanges();
   }
 
   /**
@@ -198,6 +200,14 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     const sub = salesman.valueChanges
       .pipe(distinctUntilChanged())
       .subscribe((value) => apply(!!value));
+    this.subscriptions.add(sub);
+  }
+
+  private setupFormValueChanges(): void {
+    this.onValueChange.emit(this.parameterForm.getRawValue());
+
+    const sub = this.parameterForm.valueChanges
+      .subscribe(() => this.onValueChange.emit(this.parameterForm.getRawValue()));
     this.subscriptions.add(sub);
   }
 

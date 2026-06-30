@@ -73,6 +73,7 @@
           [loading]="generatingReport"
           [module]="'operation'"
           [companyId]="companyId"
+          (onValueChange)="onReportParametersChange($event)"
           (onGenerate)="onGenerateReport($event)"
         ></app-report-parameter-form>
 
