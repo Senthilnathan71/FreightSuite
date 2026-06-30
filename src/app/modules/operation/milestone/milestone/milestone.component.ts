@@ -340,6 +340,15 @@ export class MilestoneComponent implements OnInit {
       return;
     }
     const milestoneFormValue = this.milestoneForm.getRawValue();
+
+    // Prevent the same milestone being added twice. Match by milestone code (the
+    // business identity) when available, else by MilestoneMasterSid. The row being
+    // edited is excluded from the check.
+    if (this.isDuplicateMilestone(milestoneFormValue.MilestoneMasterSid, this.currentMilestoneIndex)) {
+      this.appSettingService.showWarning('This milestone is already added.');
+      return;
+    }
+
     if(this.currentMilestoneIndex !== -1){
       const existingForm = this.milestoneFormArray.at(this.currentMilestoneIndex) as FormGroup;
       existingForm.patchValue({
@@ -355,6 +364,34 @@ export class MilestoneComponent implements OnInit {
     this.modalService.dismissAll();
   }
 
+  /** Resolve a milestone master's code (lowercased) from the loaded dropdown list. */
+  private getMilestoneCode(milestoneMasterSid: any): string {
+    if (milestoneMasterSid === null || milestoneMasterSid === undefined) {
+      return '';
+    }
+    const master = this.allMilestones?.find((m) => m.MilestoneMasterSid === milestoneMasterSid);
+    return master?.MilestoneCode ? String(master.MilestoneCode).trim().toLowerCase() : '';
+  }
+
+  /** True when the selected milestone is already present in the list (by code, else by master Sid). */
+  private isDuplicateMilestone(milestoneMasterSid: any, excludeIndex: number): boolean {
+    if (milestoneMasterSid === null || milestoneMasterSid === undefined) {
+      return false;
+    }
+    const newCode = this.getMilestoneCode(milestoneMasterSid);
+    const rows = this.milestoneFormArray.getRawValue();
+    return rows.some((row, index) => {
+      if (excludeIndex !== -1 && index === excludeIndex) {
+        return false;
+      }
+      const rowCode = this.getMilestoneCode(row.MilestoneMasterSid);
+      if (newCode && rowCode) {
+        return newCode === rowCode;
+      }
+      return row.MilestoneMasterSid != null && row.MilestoneMasterSid === milestoneMasterSid;
+    });
+  }
+
     onMilestoneChange(milestone: any) {
     if (!milestone) {
       // Reset fields if milestone is cleared
@@ -367,12 +404,13 @@ export class MilestoneComponent implements OnInit {
       return;
     }
 
-    // Patch milestone values when selected
+    // Patch milestone values when selected. A milestone entered manually here is NOT a
+    // system auto-capture, so AutoCaptured is always unticked ('N'/false) regardless of
+    // the master's AutoCapture setting.
     this.milestoneForm.patchValue({
       MilestoneName: milestone.MilestoneName,
       // leave date empty so user can choose
-      AutoCaptured: milestone.AutoCapture === 'Y' ? true : false || false,
-
+      AutoCaptured: false,
       Remarks: milestone.Remarks || ''
     });
   }
