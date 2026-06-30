@@ -56,9 +56,93 @@ export class MilestoneComponent implements OnInit {
   }
   set shipmentNo(value: string) {
     this._shipmentNo = value;
-    if (value) {
-      this.loadShipmentMilestones(this._shipmentNo);
+    this.scheduleShipmentMilestoneReload();
+  }
+
+  // Identifiers used to fetch this shipment's saved milestones. The backend fetch is
+  // keyed by HouseJobSid / BookingHeaderSid / ShipmentNo (OR), so the parent passes
+  // whichever it has: Booking screen -> bookingHeaderSid; House/Service -> houseJobSid.
+  private _houseJobSid: any;
+  @Input()
+  get houseJobSid(): any {
+    return this._houseJobSid;
+  }
+  set houseJobSid(value: any) {
+    this._houseJobSid = value;
+    this.scheduleShipmentMilestoneReload();
+  }
+
+  private _bookingHeaderSid: any;
+  @Input()
+  get bookingHeaderSid(): any {
+    return this._bookingHeaderSid;
+  }
+  set bookingHeaderSid(value: any) {
+    this._bookingHeaderSid = value;
+    this.scheduleShipmentMilestoneReload();
+  }
+
+  // ShipmentNo and the two IDs typically bind together in one change-detection pass.
+  // Coalesce them into a single fetch on the next microtask so the request reads the
+  // final values regardless of binding order.
+  private _milestoneReloadScheduled = false;
+  private scheduleShipmentMilestoneReload(): void {
+    if (this._milestoneReloadScheduled) {
+      return;
     }
+    this._milestoneReloadScheduled = true;
+    Promise.resolve().then(() => {
+      this._milestoneReloadScheduled = false;
+      this.loadShipmentMilestones();
+    });
+  }
+
+  // Current job's department. Passed by the parent screen so the milestone dropdown
+  // is filtered (server-side) to milestones configured for this department. The
+  // backend matches on either the name or the SID, so we forward both. Changing the
+  // department after init reloads the dropdown. Screens that don't bind a department
+  // get the full list (backward compatible).
+  private _initialized = false;
+  private _reloadScheduled = false;
+  private _departmentName: string;
+  @Input()
+  get departmentName(): string {
+    return this._departmentName;
+  }
+  set departmentName(value: string) {
+    if (this._departmentName === value) {
+      return;
+    }
+    this._departmentName = value;
+    this.scheduleMilestoneReload();
+  }
+
+  private _departmentSid: any;
+  @Input()
+  get departmentSid(): any {
+    return this._departmentSid;
+  }
+  set departmentSid(value: any) {
+    if (this._departmentSid === value) {
+      return;
+    }
+    this._departmentSid = value;
+    this.scheduleMilestoneReload();
+  }
+
+  // departmentName and departmentSid often change together in one change-detection
+  // pass. Coalesce them into a single reload on the next microtask so the request
+  // always reads the final values regardless of input-binding order, and never
+  // fires before ngOnInit's initial load.
+  private scheduleMilestoneReload(): void {
+    if (!this._initialized || this._reloadScheduled) {
+      return;
+    }
+    this._reloadScheduled = true;
+    Promise.resolve().then(() => {
+      this._reloadScheduled = false;
+      this.loadAllMilestones();
+    });
   }
 
   private prevValue;
@@ -92,6 +176,7 @@ export class MilestoneComponent implements OnInit {
       BranchMasterSid: this.currentCompany?.BranchMasterSid,
     }
     this.loadAllMilestones();
+    this._initialized = true;
     this.milestoneFormArray = this.fb.array([])
   }
 
@@ -100,6 +185,8 @@ export class MilestoneComponent implements OnInit {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentName: this._departmentName,
+      DepartmentMasterSid: this._departmentSid,
       ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
     };
 
@@ -115,9 +202,21 @@ export class MilestoneComponent implements OnInit {
   }
 
 
-  loadShipmentMilestones(shipmentNo: string) {
+  loadShipmentMilestones(shipmentNo?: string) {
+  if (shipmentNo !== undefined) {
+    this._shipmentNo = shipmentNo;
+  }
+
+  // Need at least one identifier to fetch by.
+  const hasKey = !!this._shipmentNo || this._houseJobSid != null || this._bookingHeaderSid != null;
+  if (!hasKey) {
+    return;
+  }
+
   const payload = {
-    ShipmentNo: shipmentNo,
+    ShipmentNo: this._shipmentNo,
+    HouseJobSid: this._houseJobSid ?? null,
+    BookingHeaderSid: this._bookingHeaderSid ?? null,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid
   };

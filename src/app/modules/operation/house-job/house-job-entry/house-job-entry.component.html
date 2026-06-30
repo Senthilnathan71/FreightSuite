@@ -3294,7 +3294,9 @@
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
       <app-milestone #milestoneComponent screenName="House Job" [resetTrigger]="resetTriggerMilestone" [isFormDisabled]="isFormDisabled"
-        [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
+        [shipmentNo]="bookingHeader?.ShipmentNo" [houseJobSid]="bookingHeader?.HouseJobSid"
+        [bookingHeaderSid]="bookingHeader?.BookingHeaderSid" [departmentName]="selectedDepartment?.departmentName"
+        [departmentSid]="selectedDepartment?.DepartmentMasterSid" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
     </div>
 
     <div class="workspace-content" [hidden]="selectedTab !== 'AR/AP'">
