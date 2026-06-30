@@ -89,6 +89,14 @@
     </app-reusable-table>
   </div>
 
+  <div class="generic-report__amount-words" *ngIf="reportNotes.length">
+    <div class="generic-report__amount-words-row" *ngFor="let note of reportNotes">
+      <strong class="generic-report__amount-words-label">Amount in words</strong>
+      <span class="generic-report__amount-words-sep">:</span>
+      <span class="generic-report__amount-words-text">{{ note }}</span>
+    </div>
+  </div>
+
   <app-print-footer [position]="'static'"></app-print-footer>
 </div>
 

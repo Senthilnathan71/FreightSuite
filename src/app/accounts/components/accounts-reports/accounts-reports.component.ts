@@ -42,6 +42,7 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
   selectedReport: ReportCard | null = null;
   reportData: any[] = [];
   reportParameters: any = {};
+  currentReportParameters: any = {};
 
   // Loading states
   loadingReports = false;
@@ -116,6 +117,23 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
   }
 
   get selectedReportNotes(): string {
+    if (
+      this.selectedReport?.ReportName === 'ageing-report' &&
+      this.isSalesmanAgeingSelected()
+    ) {
+      return `
+        <div>
+        Note :
+          <ul>
+            <li><strong>OS Local</strong> buckets are in local currency; OS Local sums to the Grand Total.</li>
+            <li><strong>Unallocated</strong> :  department-less vouchers (Non-Job INV / JV / Receipt / Payment), no salesperson.</li>
+            <li><strong>On Acc Local</strong> : Advances + JV portion.</li>
+            <li><strong>Unassigned</strong> : no matching salesteam record.</li>
+          </ul>
+        </div>
+      `;
+    }
+
     return this.selectedReport?.Notes?.trim() || '';
   }
 
@@ -162,14 +180,25 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
       this.selectedReport = null;
       this.reportData = [];
       this.reportParameters = {};
+      this.currentReportParameters = {};
       this.filteredParameters = [];
     } else {
       // Select new report
       this.selectedReport = report;
       this.reportData = [];
       this.reportParameters = {};
+      this.currentReportParameters = {};
       this.updateFilteredParameters();
     }
+  }
+
+  onReportParametersChange(parameters: any): void {
+    this.currentReportParameters = parameters || {};
+  }
+
+  private isSalesmanAgeingSelected(): boolean {
+    const salesman = this.currentReportParameters?.Salesman;
+    return salesman === true || salesman === 'true' || salesman === 'Y';
   }
 
   openReportOrderPanel(): void {

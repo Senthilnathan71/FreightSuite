@@ -231,7 +231,7 @@ getSignedTotal(transactions: any[]): number {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 8, 3, 7, 30, 3, 3, 12, 12, 12]
+      columnWidths: [12, 8, 3, 15, 30, 3, 3, 10, 10, 10]
     };
   }
 

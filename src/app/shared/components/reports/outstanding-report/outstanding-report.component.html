@@ -113,7 +113,7 @@
                         </td>
                     </tr>
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
-                        <td colspan="7" class="text-end">TOTAL :</td>
+                        <td colspan="7" class="text-end">TOTAL</td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <td style="text-align: right;" class="fw-bold">
                             {{ getLocalTotal(fullData?.transactions) | number:'1.2-2' }}

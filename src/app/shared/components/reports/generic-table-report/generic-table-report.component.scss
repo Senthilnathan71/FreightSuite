@@ -250,6 +250,33 @@ $line: #e2e8f0;
   background: transparent;
 }
 
+.generic-report__amount-words {
+  margin-top: 0.55rem;
+  font-size: 0.85rem;
+  color: $ink;
+}
+
+.generic-report__amount-words-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  line-height: 1.35;
+}
+
+.generic-report__amount-words-label {
+  min-width: 112px;
+  flex: 0 0 112px;
+  font-weight: 700;
+}
+
+.generic-report__amount-words-sep {
+  flex: 0 0 8px;
+}
+
+.generic-report__amount-words-text {
+  flex: 1 1 auto;
+}
+
 @keyframes gr-pop {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }

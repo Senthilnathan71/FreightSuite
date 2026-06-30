@@ -551,7 +551,7 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'accounts/reports/{id}/generate',
-        emailSubjectTemplate: 'Ledger Report - {LedgerName}',
+        emailSubjectTemplate: 'Ledger Report - {ledgerName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>

@@ -649,15 +649,29 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   // Notes section. When `notesEveryPage` is set the notes are rendered in the page
   // footer instead (repeated on every page), so skip the once-at-end block here.
   const repeatNotesInFooter = exportConfig.notesEveryPage === true && !!exportConfig.notes?.length;
+  const notesLabel = String(exportConfig.notesLabel || 'Note').trim() || 'Note';
   if (exportConfig.notes?.length && !repeatNotesInFooter) {
     const noteItems = exportConfig.notes.map(n => ({ text: n, fontSize: 8, margin: [0, 1, 0, 1] as [number, number, number, number] }));
-    content.push({
-      stack: [
-        { text: 'Note :', bold: true, fontSize: 9, margin: [0, 6, 0, 2] },
-        { ul: noteItems, fontSize: 8, margin: [10, 0, 0, 0] }
-      ],
-      margin: [0, 0, 0, 6]
-    });
+
+    if (notesLabel.toLowerCase() === 'amount in words') {
+      content.push({
+        columns: [
+          { text: 'Amount in words', width: 78, bold: true, fontSize: 8 },
+          { text: ':', width: 5, fontSize: 8 },
+          { text: exportConfig.notes[0] || '', width: '*', fontSize: 8 }
+        ],
+        columnGap: 0,
+        margin: [0, 6, 0, 6]
+      });
+    } else {
+      content.push({
+        stack: [
+          { text: `${notesLabel} :`, bold: true, fontSize: 9, margin: [0, 6, 0, 2] },
+          { ul: noteItems, fontSize: 8, margin: [10, 0, 0, 0] }
+        ],
+        margin: [0, 0, 0, 6]
+      });
+    }
   }
 
   // Summary table (e.g., currency-wise summary in Outstanding Report)

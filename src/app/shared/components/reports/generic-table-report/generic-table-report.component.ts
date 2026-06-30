@@ -82,6 +82,8 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
   paramSummary: Array<{ label: string; value: string }> = [];
   /** Company name from the Classic report header (used for export parity). */
   private sourceCompanyName = '';
+  /** Classic-style trailing notes extracted from sourceConfig rows. */
+  reportNotes: string[] = [];
 
   /** Whether the "Columns" customize panel is open. */
   panelOpen = false;
@@ -131,11 +133,25 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
 
     const headers: ExcelHeader[] = (cfg?.tableHeaders || cfg?.headers || []) as ExcelHeader[];
     this.allColumns = headers.map((h) => this.makeColumn(h.key, h.label));
+    this.reportNotes = [];
 
     if (Array.isArray(cfg?.rows)) {
-      this.allRows = cfg.rows
-        .filter((r: any) => r && Array.isArray(r.cells) && r.style !== 'section' && r.style !== 'header')
-        .map((r: any) => this.excelRowToObject(r, headers));
+      this.allRows = [];
+      for (const row of cfg.rows) {
+        if (!row || !Array.isArray(row.cells) || row.style === 'section' || row.style === 'header') {
+          continue;
+        }
+
+        if (this.isAmountInWordsRow(row)) {
+          const noteText = this.extractAmountInWordsText(row);
+          if (noteText) {
+            this.reportNotes.push(noteText);
+          }
+          continue;
+        }
+
+        this.allRows.push(this.excelRowToObject(row, headers));
+      }
     } else if (Array.isArray(cfg?.data)) {
       this.allRows = [...cfg.data];
     } else {
@@ -295,6 +311,8 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
       includeTableHeaders: true,
       rows,
       columnWidths: cols.map(() => 20),
+      notesLabel: this.reportNotes.length ? 'Amount in words' : undefined,
+      notes: this.reportNotes.length ? [...this.reportNotes] : undefined,
     };
   }
 
@@ -344,6 +362,28 @@ export class GenericTableReportComponent implements OnInit, OnDestroy {
     if (labelColumn) row[labelColumn.key] = totals.label ?? 'Total';
 
     return row;
+  }
+
+  private isAmountInWordsRow(row: any): boolean {
+    const firstCellText = String(row?.cells?.[0]?.value ?? '').trim().toLowerCase();
+    return firstCellText === 'amount in words';
+  }
+
+  private extractAmountInWordsText(row: any): string {
+    const parts = (row?.cells || [])
+      .slice(1)
+      .map((cell: any) => String(cell?.value ?? '').trim())
+      .filter((value: string) => !!value && value !== ':');
+
+    if (parts.length) {
+      return parts.join(' ');
+    }
+
+    const fallback = (row?.cells || [])
+      .map((cell: any) => String(cell?.value ?? '').trim())
+      .find((value: string) => value && value.toLowerCase() !== 'amount in words' && value !== ':');
+
+    return fallback || '';
   }
 
   private deriveColumns(rows: any[]): TableColumn[] {
