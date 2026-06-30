@@ -212,21 +212,21 @@
 
                             <tr style="font-weight: bolder;">
                                
-                                <th style="width:19%; border:1px solid black; padding:4px; text-align:center;  border-left:none;">
+                                <th style="width:16%; border:1px solid black; padding:4px; text-align:center;  border-left:none;">
                                     <strong>Voucher No.</strong></th>
-                                <th style="width:9%; border:1px solid black; padding:4px; text-align:center;">
-                                    <strong>INV Type</strong></th>
-                                <th style="width:12%; border:1px solid black; padding:4px; text-align:center;"><strong>Voucher
-                                        Date</strong></th>
                                 <th style="width:7%; border:1px solid black; padding:4px; text-align:center;">
+                                    <strong>Type</strong></th>
+                                <th style="width:10%; border:1px solid black; padding:4px; text-align:center;"><strong>Voucher
+                                        Date</strong></th>
+                                <th style="width:5%; border:1px solid black; padding:4px; text-align:center;">
                                     <strong>Curr.</strong></th>
-                                <th style="width:10%; border:1px solid black; padding:4px; text-align:center;"><strong>Curr.
+                                <th style="width:13%; border:1px solid black; padding:4px; text-align:center;"><strong>Curr.
                                         Amt</strong></th>
-                                <th style="width:11%; border:1px solid black; padding:4px; text-align:center;">
+                                <th style="width:13%; border:1px solid black; padding:4px; text-align:center;">
                                     <strong>Local Amount</strong></th>
                                 <th style="width:10%; border:1px solid black; padding:4px; text-align:center;"
                                     *ngIf="currentUserCountry === 'india'"><strong>TDS Amount</strong></th>
-                                <th style="width:32%; border:1px solid black; padding:4px; text-align:center; border-right:none;">
+                                <th style="width:34%; border:1px solid black; padding:4px; text-align:center; border-right:none;">
                                     <strong>Narration</strong></th>
                             </tr>
 
@@ -240,9 +240,9 @@
                                     voucher?.VoucherDate | formatDate }}</td>
                                 <td style="border:1px solid black; padding:4px; text-align:center;">{{
                                     voucher?.CurrencyCode }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;">{{
+                                <td style="border:1px solid black; padding:4px; text-align:right; white-space:nowrap;">{{
                                     voucher?.MatchingAmount | number:'1.2-2' }}</td>
-                                <td style="border:1px solid black; padding:4px; text-align:right;">{{
+                                <td style="border:1px solid black; padding:4px; text-align:right; white-space:nowrap;">{{
                                     voucher?.MatchingLocalAmount | number:'1.2-2' }}</td>
                                 <td style="border:1px solid black; padding:4px; text-align:right;"
                                     *ngIf="currentUserCountry === 'india'"></td>
@@ -255,11 +255,11 @@
                                     style="text-align:right; font-weight:bolder; border:1px solid black; padding:4px;border-left:none;">
                                     <strong>Total</strong>
                                 </td>
-                                <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder;">
+                                <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder; white-space:nowrap;">
                                     <strong>{{ getTotalMatchingAmount() | number:'1.2-2' }}</strong>
                                 </td>
                                 <td
-                                    style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder;">
+                                    style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder; white-space:nowrap;">
                                     <strong>{{ getTotalMatchingLocalAmount() | number:'1.2-2' }}</strong>
                                 </td>
                                 <td style="border:1px solid black; padding:4px; text-align:right;"

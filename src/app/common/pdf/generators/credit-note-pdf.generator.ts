@@ -624,24 +624,25 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
     rightStack.push({
       table: {
         headerRows: 1,
-        widths: [30, '*', 55, 55],
+        widths: [45, 75, 58, 58],
         body: [
           [
-            { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
-            { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' },
-            { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
-            { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' }
+            { text: 'Pkg', style: 'tableHeader', alignment: 'center', noWrap: true, fontSize: 8 },
+            { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center', noWrap: true, fontSize: 8 },
+            { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center', noWrap: true, fontSize: 8 },
+            { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center', noWrap: true, fontSize: 8 }
           ],
           [
-            { text: String(cargoData.packages), alignment: 'center' },
-            { text: cargoData.desc },
-            { text: formatNumberWithCommas(Number(cargoData.grosswt) || 0, 3), alignment: 'right' },
+            { text: String(cargoData.packages), alignment: 'center', noWrap: true, fontSize: 8 },
+            { text: cargoData.desc, fontSize: 8 },
+            { text: formatNumberWithCommas(Number(cargoData.grosswt) || 0, 3), alignment: 'right', fontSize: 8 },
             {
               text: formatNumberWithCommas(
                 Number(isSeaMode ? cargoData.cbm : cargoData.chargeableWeight) || 0,
                 3
               ),
-              alignment: 'right'
+              alignment: 'right',
+              fontSize: 8
             }
           ]
         ]
@@ -763,61 +764,66 @@ function buildChargesTable(data: CreditNotePdfData): any {
   /* ---------------- ROWS ---------------- */
   const dataRows = displayDetails.map((detail: any, index: number) => {
     const row: any[] = [
-      { text: detail.Sno || index + 1, style: 'tableCellSmall', alignment: 'center' },
-      { text: detail.ChargeDescription || detail.chargeName || '', style: 'tableCellSmall', noWrap: false },
+      { text: detail.Sno || index + 1, style: 'tableCellSmall', alignment: 'center', fontSize: 7 },
+      { text: detail.ChargeDescription || detail.chargeName || '', style: 'tableCellSmall', noWrap: false, fontSize: 7 },
       ...(isIndiaCompany
         ? [{
             text: detail.HSNCode || detail.HSNSAC || detail.hsnSacCode || '-',
             style: 'tableCellSmall',
-            alignment: 'center'
+            alignment: 'center',
+            fontSize: 7
           }]
         : []),
-      { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
-      { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right' },
-      { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right' },
-      { text: detail.ExchangeRate || formatNumberWithCommas(detail.roe || 1, 4), style: 'tableCellSmall', alignment: 'right' },
-      { text: detail.TaxableAmount || formatNumberWithCommas(detail.taxableAmount || detail.amount, 2), style: 'tableCellSmall', alignment: 'right' }
+      { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center', fontSize: 7 },
+      { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+      { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+      { text: detail.ExchangeRate || formatNumberWithCommas(detail.roe || 1, 4), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+      { text: detail.TaxableAmount || formatNumberWithCommas(detail.taxableAmount || detail.amount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 }
     ];
 
     if (taxConfig.showCGST) {
       row.push(
-        { text: detail.cgstRate || formatNumberWithCommas(detail.cgstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.cgstAmt || formatNumberWithCommas(detail.cgstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+        { text: detail.cgstRate || formatNumberWithCommas(detail.cgstPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+        { text: detail.cgstAmt || formatNumberWithCommas(detail.cgstAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 }
       );
     }
 
     if (taxConfig.showSGST) {
       row.push(
-        { text: detail.sgstRate || formatNumberWithCommas(detail.sgstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.sgstAmt || formatNumberWithCommas(detail.sgstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+        { text: detail.sgstRate || formatNumberWithCommas(detail.sgstPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+        { text: detail.sgstAmt || formatNumberWithCommas(detail.sgstAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 }
       );
     }
 
     if (taxConfig.showIGST) {
       row.push(
-        { text: detail.igstRate || formatNumberWithCommas(detail.igstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.igstAmt || formatNumberWithCommas(detail.igstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+        { text: detail.igstRate || formatNumberWithCommas(detail.igstPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+        { text: detail.igstAmt || formatNumberWithCommas(detail.igstAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 }
       );
     }
 
     if (taxConfig.showVAT) {
       row.push(
-        { text: detail.vatRate || formatNumberWithCommas(detail.vatPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.vatAmt || formatNumberWithCommas(detail.vatAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+        { text: detail.vatRate || formatNumberWithCommas(detail.vatPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+        { text: detail.vatAmt || formatNumberWithCommas(detail.vatAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 }
       );
     }
 
     row.push({
       text: detail.LocalAmount || formatNumberWithCommas(detail.localAmount, 2),
       style: 'tableCellSmall',
-      alignment: 'right'
+      alignment: 'right',
+      noWrap: true,
+      fontSize: 7
     });
 
     if (creditCurr && creditCurr !== localCurrency) {
       row.push({
         text: detail.PartyAmount || formatNumberWithCommas(detail.partyAmount, 2),
         style: 'tableCellSmall',
-        alignment: 'right'
+        alignment: 'right',
+        noWrap: true,
+        fontSize: 7
       });
     }
 
@@ -830,26 +836,30 @@ function buildChargesTable(data: CreditNotePdfData): any {
     : buildDefaultCreditNoteTotalRow(headerRow.length, grandTotal);
 
   /* ---------------- WIDTHS (FIXED + SAFE) ---------------- */
-  const widths: (number | string)[] = [
-    18,    // S.No
-    '*',   // Particulars
-    ...(isIndiaCompany ? [42] : []), // HSN/SAC
-    22,    // Curr
-    40,    // Qty
-    36,    // Rate
-    36,    // ROE
-    46     // Taxable
-  ];
+  const widths: (number | string)[] = taxConfig.showVAT && !hasForeignCurrencyColumn && !isIndiaCompany
+    ? [22, 85, 30, 52, 52, 38, 76, 38, 58, '*']
+    : [
+        22,
+        90,
+        ...(isIndiaCompany ? [34] : []),
+        25,
+        42,
+        42,
+        36,
+        58
+      ];
 
-  if (taxConfig.showCGST) widths.push(24, 38);
-  if (taxConfig.showSGST) widths.push(24, 38);
-  if (taxConfig.showIGST) widths.push(24, 38);
-  if (taxConfig.showVAT) widths.push(24, 38);
+  if (!(taxConfig.showVAT && !hasForeignCurrencyColumn && !isIndiaCompany)) {
+    if (taxConfig.showCGST) widths.push(28, 45);
+    if (taxConfig.showSGST) widths.push(28, 45);
+    if (taxConfig.showIGST) widths.push(28, 45);
+    if (taxConfig.showVAT) widths.push(28, 45);
 
-  widths.push(48); // Amt in Local Currency
+    widths.push('*');
 
-  if (hasForeignCurrencyColumn) {
-    widths.push(48); // Amt in Party Currency
+    if (hasForeignCurrencyColumn) {
+      widths.push(62);
+    }
   }
 
   /* ---------------- RETURN ---------------- */
@@ -869,8 +879,8 @@ function buildChargesTable(data: CreditNotePdfData): any {
       },
       hLineColor: () => '#000',
       vLineColor: () => '#000',
-      paddingLeft: () => 4,
-      paddingRight: () => 4,
+      paddingLeft: () => 2,
+      paddingRight: () => 2,
       paddingTop: () => 3,
       paddingBottom: () => 3
     },

@@ -74,20 +74,20 @@
                     style="width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed;">
                     <tr>
                         <th
-                            style="width:20%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;">
+                            style="width:18%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;">
                             <strong>Ledger</strong></th>
                         <th
-                            style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:30%;">
+                            style="border:1px solid black; padding:4px; text-align:center; border-left:none; width:28%;">
                             <strong style="font-weight: bolder;">Description</strong></th>
                         <th style="border:1px solid black; padding:4px; text-align:center; width:5%;"><strong
                                 style="font-weight: bolder;">Curr.</strong></th>
-                        <th style="border:1px solid black; padding:4px; text-align:center; width:5%;"><strong
+                        <th style="border:1px solid black; padding:4px; text-align:center; width:6%;"><strong
                                 style="font-weight: bolder;">Ex.Rate</strong></th>
                         <th
-                            style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:8%;">
+                            style="border:1px solid black; padding:4px; text-align:center; width:15%;">
                             <strong style="font-weight: bolder;">Amount</strong></th>
                         <th
-                            style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:12%;">
+                            style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:15%;">
                             <strong style="font-weight: bolder;"> {{ receiptPrintData?.CurrencyCode }} Amount</strong>
                         </th>
                     </tr>
@@ -101,13 +101,13 @@
                         <td style="border:1px solid black; padding:4px; text-align:center;">
                             {{item?.CurrencyCode}}
                         </td>
-                        <td style="border:1px solid black; padding:4px; text-align:right;">
+                        <td style="border:1px solid black; padding:4px; text-align:right; white-space:nowrap;">
                             {{item?.ExchangeRate | number:'1.3-3'}}
                         </td>
-                        <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+                        <td style="border:1px solid black; padding:4px; text-align:right; white-space:nowrap;">
                             {{item?.Amount | number:'1.2-2'}}
                         </td>
-                        <td style="border:1px solid black; padding:4px; text-align:right; border-right:none;">
+                        <td style="border:1px solid black; padding:4px; text-align:right; border-right:none; white-space:nowrap;">
                             {{item?.PartyAmount | number:'1.2-2'}}
                         </td>
                     </tr>
@@ -115,22 +115,21 @@
                         <td colspan="5"
                             style="border:1px solid black; padding:4px;text-align: end;border-left: none;font-weight: bold;">
                             Total</td>
-                        <td style="border:1px solid black; padding:4px; text-align:right;border-right: none;">
+                        <td style="border:1px solid black; padding:4px; text-align:right;border-right: none; white-space:nowrap;">
                             {{getTotalAmt() | number:'1.2-2'}}</td>
                     </tr>
                 </table>
 
        <div style="
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     margin-top:10px;
-    padding-left:120px;
+    padding:0 20px 0 120px;
     font-size:17px;
-    white-space:nowrap;
 ">
-    <strong style="width:160px;font-weight: bolder;">Amount in Words</strong>
+    <strong style="width:160px;font-weight: bolder; white-space:nowrap;">Amount in Words</strong>
     <span style="width:8px;">:</span>
-    <span style="flex:1;">{{ getAmountInWords() }}</span>
+    <span style="flex:1; min-width:0; line-height:1.35; white-space:normal; overflow-wrap:anywhere;">{{ getAmountInWords() }}</span>
 </div>
 
         <h3 *ngIf="receiptPrintData?.voucherMatchings?.length > 0 && receiptPrintData?.PostStatus === 'P'" style="text-align:start;margin-top:15px;margin-bottom:0px;padding-left:17px;font-weight: bolder;font-size: 16px;"><strong>Remittance Details</strong></h3>

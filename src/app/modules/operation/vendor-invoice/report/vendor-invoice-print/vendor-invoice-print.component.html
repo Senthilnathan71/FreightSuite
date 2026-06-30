@@ -183,7 +183,7 @@
           </div>
 
           <div style="display: flex">
-            <div style="width: 160px; font-weight: bolder">
+            <div style="width: 165px; font-weight: bolder">
               <strong>Bill Date</strong>
             </div>
             <div>
@@ -245,28 +245,30 @@
         <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
           @if(vendorInvoiceData?.IsServiceJob !== 'Y' && invoiceData?.CashOrBank !== 'Y'){
           @if(vendorInvoiceData?.JobType !== 'Agent'){
-          <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder">
+          <div style="display: flex; align-items: flex-start;">
+            <div style="width: 150px; font-weight: bolder">
               <strong> {{isSeaDepartment() ? 'HBL' : 'HAWB'}}</strong>
             </div>
-            <div>: {{ vendorInvoiceData?.HBLNo }}</div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.35;">{{ vendorInvoiceData?.HBLNo }}</div>
           </div>
           }
 
-          <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder">
+          <div style="display: flex; align-items: flex-start;">
+            <div style="width: 150px; font-weight: bolder">
               <strong> {{isSeaDepartment() ? 'MBL' : 'MAWB'}}</strong>
             </div>
-            <div>: {{ vendorInvoiceData?.MBLNo }}</div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.35;">{{ vendorInvoiceData?.MBLNo }}</div>
           </div>
           }
-          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
-            <div style="width: 180px; font-weight: bolder">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex; align-items: flex-start;">
+            <div style="width: 150px; font-weight: bolder">
               <strong>Job No.</strong>
             </div>
 
-            <div *ngIf="vendorInvoiceData?.MasterJobNumber || vendorInvoiceData?.MasterJobDate">
-              :
+            <div style="width: 15px;text-align: center;">:</div>
+            <div *ngIf="vendorInvoiceData?.MasterJobNumber || vendorInvoiceData?.MasterJobDate" style="flex: 1;line-height: 1.35;">
               <span *ngIf="vendorInvoiceData?.MasterJobNumber">
                 {{ vendorInvoiceData.MasterJobNumber }}
               </span>
@@ -285,43 +287,42 @@
 
           
 
-          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
-            <div style="width: 180px; font-weight: bolder">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex; align-items: flex-start;">
+            <div style="width: 150px; font-weight: bolder">
               <strong>Booking No.</strong>
             </div>
-            <div>
-              :
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.35;">
               {{ vendorInvoiceData?.BookingNumber }}
             </div>
           </div>
 
-          <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder">
-              <strong>Naration</strong>
+          <div style="display: flex; align-items: flex-start;">
+            <div style="width: 150px; font-weight: bolder">
+              <strong>Narration</strong>
             </div>
-            <div>
-              :
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.35; overflow-wrap: anywhere;">
               {{ vendorInvoiceData?.Naration }}
             </div>
           </div>
 
-          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
-            <div style="width: 180px; font-weight: bolder">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex; align-items: flex-start;">
+            <div style="width: 150px; font-weight: bolder">
               <strong>Freight Terms</strong>
             </div>
-            <div>
-              :
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.35;">
               {{ vendorInvoiceData?.FreightTerms }}
             </div>
           </div>
 
-          <div style="display: flex">
-            <div style="width: 180px; font-weight: bolder">
+          <div style="display: flex; align-items: flex-start;">
+            <div style="width: 150px; font-weight: bolder">
               <strong>Currency / Ex-Rate</strong>
             </div>
-            <div>
-              : {{ vendorInvoiceData?.CurrExRate }}
-            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.35;">{{ vendorInvoiceData?.CurrExRate }}</div>
           </div>
 
           <!-- <div style="display: flex">

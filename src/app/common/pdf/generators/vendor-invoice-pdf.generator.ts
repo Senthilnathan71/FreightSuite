@@ -644,7 +644,7 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
   : []),
     ...(!isNonJob ? [{ label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' }] : []),
     ...(!isNonJob ? [{ label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' }] : []),
-    { label: 'Naration', value:  printData?.Naration},
+    { label: 'Narration', value:  printData?.Naration},
     ...(!isNonJob ? [{ label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' }] : []),
     // { label: 'Invoice Due Date', value: dueDate ? formatDate(dueDate) : '' },
     { label: 'Currency / Ex-Rate', value: currExRate }
@@ -689,24 +689,25 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
     rightStack.push({
       table: {
         headerRows: 1,
-        widths: [30, '*', 55, 55],
+        widths: [45, '*', 55, 55],
         body: [
           [
-            { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
-            { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' },
-            { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
-            { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' }
+            { text: 'Pkg', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+            { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+            { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+            { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center', fontSize: 8 }
           ],
           [
-            { text: String(cargoData.packages), alignment: 'center' },
-            { text: cargoData.desc },
-            { text: formatNumberWithCommas(Number(cargoData.grosswt) || 0, 3), alignment: 'right' },
+            { text: String(cargoData.packages), alignment: 'center', noWrap: true, fontSize: 8 },
+            { text: cargoData.desc, fontSize: 8 },
+            { text: formatNumberWithCommas(Number(cargoData.grosswt) || 0, 3), alignment: 'right', fontSize: 8 },
             {
               text: formatNumberWithCommas(
                 Number(isSeaMode ? cargoData.cbm : cargoData.chargeableWeight) || 0,
                 3
               ),
-              alignment: 'right'
+              alignment: 'right',
+              fontSize: 8
             }
           ]
         ]
@@ -783,7 +784,15 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
     };
 
     const formatValue = (value: any, decimals: number): string =>
-      formatNumberWithCommas(Number(value) || 0, decimals);
+      formatNumberWithCommas(parsePdfNumber(value), decimals);
+
+    const numericCell = (value: any, decimals: number): any => ({
+      text: formatValue(value, decimals),
+      style: 'tableCellSmall',
+      alignment: 'right',
+      noWrap: true,
+      fontSize: 7
+    });
 
     const headerRow: any[] = [
       { text: 'S.No', style: 'tableHeaderSmall', alignment: 'center' },
@@ -843,7 +852,8 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
         {
           text: firstFilled(detail.Sno, detail.sno, index + 1),
           style: 'tableCellSmall',
-          alignment: 'center'
+          alignment: 'center',
+          fontSize: 7
         },
         {
           text: firstFilled(
@@ -854,6 +864,7 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
             detail.Narration
           ),
           style: 'tableCellSmall',
+          fontSize: 7,
           noWrap: false
         },
         ...(isIndiaCompany
@@ -866,126 +877,54 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
                 '-'
               ),
               style: 'tableCellSmall',
-              alignment: 'center'
+              alignment: 'center',
+              fontSize: 7
             }]
           : []),
         {
           text: firstFilled(detail.CurrencyCode, detail.currencyCode),
           style: 'tableCellSmall',
-          alignment: 'center'
+          alignment: 'center',
+          fontSize: 7
         },
-        {
-          text: firstFilled(detail.NumberOfUnit, detail.qty !== undefined ? formatValue(detail.qty, 3) : '', '1.000'),
-          style: 'tableCellSmall',
-          alignment: 'right'
-        },
-        {
-          text: firstFilled(detail.Rate, detail.rate !== undefined ? formatValue(detail.rate, 2) : '', '0.00'),
-          style: 'tableCellSmall',
-          alignment: 'right'
-        },
-        {
-          text: firstFilled(
-            detail.ExchangeRate,
-            detail.roe !== undefined ? formatValue(detail.roe, 4) : '',
-            '1.0000'
-          ),
-          style: 'tableCellSmall',
-          alignment: 'right'
-        },
-        {
-          text: firstFilled(
-            detail.TaxableAmount,
-            detail.taxableAmount !== undefined ? formatValue(detail.taxableAmount, 2) : '',
-            detail.Amount !== undefined ? formatValue(detail.Amount, 2) : '',
-            detail.amount !== undefined ? formatValue(detail.amount, 2) : '',
-            '0.00'
-          ),
-          style: 'tableCellSmall',
-          alignment: 'right'
-        }
+        numericCell(firstFilled(detail.NumberOfUnit, detail.qty, '1'), 3),
+        numericCell(firstFilled(detail.Rate, detail.rate, '0'), 2),
+        numericCell(firstFilled(detail.ExchangeRate, detail.roe, '1'), 4),
+        numericCell(firstFilled(detail.TaxableAmount, detail.taxableAmount, detail.Amount, detail.amount, '0'), 2)
       ];
 
       if (taxConfig.showCGST) {
         row.push(
-          {
-            text: firstFilled(detail.cgstRate, formatValue(detail.cgstPercent ?? Number(detail.TaxPercentage1) / 2, 3)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          },
-          {
-            text: firstFilled(detail.cgstAmt, formatValue(detail.cgstAmount ?? Number(detail.TaxAmount1) / 2, 2)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          }
+          numericCell(firstFilled(detail.cgstRate, detail.cgstPercent ?? Number(detail.TaxPercentage1) / 2), 3),
+          numericCell(firstFilled(detail.cgstAmt, detail.cgstAmount ?? Number(detail.TaxAmount1) / 2), 2)
         );
       }
 
       if (taxConfig.showSGST) {
         row.push(
-          {
-            text: firstFilled(detail.sgstRate, formatValue(detail.sgstPercent ?? Number(detail.TaxPercentage1) / 2, 3)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          },
-          {
-            text: firstFilled(detail.sgstAmt, formatValue(detail.sgstAmount ?? Number(detail.TaxAmount1) / 2, 2)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          }
+          numericCell(firstFilled(detail.sgstRate, detail.sgstPercent ?? Number(detail.TaxPercentage1) / 2), 3),
+          numericCell(firstFilled(detail.sgstAmt, detail.sgstAmount ?? Number(detail.TaxAmount1) / 2), 2)
         );
       }
 
       if (taxConfig.showIGST) {
         row.push(
-          {
-            text: firstFilled(detail.igstRate, formatValue(detail.igstPercent ?? detail.TaxPercentage1, 3)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          },
-          {
-            text: firstFilled(detail.igstAmt, formatValue(detail.igstAmount ?? detail.TaxAmount1, 2)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          }
+          numericCell(firstFilled(detail.igstRate, detail.igstPercent ?? detail.TaxPercentage1), 3),
+          numericCell(firstFilled(detail.igstAmt, detail.igstAmount ?? detail.TaxAmount1), 2)
         );
       }
 
       if (showVATColumns) {
         row.push(
-          {
-            text: firstFilled(detail.vatRate, formatValue(detail.vatPercent ?? detail.TaxPercentage1, 3)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          },
-          {
-            text: firstFilled(detail.vatAmt, formatValue(detail.vatAmount ?? detail.TaxAmount1, 2)),
-            style: 'tableCellSmall',
-            alignment: 'right'
-          }
+          numericCell(firstFilled(detail.vatRate, detail.vatPercent ?? detail.TaxPercentage1), 3),
+          numericCell(firstFilled(detail.vatAmt, detail.vatAmount ?? detail.TaxAmount1), 2)
         );
       }
 
-      row.push({
-        text: firstFilled(
-          detail.LocalAmount,
-          detail.localAmount !== undefined ? formatValue(detail.localAmount, 2) : '',
-          '0.00'
-        ),
-        style: 'tableCellSmall',
-        alignment: 'right'
-      });
+      row.push(numericCell(firstFilled(detail.LocalAmount, detail.localAmount, '0'), 2));
 
       if (hasForeignCurrencyColumn) {
-        row.push({
-          text: firstFilled(
-            detail.PartyAmount,
-            detail.partyAmount !== undefined ? formatValue(detail.partyAmount, 2) : '',
-            '0.00'
-          ),
-          style: 'tableCellSmall',
-          alignment: 'right'
-        });
+        row.push(numericCell(firstFilled(detail.PartyAmount, detail.partyAmount, '0'), 2));
       }
 
       return row;
@@ -995,26 +934,30 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
       ? buildVendorInvoiceVatTotalRow(displayDetails, isIndiaCompany, hasForeignCurrencyColumn, grandTotal)
       : buildDefaultVendorInvoiceTotalRow(headerRow.length, grandTotal);
 
-    const widths: (number | string)[] = [
-      18,
-      '*',
-      ...(isIndiaCompany ? [42] : []),
-      22,
-      40,
-      36,
-      36,
-      46
-    ];
+    const widths: (number | string)[] = showVATColumns && !hasForeignCurrencyColumn && !isIndiaCompany
+      ? [22, 85, 30, 52, 52, 38, 76, 38, 58, '*']
+      : [
+          22,
+          90,
+          ...(isIndiaCompany ? [34] : []),
+          25,
+          42,
+          42,
+          36,
+          58
+        ];
 
-    if (taxConfig.showCGST) widths.push(24, 38);
-    if (taxConfig.showSGST) widths.push(24, 38);
-    if (taxConfig.showIGST) widths.push(24, 38);
-    if (showVATColumns) widths.push(24, 38);
+    if (!(showVATColumns && !hasForeignCurrencyColumn && !isIndiaCompany)) {
+      if (taxConfig.showCGST) widths.push(28, 45);
+      if (taxConfig.showSGST) widths.push(28, 45);
+      if (taxConfig.showIGST) widths.push(28, 45);
+      if (showVATColumns) widths.push(28, 45);
 
-    widths.push(48);
+      widths.push('*');
 
-    if (hasForeignCurrencyColumn) {
-      widths.push(48);
+      if (hasForeignCurrencyColumn) {
+        widths.push(62);
+      }
     }
 
     return {
@@ -1028,8 +971,8 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
         vLineWidth: () => 0.5,
         hLineColor: () => '#000',
         vLineColor: () => '#000',
-        paddingLeft: () => 4,
-        paddingRight: () => 4,
+        paddingLeft: () => 2,
+        paddingRight: () => 2,
         paddingTop: () => 3,
         paddingBottom: () => 3
       },
@@ -1054,8 +997,14 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
       totalRow.push({ text: '', style: 'tableCellSmall' });
     }
 
-    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
-    totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right' });
+    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 7 });
+    totalRow.push({
+      text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
+      style: 'tableCellBoldSmall',
+      alignment: 'right',
+      noWrap: true,
+      fontSize: 7
+    });
 
     return totalRow;
   }
@@ -1073,12 +1022,13 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
       totalRow.push({ text: '', style: 'tableCellSmall' });
     }
 
-    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 7 });
     totalRow.push({
       text: formatNumberWithCommas(sumPdfDetailAmount(details, 'vatAmt', 'vatAmount'), 2),
       style: 'tableCellBoldSmall',
       alignment: 'right',
-      noWrap: true
+      noWrap: true,
+      fontSize: 7
     });
     totalRow.push({
       text: hasForeignCurrencyColumn
@@ -1086,7 +1036,8 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
         : formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
       style: 'tableCellBoldSmall',
       alignment: 'right',
-      noWrap: true
+      noWrap: true,
+      fontSize: 7
     });
 
     if (hasForeignCurrencyColumn) {
@@ -1094,7 +1045,8 @@ function buildShipmentDetails(data: VendorInvoicePdfData): any {
         text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
         style: 'tableCellBoldSmall',
         alignment: 'right',
-        noWrap: true
+        noWrap: true,
+        fontSize: 7
       });
     }
 
