@@ -58,16 +58,20 @@ export class CustomDatePipe implements PipeTransform {
 
   transform(
     value: Date | string | number | null | undefined,
-    includeTime: boolean = false,
+    includeTimeOrOptions:
+      | boolean
+      | { includeTime?: boolean; includeSeconds?: boolean; use24Hour?: boolean; customFormat?: string; branchOffset?: boolean }
+      = false,
     includeSeconds: boolean = false,
     use24Hour: boolean = false,
     customFormat?: string
   ): string {
-    return this.globalDateService.formatDate(value, {
-      includeTime,
-      includeSeconds,
-      use24Hour,
-      customFormat
-    });
+    // Support both the positional form ({{ d | formatDate : true }}) and the documented
+    // object-literal form ({{ d | formatDate : { includeTime: true, branchOffset: true } }}).
+    const options =
+      includeTimeOrOptions && typeof includeTimeOrOptions === 'object'
+        ? includeTimeOrOptions
+        : { includeTime: !!includeTimeOrOptions, includeSeconds, use24Hour, customFormat };
+    return this.globalDateService.formatDate(value, options);
   }
 }

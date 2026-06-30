@@ -53,7 +53,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { Download, Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
-import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
+import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from '../../services/shipment-milestone.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { BarcodeConfig, BarcodeService } from 'src/app/core/services/bar-code.service';
 import { NgxBarcode6Module } from 'ngx-barcode6';
@@ -500,6 +500,7 @@ get visibleTabs() {
     private modalService: NgbModal,
     private fb: FormBuilder,
     private operationService: OperationService,
+    private shipmentMilestoneService: ShipmentMilestoneService,
     private currentRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
@@ -5731,6 +5732,11 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
         next: () => {},
         error: (err) => console.error(err)
       });
+
+      // Frontend milestone: capture EXDO (Export DO Received) when the CRO is downloaded/printed.
+      if (type === 'cro') {
+        this.captureExportDoMilestone();
+      }
     })
     .catch((error) => {
       console.error(`PDF generation error for ${type}:`, error);
@@ -5739,6 +5745,42 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
     .finally(() => {
       this.spinner.hide();
     });
+}
+
+/**
+ * EXDO (Export DO Received) — a Frontend milestone fired when the Export Release Order (CRO) is
+ * downloaded/printed. Export-only; anchors on the booking (BookingHeaderSid). Idempotent on the
+ * backend (re-downloads return status=false and are ignored).
+ */
+private captureExportDoMilestone(): void {
+  const jobType = this.b['JobType']?.value;
+  const shipmentNo = this.bookingData?.ShipmentNo;
+  const bookingHeaderSid = this.bookingData?.BookingHeaderSid;
+  if (jobType !== 'Export' || !shipmentNo || !bookingHeaderSid) {
+    return;
+  }
+
+  const payload: SafeInsertShipmentMilestone = {
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    DepartmentName: this.selectedDepartment?.departmentName,
+    JobType: jobType,
+    MilestoneCode: 'EXDO',
+    ShipmentNo: shipmentNo,
+    BookingHeaderSid: bookingHeaderSid,
+    createdBy: this.userData?.userEmail,
+    // MilestoneDate omitted → backend uses now() (the capture/print time)
+    Remarks: `Export DO received on ${new Date().toISOString().split('T')[0]}`
+  };
+
+  this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({
+    next: (resp: any) => {
+      if (resp?.status) {
+        this.milestoneComponent?.loadShipmentMilestones(shipmentNo);
+      }
+    },
+    error: () => { /* already captured / not configured for this dept — ignore silently */ }
+  });
 }
 
 // Legacy method using html2canvas (kept for fallback/barcode printing)

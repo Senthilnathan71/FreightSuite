@@ -3622,7 +3622,7 @@ private applyExportToImportFieldLocks(): void {
       }
     }
     if(this.hblModalRef){
-      this.initializeMilestoneContentForHBLPrint();
+      this.initializeMilestoneContentForHBLPrint(this.selectedReport);
     }
   }
 
@@ -6963,9 +6963,8 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.hblCount = this.houseJobForm.get('HBLCount')?.getRawValue();
           modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
 
-         if (type === 'HBLDraft') {
-           this.initializeMilestoneContentForHBLPrint();
-         }
+         // Draft BL print → DRAFT milestone ; Original BL print → HBL (BL Release) milestone
+         this.initializeMilestoneContentForHBLPrint(type);
 
          modalRef.result.then((result) => {
             this.hblModalRef = undefined;
@@ -6982,7 +6981,7 @@ ${this.userData['userName']}`;
 
       }
 
-  initializeMilestoneContentForHBLPrint() {
+  initializeMilestoneContentForHBLPrint(reportType: 'HBL' | 'HBLDraft' = 'HBLDraft') {
     let validDepartment = false;
     let validJobType = false;
     if (this.selectedDepartment?.ExportImport === "Export") {
@@ -6994,10 +6993,15 @@ ${this.userData['userName']}`;
       validJobType = true;
     }
 
+    // Original BL ('HBL') print captures the "BL Release" (HBL) milestone;
+    // Draft BL ('HBLDraft') print captures the DRAFT milestone — same flow, different code.
+    const isOriginal = reportType === 'HBL';
+    const milestoneCode = isOriginal ? 'HBL' : 'DRAFT';
+
     const allMilestones = this.milestoneComponent.allMilestones || [];
-    const draftMilestoneId = allMilestones.find(m => m.MilestoneCode === "Draft")?.MilestoneMasterSid;
-    const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === draftMilestoneId);
-    
+    const targetMilestoneId = allMilestones.find(m => (m.MilestoneCode || '').toUpperCase() === milestoneCode)?.MilestoneMasterSid;
+    const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === targetMilestoneId);
+
 
     this.hblModalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType && !existingMilestone;
 
@@ -7006,11 +7010,13 @@ ${this.userData['userName']}`;
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DepartmentName: this.selectedDepartment?.departmentName,
       JobType: currentJobType,
-      MilestoneCode: "Draft",
+      MilestoneCode: milestoneCode,
       MilestoneDate : getDefaultTodayDate(),
       ShipmentNo: this.bookingData?.ShipmentNo,
       createdBy: this.userData?.userEmail,
-      Remarks: `Draft BL has been sent on ${(new Date().toISOString()).split('T')[0]}`
+      Remarks: isOriginal
+        ? `Original BL has been released on ${(new Date().toISOString()).split('T')[0]}`
+        : `Draft BL has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };
     this.hblModalRef.componentInstance.milestonePayload = milestonePayload;
 

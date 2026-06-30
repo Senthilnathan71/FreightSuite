@@ -2,6 +2,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CompanyConfigService } from '../../modules/master/company/services/company-config.service';
+import { AppSettingsService } from './app-settings.service';
+import { normalizeTimezoneOffset, getOffsetMinutes } from 'src/app/common/helper';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +26,7 @@ export class GlobalDateFormatService {
     'MMMM DD, YYYY': 'MMMM dd, yyyy'
   };
 
-  constructor(private configService: CompanyConfigService) {}
+  constructor(private configService: CompanyConfigService, private appSettings: AppSettingsService) {}
 
   setDateFormat(format: string): void {
     this.dateFormatSubject.next(format);
@@ -64,12 +66,27 @@ formatDate(
     includeSeconds?: boolean;
     use24Hour?: boolean;           // optional: force 24-hour instead of 12-hour + tt
     customFormat?: string;         // optional: fully override (rare use)
+    branchOffset?: boolean;        // optional: render in the current branch's timezone (company-config offset)
   } = {}
 ): string {
   if (!dateInput) return '';
 
-  const date = new Date(dateInput);
-  if (isNaN(date.getTime())) return '';
+  const parsed = new Date(dateInput);
+  if (isNaN(parsed.getTime())) return '';
+
+  // When branchOffset is set, shift the stored UTC instant by the current branch's offset
+  // (company configuration) and read it back via UTC getters, so the displayed clock is
+  // company-local rather than browser-local. Default (false) keeps the original local behaviour.
+  const useBranchTz = !!options.branchOffset;
+  const date = useBranchTz
+    ? new Date(parsed.getTime() + getOffsetMinutes(normalizeTimezoneOffset(this.appSettings.getCurrentBranchInfo()?.timeZone)) * 60 * 1000)
+    : parsed;
+  const gDate    = () => useBranchTz ? date.getUTCDate()     : date.getDate();
+  const gMonth   = () => useBranchTz ? date.getUTCMonth()    : date.getMonth();
+  const gYear    = () => useBranchTz ? date.getUTCFullYear() : date.getFullYear();
+  const gHours   = () => useBranchTz ? date.getUTCHours()    : date.getHours();
+  const gMinutes = () => useBranchTz ? date.getUTCMinutes()  : date.getMinutes();
+  const gSeconds = () => useBranchTz ? date.getUTCSeconds()  : date.getSeconds();
 
   // ─────────────────────────────────────────────
   // 1. Get base date format from global config
@@ -82,15 +99,15 @@ formatDate(
   const pad = (n: number) => n.toString().padStart(2, '0');
 
   const replacements: Record<string, string> = {
-    DD: pad(date.getDate()),
-    MM: pad(date.getMonth() + 1),
-    YYYY: date.getFullYear().toString(),
-    YY: date.getFullYear().toString().slice(-2),
-    MMM: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][date.getMonth()],
+    DD: pad(gDate()),
+    MM: pad(gMonth() + 1),
+    YYYY: gYear().toString(),
+    YY: gYear().toString().slice(-2),
+    MMM: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][gMonth()],
     MMMM: [
       'January','February','March','April','May','June',
       'July','August','September','October','November','December'
-    ][date.getMonth()],
+    ][gMonth()],
   };
 
   let datePart = dateFormat;
@@ -108,10 +125,10 @@ formatDate(
       timeFormat += ':ss';
     }
 
-    const hours24 = date.getHours();
+    const hours24 = gHours();
     const hours12 = hours24 % 12 || 12;
-    const minutes = pad(date.getMinutes());
-    const seconds = pad(date.getSeconds());
+    const minutes = pad(gMinutes());
+    const seconds = pad(gSeconds());
     const meridian = hours24 >= 12 ? 'PM' : 'AM';
 
     const timePart = timeFormat
