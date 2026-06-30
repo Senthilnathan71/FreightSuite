@@ -272,13 +272,13 @@ function buildDetailsTable(data: ReceiptPdfData): any {
     { text: `${data.receipt.currencyCode || ''} Amount`, style: 'tableHeader', alignment: 'center' }
   ];
 
-  const rows = (data.details || []).map((item) => ([
+  const rows: any[] = (data.details || []).map((item) => ([
     { text: item.ledgerName || '', style: 'tableCellSmall',margin: [2, 0, 0, 0] },
     { text: item.narration || '', style: 'tableCellSmall', margin: [2, 0, 0, 0] },
     { text: item.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
-    { text: formatNumberWithCommas(toNumber(item.exchangeRate), 3), style: 'tableCellSmall', alignment: 'right',margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(item.amount), 2), style: 'tableCellSmall', alignment: 'right',margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(item.partyAmount), 2), style: 'tableCellSmall', alignment: 'right',margin: [0, 0, 2, 0] }
+    { text: formatNumberWithCommas(toNumber(item.exchangeRate), 3), style: 'tableCellSmall', alignment: 'right', noWrap: true, margin: [0, 0, 2, 0] },
+    { text: formatNumberWithCommas(toNumber(item.amount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] },
+    { text: formatNumberWithCommas(toNumber(item.partyAmount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] }
   ]));
 
   rows.push([
@@ -287,13 +287,13 @@ function buildDetailsTable(data: ReceiptPdfData): any {
     { text: '', style: 'tableCellSmall' ,margin: [2, 0, 0, 0]},
     { text: '', style: 'tableCellSmall',margin: [2, 0, 0, 0] },
     { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(data.totals.totalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] }
+    { text: formatNumberWithCommas(toNumber(data.totals.totalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] }
   ]);
 
 return {
   table: {
     headerRows: 1,
-    widths: ['22%', '*', '4%', '10%', '12%', '12%'],
+    widths: ['20%', '*', '4%', '7%', '15%', '15%'],
     body: [header, ...rows]
   },
   layout: {
@@ -316,15 +316,16 @@ return {
 }
 
 function buildAmountInWords(data: ReceiptPdfData): any {
-  const labelWidth = data.receiptType === 'bank' ? 110 : 95;
+  const labelWidth = 115;
 
   return {
     columns: [
-      { text: 'Amount in Words', style: 'labelBold', width: labelWidth },
-      { text: ':', width: 8 },
-      { text: data.amountInWords || '', width: '*' }
+      { text: 'Amount in Words', style: 'labelBold', width: labelWidth, noWrap: true },
+      { text: ':', width: 10, alignment: 'center' },
+      { text: data.amountInWords || '', width: '*', noWrap: false, margin: [1, 0, 0, 0] }
     ],
-    margin: data.receiptType === 'bank' ? [10, 0, 10, 8] : [30, 2, 10, 8]
+    columnGap: 0,
+    margin: data.receiptType === 'bank' ? [10, 0, 20, 8] : [10, 2, 20, 8]
   };
 }
 
@@ -335,7 +336,7 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
 
   const header = [
     { text: 'Voucher No.', style: 'tableHeaderSmall', alignment: 'center' },
-    { text: 'INV Type', style: 'tableHeaderSmall', alignment: 'center' },
+    { text: 'Type', style: 'tableHeaderSmall', alignment: 'center' },
     { text: 'Voucher Date', style: 'tableHeaderSmall', alignment: 'center' },
     { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
     { text: 'Curr. Amt', style: 'tableHeaderSmall', alignment: 'center' },
@@ -343,11 +344,11 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
   ];
   const widths: any[] = data.receiptType === 'bank'
     ? (isIndia
-        ? ['15%', '7%', '10%', '5%', '10%', '10%', '8%', '35%']
-        : ['17%', '7%', '11%', '5%', '10%', '10%', '40%'])
+        ? ['13%', '6%', '9%', '5%', '13%', '13%', '8%', '33%']
+        : ['16%', '6%', '10%', '5%', '13%', '13%', '37%'])
     : (isIndia
-        ? ['15%', '7%', '10%', '5%', '10%', '10%', '8%', '35%']
-        : ['17%', '7%', '11%', '5%', '10%', '10%', '40%']);
+        ? ['13%', '6%', '9%', '5%', '13%', '13%', '8%', '33%']
+        : ['16%', '6%', '10%', '5%', '13%', '13%', '37%']);
   if (isIndia) {
     header.push({ text: 'TDS Amount', style: 'tableHeaderSmall', alignment: 'center' });
   }
@@ -359,8 +360,8 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
       { text: r.voucherType || '', style: 'tableCellSmall', alignment: 'center' },
       { text: r.voucherDate ? formatDate(r.voucherDate) : '', style: 'tableCellSmall', alignment: 'center' },
       { text: r.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
-      { text: formatNumberWithCommas(toNumber(r.matchingAmount), 2), style: 'tableCellSmall', alignment: 'right' ,margin: [0, 0, 2, 0]},
-      { text: formatNumberWithCommas(toNumber(r.matchingLocalAmount), 2), style: 'tableCellSmall', alignment: 'right',margin: [0, 0, 2, 0] }
+      { text: formatNumberWithCommas(toNumber(r.matchingAmount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0]},
+      { text: formatNumberWithCommas(toNumber(r.matchingLocalAmount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0] }
     ];
     if (isIndia) row.push({ text: '', style: 'tableCellSmall', alignment: 'right' });
     row.push({
@@ -378,8 +379,8 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
     {},
     {},
     {},
-    { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingAmount), 2), style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingLocalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] }
+    { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingAmount), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0] },
+    { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingLocalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0] }
   ];
   if (isIndia) totalRow.push({ text: '', style: 'tableCellBoldSmall', alignment: 'right', margin: [0, 0, 2, 0] });
   totalRow.push({ text: '', style: 'tableCellSmall', margin: [4, 0, 4, 0] });
