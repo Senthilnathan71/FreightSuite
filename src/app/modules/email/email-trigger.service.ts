@@ -9,6 +9,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { EmailEntryComponent } from '../settings/email/email-entry/email-entry.component';
 import { OperationService } from '../operation/operation.service';
 import { MasterService } from '../master/master.service';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 
 export interface EmailTriggerParams {
   companyId: number;
@@ -125,7 +126,8 @@ export class EmailTriggerService {
     private appSettingService: AppSettingsService,
     private ngbModal: NgbModal,
     private operationService: OperationService,
-    private masterService: MasterService
+    private masterService: MasterService,
+    private modalService: ModalService
   ) {}
 
   async resolveCustomerBranchEmailsByMenu(params: CustomerBranchEmailResolveParams): Promise<string[]> {
@@ -545,6 +547,19 @@ ${userName}`
 
   // ðŸ”¥ MAIN DESIGN UPGRADE HERE
   private async sendAutoEmail(config: any, companyId: number, branchId: number, context?: any, attachmentFile?: File): Promise<void> {
+    // When the menu's config marks attachment as required but none is present,
+    // confirm before sending. Cancel aborts; OK sends without an attachment.
+    if (config.AttachmentRequire === 'Y' && !attachmentFile) {
+      const proceed = await this.modalService.confirm(
+        'This mail has no attachment. Do you want to send it without an attachment?',
+        'No Attachment',
+        'OK'
+      );
+      if (!proceed) {
+        return;
+      }
+    }
+
     const userData = this.appSettingService.getDecryptedUserProfile();
     const enrichedContext = await this.enrichContext(context);
 
@@ -637,6 +652,7 @@ ${userName}`
       Subject: this.replacePlaceholders(config.MailSubject, enrichedContext),
       Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext).replace(/<br\s*\/?>/gi, '\n'),
       context: enrichedContext,
+      attachmentRequired: config.AttachmentRequire === 'Y',
       ...(config.AttachmentRequire === 'Y' && attachmentFile ? { attachments: [attachmentFile] } : {})
     };
   }

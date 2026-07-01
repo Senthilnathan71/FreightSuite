@@ -26,6 +26,7 @@ import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { SettingsService } from '../../settings.service';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 
 @Component({
   selector: 'app-email-entry',
@@ -73,6 +74,7 @@ export class EmailEntryComponent implements OnInit {
 
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
   selectedFiles: File[] = [];
+  attachmentRequired = false;
   userData: any;
   currentCompany: any;
   currentBranch: any;
@@ -84,7 +86,8 @@ export class EmailEntryComponent implements OnInit {
     private settingsService: SettingsService,
     private activeModal: NgbActiveModal,
     private spinner: NgxSpinnerService,
-    public logoService: LogoService
+    public logoService: LogoService,
+    private modalService: ModalService
   ) {
     this.initMailForm();
   }
@@ -118,6 +121,10 @@ export class EmailEntryComponent implements OnInit {
 
     if (value.attachments) {
       this.selectedFiles = value.attachments;
+    }
+
+    if (value.attachmentRequired !== undefined) {
+      this.attachmentRequired = value.attachmentRequired;
     }
   }
 
@@ -166,12 +173,25 @@ export class EmailEntryComponent implements OnInit {
     }
   }
 
-  saveForm() {
+  async saveForm() {
     if (this.emailForm.invalid) {
       this.emailForm.markAllAsTouched();
       this.emailForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill the required fields correctly');
       return;
+    }
+
+    // Attachment is marked required for this menu but none was added — confirm first.
+    // Cancel aborts the send; OK sends without an attachment.
+    if (this.attachmentRequired && this.selectedFiles.length === 0) {
+      const proceed = await this.modalService.confirm(
+        'This mail has no attachment. Do you want to send it without an attachment?',
+        'No Attachment',
+        'OK'
+      );
+      if (!proceed) {
+        return;
+      }
     }
 
     this.emailSending = true;

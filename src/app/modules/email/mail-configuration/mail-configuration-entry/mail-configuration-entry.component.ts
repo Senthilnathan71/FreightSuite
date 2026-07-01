@@ -824,58 +824,6 @@ export class MailConfigurationEntryComponent implements OnInit {
     }
   }
 
-  deleteRow(index: number): void {
-    const row = this.rows[index];
-
-    if (row.isNew) {
-      this.rows.splice(index, 1);
-      if (this.editingIndex === index) {
-            this.editingIndex = null;
-            this.editingRow = null;
-            this.editingSnapshot = null;
-            this.currentRowEligibleCompanyOptions = [];
-          }
-      return;
-    }
-
-    if (!confirm('Are you sure you want to delete this mail configuration?')) {
-      return;
-    }
-
-    this.spinner.show();
-    this.emailService.deleteMailConfiguration(row.MailConfigurationMasterSid!).subscribe({
-      next: (resp) => {
-        this.spinner.hide();
-        if (resp.status) {
-          this.appSettingService.showSuccess('Mail configuration deleted successfully.');
-          if (this.editingIndex === index) {
-            this.editingIndex = null;
-            this.editingRow = null;
-            this.editingSnapshot = null;
-          } else if (this.editingIndex !== null && this.editingIndex > index) {
-            this.editingIndex--;
-            this.editingRow = this.rows[this.editingIndex];
-          }
-          this.rows.splice(index, 1);
-        } else {
-          this.appSettingService.showError(resp.message || 'Error deleting mail configuration.');
-        }
-      },
-      error: (err) => {
-        this.spinner.hide();
-        this.appSettingService.showError('Error deleting mail configuration.');
-        console.error('Delete error:', err);
-      }
-    });
-  }
-
-  deleteFilteredRow(row: MailConfigRow): void {
-    const index = this.rows.indexOf(row);
-    if (index >= 0) {
-      this.deleteRow(index);
-    }
-  }
-
   onTriggerChange(row: MailConfigRow): void {
     if (row.Trigger === 'A') {
       row.AutoPopup = 'A';
