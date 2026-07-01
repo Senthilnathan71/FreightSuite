@@ -72,7 +72,7 @@ export interface ExcelRow {
 export interface ReportHeaderConfig {
   companyName: string;
   reportTitle: string;
-  additionalInfo?: { label: string; value: string }[];
+  additionalInfo?: { label: string; value: string; valueWidth?: number | string }[];
 }
 
 /**
