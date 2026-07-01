@@ -10,6 +10,7 @@ import {
 import {
   NgbTimeStruct,
   NgbDateStruct,
+  NgbDateAdapter,
   NgbPopoverConfig,
   NgbPopover,
   NgbDatepicker,
@@ -27,6 +28,29 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { noop } from 'rxjs';
 import { DateTimeModel } from './datetime.model';
 import { FeatherModule } from 'angular-feather';
+
+/**
+ * Pass-through NgbDateAdapter — identical to ng-bootstrap's default behaviour.
+ * Provided on this component so the internal <ngb-datepicker> is ISOLATED from any
+ * ancestor screen that registers a custom NgbDateAdapter (most entry screens do).
+ * Without this, the ancestor's custom adapter reformats the value emitted on date
+ * selection, so onDateChange can't parse it, `datetime` never updates, and the clock
+ * / time view stays disabled. This keeps the picker self-contained and unaffected by
+ * whatever adapter the host screen uses.
+ */
+class PassThroughNgbDateAdapter extends NgbDateAdapter<NgbDateStruct> {
+  fromModel(value: any): NgbDateStruct | null {
+    return value && value.year && value.month
+      ? { year: value.year, month: value.month, day: value.day }
+      : null;
+  }
+  toModel(date: NgbDateStruct | null): NgbDateStruct | null {
+    return date && date.year && date.month
+      ? { year: date.year, month: date.month, day: date.day }
+      : null;
+  }
+}
+
 @Component({
   selector: 'app-date-time-picker',
   templateUrl: './datetimepicker.component.html',
@@ -43,6 +67,7 @@ import { FeatherModule } from 'angular-feather';
   ],
   providers: [
     DatePipe,
+    { provide: NgbDateAdapter, useClass: PassThroughNgbDateAdapter },
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => DateTimePickerComponent),
@@ -71,12 +96,19 @@ export class DateTimePickerComponent
   disabled = false;
   @Input()
   inputReadonly = false;
+  /**
+   * When true, past dates are selectable (no minimum date). Default false keeps the
+   * existing behaviour (no past dates) for the calendar / meeting screens. Set true
+   * for screens like ShipmentMilestone where back-dated entries are valid.
+   */
+  @Input()
+  allowPastDates = false;
 
   showTimePickerToggle = false;
 
   datetime: DateTimeModel = new DateTimeModel();
   private firstTimeAssign = true;
-  minDate: NgbDateStruct; // <---- add this line
+  minDate?: NgbDateStruct; // undefined when allowPastDates is true
 
   @ViewChild(NgbDatepicker)
   private dp: NgbDatepicker;
@@ -100,12 +132,17 @@ export class DateTimePickerComponent
 
   ngOnInit(): void {
     this.ngControl = this.inj.get(NgControl);
-    const now = new Date();
-    this.minDate = {
-      year: now.getFullYear(),
-      month: now.getMonth() + 1,
-      day: now.getDate(),
-    };
+    if (this.allowPastDates) {
+      // No minimum — back-dated selections allowed (e.g. ShipmentMilestone).
+      this.minDate = undefined;
+    } else {
+      const now = new Date();
+      this.minDate = {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+        day: now.getDate(),
+      };
+    }
   }
 
   ngAfterViewInit(): void {

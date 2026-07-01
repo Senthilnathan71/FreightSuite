@@ -1228,11 +1228,21 @@ export class TrackingComponent implements OnInit, OnDestroy {
     if (Number.isNaN(parsed.getTime())) {
       return this.displayValue(value, 'Pending');
     }
-    // Date-only values are stored at UTC midnight — show just the date (no misleading 00:00 time).
+    // Milestone dates are stored UTC-naive (the date-time picker saves the picked
+    // wall-clock as UTC), so read UTC components to show exactly what was entered —
+    // matching the milestone screen, with no timezone shift. Date-only values are at
+    // UTC midnight, so only show a time when one was actually set.
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = String(parsed.getUTCDate()).padStart(2, '0');
+    const month = months[parsed.getUTCMonth()];
+    const year = parsed.getUTCFullYear();
     const hasTime = parsed.getUTCHours() !== 0 || parsed.getUTCMinutes() !== 0;
-    return hasTime
-      ? this.formatDisplayDateTime(value, 'Pending')
-      : this.formatDisplayDate(value, 'Pending');
+    if (!hasTime) {
+      return `${day} ${month} ${year}`;
+    }
+    const hour = String(parsed.getUTCHours()).padStart(2, '0');
+    const minute = String(parsed.getUTCMinutes()).padStart(2, '0');
+    return `${day} ${month} ${year}, ${hour}:${minute}`;
   }
 
   private formatDisplayDateTime(value: any, fallback = '-'): string {
