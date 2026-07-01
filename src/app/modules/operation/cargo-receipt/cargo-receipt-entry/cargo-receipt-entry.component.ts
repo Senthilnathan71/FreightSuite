@@ -79,6 +79,7 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
   currentCompany: any;
   currentBranch: any;
   cfsList:any[] = [];
+  packageTypeList: any[] = [];
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -159,12 +160,54 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
     return this.cargoForm.get('bookingProducts') as FormArray;
   }
 
+  // CargoRecDate and CFS are mandatory only when a Recd Pack is entered for that product.
+  private setupRecdPackValidation(group: FormGroup): void {
+    const recdPackCtrl = group.get('RecdPack');
+    const cargoRecDateCtrl = group.get('CargoRecDate');
+    const cfsCtrl = group.get('CFS');
+
+    const applyValidators = () => {
+      const hasRecdPack = (Number(recdPackCtrl?.value) || 0) > 0;
+      if (hasRecdPack) {
+        cargoRecDateCtrl?.setValidators([Validators.required]);
+        cfsCtrl?.setValidators([Validators.required]);
+      } else {
+        cargoRecDateCtrl?.clearValidators();
+        cfsCtrl?.clearValidators();
+      }
+      cargoRecDateCtrl?.updateValueAndValidity({ emitEvent: false });
+      cfsCtrl?.updateValueAndValidity({ emitEvent: false });
+    };
+
+    applyValidators();
+    recdPackCtrl?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => applyValidators());
+  }
+
   loadAllFields() {
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       types: ['cFS']
     }
     this.dropdownStore.loadCustomerTypeData(payload).subscribe();
+
+    // Load package types so the External Pkg id can be shown as its UOM name.
+    this.operationService.getUOMsByType('P').subscribe({
+      next: (resp: any) => { this.packageTypeList = resp?.data || []; },
+      error: () => { this.packageTypeList = []; }
+    });
+  }
+
+  // Resolve an External Pkg value (stored as a package-type id) to its UOM name.
+  getExternalPkgName(value: any): string {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+    const match = (this.packageTypeList || []).find(
+      (type: any) => String(type?.UOMMasterSid) === String(value)
+    );
+    return match ? (match.UOMName || match.UOMCode || String(value)) : String(value);
   }
 
 
@@ -212,7 +255,8 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
 
         // Patch booking products
         (booking.bookingProduct || []).forEach(prod => {
-          this.bookingProductsArray.push(this.fb.group({
+          const group = this.fb.group({
+            BookingProductSid: [prod.BookingProductSid],
             ProductName: [prod.ProductName],
             ShippingBillNo: [prod.ShippingBillNo],
             ShippingBillDate: [prod.ShippingBillDate ? this.formatDateTo_ddMMyyyy(prod.ShippingBillDate) : ''],
@@ -221,10 +265,13 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
             GrossWeight: [prod.GrossWeight != null ? parseFloat(prod.GrossWeight).toFixed(3) : '0.000', Validators.required],
             NetWeight: [prod.NetWeight != null ? parseFloat(prod.NetWeight).toFixed(3) : '0.000', Validators.required],
             Volume: [prod.Volume != null ? parseFloat(prod.Volume).toFixed(3) : '0.000', Validators.required],
-            CargoRecDate: [(prod.CargoRecDate ? new Date(prod.CargoRecDate) : null) || null, Validators.required],
-            CFS: [prod.CFS, Validators.required],
+            // CargoRecDate / CFS are required only when RecdPack is entered — see setupRecdPackValidation.
+            CargoRecDate: [(prod.CargoRecDate ? new Date(prod.CargoRecDate) : null) || null],
+            CFS: [prod.CFS],
             RecdPack: [+prod.RecdPack || 0, [Validators.required, Validators.pattern("^[0-9]*$")]],
-          }));
+          });
+          this.setupRecdPackValidation(group);
+          this.bookingProductsArray.push(group);
         });
 
         this.initialFormValue = this.cargoForm.getRawValue();
@@ -269,6 +316,7 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
     const payload = this.bookingProductsArray.controls.map(control => {
       const value = control.value;
       return {
+        BookingProductSid: value.BookingProductSid,
         ProductName: value.ProductName,
         ShippingBillNo: value.ShippingBillNo,
         ShippingBillDate: value.ShippingBillDate,
