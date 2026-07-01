@@ -39,7 +39,7 @@
                         </td>
                         <td>{{ (page1 - 1) * pageSize1 + i + 1 }}</td>
                         <td>{{ milestone.MilestoneName }}</td>
-                        <td>{{ milestone.MilestoneDate | formatDate : { includeTime: true, branchOffset: true } }}</td>
+                        <td>{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</td>
                         <td>
                             <div class="form-check form-check-inline p-0 ps-2 mt-0">
                                 <div class="form-check d-flex align-items-center justify-content-center mt-0">
@@ -84,12 +84,10 @@
                     </div>
                 </aside>
                 <div class="col-md-4">
-                    <div class=" custom-form-group custom-form-group-select-date">
-                        <div class="input-group">
-                            <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d1="ngbDatepicker"
-                                formControlName="MilestoneDate" (click)="d1.toggle()" />
-                            <button class="btn bi bi-calendar3 " (click)="d1.toggle()" type="button">
-                                <i-feather name="calendar" class="feather-sm"></i-feather></button>
+                    <div class=" custom-form-group custom-form-group-select-date w-100">
+                        <div class="input-group w-100">
+                            <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
+                                formControlName="MilestoneDate" [allowPastDates]="true"></app-date-time-picker>
                         </div>
                         <label class="input-label"> Date & Time<span class="text-danger"></span>
                         </label>
