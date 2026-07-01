@@ -16,6 +16,8 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 
 @Component({
   selector: 'app-payment-print',
@@ -65,6 +67,8 @@ export class PaymentPrintComponent implements OnChanges {
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
      private cdr: ChangeDetectorRef,
+    private currencyFormatService: CurrencyFormatService,
+    private currencyConfigService: CurrencyConfigurationService,
   ) { }
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -77,6 +81,8 @@ export class PaymentPrintComponent implements OnChanges {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.loadCurrencyList();
+    this.numberToWords.initializeCurrencies(this.currencyList);
+    this.currencyConfigService.initializeConfigurations(this.currencyList || []);
     this.loadHeaderSubledgerAddress();
      this.loadReceiptPrintBeforePostingConfig();
   }
@@ -84,6 +90,12 @@ export class PaymentPrintComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['paymentDataPrint'] || changes['ledgerList']) {
       this.loadHeaderSubledgerAddress();
+    }
+
+    if (changes['currencyList'] && changes['currencyList'].currentValue) {
+      this.currencyList = changes['currencyList'].currentValue;
+      this.numberToWords.initializeCurrencies(this.currencyList);
+      this.currencyConfigService.initializeConfigurations(this.currencyList || []);
     }
   }
 
@@ -125,7 +137,9 @@ export class PaymentPrintComponent implements OnChanges {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {
         this.currency = response|| [];
+        this.currencyList = this.currency;
         this.numberToWords.initializeCurrencies(this.currency);
+        this.currencyConfigService.initializeConfigurations(this.currency);
         console.log('Currency List:', this.currency);
       },
       error: (error) => {
@@ -323,6 +337,17 @@ getTotalAmt() {
     }, 0);
 }
 
+formatCurrencyAmount(value: any, currencyCode?: string): string {
+  return this.currencyFormatService.formatMaskedAmount({
+    value: Number(value) || 0,
+    currencyCode: currencyCode || this.paymentDataPrint?.CurrencyCode || ''
+  });
+}
+
+formatPaymentCurrencyAmount(value: any): string {
+  return this.formatCurrencyAmount(value, this.paymentDataPrint?.CurrencyCode);
+}
+
   modalClose() {
     this.activeModal.close()
   }
@@ -455,6 +480,9 @@ printDiv(divId: string): void {
     coaList: any[];
     ledgerList: any[];
     amountInWords: string;
+    currencyList: any[];
+    allowPrintBeforePosting: boolean;
+    headerSubledgerAddress: string;
     printSettings: {
       logoPosition: 'left' | 'center' | 'right';
       companyPosition: 'left' | 'center' | 'right';
@@ -466,6 +494,9 @@ printDiv(divId: string): void {
       coaList: this.coaList || [],
       ledgerList: this.ledgerList || [],
       amountInWords: String(this.getAmountInWords() || this.paymentDataPrint?.AmountInWords || this.paymentDataPrint?.amountInWords || ''),
+      currencyList: this.currencyList || [],
+      allowPrintBeforePosting: this.receiptAllowToPrintBeforePosting,
+      headerSubledgerAddress: this.headerSubledgerAddress,
       printSettings: this.companySettings.getPrintSettings()
     };
   }

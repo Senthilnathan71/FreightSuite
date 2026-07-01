@@ -16,6 +16,8 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 
 @Component({
   selector: 'app-bank-receipt',
@@ -60,6 +62,7 @@ export class BankReceiptComponent implements OnChanges {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.numberToWords.initializeCurrencies(this.currencyList);
+    this.currencyConfigService.initializeConfigurations(this.currencyList || []);
           this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
 
   }
@@ -125,6 +128,7 @@ export class BankReceiptComponent implements OnChanges {
       next: (response: any) => {
         this.currency = response|| [];
         this.numberToWords.initializeCurrencies(this.currency);
+        this.currencyConfigService.initializeConfigurations(this.currency);
         // console.log('Currency List:', this.currency);
       },
       error: (error) => {
@@ -149,12 +153,15 @@ export class BankReceiptComponent implements OnChanges {
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
     private cdr: ChangeDetectorRef,
+    private currencyFormatService: CurrencyFormatService,
+    private currencyConfigService: CurrencyConfigurationService,
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['currencyList'] && changes['currencyList'].currentValue) {
       this.currencyList = changes['currencyList'].currentValue;
       this.numberToWords.initializeCurrencies(this.currencyList);
+      this.currencyConfigService.initializeConfigurations(this.currencyList || []);
     }
   }
 
@@ -190,6 +197,17 @@ getTotalAmt() {
     ?.reduce((sum: number, item: any) => {
       return sum + (parseFloat(item?.PartyAmount) || 0);
     }, 0);
+}
+
+formatCurrencyAmount(value: any, currencyCode?: string): string {
+  return this.currencyFormatService.formatMaskedAmount({
+    value: Number(value) || 0,
+    currencyCode: currencyCode || this.receiptPrintData?.CurrencyCode || ''
+  });
+}
+
+formatReceiptCurrencyAmount(value: any): string {
+  return this.formatCurrencyAmount(value, this.receiptPrintData?.CurrencyCode);
 }
 
 
@@ -290,6 +308,7 @@ isDraftReceipt(): boolean {
     bankTypedLedgers: any[];
     amountInWords: string;
     currentUserCountry: string;
+    currencyList: any[];
     allowPrintBeforePosting: boolean;
     printSettings: {
       logoPosition: 'left' | 'center' | 'right';
@@ -304,6 +323,7 @@ isDraftReceipt(): boolean {
       bankTypedLedgers: this.bankTypedLedgers || [],
       amountInWords: String(this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || ''),
       currentUserCountry: this.currentUserCountry || '',
+      currencyList: this.currencyList || [],
       allowPrintBeforePosting: this.receiptAllowToPrintBeforePosting,
       printSettings: this.companySettings.getPrintSettings()
     };

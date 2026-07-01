@@ -14,6 +14,69 @@ function normalizeCountry(value: any): string {
   return String(value || '').trim().toLowerCase();
 }
 
+function normalizeCurrencyCode(value: any): string {
+  return String(value || '').trim().toUpperCase();
+}
+
+function getCurrencyConfig(data: ReceiptPdfData, currencyCode: any): any {
+  const code = normalizeCurrencyCode(currencyCode);
+  if (!code || !Array.isArray(data.currencyList)) return null;
+
+  return data.currencyList.find((currency: any) => {
+    const currencyMasterCode = normalizeCurrencyCode(
+      currency?.currencyCode ||
+      currency?.CurrencyCode ||
+      currency?.code
+    );
+    const status = String(currency?.status || currency?.Status || 'A').trim().toUpperCase();
+    return currencyMasterCode === code && status === 'A';
+  }) || null;
+}
+
+function getCurrencyAmountDecimals(currency: any): number {
+  const decimals = Number(currency?.amountDecimal ?? currency?.AmountDecimal);
+  return Number.isFinite(decimals) ? decimals : 2;
+}
+
+function getCurrencyGroupingStyle(currency: any): 'Indian' | 'International' {
+  return String(currency?.GroupingStyle || currency?.groupingStyle || '').trim() === 'Indian'
+    ? 'Indian'
+    : 'International';
+}
+
+function getCurrencyGroupSeparator(currency: any): string {
+  return String(currency?.GroupSeparator || currency?.groupSeparator || '').trim() === 'Space'
+    ? ' '
+    : ',';
+}
+
+function groupIntegerPart(intDigits: string, style: 'Indian' | 'International', separator: string): string {
+  if (style === 'Indian' && intDigits.length > 3) {
+    const last3 = intDigits.slice(-3);
+    const rest = intDigits.slice(0, -3);
+    return rest.replace(/\B(?=(\d{2})+(?!\d))/g, separator) + separator + last3;
+  }
+
+  return intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+}
+
+function formatCurrencyAmount(data: ReceiptPdfData, value: any, currencyCode?: string): string {
+  const currency = getCurrencyConfig(data, currencyCode || data.receipt?.currencyCode || '');
+  const decimals = getCurrencyAmountDecimals(currency);
+  const groupingStyle = getCurrencyGroupingStyle(currency);
+  const groupSeparator = getCurrencyGroupSeparator(currency);
+  const rounded = Number(toNumber(value).toFixed(decimals));
+  const [intPart, decPart] = Math.abs(rounded).toFixed(decimals).split('.');
+  const grouped = groupIntegerPart(intPart, groupingStyle, groupSeparator);
+  const body = decPart ? `${grouped}.${decPart}` : grouped;
+
+  return `${rounded < 0 ? '-' : ''}${body}`;
+}
+
+function formatReceiptCurrencyAmount(data: ReceiptPdfData, value: any): string {
+  return formatCurrencyAmount(data, value, data.receipt?.currencyCode || '');
+}
+
 function resolveLedgerName(coaList: any[], coaMasterSid: any): string {
   if (!coaMasterSid || !Array.isArray(coaList)) return '';
   return coaList.find((v: any) => Number(v?.COAMasterSid) === Number(coaMasterSid))?.LedgerName || '';
@@ -264,12 +327,12 @@ function buildInfoSection(data: ReceiptPdfData): any {
 
 function buildDetailsTable(data: ReceiptPdfData): any {
   const header = [
-    { text: 'Ledger', style: 'tableHeader', alignment: 'center' },
-    { text: 'Description', style: 'tableHeader', alignment: 'center' },
-    { text: 'Curr.', style: 'tableHeader', alignment: 'center' },
-    { text: 'Ex.Rate', style: 'tableHeader', alignment: 'center' },
-    { text: 'Amount', style: 'tableHeader', alignment: 'center' },
-    { text: `${data.receipt.currencyCode || ''} Amount`, style: 'tableHeader', alignment: 'center' }
+    { text: 'Ledger', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Description', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Curr.', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Ex.Rate', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Amount', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: `${data.receipt.currencyCode || ''} Amount`, style: 'tableHeader', alignment: 'center', fontSize: 8 }
   ];
 
   const rows: any[] = (data.details || []).map((item) => ([
@@ -277,8 +340,8 @@ function buildDetailsTable(data: ReceiptPdfData): any {
     { text: item.narration || '', style: 'tableCellSmall', margin: [2, 0, 0, 0] },
     { text: item.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
     { text: formatNumberWithCommas(toNumber(item.exchangeRate), 3), style: 'tableCellSmall', alignment: 'right', noWrap: true, margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(item.amount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(item.partyAmount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] }
+    { text: formatCurrencyAmount(data, item.amount, item.currencyCode), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] },
+    { text: formatReceiptCurrencyAmount(data, item.partyAmount), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] }
   ]));
 
   rows.push([
@@ -287,7 +350,7 @@ function buildDetailsTable(data: ReceiptPdfData): any {
     { text: '', style: 'tableCellSmall' ,margin: [2, 0, 0, 0]},
     { text: '', style: 'tableCellSmall',margin: [2, 0, 0, 0] },
     { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right',margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(data.totals.totalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] }
+    { text: formatReceiptCurrencyAmount(data, data.totals.totalAmount), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 8, margin: [0, 0, 2, 0] }
   ]);
 
 return {
@@ -335,33 +398,33 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
   if (!rows.length || String(data.receipt?.postStatus || '').toUpperCase() !== 'P') return [];
 
   const header = [
-    { text: 'Voucher No.', style: 'tableHeaderSmall', alignment: 'center' },
-    { text: 'Type', style: 'tableHeaderSmall', alignment: 'center' },
-    { text: 'Voucher Date', style: 'tableHeaderSmall', alignment: 'center' },
-    { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
-    { text: 'Curr. Amt', style: 'tableHeaderSmall', alignment: 'center' },
-    { text: 'Local Amount', style: 'tableHeaderSmall', alignment: 'center' }
+    { text: 'Voucher No.', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Type', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Voucher Date', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Curr.', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Curr. Amt', style: 'tableHeader', alignment: 'center', fontSize: 8 },
+    { text: 'Local Amount', style: 'tableHeader', alignment: 'center', fontSize: 8 }
   ];
   const widths: any[] = data.receiptType === 'bank'
     ? (isIndia
-        ? ['13%', '6%', '9%', '5%', '13%', '13%', '8%', '33%']
-        : ['16%', '6%', '10%', '5%', '13%', '13%', '37%'])
+        ? ['17%', '4%', '9%', '5%', '12%', '12%', '8%', '33%']
+        : ['20%', '4%', '10%', '5%', '12%', '12%', '37%'])
     : (isIndia
-        ? ['13%', '6%', '9%', '5%', '13%', '13%', '8%', '33%']
-        : ['16%', '6%', '10%', '5%', '13%', '13%', '37%']);
+        ? ['17%', '4%', '9%', '5%', '12%', '12%', '8%', '33%']
+        : ['20%', '4%', '10%', '5%', '12%', '12%', '37%']);
   if (isIndia) {
-    header.push({ text: 'TDS Amount', style: 'tableHeaderSmall', alignment: 'center' });
+    header.push({ text: 'TDS Amount', style: 'tableHeader', alignment: 'center', fontSize: 8 });
   }
-  header.push({ text: 'Narration', style: 'tableHeaderSmall', alignment: 'center' });
+  header.push({ text: 'Narration', style: 'tableHeader', alignment: 'center', fontSize: 8 });
 
   const bodyRows = rows.map((r) => {
     const row: any[] = [
-      { text: r.voucherNumber || '', style: 'tableCellSmall', margin: [2, 0, 0, 0]  },
+      { text: r.voucherNumber || '', style: 'tableCellSmall', noWrap: true, margin: [2, 0, 0, 0]  },
       { text: r.voucherType || '', style: 'tableCellSmall', alignment: 'center' },
       { text: r.voucherDate ? formatDate(r.voucherDate) : '', style: 'tableCellSmall', alignment: 'center' },
       { text: r.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
-      { text: formatNumberWithCommas(toNumber(r.matchingAmount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0]},
-      { text: formatNumberWithCommas(toNumber(r.matchingLocalAmount), 2), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0] }
+      { text: formatCurrencyAmount(data, r.matchingAmount, r.currencyCode), style: 'tableCellSmall', alignment: 'right', noWrap: true, margin: [0, 0, 2, 0]},
+      { text: formatReceiptCurrencyAmount(data, r.matchingLocalAmount), style: 'tableCellSmall', alignment: 'right', noWrap: true, margin: [0, 0, 2, 0] }
     ];
     if (isIndia) row.push({ text: '', style: 'tableCellSmall', alignment: 'right' });
     row.push({
@@ -379,8 +442,8 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
     {},
     {},
     {},
-    { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingAmount), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0] },
-    { text: formatNumberWithCommas(toNumber(data.totals.totalMatchingLocalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, fontSize: 7, margin: [0, 0, 2, 0] }
+    { text: formatReceiptCurrencyAmount(data, data.totals.totalMatchingAmount), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, margin: [0, 0, 2, 0] },
+    { text: formatReceiptCurrencyAmount(data, data.totals.totalMatchingLocalAmount), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true, margin: [0, 0, 2, 0] }
   ];
   if (isIndia) totalRow.push({ text: '', style: 'tableCellBoldSmall', alignment: 'right', margin: [0, 0, 2, 0] });
   totalRow.push({ text: '', style: 'tableCellSmall', margin: [4, 0, 4, 0] });
@@ -481,6 +544,7 @@ export function transformReceiptApiData(
     ledgerList?: any[];
     amountInWords?: string;
     currentUserCountry?: string;
+    currencyList?: any[];
     allowPrintBeforePosting?: boolean;
     printSettings?: {
       logoPosition: 'left' | 'center' | 'right';
@@ -597,6 +661,7 @@ export function transformReceiptApiData(
       apiData?.AmountInWords ||
       apiData?.amountInWords ||
       '',
-    currentUserCountry: options?.currentUserCountry || ''
+    currentUserCountry: options?.currentUserCountry || '',
+    currencyList: options?.currencyList || []
   };
 }

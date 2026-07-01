@@ -40,7 +40,7 @@
           </div>
           <span class="mb-0 text-dark">
             <strong style="color: #333">Outstanding :</strong>
-            {{ invoiceOutstandingAmount }}
+            {{ formatCreditNoteCurrencyAmount(invoiceOutstandingAmount) }}
             {{ creditNoteForm.get("CurrencyCode")?.getRawValue() }}
           </span>
         </div>
@@ -2237,7 +2237,7 @@
                     text-align: right;
                   "
                 >
-                  {{ detail.TaxableAmount }}
+                  {{ formatCompanyCurrencyAmount(detail.TaxableAmount) }}
                 </td>
 
                 <!-- Dynamic Tax Values -->
@@ -2258,7 +2258,7 @@
                       text-align: right;
                     "
                   >
-                    {{ detail.cgstAmt }}
+                    {{ formatCompanyCurrencyAmount(detail.cgstAmt) }}
                   </td>
                 </ng-container>
 
@@ -2279,7 +2279,7 @@
                       text-align: right;
                     "
                   >
-                    {{ detail.sgstAmt }}
+                    {{ formatCompanyCurrencyAmount(detail.sgstAmt) }}
                   </td>
                 </ng-container>
 
@@ -2300,7 +2300,7 @@
                       text-align: right;
                     "
                   >
-                    {{ detail.ugstAmt }}
+                    {{ formatCompanyCurrencyAmount(detail.ugstAmt) }}
                   </td>
                 </ng-container>
 
@@ -2321,7 +2321,7 @@
                       text-align: right;
                     "
                   >
-                    {{ detail.igstAmt }}
+                    {{ formatCompanyCurrencyAmount(detail.igstAmt) }}
                   </td>
                 </ng-container>
 
@@ -2342,7 +2342,7 @@
                       text-align: right;
                     "
                   >
-                    {{ detail.vatAmt }}
+                    {{ formatCompanyCurrencyAmount(detail.vatAmt) }}
                   </td>
                 </ng-container>
                 <td
@@ -2357,7 +2357,7 @@
                     text-align: right;
                   "
                 >
-                  {{ detail?.LocalAmount }}
+                  {{ formatCompanyCurrencyAmount(detail?.LocalAmount) }}
                 </td>
                 <td
                   *ngIf="shouldShowForeignCurrencyColumn()"
@@ -2368,7 +2368,7 @@
                     text-align: right;
                   "
                 >
-                  {{ detail?.PartyAmount }}
+                  {{ formatCreditNoteCurrencyAmount(detail?.PartyAmount) }}
                   <!-- {{ getPartyCurrDebitAmt() }} -->
                 </td>
               </tr>
@@ -2406,7 +2406,7 @@
                     text-align: right;
                   "
                 >
-                  <strong>{{ shouldShowForeignCurrencyColumn() ? getCreditNotePrintAmountTotal('LocalAmount') : creditNotePrintData?.totalPartyAmount }}</strong>
+                  <strong>{{ shouldShowForeignCurrencyColumn() ? getCreditNotePrintAmountTotal('LocalAmount') : formatCreditNoteCurrencyAmount(creditNotePrintData?.totalPartyAmount) }}</strong>
                 </td>
                 <td
                   *ngIf="shouldShowForeignCurrencyColumn()"
@@ -2417,7 +2417,7 @@
                     text-align: right;
                   "
                 >
-                  <strong>{{ creditNotePrintData?.totalPartyAmount }}</strong>
+                  <strong>{{ formatCreditNoteCurrencyAmount(creditNotePrintData?.totalPartyAmount) }}</strong>
                 </td>
               </tr>
 
@@ -2445,7 +2445,7 @@
                     text-align: right;
                   "
                 >
-                  <strong>{{ creditNotePrintData?.totalPartyAmount }}</strong>
+                  <strong>{{ formatCreditNoteCurrencyAmount(creditNotePrintData?.totalPartyAmount) }}</strong>
                 </td>
               </tr>
             </tbody>

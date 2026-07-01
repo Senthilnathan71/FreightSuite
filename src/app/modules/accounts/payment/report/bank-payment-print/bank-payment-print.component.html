@@ -92,13 +92,13 @@
                 <tr>
                     <th style="width:20%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;"><strong>Ledger</strong></th>
                     <!-- <th style="width:3%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;"><strong>DrCr</strong></th> -->
-                    <th style="width:28%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;"><strong>Description</strong></th>
+                    <th style="width:30%; border:1px solid black; padding:4px; text-align:center;border-left: none;font-weight: bolder;"><strong>Description</strong></th>
                     <!-- <th style="width:15%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>MBL/HBL Ref</strong></th> -->
-                    <th style="width:5%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>Curr.</strong></th>
-                    <th style="width:7%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>Ex.Rate</strong></th>
-                    <th style="width:15%; border:1px solid black; padding:4px; text-align:center;font-weight: bolder;"><strong>Amount</strong></th>
+                    <th style="width:4%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>Curr.</strong></th>
+                    <th style="width:6%; border:1px solid black; padding:4px; text-align:center; font-weight: bolder;"><strong>Ex.Rate</strong></th>
+                    <th style="width:12%; border:1px solid black; padding:4px; text-align:center;font-weight: bolder;"><strong>Amount</strong></th>
                       <th
-                            style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:15%;">
+                            style="border:1px solid black; padding:4px; text-align:center; border-right:none; width:12%;">
                             <strong style="font-weight: bolder;"> {{ paymentDataPrint?.CurrencyCode }} Amount</strong>
                         </th>
                 </tr>
@@ -116,14 +116,14 @@
                     </td> -->
                     <td style="border:1px solid black; padding:4px;text-align: center;">{{item?.CurrencyCode}}</td>
                     <td style="border:1px solid black; padding:4px; text-align:right; white-space:nowrap;">{{item?.ExchangeRate | number:'1.3-3'}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right; white-space:nowrap;">{{item?.Amount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:4px; text-align:right; white-space:nowrap;">{{ formatCurrencyAmount(item?.Amount, item?.CurrencyCode) }}</td>
                     <td style="border:1px solid black; padding:4px; text-align:right; border-right:none; white-space:nowrap;">
-                            {{item?.PartyAmount | number:'1.2-2'}}
+                            {{ formatPaymentCurrencyAmount(item?.PartyAmount) }}
                         </td>
                 </tr>
                 <tr>
                     <td colspan="5" style="border:1px solid black; padding:4px;text-align: end;border-left: none;font-weight: bold;">Total</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;border-right: none; white-space:nowrap;">{{getTotalAmt() | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black; padding:4px; text-align:right;border-right: none; white-space:nowrap;">{{ formatPaymentCurrencyAmount(getTotalAmt()) }}</td>
                 </tr>
             </tbody>
         </table>
@@ -192,21 +192,21 @@
         </tr>
 
         <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings" style="page-break-inside: avoid; break-inside: avoid-page;">
-            <td style="border:1px solid black; text-align:start;border-left: none;padding:2px;">{{voucher?.VoucherNumber}}</td>
+            <td style="border:1px solid black; text-align:start;border-left: none;padding:2px; white-space:nowrap;">{{voucher?.VoucherNumber}}</td>
              <td style="border:1px solid black;padding:2px;text-align: start;border-left: none;">{{voucher?.BillNo}}</td>
             <td style="border:1px solid black;padding:2px;text-align: center;border-left: none;">{{voucher?.BillDate | formatDate}}</td>
             <td style="border:1px solid black; text-align:center;padding:2px;">{{voucher?.VoucherType}}</td>
             <td style="border:1px solid black; text-align:center;padding:2px;">{{voucher?.VoucherDate | formatDate}}</td>
             <td style="border:1px solid black; text-align:center;padding:2px;">{{voucher?.CurrencyCode}}</td>
             <td style="border:1px solid black; text-align:right;padding:2px;">{{voucher?.ExchangeRate | number:'1.3-3'}}</td>
-            <td style="border:1px solid black; text-align:right;padding:2px;">{{voucher?.MatchingAmount | number:'1.2-2'}}</td>
-            <td style="border:1px solid black; text-align:right;border-right: none;padding:2px;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
+            <td style="border:1px solid black; text-align:right;padding:2px; white-space:nowrap;">{{ formatCurrencyAmount(voucher?.MatchingAmount, voucher?.CurrencyCode) }}</td>
+            <td style="border:1px solid black; text-align:right;border-right: none;padding:2px; white-space:nowrap;">{{ formatPaymentCurrencyAmount(voucher?.MatchingLocalAmount) }}</td>
         </tr>
 
         <tr style="font-weight: bolder; page-break-inside: avoid; break-inside: avoid-page;">
             <td colspan="7" style="border:1px solid black; text-align:right;border-left: none;"><strong>Total</strong></td>
-            <td style="border:1px solid black; text-align:right;"><strong>{{getTotalMatchingAmount() | number:'1.2-2'}}</strong></td>
-            <td style="border:1px solid black; text-align:right;border-right: none;"><strong>{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</strong></td>
+            <td style="border:1px solid black; text-align:right; white-space:nowrap;"><strong>{{ formatPaymentCurrencyAmount(getTotalMatchingAmount()) }}</strong></td>
+            <td style="border:1px solid black; text-align:right;border-right: none; white-space:nowrap;"><strong>{{ formatPaymentCurrencyAmount(getTotalMatchingLocalAmount()) }}</strong></td>
         </tr>
     </table>
 
