@@ -260,7 +260,12 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
         status: item.status === 'A' ? 'Active' : 'Suspended',
         departmentName:item.departmentMaster?.departmentName,
         BookingDateTime:this.datePipe.transform(item?.BookingDateTime),
-        bookingStatus: item.BookingStatus
+        bookingStatus: item.BookingStatus,
+        // Totals across all products in the booking.
+        ExternlQty: (item.bookingProduct || []).reduce(
+          (sum: number, p: any) => sum + (Number(p?.ExternlQty) || 0), 0),
+        RecdPack: (item.bookingProduct || []).reduce(
+          (sum: number, p: any) => sum + (Number(p?.RecdPack) || 0), 0)
       }));
       this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
       this.applySorting();
@@ -368,14 +373,6 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
         dataType: 'string',
       },
        {
-        key: 'POO',
-        label: 'POO',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-      },
-       {
         key: 'POL',
         label: 'POL',
         sortable: true,
@@ -391,13 +388,21 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
         visible: true,
         dataType: 'string',
       },
-       {
-        key: 'FPD',
-        label: 'FPD',
+      {
+        key: 'ExternlQty',
+        label: 'Externl Qty',
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string',
+        dataType: 'number',
+      },
+      {
+        key: 'RecdPack',
+        label: 'Recd Pack',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'number',
       },
       {
         key: 'bookingStatus',

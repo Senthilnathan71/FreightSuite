@@ -10,16 +10,20 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 
 @Component({
   selector: 'app-milestone',
   standalone: true,
-  imports: [NgSelectModule ,NgbDatepickerModule, FeatherModule, CustomDatePipe, CommonModule,ReactiveFormsModule,NgbPagination,DatePipe],
+  imports: [NgSelectModule ,NgbDatepickerModule, FeatherModule, CustomDatePipe, CommonModule,ReactiveFormsModule,NgbPagination,DatePipe, DateTimePickerComponent],
   templateUrl: './milestone.component.html',
   styleUrl: './milestone.component.scss',
   providers: [
-    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
-    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter},
+    // NOTE: do NOT provide a custom NgbDateAdapter/NgbDateParserFormatter here. This
+    // component hosts <app-date-time-picker>, whose internal ngb-datepicker would
+    // inherit the override via DI and break date selection (the emitted value stops
+    // being a plain {year,month,day}, so the picker can't advance to the time view).
+    // The milestone modal no longer uses a raw ngbDatepicker, so the override is unneeded.
     CustomDatePipe
   ],
 })
@@ -270,7 +274,7 @@ export class MilestoneComponent implements OnInit {
       ShipmentNo: [data?.ShipmentNo || this.shipmentNo],
       MilestoneMasterSid: [data?.MilestoneMasterSid || null],
       MilestoneName: [data?.MilestoneName || null],
-      MilestoneDate: [data?.MilestoneDate ? new Date(data.MilestoneDate) : ''],
+      MilestoneDate: [data?.MilestoneDate || ''],
       AutoCaptured: [data?.AutoCaptured || null],
       Remarks: [data?.Remarks || null],
       Status: [data.Status ? (data.Status === "A" ? "Active" : "Suspended") : "Active"],
@@ -296,7 +300,7 @@ export class MilestoneComponent implements OnInit {
         ShipmentNo: data.ShipmentNo,
         MilestoneMasterSid: data.MilestoneMasterSid,
         MilestoneName : data.MilestoneName,
-        MilestoneDate: data?.MilestoneDate ? new Date(data.MilestoneDate) : null,
+        MilestoneDate: data?.MilestoneDate || null,
         AutoCaptured: data.AutoCaptured,
         Remarks: data.Remarks,
         Status: data.Status,
@@ -445,7 +449,7 @@ export class MilestoneComponent implements OnInit {
     const formattedData = allMilestones.map((milestone, index) => ({
         SerialNo: index + 1,
         MilestoneName: milestone.MilestoneName || '',
-        MilestoneDate: this.datePipe.transform(milestone.MilestoneDate) || '',
+        MilestoneDate: this.formatMilestoneDateTime(milestone.MilestoneDate) || '',
         AutoCaptured: (milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y') ? 'Yes' : 'No',
         Remarks: milestone.Remarks || ''
     }));
@@ -465,6 +469,33 @@ export class MilestoneComponent implements OnInit {
         title: companyName
     });
 }
+
+/**
+   * Format a milestone's date + time for display. The date-time picker stores the
+   * picked wall-clock as UTC (UTC-naive), so we read the UTC components here to show
+   * exactly what the user selected (no timezone shift). Returns "" for empty/invalid.
+   */
+  formatMilestoneDateTime(value: any): string {
+    if (!value) {
+      return '';
+    }
+    const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = months[date.getUTCMonth()];
+    const year = date.getUTCFullYear();
+    const rawHour = date.getUTCHours();
+    const minute = String(date.getUTCMinutes()).padStart(2, '0');
+    const meridian = rawHour >= 12 ? 'PM' : 'AM';
+    let hour12 = rawHour % 12;
+    if (hour12 === 0) {
+      hour12 = 12;
+    }
+    return `${day}-${month}-${year} ${String(hour12).padStart(2, '0')}:${minute} ${meridian}`;
+  }
 
 isHBLNoValid(): boolean {
     // Only apply this validation for Booking screen

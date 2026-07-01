@@ -162,6 +162,10 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy, HasUnsaved
    activeBranchIds: string[] = [];
    private selectedStatusChanges = new Subject<void>();
    private lastCountryMasterSid: any = null;
+   // Once the user unselects/clears the currency, stop auto-patching it from the country.
+   private currencyManuallyCleared = false;
+   // Guards the currency valueChanges tracker while we set the currency programmatically.
+   private suppressCurrencyTracking = false;
    private temporarilySuspendedBranches = new Map<FormGroup, 'Active' | 'Suspended'>();
    private temporarilySuspendedChildRecords = new Map<FormGroup, 'Active' | 'Suspended'>();
 
@@ -336,19 +340,25 @@ onCountryChange(): void {
 }
 
 private autoSelectCurrency(force = false): void {
+  // Respect a user who deliberately unselected the currency — never auto-patch after that.
+  if (this.currencyManuallyCleared) return;
+
   const countryId = this.customerForm.get('CountryMasterSid')?.value;
   const currencyControl = this.customerForm.get('CurrencyMasterSid');
   const currentCurrencyId = currencyControl?.value;
-  
+
   if (!countryId || !this.countryList) return;
   if (!force && currentCurrencyId !== null && currentCurrencyId !== undefined && currentCurrencyId !== '') return;
-  
+
   // Find the selected country
   const selectedCountry = this.countryList.find((c: any) => c.CountryMasterSid == countryId);
-  
+
   if (selectedCountry && selectedCountry.CurrencyMasterSid) {
-    // Set the CurrencyMasterSid to match the country's currency
+    // Set the CurrencyMasterSid to match the country's currency.
+    // Suppress the tracker so this programmatic set isn't mistaken for a user clear.
+    this.suppressCurrencyTracking = true;
     currencyControl?.setValue(selectedCountry.CurrencyMasterSid);
+    this.suppressCurrencyTracking = false;
   }
 }
 
@@ -706,6 +716,15 @@ this.mps.init().subscribe();
       this.updateTaxIdFieldValidation();
       this.updateTaxIdFieldState();
       this.getStatesByCountryId();
+      });
+
+    // Track manual currency clears so we stop auto-patching the country's currency.
+    this.customerForm.get('CurrencyMasterSid')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((currencyId) => {
+        if (this.suppressCurrencyTracking) return; // ignore our own programmatic sets
+        const isEmpty = currencyId === null || currencyId === undefined || currencyId === '';
+        this.currencyManuallyCleared = isEmpty;
       });
 
     // ✅ React to country changes with debounce
@@ -2324,7 +2343,14 @@ loadCustomerData(customerId: number) {
 
        if (this.isEditMode) {
         this.customerForm.get('CountryMasterSid')?.disable();
-        this.customerForm.get('CurrencyMasterSid')?.disable();
+        // Enable the currency field only when no currency is set yet; otherwise keep it locked.
+        if (customerData.CurrencyMasterSid == null) {
+          this.customerForm.get('CurrencyMasterSid')?.enable();
+          // Record was saved with no currency — don't auto-patch it from the country.
+          this.currencyManuallyCleared = true;
+        } else {
+          this.customerForm.get('CurrencyMasterSid')?.disable();
+        }
         this.checkCustomerNamePermissions();
       }
       this.autoSelectCurrency();
@@ -3811,6 +3837,8 @@ private extractApiErrorMessage(error: any, fallbackMessage: string): string {
      this.customerForm.get('CountryMasterSid')?.enable();
     this.customerForm.get('CurrencyMasterSid')?.enable();
     this.customerForm.get('CustomerName')?.enable();
+    // Fresh form — allow currency auto-patch again (the reset above emits an empty currency).
+    this.currencyManuallyCleared = false;
   }
 
     // Reset selected statuses and customer types
