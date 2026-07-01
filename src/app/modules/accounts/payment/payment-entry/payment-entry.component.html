@@ -1467,7 +1467,10 @@
                       DecimalPrecision
                       [DecimalPrecisionBefore]="13"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(paymentForm.get('CurrencyMasterSid')?.value)"
-                      readonly
+                      title="Editable — override the taxable base to recompute TDS. Clear to auto-derive from the rows."
+                      (focus)="onTDSTaxableFocus()"
+                      (blur)="onTDSTaxableBlur()"
+                      [readOnly]="isReadOnly || isPosted"
                     />
                   </td>
                   <td style="padding:5px 10px; border-right:1px solid #f0f3f6; min-width:70px; cursor:help;"

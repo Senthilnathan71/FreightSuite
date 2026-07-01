@@ -5691,6 +5691,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const voucherDateRaw = this.paymentForm.get('VoucherDate')?.value;
     const voucherDate = voucherDateRaw ? new Date(voucherDateRaw) : new Date();
 
+    // Switching party/branch starts a fresh auto-derived taxable base — drop any override.
+    this.tdsHelper.taxableManual = false;
+
     this.tdsHelper.fetchAndPopulate({
       CustomerBranchSid: customerBranchSid,
       LedgerMasterSid: ledgerMasterSid,
@@ -5741,6 +5744,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       contextOnly: true,
     }).subscribe(() => {
       if (this.tdsHelper.isTDSEnabled) {
+        // Preserve a saved manual override: if the saved taxable base differs from what the
+        // rows would auto-derive, treat it as manual so recalc keeps it verbatim. Normal
+        // vouchers (saved == derived) stay on auto-derive and behave as before.
+        const currencySid = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
+        const savedTaxable = toNumber(this.getFormattedAndPaddedAmount(
+          toNumber(this.tdsForm.get('TaxableAmount')?.getRawValue()), currencySid));
+        const derivedTaxable = toNumber(this.getFormattedAndPaddedAmount(
+          this.tdsHelper.deriveTaxableFromRows(
+            this.detailItems.getRawValue(),
+            this.paymentForm.get('PartyMasterSid')?.getRawValue(),
+          ), currencySid));
+        this.tdsHelper.taxableManual = savedTaxable !== derivedTaxable;
         this.runTDSRecalc();
       }
       this.validateAmount();
@@ -5787,6 +5802,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.tdsForm.reset({ TaxableAmount: 0, TDSAmount: 0, TDSPartyAmount: 0, TDSRate: 0 });
       this.tdsHelper.limitNote = null;
       this.tdsHelper.autoReason = null;
+      this.tdsHelper.taxableManual = false;   // drop override so a re-enable auto-derives afresh
     } else {
       this.runTDSRecalc();
     }
@@ -5834,6 +5850,31 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
     this.tdsRateOnFocus = null;
     this.validateAmount();
+  }
+
+  private tdsTaxableOnFocus: number | null = null;
+
+  onTDSTaxableFocus(): void {
+    this.tdsTaxableOnFocus = toNumber(this.tdsForm.get('TaxableAmount')?.getRawValue());
+  }
+
+  /**
+   * TDS Taxable Amt is user-editable. Typing a value marks it as a manual override so
+   * later recalcs (detail-row / rate changes) keep the entered base instead of re-deriving
+   * it from the rows. Clearing it (0/empty) releases the override → auto-derive resumes.
+   * The manual base still flows through the txn/annual limit gating in recalcTDSAmounts.
+   * Guarded to only act on an actual change (mirrors onTDSRateBlur) so merely tabbing
+   * through the field never flips a normal voucher into manual mode.
+   */
+  onTDSTaxableBlur(): void {
+    if (this.isReadOnly || this.isPosted) { this.tdsTaxableOnFocus = null; return; }
+    const entered = toNumber(this.tdsForm.get('TaxableAmount')?.getRawValue());
+    if (this.tdsTaxableOnFocus !== null && entered !== this.tdsTaxableOnFocus) {
+      this.tdsHelper.taxableManual = entered > 0;
+      this.runTDSRecalc();
+      this.validateAmount();
+    }
+    this.tdsTaxableOnFocus = null;
   }
 
   /** Single entry-point for TDS recalculation — passes party SID + currency formatter */
