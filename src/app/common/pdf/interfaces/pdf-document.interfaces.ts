@@ -1084,6 +1084,7 @@ export interface CreditNotePdfData extends PdfDocumentBase {
   isSeaMode?: boolean;
   isVATMode?: boolean;
   authorisedSignatory?: boolean;
+  currencyMaster?: any[];
 
   cargoDetails?: {
     packages?: number | string;
@@ -1159,6 +1160,7 @@ export interface ReceiptPdfData extends PdfDocumentBase {
   };
   amountInWords?: string;
   currentUserCountry?: string;
+  currencyList?: any[];
 }
 
 export interface ReceiptLineData {
@@ -1214,6 +1216,7 @@ export interface PaymentPdfData extends PdfDocumentBase {
     totalMatchingLocalAmount: number;
   };
   amountInWords?: string;
+  currencyList?: any[];
 }
 
 export interface PaymentLineData {
