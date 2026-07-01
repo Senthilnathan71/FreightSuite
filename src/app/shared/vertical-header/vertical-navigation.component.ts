@@ -229,6 +229,8 @@ branchList: any[] = [];
   passwordView1 = false;
   UserMasterSid: any;
   passwordModalRef!: NgbModalRef;
+  // Tracks the most recent getFinancialYears request so out-of-order (stale) responses are ignored.
+  private latestYearCompanyId: number | null = null;
 
   constructor(
     private router: Router,
@@ -341,10 +343,39 @@ ngOnInit(): void {
     console.warn('No user company data found in user profile');
   }
 
+  // Self-heal: make sure the stored financial year actually belongs to the active company.
+  // Guards against a year left over from another company (e.g. login scopes the year to the
+  // user's default company, but the shell may activate a different, last-used company).
+  if (this.selectedCompanyId) {
+    this.ensureYearMatchesCompany(this.selectedCompanyId);
+  }
+
   // Setup document search subscription
   this.setupDocumentSearchSubscription();
 
   this.logoService.loadInitialBothLogos();
+}
+
+/**
+ * Validate `current-year-id` against the active company; if it belongs to a different
+ * company, reset it to that company's CurrentYear (Option B — keep the company, fix the year).
+ */
+private ensureYearMatchesCompany(companyId: number): void {
+  const storedYearId = Number(localStorage.getItem('current-year-id'));
+  this.masterService.getFinancialYearsByCompany(companyId)
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe((resp: any) => {
+      const years: any[] = resp?.data || [];
+      if (!years.length) return;
+      if (years.some(y => y.YearMasterSid === storedYearId)) return; // already valid — nothing to do
+
+      const fixed = years.find(y => y.CurrentYear === 'Y') || years[0];
+      if (!fixed) return;
+      console.warn(`current-year-id ${storedYearId} does not belong to company ${companyId}; reset to ${fixed.YearMasterSid}`);
+      localStorage.setItem('current-year-id', String(fixed.YearMasterSid));
+      this.appSettingsService.setCurrentFinancialYear(fixed);
+      this.selectedYearId = fixed.YearMasterSid;
+    });
 }
 
 
@@ -377,9 +408,13 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 }
 
   getFinancialYears(companyId: number) {
+    // Mark this as the latest request so a slower, earlier request for a different company
+    // can't land last and overwrite the list/year (the switch-modal out-of-order race).
+    this.latestYearCompanyId = companyId;
     this.masterService.getFinancialYearsByCompany(companyId)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((resp: any) => {
+        if (this.latestYearCompanyId !== companyId) return; // stale/out-of-order response — ignore
         if (resp.status && resp.data) {
           this.financialYears = resp.data;
           const existInList = this.financialYears.find(fy => fy.YearMasterSid === this.selectedYearId);

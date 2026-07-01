@@ -3128,6 +3128,23 @@ getFieldConfiguration() {
     )
   }
 
+  /**
+   * Resolve the YearMaster a company should use.
+   * Keeps `preferredYearId` when that year belongs to the company; otherwise falls back
+   * to the company's CurrentYear (then its first active year). Returns null if the company
+   * has no years. Used to keep `current-year-id` aligned with the active company so a year
+   * from another company never leaks in (e.g. login year scoped to the default company).
+   */
+  resolveYearForCompany(companyId: number, preferredYearId?: number | null) {
+    return this.getFinancialYearsByCompany(companyId).pipe(
+      map((resp: any) => {
+        const years: any[] = resp?.data || [];
+        const keep = years.find((y: any) => y.YearMasterSid === Number(preferredYearId));
+        return keep || years.find((y: any) => y.CurrentYear === 'Y') || years[0] || null;
+      })
+    );
+  }
+
   getAuditLogsYear(tableName: string, recordId?: string) {
     let url = `year/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;

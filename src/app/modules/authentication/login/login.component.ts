@@ -766,12 +766,57 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   private handleLoginSuccess(param: any) {
-    const selectedYearId = this.loginform.get('yearMasterSid')?.value;
-    const selectedYr = this.financialYears.find(fy => fy.YearMasterSid === toNumber(selectedYearId));
-    localStorage.setItem('current-year-id', selectedYearId)
-    const encryptedYearObj = this.appSettingService.encrypt(selectedYr);
-    if (encryptedYearObj) {
-      localStorage.setItem('current-financial-year', encryptedYearObj);
+    const formYearId = toNumber(this.loginform.get('yearMasterSid')?.value);
+
+    // The login year dropdown is scoped to the user's DEFAULT company, but the shell
+    // will activate the last-used (stored) company if one is present. Re-scope the year
+    // to whichever company will actually be active so they never mismatch
+    // (e.g. TATA active + Demo-World year). Keep the picked year if it belongs there.
+    const activeCompanyId = this.resolveActiveCompanyId();
+    if (!activeCompanyId) {
+      // No company to scope against — fall back to the form's picked year.
+      this.persistYearAndFinish(null, formYearId, param);
+      return;
+    }
+    this.masterService.resolveYearForCompany(activeCompanyId, formYearId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (year: any) => this.persistYearAndFinish(year, formYearId, param),
+        error: () => this.persistYearAndFinish(null, formYearId, param),
+      });
+  }
+
+  /** Company the app shell will activate: the stored (last-used) one if still valid, else default. */
+  private resolveActiveCompanyId(): number {
+    const profile = this.appSettingService.getDecryptedUserProfile();
+    const companies: any[] = profile?.userCompanyMaster || [];
+    const defaultId = (companies.find(c => c.IsDefault === 'Y') || companies[0])?.CompanyMasterSid;
+
+    let storedId: number | null = null;
+    const enc = localStorage.getItem('selected-company');
+    if (enc) {
+      const dec = this.appSettingService.decrypt(enc);
+      storedId = Number(dec?.CompanyMasterSid) || null;
+    }
+    const storedIsValid = storedId && companies.some(c => Number(c.CompanyMasterSid) === storedId);
+    return storedIsValid ? (storedId as number) : defaultId;
+  }
+
+  /** Persist the resolved financial year (aligned with the active company), then remember-me + navigate. */
+  private persistYearAndFinish(resolvedYear: any, formYearId: number, param: any) {
+    const year = resolvedYear
+      || this.financialYears.find(fy => fy.YearMasterSid === formYearId)
+      || null;
+
+    if (year) {
+      localStorage.setItem('current-year-id', String(year.YearMasterSid));
+      const encryptedYearObj = this.appSettingService.encrypt(year);
+      if (encryptedYearObj) {
+        localStorage.setItem('current-financial-year', encryptedYearObj);
+      }
+    } else if (formYearId) {
+      // Defensive fallback (should not happen at a successful login) — keep the picked id.
+      localStorage.setItem('current-year-id', String(formYearId));
     }
 
     if (this.loginform.get('rememberMe')?.value) {
