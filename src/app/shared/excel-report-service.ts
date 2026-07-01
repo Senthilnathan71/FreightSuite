@@ -34,6 +34,19 @@ export interface ExcelCell {
    * string used by the PDF / plain-Excel paths.
    */
   num?: number;
+  /**
+   * Excel number-format code (e.g. '#,##0.00' / '#,##,##0.00') applied to the
+   * `num` value so grouped amounts stay real, summable numbers on export.
+   * Honoured by both the styled and the plain complex-report exporters.
+   */
+  numFmt?: string;
+  /**
+   * Marks the cell as a monetary amount. ONLY when `true` is the cell written as
+   * a real, summable number (from `num`) with the `numFmt` grouping mask applied.
+   * Non-amount numbers (counts, ageing days, %) must NOT set this — they stay as
+   * their `value` string and are never currency-masked.
+   */
+  isAmount?: boolean;
   colspan?: number;
   rowspan?: number;
   border?: [boolean, boolean, boolean, boolean];
@@ -183,6 +196,10 @@ export class ExcelExportService {
 
     const aoa: any[][] = [];
     const merges: XLSX.Range[] = [];
+    // (row, col, numFmt) of cells that carry a raw `num` — written as real
+    // numbers with a number-format after the sheet is built, so amounts stay
+    // summable while rendering the currency's grouping.
+    const numberCells: { r: number; c: number; z: string }[] = [];
     const totalCols = tableHeaders.length;
 
     // Row 1: Company Name (merged across all columns)
@@ -219,7 +236,11 @@ export class ExcelExportService {
       let colIndex = 0;
 
       for (const cell of row.cells) {
-        excelRow.push(cell.value ?? '');
+        const isAmt = cell.isAmount === true && cell.num !== undefined && cell.num !== null && isFinite(Number(cell.num));
+        excelRow.push(isAmt ? Number(cell.num) : (cell.value ?? ''));
+        if (isAmt) {
+          numberCells.push({ r: currentRowIndex, c: colIndex, z: cell.numFmt || '#,##0.00' });
+        }
 
         // Handle colspan for merged cells (section headers, etc.)
         if (cell.colspan && cell.colspan > 1) {
@@ -278,8 +299,12 @@ export class ExcelExportService {
       // Summary data rows
       for (const row of config.summaryTable.rows) {
         const summaryExcelRow: any[] = [];
+        let sColIndex = 0;
         for (const cell of row.cells) {
-          summaryExcelRow.push(cell.value ?? '');
+          const isAmt = cell.isAmount === true && cell.num !== undefined && cell.num !== null && isFinite(Number(cell.num));
+          summaryExcelRow.push(isAmt ? Number(cell.num) : (cell.value ?? ''));
+          if (isAmt) numberCells.push({ r: currentRowIndex, c: sColIndex, z: cell.numFmt || '#,##0.00' });
+          sColIndex++;
         }
         while (summaryExcelRow.length < summaryHeaders.length) summaryExcelRow.push('');
         aoa.push(summaryExcelRow);
@@ -303,8 +328,12 @@ export class ExcelExportService {
 
         for (const row of table.rows) {
           const extraExcelRow: any[] = [];
+          let eColIndex = 0;
           for (const cell of row.cells) {
-            extraExcelRow.push(cell.value ?? '');
+            const isAmt = cell.isAmount === true && cell.num !== undefined && cell.num !== null && isFinite(Number(cell.num));
+            extraExcelRow.push(isAmt ? Number(cell.num) : (cell.value ?? ''));
+            if (isAmt) numberCells.push({ r: currentRowIndex, c: eColIndex, z: cell.numFmt || '#,##0.00' });
+            eColIndex++;
           }
           while (extraExcelRow.length < table.headers.length) extraExcelRow.push('');
           aoa.push(extraExcelRow);
@@ -317,9 +346,31 @@ export class ExcelExportService {
     const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(aoa);
     worksheet['!merges'] = merges;
 
-    // Set column widths if provided
-    if (columnWidths && columnWidths.length > 0) {
-      worksheet['!cols'] = columnWidths.map(w => ({ wch: w }));
+    // Apply the amount cells' number-formats so flagged amounts stay summable
+    // while rendering the currency's grouping (e.g. '#,##,##0.00' for INR).
+    for (const nc of numberCells) {
+      const addr = XLSX.utils.encode_cell({ r: nc.r, c: nc.c });
+      const wsCell = worksheet[addr];
+      if (wsCell && typeof wsCell.v === 'number') {
+        wsCell.t = 'n';
+        wsCell.z = nc.z;
+      }
+    }
+
+    // Set column widths. When the sheet hosts multiple tables (summary /
+    // additional) that share the same physical columns, take the element-wise
+    // MAX of every table's widths so a shared column is wide enough for the
+    // widest content and numeric cells don't render as "####".
+    const effectiveWidths: number[] = columnWidths ? [...columnWidths] : [];
+    const mergeWidths = (w?: number[]) => {
+      w?.forEach((val, i) => {
+        effectiveWidths[i] = Math.max(effectiveWidths[i] || 0, val || 0);
+      });
+    };
+    mergeWidths(config.summaryTable?.columnWidths);
+    config.additionalTables?.forEach(t => mergeWidths(t.columnWidths));
+    if (effectiveWidths.length > 0) {
+      worksheet['!cols'] = effectiveWidths.map(w => ({ wch: w || 10 }));
     }
 
     // Create workbook and export

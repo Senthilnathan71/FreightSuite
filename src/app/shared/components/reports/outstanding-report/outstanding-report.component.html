@@ -94,16 +94,14 @@
                         <td class="text-center">{{item?.drCr}}</td>
                         <td>{{item?.currencyCode}}</td>
                         <td style="text-align: right;white-space: nowrap;">
-                            {{item?.signedOriginalCurrency | number:'1.2-2'}}
+                            {{ maskCur(item?.signedOriginalCurrency, item?.currencyCode) }}
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
-                            {{item?.signedOriginalLocal | number:'1.2-2'}}</td>
-                        <td style="text-align: right;white-space: nowrap;">{{item?.signedOutstandingCurrency |
-                            number:'1.2-2'}}</td>
-                        <td style="text-align: right;white-space: nowrap;">{{item?.signedOutstandingLocal |
-                            number:'1.2-2'}}</td>
+                            {{ maskLocal(item?.signedOriginalLocal) }}</td>
+                        <td style="text-align: right;white-space: nowrap;">{{ maskCur(item?.signedOutstandingCurrency, item?.currencyCode) }}</td>
+                        <td style="text-align: right;white-space: nowrap;">{{ maskLocal(item?.signedOutstandingLocal) }}</td>
                         <td style="text-align: right;white-space: nowrap;">
-                            {{ item?.cumulativeOutstanding | number:'1.2-2'}}
+                            {{ maskLocal(item?.cumulativeOutstanding) }}
                         </td>
                         <td style="text-align: center;">
                             {{ item?.dueDate | formatDate }}
@@ -116,7 +114,7 @@
                         <td colspan="7" class="text-end">TOTAL</td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <td style="text-align: right;" class="fw-bold">
-                            {{ getLocalTotal(fullData?.transactions) | number:'1.2-2' }}
+                            {{ maskLocal(getLocalTotal(fullData?.transactions)) }}
                         </td>
 
                         <!-- Total Local Amount (originalCurrencyAmount) -->
@@ -130,18 +128,16 @@
                         <td></td>
                         <!-- Total O/S Local -->
                         <td style="text-align: right;" class="fw-bold">
-                            {{ getSignedTotal(fullData?.transactions) | number:'1.2-2' }}
+                            {{ maskLocal(getSignedTotal(fullData?.transactions)) }}
                         </td>
 
                         <!-- Cumulative Total (same as total outstanding local) -->
-                        <td style="text-align: right;"> {{ fullData?.transactions?.[fullData.transactions.length -
-                            1]?.cumulativeOutstanding
-                            | number:'1.2-2' }}</td>
+                        <td style="text-align: right;"> {{ maskLocal(fullData?.transactions?.[fullData.transactions.length - 1]?.cumulativeOutstanding) }}</td>
                         <td colspan="2"></td>
                     </tr>
                     <tr *ngIf="!fullData?.transactions || fullData.transactions.length !== 0" class="text-center fw-bold py-1">
                         <td colspan="9" class="text-end">OVERDUE AMT</td>
-                        <td class="text-end">{{ fullData?.totalOverdueAmount | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ maskLocal(fullData?.totalOverdueAmount) }}</td>
                     </tr>
                     <tr *ngIf="!fullData?.transactions || fullData.transactions.length === 0">
                         <td colspan="15" class="text-center fw-bold py-1">
@@ -187,32 +183,32 @@
 
                         <!-- Total Outstanding -->
                         <td class="text-end">
-                            {{ cur.totalOutstanding | number:'1.2-2' }}
+                            {{ maskLocal(cur.totalOutstanding) }}
                         </td>
 
                         <!-- 0 - 30 Days -->
                         <td class="text-end">
-                            {{ cur.bucket_0_30 | number:'1.2-2' }}
+                            {{ maskLocal(cur.bucket_0_30) }}
                         </td>
 
                         <!-- 31 - 60 Days -->
                         <td class="text-end">
-                            {{ cur.bucket_31_60 | number:'1.2-2' }}
+                            {{ maskLocal(cur.bucket_31_60) }}
                         </td>
 
                         <!-- 61 - 90 Days -->
                         <td class="text-end">
-                            {{ cur.bucket_61_90 | number:'1.2-2' }}
+                            {{ maskLocal(cur.bucket_61_90) }}
                         </td>
 
                         <!-- 91 - 120 Days -->
                         <td class="text-end">
-                            {{ cur.bucket_91_120 | number:'1.2-2' }}
+                            {{ maskLocal(cur.bucket_91_120) }}
                         </td>
 
                         <!-- 121+ Days -->
                         <td class="text-end">
-                            {{ cur.bucket_121_above | number:'1.2-2' }}
+                            {{ maskLocal(cur.bucket_121_above) }}
                         </td>
                     </tr>
                 </tbody>

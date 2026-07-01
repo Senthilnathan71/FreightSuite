@@ -13,6 +13,8 @@ import { PrintFooterComponent } from '../../print-footer/print-footer.component'
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 
 @Component({
   selector: 'app-outstanding-report',
@@ -39,6 +41,8 @@ export class OutstandingReportComponent {
   isPrintAllBankConfigLoaded = false;
   isBankFetched = false;
   isVATMode = false;
+  /** Memoised local/report currency code (avoids re-decrypting localStorage per cell). */
+  private _localCurrencyCode: string | null = null;
 
   constructor(
     @Inject(REPORT_DATA) public data: any,
@@ -49,6 +53,8 @@ export class OutstandingReportComponent {
     private operationService: OperationService,
     private masterService: MasterService,
     private numberToWords: NumberToWordsService,
+    private currencyFormatService: CurrencyFormatService,
+    private currencyConfigService: CurrencyConfigurationService,
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -163,6 +169,10 @@ export class OutstandingReportComponent {
       const currencies = await firstValueFrom(this.masterService.getAllCurrencies());
       this.currencyList = Array.isArray(currencies) ? currencies : [];
       this.numberToWords.initializeCurrencies(this.currencyList);
+      // Populate the per-currency masking cache — this report path does not
+      // otherwise initialise it, so the masking helpers would fall back to
+      // International/comma without this.
+      this.currencyConfigService.initializeConfigurations(this.currencyList);
     } catch (error) {
       console.warn('Could not load currency list for bank headers:', error);
       this.currencyList = [];
@@ -528,6 +538,32 @@ export class OutstandingReportComponent {
       .toLowerCase();
   }
 
+  /** Memoised local/report currency code (avoids re-decrypting localStorage per cell/CD cycle). */
+  get localCurrencyCode(): string {
+    if (!this._localCurrencyCode) {
+      const code = this.getReportCurrencyCode();
+      if (code) this._localCurrencyCode = code;
+      return code;
+    }
+    return this._localCurrencyCode;
+  }
+
+  /** Mask an amount in the report's local/company currency (grouping per Currency Master). */
+  maskLocal(value: any): string {
+    return this.currencyFormatService.formatMaskedAmount({
+      value: Number(value) || 0,
+      currencyCode: this.localCurrencyCode,
+    });
+  }
+
+  /** Mask an amount in a specific (transaction) currency. */
+  maskCur(value: any, currencyCode: string): string {
+    return this.currencyFormatService.formatMaskedAmount({
+      value: Number(value) || 0,
+      currencyCode: currencyCode || this.localCurrencyCode,
+    });
+  }
+
   getExcelData(): ComplexReportExportConfig {
 
     const rows: ExcelRow[] = [];
@@ -535,6 +571,18 @@ export class OutstandingReportComponent {
     const transactions = this.fullData?.transactions || [];
     const currencySummary = this.fullData?.currencyWiseSummary || [];
     const amountInWordsLines = this.getOutstandingAmountInWordsLines();
+
+    // Build an amount cell: `value` = masked string (used by PDF), and
+    // `num` + `numFmt` + `isAmount` = the real, summable, grouping-formatted
+    // number (used by Excel). Non-amount cells never set `isAmount`.
+    const localCode = this.localCurrencyCode;
+    const amt = (v: any, code: string = localCode): ExcelCell => ({
+      value: this.currencyFormatService.formatMaskedAmount({ value: Number(v) || 0, currencyCode: code }),
+      num: Number(v) || 0,
+      numFmt: this.currencyFormatService.getExcelNumberFormat(code),
+      isAmount: true,
+      alignment: { horizontal: 'right' },
+    });
 
 
     const tableHeaders: ExcelHeader[] = [
@@ -555,18 +603,18 @@ export class OutstandingReportComponent {
 
     const columnWidths = [
       15, // Voucher No
-      8, // Voucher Date
-      3,  // Type
+      12, // Voucher Date
+      4,  // Type
       25, // Narration
-      3,  // Dr/Cr
-      3,  // Cur
-      10, // Amt
-      10, // Local Amt
-      10, // O/S Currency
-      10, // O/S Local
-      10, // Cumulative
-      8,  // Due Date
-      4  // Ageing
+      4,  // Dr/Cr
+      5,  // Cur
+      15, // Amt
+      15, // Local Amt
+      15, // O/S Currency
+      15, // O/S Local
+      15, // Cumulative
+      12, // Due Date
+      6  // Ageing
     ];
 
 
@@ -579,11 +627,11 @@ export class OutstandingReportComponent {
           { value: item?.naration || '' },
           { value: item?.drCr || '' , alignment:{horizontal:'center'} },
           { value: item?.currencyCode || '' , alignment:{horizontal:'center'} },
-          { value: this.formatNumber(item?.signedOriginalCurrency || 0) },
-          { value: this.formatNumber(item?.signedOriginalLocal || 0) },
-          { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
-          { value: this.formatNumber(item?.signedOutstandingLocal || 0) },
-          { value: this.formatNumber(item?.cumulativeOutstanding || 0) },
+          amt(item?.signedOriginalCurrency || 0, item?.currencyCode),
+          amt(item?.signedOriginalLocal || 0),
+          amt(item?.signedOutstandingCurrency || 0, item?.currencyCode),
+          amt(item?.signedOutstandingLocal || 0),
+          amt(item?.cumulativeOutstanding || 0),
           { value: this.formatDate(item?.dueDate) || '' , alignment:{horizontal:'center'} },
           { value: item?.ageingDays || 0 , alignment:{horizontal:'center'} },
         ],
@@ -595,14 +643,10 @@ export class OutstandingReportComponent {
     rows.push({
       cells: [
         { value: 'TOTAL', colspan: 7 , alignment:{horizontal:'right'} },
-        { value: this.formatNumber(this.getLocalTotal(transactions)) },
+        amt(this.getLocalTotal(transactions)),
         { value: '' },
-        { value: this.formatNumber(this.getSignedTotal(transactions)) },
-        {
-          value: this.formatNumber(
-            transactions?.[transactions.length - 1]?.cumulativeOutstanding || 0
-          )
-        },
+        amt(this.getSignedTotal(transactions)),
+        amt(transactions?.[transactions.length - 1]?.cumulativeOutstanding || 0),
         { value: '' , colspan: 2 }
       ],
       style: 'total'
@@ -611,7 +655,7 @@ export class OutstandingReportComponent {
     rows.push({
       cells: [
         { value: 'OVERDUE AMT', colspan: 9 , alignment:{horizontal:'right'} },
-        { value: this.formatNumber(this.fullData?.totalOverdueAmount || 0) },
+        amt(this.fullData?.totalOverdueAmount || 0),
         { value: '' , colspan: 3 }
       ],
       style: 'total'
@@ -662,12 +706,12 @@ export class OutstandingReportComponent {
         rows: currencySummary.map((cur: any) => ({
           cells: [
             { value: cur.currencyCode || '' },
-            { value: this.formatNumber(cur.totalOutstanding || 0) },
-            { value: this.formatNumber(cur.bucket_0_30 || 0) },
-            { value: this.formatNumber(cur.bucket_31_60 || 0) },
-            { value: this.formatNumber(cur.bucket_61_90 || 0) },
-            { value: this.formatNumber(cur.bucket_91_120 || 0) },
-            { value: this.formatNumber(cur.bucket_121_above || 0) }
+            amt(cur.totalOutstanding || 0),
+            amt(cur.bucket_0_30 || 0),
+            amt(cur.bucket_31_60 || 0),
+            amt(cur.bucket_61_90 || 0),
+            amt(cur.bucket_91_120 || 0),
+            amt(cur.bucket_121_above || 0)
           ],
           style: 'data'
         })),

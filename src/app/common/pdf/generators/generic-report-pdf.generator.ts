@@ -702,7 +702,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       const cells: any[] = [];
       for (const cell of row.cells) {
         const cellText = cell.value != null ? String(cell.value) : '';
-        const isNumeric = cellText !== '' && !isNaN(Number(cellText.replace(/,/g, '')));
+        const isNumeric = cellText !== '' && !isNaN(Number(cellText.replace(/[,\s]/g, '')));
         cells.push({ text: cellText, fontSize: 7, alignment: isNumeric ? 'right' as const : 'left' as const });
       }
       while (cells.length < stColCount) cells.push({ text: '' });
@@ -756,7 +756,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         const cells: any[] = [];
         for (const cell of row.cells) {
           const cellText = cell.value != null ? String(cell.value) : '';
-          const isNumeric = cellText !== '' && !isNaN(Number(cellText.replace(/,/g, '')));
+          const isNumeric = cellText !== '' && !isNaN(Number(cellText.replace(/[,\s]/g, '')));
           cells.push({
             text: cellText,
             fontSize: 7,
@@ -880,7 +880,7 @@ function buildPdfRow(
 
   for (const cell of row.cells) {
     const cellText = cell.value != null ? String(cell.value) : '';
-    const isNumeric = cellText !== '' && !isNaN(Number(cellText.replace(/,/g, '')));
+    const isNumeric = cellText !== '' && !isNaN(Number(cellText.replace(/[,\s]/g, '')));
 
     const pdfCell: any = {
       text: cellText,

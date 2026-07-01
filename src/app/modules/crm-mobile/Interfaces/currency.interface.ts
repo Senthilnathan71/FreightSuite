@@ -6,6 +6,8 @@ export interface Currency {
   CurrencyUnit: string | null;
   CurrencySubUnit: string | null;
   SubUnitIn:string |null;
+  GroupingStyle?: string | null;
+  GroupSeparator?: string | null;
   ShortCode: string | null;
   Symbol: string | null;
   amountDecimal: number;
@@ -86,6 +88,8 @@ export interface CurrencyMaster {
   Symbol?: string | null;
   RoundOf?: string | null;
   SubUnitIn?: string | null;
+  GroupingStyle?: string | null;
+  GroupSeparator?: string | null;
   CountryMasterSid?: number | null;
 }
 
@@ -121,6 +125,10 @@ export interface CurrencyConfig {
   roundOffDecimal: number;
   symbol: string;
   symbolPosition: 'before' | 'after';
+  /** Digit grouping: 'International' = 3-3-3 (1,234,567); 'Indian' = 3-2-2 (12,34,567). */
+  groupingStyle: 'International' | 'Indian';
+  /** The actual group-separator character to insert (',' or ' '). */
+  groupSeparator: string;
 }
 
 /**

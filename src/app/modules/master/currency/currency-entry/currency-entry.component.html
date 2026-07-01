@@ -568,6 +568,42 @@
                         </aside> -->
                         <aside class="col-md-4">
                             <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!currencyForm.get('GroupingStyle')?.value">
+                                <ng-select [items]="groupingStyleOptions" bindLabel="name" bindValue="id"
+                                    formControlName="GroupingStyle"
+                                    [class.is-invalid]="currencyForm.get('GroupingStyle')?.invalid && currencyForm.get('GroupingStyle')?.touched">
+                                </ng-select>
+
+                                <label class="input-label">Amount Grouping <span class="text-danger">*</span></label>
+
+                                @if(currencyForm.get('GroupingStyle')?.touched && currencyForm.get('GroupingStyle')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
+                                }
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!currencyForm.get('GroupSeparator')?.value">
+                                <ng-select [items]="groupSeparatorOptions" bindLabel="name" bindValue="id"
+                                    formControlName="GroupSeparator"
+                                    [class.is-invalid]="currencyForm.get('GroupSeparator')?.invalid && currencyForm.get('GroupSeparator')?.touched">
+                                </ng-select>
+
+                                <label class="input-label">Group Separator <span class="text-danger">*</span></label>
+
+                                @if(currencyForm.get('GroupSeparator')?.touched && currencyForm.get('GroupSeparator')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
+                                }
+                            </div>
+                        </aside>
+
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!currencyForm.get('status')?.value">
                                 <ng-select [items]="statusOptions" bindLabel="name" bindValue="id"
                                     formControlName="status"

@@ -216,8 +216,70 @@ export class CurrencyFormatService {
         return this.applySymbol(result, currency);
       }
     }
-    
+
     return result;
+  }
+
+  /**
+   * Formats an amount applying the currency's per-currency grouping "mask":
+   * the grouping style (International 3-3-3 vs Indian 3-2-2) and the group
+   * separator (comma vs space) configured on the currency master. Only the
+   * integer part is grouped; the number of decimals comes from `amountDecimal`
+   * and the decimal point stays '.'.
+   *
+   * Falls back to International + comma when the currency config is missing, so
+   * it is always safe to call. This is the single "common function" used across
+   * screen, PDF and Excel (via {@link getExcelNumberFormat}).
+   *
+   * @param input      The value + currency code (with optional overrides).
+   * @param withSymbol Whether to prepend/append the currency symbol.
+   * @returns          The masked amount string.
+   *
+   * @example
+   * // INR (Indian + Comma):
+   * this.formatMaskedAmount({ value: 1234567.89, currencyCode: 'INR' }); // "12,34,567.89"
+   * @example
+   * // USD (International + Comma):
+   * this.formatMaskedAmount({ value: 1234567.89, currencyCode: 'USD' }); // "1,234,567.89"
+   * @example
+   * // A currency set to International + Space:
+   * this.formatMaskedAmount({ value: 1234567.89, currencyCode: 'EUR' }); // "1 234 567.89"
+   */
+  public formatMaskedAmount(input: FormatInput | FormatInputWithOverrides, withSymbol: boolean = false): string {
+    const currency = this.resolveCurrencyConfig(input);
+    const decimals = currency?.amountDecimal ?? 2;
+    const style = currency?.groupingStyle ?? 'International';
+    const separator = currency?.groupSeparator ?? ',';
+
+    const rounded = this.round(Number(input.value) || 0, decimals);
+    const [intPart, decPart] = Math.abs(rounded).toFixed(decimals).split('.');
+    const grouped = this.groupIntegerPart(intPart, style, separator);
+    const body = decPart ? `${grouped}.${decPart}` : grouped;
+    const result = `${rounded < 0 ? '-' : ''}${body}`;
+
+    return withSymbol && currency ? this.applySymbol(result, currency) : result;
+  }
+
+  /**
+   * Returns the Excel (xlsx) number-format code for a currency so exported cells
+   * stay real, summable numbers while still rendering the currency's grouping.
+   * International -> `#,##0.00`; Indian -> `#,##,##0.00`.
+   *
+   * NOTE: a *space* separator cannot be forced in a plain xlsx number-format —
+   * such cells remain summable but follow the file locale's group separator.
+   *
+   * @param currencyCode The currency to resolve the grouping style from.
+   * @param decimals     Optional decimal override (defaults to the currency's `amountDecimal`, else 2).
+   *
+   * @example this.getExcelNumberFormat('INR'); // "#,##,##0.00"
+   * @example this.getExcelNumberFormat('USD'); // "#,##0.00"
+   */
+  public getExcelNumberFormat(currencyCode: string, decimals?: number): string {
+    const config = this.configService.getCurrencyConfig(currencyCode);
+    const d = decimals ?? config?.amountDecimal ?? 2;
+    const decMask = d > 0 ? '.' + '0'.repeat(d) : '';
+    const intMask = config?.groupingStyle === 'Indian' ? '#,##,##0' : '#,##0';
+    return intMask + decMask;
   }
 
   /**
@@ -314,6 +376,26 @@ export class CurrencyFormatService {
   }
 
   /**
+   * Inserts group separators into the integer-part digits per the currency's
+   * grouping style. International groups every 3 digits (3-3-3, e.g. 1,234,567);
+   * Indian groups the last 3 then every 2 (3-2-2, e.g. 12,34,567).
+   *
+   * @private
+   * @param {string} intDigits Integer-part digits only (no sign, no decimals).
+   * @param {'International' | 'Indian'} style Grouping style.
+   * @param {string} sep Separator character to insert (',' or ' ').
+   * @returns {string} The grouped integer string.
+   */
+  private groupIntegerPart(intDigits: string, style: 'International' | 'Indian', sep: string): string {
+    if (style === 'Indian' && intDigits.length > 3) {
+      const last3 = intDigits.slice(-3);
+      const rest = intDigits.slice(0, -3);
+      return rest.replace(/\B(?=(\d{2})+(?!\d))/g, sep) + sep + last3;
+    }
+    return intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+  }
+
+  /**
    * Applies a currency symbol to a formatted value string.
    * Positions the symbol before or after based on currency configuration.
    * 
@@ -381,7 +463,9 @@ export class CurrencyFormatService {
         exchangeDecimal: overrides.exchangeDecimal ?? baseConfig?.exchangeDecimal ?? 3,
         roundOffDecimal: overrides.roundOffDecimal ?? baseConfig?.roundOffDecimal ?? 3,
         symbol: overrides.symbol ?? baseConfig?.symbol ?? input.currencyCode,
-        symbolPosition: overrides.symbolPosition ?? baseConfig?.symbolPosition ?? 'before'
+        symbolPosition: overrides.symbolPosition ?? baseConfig?.symbolPosition ?? 'before',
+        groupingStyle: baseConfig?.groupingStyle ?? 'International',
+        groupSeparator: baseConfig?.groupSeparator ?? ','
       };
     }
 

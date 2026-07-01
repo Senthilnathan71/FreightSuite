@@ -64,6 +64,15 @@ export class CurrencyEntryComponent implements OnInit, OnDestroy, HasUnsavedChan
     { id: 'A', name: 'Active' },
     { id: 'S', name: 'Suspended' }
   ];
+  // Per-currency amount masking (see currency-format.service.formatMaskedAmount).
+  groupingStyleOptions = [
+    { id: 'International', name: 'International — 1,234,567.89' },
+    { id: 'Indian', name: 'Indian (Lakh/Crore) — 12,34,567.89' }
+  ];
+  groupSeparatorOptions = [
+    { id: 'Comma', name: 'Comma — 1,234,567' },
+    { id: 'Space', name: 'Space — 1 234 567' }
+  ];
   currentMenuId: any;
   TandCList: any;
   auditLogs: any[] = []; // Stores audit logs
@@ -181,6 +190,8 @@ hasAnyDropdownPermission(): boolean {
       RoundOf: ['', [
         Validators.maxLength(100)
       ]],
+      GroupingStyle: ['International', [Validators.required]],
+      GroupSeparator: ['Comma', [Validators.required]],
       status: [{value: 'A', disabled: !this.isEditMode}, Validators.required]
     });
 
@@ -248,6 +259,8 @@ loadlookup(){
           amountDecimal: currency.amountDecimal,
           exchangeDecimal: currency.exchangeDecimal,
           RoundOf: currency.RoundOf,
+          GroupingStyle: currency.GroupingStyle || 'International',
+          GroupSeparator: currency.GroupSeparator || 'Comma',
           status: currency.status
         });
         this.initialFormValue = this.currencyForm.getRawValue();
@@ -322,6 +335,8 @@ loadlookup(){
       amountDecimal: Number(this.currencyForm.value.amountDecimal),
       exchangeDecimal: Number(this.currencyForm.value.exchangeDecimal),
       RoundOf: this.currencyForm.value.RoundOf,
+      GroupingStyle: this.currencyForm.value.GroupingStyle,
+      GroupSeparator: this.currencyForm.value.GroupSeparator,
       status: this.currencyForm.value.status,
       ...(this.isEditMode ? {updatedBy : currentUserEmail} : {createdBy : currentUserEmail})
     };
@@ -379,6 +394,8 @@ else {
         amountDecimal: 2,
         exchangeDecimal: 4,
         RoundOf: '',
+        GroupingStyle: 'International',
+        GroupSeparator: 'Comma',
         status: 'A'
       });
     }

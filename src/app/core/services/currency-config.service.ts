@@ -147,7 +147,10 @@ export class CurrencyConfigurationService {
       exchangeDecimal: currency.exchangeDecimal,
       roundOffDecimal: this.parseRoundOff(currency.RoundOf),
       symbol: currency.Symbol || currency.currencyCode,
-      symbolPosition: 'before' // Default position; customize based on your requirements
+      symbolPosition: 'before', // Default position; customize based on your requirements
+      // Per-currency amount masking. Null/legacy rows fall back to International + comma.
+      groupingStyle: currency.GroupingStyle === 'Indian' ? 'Indian' : 'International',
+      groupSeparator: currency.GroupSeparator === 'Space' ? ' ' : ','
     };
   }
 
