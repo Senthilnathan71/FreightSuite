@@ -196,7 +196,7 @@ function getAmountInWordsText(rows: ExcelRow[]): string {
 }
 
 function buildAdditionalInfoLayout(
-  items: { label: string; value: string }[] | undefined,
+  items: { label: string; value: string; valueWidth?: number | string }[] | undefined,
   isLandscape: boolean,
   fontSize: number
 ): AdditionalInfoLayoutResult {
@@ -206,16 +206,9 @@ function buildAdditionalInfoLayout(
 
   const columnCount = Math.min(2, items.length);
   const rowCount = Math.ceil(items.length / columnCount);
+  const extraWrappedRows = items.some(item => item?.valueWidth !== undefined && item?.valueWidth !== null) ? 1 : 0;
   const labelWidth = isLandscape ? 56 : 62;
 
-  // Split into a left group (first rowCount items) and a right group (the rest).
-  const leftItems = items.slice(0, rowCount);
-  const rightItems = columnCount > 1 ? items.slice(rowCount) : [];
-
-  // Each group is a borderless table [ label | : | value ]. An 'auto' value column
-  // makes the table shrink to its actual content width, so when the right group is
-  // anchored to the page end (via a '*' spacer) it truly hugs the right edge with no
-  // trailing gap, while the table grid keeps every label/colon/value aligned.
   const groupLayout = {
     defaultBorder: false,
     paddingLeft: () => 0,
@@ -224,26 +217,29 @@ function buildAdditionalInfoLayout(
     paddingBottom: () => 1
   };
 
-  const buildGroupTable = (groupItems: { label: string; value: string }[]) => ({
+  const buildRow = (item: { label: string; value: string; valueWidth?: number | string }) => ({
     table: {
-      widths: [labelWidth, 'auto', 'auto'],
-      body: groupItems.map(item => [
+      widths: [labelWidth, 'auto', item?.valueWidth ?? 'auto'],
+      body: [[
         { text: item?.label || '', bold: true, fontSize, noWrap: true },
         { text: ':', fontSize, alignment: 'center' },
         { text: item?.value || '', fontSize }
-      ])
+      ]]
     },
     layout: groupLayout
   });
 
+  const leftItems = items.slice(0, rowCount);
+  const rightItems = columnCount > 1 ? items.slice(rowCount) : [];
+
   return {
-    rowCount,
+    rowCount: rowCount + extraWrappedRows,
     node: {
       columns: [
-        { width: 'auto', ...buildGroupTable(leftItems) },
+        { width: 'auto', stack: leftItems.map(item => buildRow(item)) },
         { width: '*', text: '' },
         rightItems.length
-          ? { width: 'auto', ...buildGroupTable(rightItems) }
+          ? { width: 'auto', stack: rightItems.map(item => buildRow(item)) }
           : { width: 0, text: '' }
       ],
       columnGap: 0

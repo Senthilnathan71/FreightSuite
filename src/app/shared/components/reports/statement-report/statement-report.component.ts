@@ -18,6 +18,8 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 
 @Component({
   selector: 'app-statement-report',
@@ -46,7 +48,7 @@ export class StatementReportComponent {
   isPrintAllBankConfigLoaded = false;
   isBankFetched = false;
   orientation: 'portrait' | 'landscape' = 'portrait';
-
+  private _localCurrencyCode: string | null = null;
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
@@ -56,6 +58,8 @@ export class StatementReportComponent {
     private operationService: OperationService,
     private masterService: MasterService,
     private numberToWords: NumberToWordsService,
+    private currencyFormatService: CurrencyFormatService,
+    private currencyConfigService: CurrencyConfigurationService,
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -263,6 +267,7 @@ export class StatementReportComponent {
       );
       this.currencyList = Array.isArray(currencies) ? currencies : [];
       this.numberToWords.initializeCurrencies(this.currencyList);
+      this.currencyConfigService.initializeConfigurations(this.currencyList);
     } catch (error) {
       console.warn('Could not load currency list for bank headers:', error);
       this.currencyList = [];
@@ -575,6 +580,14 @@ export class StatementReportComponent {
   }
 
   getExcelData(): ComplexReportExportConfig {
+    const localCode = this.localCurrencyCode;
+    const amt = (v: any, code: string = localCode): ExcelCell => ({
+      value: this.currencyFormatService.formatMaskedAmount({ value: Number(v) || 0, currencyCode: code }),
+      num: Number(v) || 0,
+      numFmt: this.currencyFormatService.getExcelNumberFormat(code),
+      isAmount: true,
+      alignment: { horizontal: 'right' },
+    });
     const tableHeaders: ExcelHeader[] = [
       { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Date' },
@@ -632,11 +645,11 @@ export class StatementReportComponent {
           value: item?.currencyCode || '',
           alignment: { horizontal: 'center' },
         },
-        { value: this.formatNumber(item?.signedOriginalCurrency) },
-        { value: this.formatNumber(item?.signedLocalAmt) },
-        { value: this.formatNumber(item?.signedOutstandingCurrency) },
-        { value: this.formatNumber(item?.signedoutstandingLocalAmount) },
-        { value: this.formatNumber(item?.cumulativeOutstanding) },
+        amt(item?.signedOriginalCurrency || 0, item?.currencyCode),
+        amt(item?.signedLocalAmt || 0),
+        amt(item?.signedOutstandingCurrency || 0, item?.currencyCode),
+        amt(item?.signedoutstandingLocalAmount || 0),
+        amt(item?.cumulativeOutstanding || 0),
       ];
 
       rows.push({ cells, style: 'data' });
@@ -649,17 +662,11 @@ export class StatementReportComponent {
 
         // Totals
         // { value: this.formatNumber(this.getTotal(transactions, 'signedOriginalCurrency')) },
-        { value: this.formatNumber(this.getLocalTotal(transactions)) },
+        amt(this.getLocalTotal(transactions)),
         // { value: this.formatNumber(this.getTotal(transactions, 'signedOutstandingCurrency')) },
         // { value: this.formatNumber(this.getSignedTotal(transactions)) },
-        {
-          value: this.formatNumber(
-            transactions.length > 0
-              ? transactions[transactions.length - 1]?.cumulativeOutstanding
-              : 0,
-            ),
-            colspan:3
-        },
+        {value: '', colspan: 2},
+        amt(transactions?.[transactions.length - 1]?.cumulativeOutstanding || 0),
       ];
 
       rows.push({ cells: totalCells, style: 'total' });
@@ -697,6 +704,7 @@ export class StatementReportComponent {
                 ? ', '
                 : ''
             }${this.fullData?.contactNo || ''}`,
+            valueWidth: 320,
           },
           {
             label: this.taxRegistrationLabel,
@@ -813,5 +821,29 @@ export class StatementReportComponent {
     } catch {
       return String(date);
     }
+  }
+
+  get localCurrencyCode(): string {
+    if (!this._localCurrencyCode) {
+      const code = this.getReportCurrencyCode();
+      if (code) this._localCurrencyCode = code;
+      return code;
+    }
+    return this._localCurrencyCode;
+  }
+
+
+  maskLocal(value: any): string {
+    return this.currencyFormatService.formatMaskedAmount({
+      value: Number(value) || 0,
+      currencyCode: this.localCurrencyCode,
+    });
+  }
+
+  maskCur(value: any, currencyCode: string): string {
+    return this.currencyFormatService.formatMaskedAmount({
+      value: Number(value) || 0,
+      currencyCode: currencyCode || this.localCurrencyCode,
+    });
   }
 }
