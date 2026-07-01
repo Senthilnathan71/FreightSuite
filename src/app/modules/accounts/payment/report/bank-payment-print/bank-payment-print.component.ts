@@ -16,6 +16,8 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 
 @Component({
   selector: 'app-bank-payment-print',
@@ -65,6 +67,8 @@ export class BankPaymentPrintComponent implements OnChanges {
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
         private cdr: ChangeDetectorRef,
+    private currencyFormatService: CurrencyFormatService,
+    private currencyConfigService: CurrencyConfigurationService,
   ) { }
 
   
@@ -83,12 +87,20 @@ export class BankPaymentPrintComponent implements OnChanges {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.loadCurrencyList();
+    this.numberToWords.initializeCurrencies(this.currencyList);
+    this.currencyConfigService.initializeConfigurations(this.currencyList || []);
     this.loadHeaderSubledgerAddress();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['paymentDataPrint'] || changes['ledgerList']) {
       this.loadHeaderSubledgerAddress();
+    }
+
+    if (changes['currencyList'] && changes['currencyList'].currentValue) {
+      this.currencyList = changes['currencyList'].currentValue;
+      this.numberToWords.initializeCurrencies(this.currencyList);
+      this.currencyConfigService.initializeConfigurations(this.currencyList || []);
     }
   }
 
@@ -126,7 +138,9 @@ export class BankPaymentPrintComponent implements OnChanges {
     this.masterService.getAllCurrencies().subscribe({
       next: (response: any) => {
         this.currency = response|| [];
+        this.currencyList = this.currency;
         this.numberToWords.initializeCurrencies(this.currency);
+        this.currencyConfigService.initializeConfigurations(this.currency);
         console.log('Currency List:', this.currency);
       },
       error: (error) => {
@@ -404,6 +418,17 @@ getTotalAmt() {
     }, 0);
 }
 
+formatCurrencyAmount(value: any, currencyCode?: string): string {
+  return this.currencyFormatService.formatMaskedAmount({
+    value: Number(value) || 0,
+    currencyCode: currencyCode || this.paymentDataPrint?.CurrencyCode || ''
+  });
+}
+
+formatPaymentCurrencyAmount(value: any): string {
+  return this.formatCurrencyAmount(value, this.paymentDataPrint?.CurrencyCode);
+}
+
 getDrDetails() {
   return this.paymentDataPrint?.VoucherDetail?.filter(
     (item: any) =>
@@ -524,6 +549,7 @@ printDiv(divId: string): void {
     ledgerList: any[];
     bankTypedLedgers: any[];
     amountInWords: string;
+    currencyList: any[];
     allowPrintBeforePosting: boolean;
     headerSubledgerAddress: string;
     printSettings: {
@@ -538,6 +564,7 @@ printDiv(divId: string): void {
       ledgerList: this.ledgerList || [],
       bankTypedLedgers: this.bankTypedLedgers || [],
       amountInWords: String(this.getAmountInWords() || this.paymentDataPrint?.AmountInWords || this.paymentDataPrint?.amountInWords || ''),
+      currencyList: this.currencyList || [],
       allowPrintBeforePosting: this.receiptAllowToPrintBeforePosting,
       headerSubledgerAddress: this.headerSubledgerAddress,
       printSettings: this.companySettings.getPrintSettings()

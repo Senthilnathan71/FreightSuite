@@ -3091,6 +3091,39 @@ export class CreditNoteEntryComponent {
     return this.currencyFormatter.formatAmount(input, false);
   }
 
+  public formatCurrencyDisplayAmount(
+    amount: number | string,
+    CurrencyMasterSid?: number,
+  ): string {
+    const currency = this.currencyList.find(
+      (currency) => Number(currency.CurrencyMasterSid) === Number(CurrencyMasterSid),
+    );
+
+    return this.currencyFormatter.formatMaskedAmount({
+      value: toNumber(amount),
+      currencyCode:
+        currency?.currencyCode ||
+        currency?.CurrencyCode ||
+        this.creditNoteForm?.get('CurrencyCode')?.getRawValue() ||
+        '',
+    });
+  }
+
+  public formatCreditNoteCurrencyAmount(amount: number | string): string {
+    return this.formatCurrencyDisplayAmount(
+      amount,
+      this.creditNoteForm?.get('CurrencyMasterSid')?.getRawValue() ||
+        this.creditNoteData?.CurrencyMasterSid,
+    );
+  }
+
+  public formatCompanyCurrencyAmount(amount: number | string): string {
+    return this.formatCurrencyDisplayAmount(
+      amount,
+      this.currentCompany?.CurrencyMasterSid,
+    );
+  }
+
   public getAmountDecimalPlaces(CurrencyMasterSid: number): number {
     const currency = this.currencyList.find(
       (currency) => currency.CurrencyMasterSid === CurrencyMasterSid,
@@ -3925,10 +3958,7 @@ export class CreditNoteEntryComponent {
       0,
     );
 
-    return this.getFormattedAndPaddedAmount(
-      total,
-      this.currentCompany.CurrencyMasterSid,
-    );
+    return this.formatCompanyCurrencyAmount(total);
   }
 
   calculateBaseCreditNotePrintColspan(): number {

@@ -1561,6 +1561,8 @@ export class PdfMakeService {
       bankTypedLedgers?: any[];
       amountInWords?: string;
       currentUserCountry?: string;
+      currencyList?: any[];
+      allowPrintBeforePosting?: boolean;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
@@ -1585,6 +1587,8 @@ export class PdfMakeService {
       bankTypedLedgers?: any[];
       amountInWords?: string;
       currentUserCountry?: string;
+      currencyList?: any[];
+      allowPrintBeforePosting?: boolean;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
@@ -1627,6 +1631,9 @@ export class PdfMakeService {
       ledgerList?: any[];
       bankTypedLedgers?: any[];
       amountInWords?: string;
+      currencyList?: any[];
+      allowPrintBeforePosting?: boolean;
+      headerSubledgerAddress?: string;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
@@ -1650,6 +1657,9 @@ export class PdfMakeService {
       ledgerList?: any[];
       bankTypedLedgers?: any[];
       amountInWords?: string;
+      currencyList?: any[];
+      allowPrintBeforePosting?: boolean;
+      headerSubledgerAddress?: string;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
