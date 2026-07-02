@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -44,6 +44,9 @@ export class MilestoneComponent implements OnInit {
   isEditMode: boolean;
   userData : any;
   allMilestones: any[] = []; 
+  previousMilestones: any[] = [];
+  previousMilestonesTitle = 'Previous Milestones';
+  currentMilestonesTitle = 'Current Milestones';
   modeOfStatus = [
   { id: 'Active', name: 'Active' },
   { id: 'Suspended', name: 'Suspended' },
@@ -132,6 +135,7 @@ export class MilestoneComponent implements OnInit {
     }
     this._departmentSid = value;
     this.scheduleMilestoneReload();
+    this.scheduleShipmentMilestoneReload();
   }
 
   // departmentName and departmentSid often change together in one change-detection
@@ -211,9 +215,63 @@ export class MilestoneComponent implements OnInit {
     this._shipmentNo = shipmentNo;
   }
 
-  // Need at least one identifier to fetch by.
-  const hasKey = !!this._shipmentNo || this._houseJobSid != null || this._bookingHeaderSid != null;
-  if (!hasKey) {
+  if (this._houseJobSid != null) {
+    if (this._departmentSid == null || this.currentCompany?.CompanyMasterSid == null ||
+        this.currentBranch?.BranchMasterSid == null) {
+      return;
+    }
+    const payload = {
+      companyMasterSid: this.currentCompany.CompanyMasterSid,
+      branchMasterSid: this.currentBranch.BranchMasterSid,
+      bookingHeaderSid: this._bookingHeaderSid ?? null,
+      houseJobSid: this._houseJobSid,
+      departmentMasterSid: this._departmentSid
+    };
+    this.operationService.getMilestoneJobFlow(payload).subscribe({
+      next: (flow) => {
+        this.previousMilestones = flow?.previousMilestones?.items || [];
+        this.previousMilestonesTitle = flow?.previousMilestones?.title || 'Previous Milestones';
+        this.currentMilestonesTitle = flow?.currentMilestones?.title || 'Current Milestones';
+        this.patchValues(flow?.currentMilestones?.items || [], true);
+      },
+      error: (err) => {
+        console.error('Failed to fetch milestone job flow', err);
+        this.appSettingService.showError('Could not load job-flow milestones.');
+      }
+    });
+    return;
+  }
+
+  // Booking screen (no House Job generated yet). For a Transhipment Export booking the
+  // backend also returns the source Import House milestones as read-only "Previous".
+  // Non-transhipment bookings get an empty "previous", so behaviour is unchanged.
+  if (this._bookingHeaderSid != null) {
+    if (this.currentCompany?.CompanyMasterSid == null ||
+        this.currentBranch?.BranchMasterSid == null) {
+      return;
+    }
+    const payload = {
+      companyMasterSid: this.currentCompany.CompanyMasterSid,
+      branchMasterSid: this.currentBranch.BranchMasterSid,
+      bookingHeaderSid: this._bookingHeaderSid
+    };
+    this.operationService.getMilestoneBookingFlow(payload).subscribe({
+      next: (flow) => {
+        this.previousMilestones = flow?.previousMilestones?.items || [];
+        this.previousMilestonesTitle = flow?.previousMilestones?.title || 'Previous Milestones';
+        this.currentMilestonesTitle = flow?.currentMilestones?.title || 'Current Milestones';
+        this.patchValues(flow?.currentMilestones?.items || [], true);
+      },
+      error: (err) => {
+        console.error('Failed to fetch milestone booking flow', err);
+        this.appSettingService.showError('Could not load booking-flow milestones.');
+      }
+    });
+    return;
+  }
+
+  // Legacy screens with only a ShipmentNo continue using the existing API.
+  if (!this._shipmentNo) {
     return;
   }
 
@@ -240,9 +298,9 @@ export class MilestoneComponent implements OnInit {
     this.milestoneForm = this.fb.group({
       ShipmentMilestoneSid: [null],
       ShipmentNo: [{ value: '', disabled: true }],
-      MilestoneMasterSid: [null],
+      MilestoneMasterSid: [null, Validators.required],
       MilestoneName: [''],
-      MilestoneDate: [''],
+      MilestoneDate: ['', Validators.required],
       AutoCaptured: [false],
       Remarks: [''],
       Status: [{ value: 'Active', disabled: true }],
@@ -254,13 +312,23 @@ export class MilestoneComponent implements OnInit {
     })
   }
 
-  patchValues(items: any[]) {
+  // `preservePrevious` is set by callers that manage the previous/current split
+  // themselves (the House job-flow and Booking booking-flow). Legacy ShipmentNo-only
+  // fetches leave it false so the read-only "previous" section is cleared.
+  patchValues(items: any[], preservePrevious = false) {
     this.milestoneFormArray.clear();
     for (const item of items) {
       const formGroupWithData = this.createShipmentMilestone(item);
       this.milestoneFormArray.push(formGroupWithData);
     }
     this.milestoneDataLength = items.length;
+    this.page1 = 1;
+    if (!preservePrevious) {
+      this.previousMilestones = [];
+      this.currentMilestonesTitle = this._departmentName
+        ? `Current ${this._departmentName} Milestones`
+        : 'Current Milestones';
+    }
     this.milestoneFormArray.updateValueAndValidity();
     this.updateMilestonePagination();
     this.syncDataWithParentComponent();

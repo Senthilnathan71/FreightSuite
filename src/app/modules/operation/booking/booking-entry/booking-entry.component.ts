@@ -4786,6 +4786,7 @@ openDocRef() {
       MilestoneCode: "CFU",
       MilestoneDate: getDefaultTodayDate(),
       ShipmentNo: this.bookingData?.ShipmentNo,
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       createdBy: this.userData?.userEmail,
       Remarks: `Cargo Followup has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };

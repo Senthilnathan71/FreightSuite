@@ -504,6 +504,30 @@ searchHouseJob(payload: any) {
     );
   }
 
+  getMilestoneJobFlow(payload: any) {
+    let params = new HttpParams()
+      .set('companyMasterSid', payload.companyMasterSid)
+      .set('branchMasterSid', payload.branchMasterSid)
+      .set('houseJobSid', payload.houseJobSid)
+      .set('departmentMasterSid', payload.departmentMasterSid);
+    if (payload.bookingHeaderSid != null) {
+      params = params.set('bookingHeaderSid', payload.bookingHeaderSid);
+    }
+    return this.http.get<{ data: any }>('milestone/job-flow', { params }).pipe(
+      map(resp => resp.data)
+    );
+  }
+
+  getMilestoneBookingFlow(payload: any) {
+    const params = new HttpParams()
+      .set('companyMasterSid', payload.companyMasterSid)
+      .set('branchMasterSid', payload.branchMasterSid)
+      .set('bookingHeaderSid', payload.bookingHeaderSid);
+    return this.http.get<{ data: any }>('milestone/booking-flow', { params }).pipe(
+      map(resp => resp.data)
+    );
+  }
+
 
 
   getAllBookingRateLookups(payload) {

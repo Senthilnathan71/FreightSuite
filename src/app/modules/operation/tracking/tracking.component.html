@@ -262,6 +262,12 @@
                         <span class="milestone-status">{{ milestoneStatusLabel(milestone) }}</span>
                       </div>
                       <div class="milestone-meta">
+                        <span
+                          class="milestone-loc"
+                          *ngIf="milestone.source === 'EXPORT' || milestone.source === 'IMPORT'"
+                        >
+                          <i class="fas fa-building"></i>{{ milestone.source }}
+                        </span>
                         <span class="milestone-loc" *ngIf="milestone.location">
                           <i class="fas fa-map-marker-alt"></i>{{ milestone.location }}
                         </span>

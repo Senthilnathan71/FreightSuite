@@ -7009,6 +7009,7 @@ ${this.userData['userName']}`;
       MilestoneCode: milestoneCode,
       MilestoneDate : getDefaultTodayDate(),
       ShipmentNo: this.bookingData?.ShipmentNo,
+      HouseJobSid: this.housejobData?.HouseJobSid,
       createdBy: this.userData?.userEmail,
       Remarks: isOriginal
         ? `Original BL has been released on ${(new Date().toISOString()).split('T')[0]}`
@@ -7298,6 +7299,7 @@ ${this.userData['userName']}`;
       MilestoneCode: 'HBL',
       MilestoneDate: getDefaultTodayDate(),
       ShipmentNo: this.bookingData?.ShipmentNo,
+      HouseJobSid: this.housejobData?.HouseJobSid,
       createdBy: this.userData?.userEmail,
       Remarks: `BL Release on ${(new Date().toISOString()).split('T')[0]}`,
     };
