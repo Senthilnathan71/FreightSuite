@@ -4789,7 +4789,6 @@ openDocRef() {
       BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       createdBy: this.userData?.userEmail,
       // anchor the CFU milestone on the booking (and house job if already generated)
-      BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       HouseJobSid: this.bookingData?.HouseJobSid,
       Remarks: `Cargo Followup has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };
