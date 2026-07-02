@@ -2884,9 +2884,7 @@ isSeaDepartment(): boolean {
             if (resolve) resolve(true);
             if (this.headerId) {
               this.loadInvoiceById(this.headerId);
-              navigateToVoucherEntry(this.router, VoucherType.INVOICE, this.headerId, {
-                extras: { replaceUrl: true }
-              });
+              this.navigateAfterCreate(this.headerId);
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -5132,6 +5130,17 @@ isSeaDepartment(): boolean {
 
   navigateToCreate() : void {
     navigateToVoucherEntry(this.router, VoucherType.INVOICE);
+  }
+
+  /**
+   * Post-create navigation to the saved voucher's entry screen. Extracted so
+   * subclasses (e.g. non-job invoice) can route to their own entry screen
+   * instead of the job-invoice route — WITHOUT patching the global Router.
+   */
+  protected navigateAfterCreate(headerId: number): void {
+    navigateToVoucherEntry(this.router, VoucherType.INVOICE, headerId, {
+      extras: { replaceUrl: true }
+    });
   }
 
   ngOnDestroy(): void {
