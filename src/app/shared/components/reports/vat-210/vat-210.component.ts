@@ -63,6 +63,57 @@ export class Vat210Component {
     return this.fullData?.outputTax?.overseas || [];
   }
 
+  // ---- Annexures (detail lists; do not affect the main report totals) ----
+  get annexure(): any {
+    return this.fullData?.annexure || {};
+  }
+
+  // Filter one annexure list by Direction (Input/Output) and Locality (Local/Overseas).
+  private filterAnnexure(
+    key: 'reclassifiedZeroRated' | 'taxEqualsTaxable',
+    direction: 'Input' | 'Output',
+    locality: 'Local' | 'Overseas'
+  ): any[] {
+    return (this.annexure?.[key] || []).filter(
+      (x: any) => x?.Direction === direction && x?.Locality === locality
+    );
+  }
+
+  // Annexure – rows where Taxable Amount = Tax Amount (JV / Payment on the VAT ledger),
+  // split by Sales (Output) / Purchases (Input) and Local / Outside GCC.
+  get taxEqualSalesLocal(): any[] {
+    return this.filterAnnexure('taxEqualsTaxable', 'Output', 'Local');
+  }
+
+  get taxEqualSalesOverseas(): any[] {
+    return this.filterAnnexure('taxEqualsTaxable', 'Output', 'Overseas');
+  }
+
+  get taxEqualPurchaseLocal(): any[] {
+    return this.filterAnnexure('taxEqualsTaxable', 'Input', 'Local');
+  }
+
+  get taxEqualPurchaseOverseas(): any[] {
+    return this.filterAnnexure('taxEqualsTaxable', 'Input', 'Overseas');
+  }
+
+  // Same split for the reclassified (VAT 5% shown under VAT 0%) annexure.
+  get reclassifiedSalesLocal(): any[] {
+    return this.filterAnnexure('reclassifiedZeroRated', 'Output', 'Local');
+  }
+
+  get reclassifiedSalesOverseas(): any[] {
+    return this.filterAnnexure('reclassifiedZeroRated', 'Output', 'Overseas');
+  }
+
+  get reclassifiedPurchaseLocal(): any[] {
+    return this.filterAnnexure('reclassifiedZeroRated', 'Input', 'Local');
+  }
+
+  get reclassifiedPurchaseOverseas(): any[] {
+    return this.filterAnnexure('reclassifiedZeroRated', 'Input', 'Overseas');
+  }
+
   get summary() {
     return this.fullData?.summary || {};
   }
@@ -394,6 +445,85 @@ export class Vat210Component {
     ],
     style: 'grandTotal'
   });
+
+  /* ======================================================
+   ✅ ANNEXURE
+   ====================================================== */
+
+const addAnnexure = (title: string, data: any[]) => {
+  if (!data?.length) return;
+
+  rows.push(this.blankRow());
+
+  rows.push({
+    cells: [
+      { value: title, colspan: 6 }
+    ],
+    style: 'section'
+  });
+
+  rows.push({
+    cells: [
+      { value: 'Date' },
+      { value: 'Voucher No' },
+      { value: 'Ledger' },
+      { value: 'Party Name' },
+      { value: 'Taxable Amount' },
+      { value: 'Tax Amount' }
+    ],
+    style: 'header'
+  });
+
+  data.forEach(item => {
+    rows.push({
+      cells: [
+        { value: this.formatDate(item.VoucherDate) },
+        { value: item.VoucherNumber || '' },
+        { value: item.LedgerName || '' },
+        { value: item.PartyName || '' },
+        { value: this.formatNumber(item.TaxableAmount) },
+        { value: this.formatNumber(item.TaxAmount) }
+      ]
+    });
+  });
+};
+
+if (
+  this.taxEqualSalesLocal.length ||
+  this.taxEqualSalesOverseas.length ||
+  this.taxEqualPurchaseLocal.length ||
+  this.taxEqualPurchaseOverseas.length
+) {
+
+  rows.push(this.blankRow());
+
+  rows.push({
+    cells: [
+      { value: 'ANNEXURE', colspan: 6 }
+    ],
+    style: 'grandTotal'
+  });
+
+  addAnnexure(
+    'Sales (Outwards) - Local Supplies',
+    this.taxEqualSalesLocal
+  );
+
+  addAnnexure(
+    'Sales (Outwards) - Outside GCC Supplies',
+    this.taxEqualSalesOverseas
+  );
+
+  addAnnexure(
+    'Purchases (Inwards) - Local Purchases',
+    this.taxEqualPurchaseLocal
+  );
+
+  addAnnexure(
+    'Purchases (Inwards) - Outside GCC Purchases',
+    this.taxEqualPurchaseOverseas
+  );
+}
 
   return {
     fileName: 'VAT-201-Report',

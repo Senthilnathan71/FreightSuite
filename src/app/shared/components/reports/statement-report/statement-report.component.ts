@@ -589,8 +589,8 @@ export class StatementReportComponent {
       alignment: { horizontal: 'right' },
     });
     const tableHeaders: ExcelHeader[] = [
-      { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Date' },
+      { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherType', label: 'Type' },
       { key: 'desc', label: 'Narration' },
       { key: 'drCr', label: 'Dr/Cr' },
@@ -630,11 +630,11 @@ export class StatementReportComponent {
 
     transactions.forEach((item: any) => {
       const cells: ExcelCell[] = [
-        { value: item?.voucherNumber || '' },
         {
           value: this.formatDate(item?.voucherDate),
           alignment: { horizontal: 'center' },
         },
+        { value: item?.voucherNumber || '' },
         { value: item?.voucherType || '', alignment: { horizontal: 'center' } },
         { value: item?.naration || '' },
         {
@@ -715,8 +715,8 @@ export class StatementReportComponent {
       tableHeaders,
       rows,
       columnWidths: [
-        25, // Voucher No
         10, // Date
+        25, // Voucher No
         8, // Type
         42, // Narration
         6, // Dr/Cr

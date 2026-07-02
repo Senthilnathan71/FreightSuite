@@ -143,7 +143,7 @@ getSignedTotal(transactions: any[]): number {
       { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Voucher Date' },
       { key: 'voucherType', label: 'Type' },
-      { key: 'partyname', label: 'Party Name' },
+      { key: 'partyname', label: 'Paid To / Received From' },
       { key: 'desc', label: 'Narration' },
       { key: 'drCr', label: 'Dr/Cr' },
       { key: 'currency', label: 'Cur' },

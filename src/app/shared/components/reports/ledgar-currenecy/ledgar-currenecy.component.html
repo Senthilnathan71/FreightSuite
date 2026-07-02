@@ -111,21 +111,21 @@
                         <!-- <td>{{item?.salesmanSid}}</td> -->
                         <td class="text-center">{{item?.drCr}}</td>
                         <td>{{item?.currencyCode}}</td>
-                        <td style="text-align: right;">{{item?.signedOriginalCurrency | number:'1.2-2'}}</td>
+                        <td style="text-align: right;">{{maskCur(item?.signedOriginalCurrency, item?.currencyCode)}}</td>
                         <!-- <td style="text-align: right;">{{item?.signedLocalAmt | number:'1.2-2'}}</td> -->
                         <!-- <td style="text-align: right;">{{item?.signedOutstandingCurrency | number:'1.2-2'}}</td>
                         <td style="text-align: right;">{{item?.signedoutstandingLocalAmount | number:'1.2-2'}}</td> -->
 
                         <!-- CUMULATIVE -->
                         <td style="text-align: right;">
-                            {{item.cumulativeOutstanding | number:'1.2-2'}}
+                            {{maskCur(item.cumulativeOutstanding, item?.currencyCode)}}
                         </td>
                     </tr>
 
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
                         <td colspan="6" class="text-end">TOTAL</td>
                         <!-- Total Local Amount (originalCurrencyAmount) -->
-                        <td style="text-align: right;"> {{ getSignedTotal(fullData?.transactions) | number:'1.2-2' }}
+                        <td style="text-align: right;"> {{ maskLocal(getSignedTotal(fullData?.transactions))  }}
                         </td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <!-- <td style="text-align: right;">{{ getTotal(fullData?.transactions, 'originalLocalAmount') |
@@ -149,9 +149,8 @@
                         </td> -->
 
                         <!-- Cumulative Total (same as total outstanding local) -->
-                        <td style="text-align: right;">{{ fullData?.transactions?.[fullData.transactions.length -
-                            1]?.cumulativeOutstanding
-                            | number:'1.2-2' }}
+                        <td style="text-align: right;">{{ maskLocal(fullData?.transactions?.[fullData.transactions.length -
+                            1]?.cumulativeOutstanding) }}
 
                         </td>
                     </tr>

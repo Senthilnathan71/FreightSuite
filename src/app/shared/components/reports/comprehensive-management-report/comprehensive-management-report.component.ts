@@ -355,7 +355,7 @@ export class ComprehensiveManagementReportComponent {
             { value: this.formatNumber(item.buckets?.['91-120']) },
             { value: this.formatNumber(item.buckets?.['120 & Above']) },
             { value: item.CreditDays || 0 },
-            { value: this.formatNumber(item.CreditLimit) }
+            { value: item.CreditLimit || 0 },
           ],
           style: 'data'
         });
@@ -406,7 +406,7 @@ export class ComprehensiveManagementReportComponent {
             { value: this.formatNumber(item.buckets?.['91-120']) },
             { value: this.formatNumber(item.buckets?.['120 & Above']) },
             { value: item.CreditDays || 0 },
-            { value: this.formatNumber(item.CreditLimit) },
+            { value: item.CreditLimit || 0 },
             { value: '' }
           ],
           style: 'data'

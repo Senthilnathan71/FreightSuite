@@ -212,7 +212,7 @@
                         <td class="text-end">{{ item.buckets['91-120'] | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.buckets['120 & Above'] | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.CreditDays }}</td>
-                        <td class="text-end">{{ item.CreditLimit | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CreditLimit  }}</td>
                     </tr>
 
                     <tr *ngIf="customerRows.length === 0">
@@ -250,7 +250,7 @@
                         <td class="text-end">{{ item.buckets['91-120'] | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.buckets['120 & Above'] | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.CreditDays }}</td>
-                        <td class="text-end">{{ item.CreditLimit | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CreditLimit  }}</td>
                     </tr>
 
                     <tr *ngIf="vendorRows.length === 0">

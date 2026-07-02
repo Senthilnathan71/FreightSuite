@@ -586,10 +586,11 @@ export class OutstandingReportComponent {
 
 
     const tableHeaders: ExcelHeader[] = [
-      { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Voucher Date' },
+      { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherType', label: 'Type' },
       { key: 'desc', label: 'Narration' },
+      { key: 'dueDate', label: 'Due Date' },
       { key: 'drCr', label: 'Dr/Cr' },
       { key: 'currency', label: 'Cur' },
       { key: 'amt', label: 'Amt' },
@@ -597,15 +598,15 @@ export class OutstandingReportComponent {
       { key: 'osCurrAmt', label: 'O/S Currency Amt' },
       { key: 'osLocalAmt', label: 'O/S Local Amt' },
       { key: 'cumulative', label: 'Cumulative' },
-      { key: 'dueDate', label: 'Due Date' },
       { key: 'ageingDays', label: 'Ageing' },
     ];
 
     const columnWidths = [
-      15, // Voucher No
       12, // Voucher Date
+      15, // Voucher No
       4,  // Type
       25, // Narration
+      12, // Due Date
       4,  // Dr/Cr
       5,  // Cur
       15, // Amt
@@ -613,7 +614,6 @@ export class OutstandingReportComponent {
       15, // O/S Currency
       15, // O/S Local
       15, // Cumulative
-      12, // Due Date
       6  // Ageing
     ];
 
@@ -621,10 +621,11 @@ export class OutstandingReportComponent {
     transactions.forEach((item: any) => {
       rows.push({
         cells: [
-          { value: item?.voucherNumber || '' },
           { value: this.formatDate(item?.voucherDate) , alignment:{horizontal:'center'} },
+          { value: item?.voucherNumber || '' },
           { value: item?.voucherType || '' , alignment:{horizontal:'center'} },
           { value: item?.naration || '' },
+          { value: this.formatDate(item?.dueDate) || '' , alignment:{horizontal:'center'} },
           { value: item?.drCr || '' , alignment:{horizontal:'center'} },
           { value: item?.currencyCode || '' , alignment:{horizontal:'center'} },
           amt(item?.signedOriginalCurrency || 0, item?.currencyCode),
@@ -632,7 +633,6 @@ export class OutstandingReportComponent {
           amt(item?.signedOutstandingCurrency || 0, item?.currencyCode),
           amt(item?.signedOutstandingLocal || 0),
           amt(item?.cumulativeOutstanding || 0),
-          { value: this.formatDate(item?.dueDate) || '' , alignment:{horizontal:'center'} },
           { value: item?.ageingDays || 0 , alignment:{horizontal:'center'} },
         ],
         style: 'data'
@@ -642,21 +642,21 @@ export class OutstandingReportComponent {
 
     rows.push({
       cells: [
-        { value: 'TOTAL', colspan: 7 , alignment:{horizontal:'right'} },
+        { value: 'TOTAL', colspan: 8 , alignment:{horizontal:'right'} },
         amt(this.getLocalTotal(transactions)),
         { value: '' },
         amt(this.getSignedTotal(transactions)),
         amt(transactions?.[transactions.length - 1]?.cumulativeOutstanding || 0),
-        { value: '' , colspan: 2 }
+        { value: ''  }
       ],
       style: 'total'
     });
 
     rows.push({
       cells: [
-        { value: 'OVERDUE AMT', colspan: 9 , alignment:{horizontal:'right'} },
+        { value: 'OVERDUE AMT', colspan: 10 , alignment:{horizontal:'right'} },
         amt(this.fullData?.totalOverdueAmount || 0),
-        { value: '' , colspan: 3 }
+        { value: '' , colspan: 2 }
       ],
       style: 'total'
     });
@@ -683,7 +683,7 @@ export class OutstandingReportComponent {
           { label: 'Branch', value: this.fullData?.brancesInvoled || '' },
           { label: 'Ledger', value: this.fullData?.ledgerName || '' },
           { label: 'Subledger', value: this.fullData?.subledgerName || '' },
-          { label: 'Address', value: this.fullData?.Address || '' },
+          { label: 'Address', value: this.fullData?.Address || '' , valueWidth: 320, },
           { label: this.taxRegistrationLabel, value: this.fullData?.PanType || '' },
           { label: 'Credit Terms', value: this.fullData?.creditDays == null || this.fullData?.creditDays === 0 ? 'Cash' : `${this.fullData.creditDays}` },
         ]

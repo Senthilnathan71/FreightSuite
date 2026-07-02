@@ -8,11 +8,15 @@ import {
   ExcelHeader,
   ExcelRow,
 } from 'src/app/shared/excel-report-service';
+import { firstValueFrom, Observable } from 'rxjs';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 import { PrintFooterComponent } from '../../print-footer/print-footer.component';
-
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 @Component({
   selector: 'app-ledgar-currenecy',
   standalone: true,
@@ -29,13 +33,17 @@ export class LedgarCurrenecyComponent {
   currentCompany: any;
   currentBranch: any;
   salesmanList: any[];
-
+  currencyList: any[] = [];
   orientation: 'portrait' | 'landscape' = 'portrait';
-
+  private _localCurrencyCode: string | null = null;
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService,
+    private currencyFormatService: CurrencyFormatService,
+    private currencyConfigService: CurrencyConfigurationService,
+    private masterService: MasterService,
+    private numberToWords: NumberToWordsService
   ) {
   }
 
@@ -45,7 +53,24 @@ export class LedgarCurrenecyComponent {
     this.orientation = this.reportRegistryService.getReportConfig(
       'ledger-report-currenecy',
     ).pdfOrientation;
+    this.ensureCurrencyListLoaded();
   }
+
+    private async ensureCurrencyListLoaded(): Promise<void> {
+      if (this.currencyList?.length) return;
+      try {
+        const currencies = await firstValueFrom(
+          this.masterService.getAllCurrencies(),
+        );
+        this.currencyList = Array.isArray(currencies) ? currencies : [];
+        this.numberToWords.initializeCurrencies(this.currencyList);
+        this.currencyConfigService.initializeConfigurations(this.currencyList);
+      } catch (error) {
+        console.warn('Could not load currency list for bank headers:', error);
+        this.currencyList = [];
+      }
+    }
+  
 
   get fullData(): any {
     return this.data || {};
@@ -137,6 +162,14 @@ export class LedgarCurrenecyComponent {
   }
 
   getExcelData(): ComplexReportExportConfig {
+    const localCode = this.localCurrencyCode;
+    const amt = (v: any, code: string = localCode): ExcelCell => ({
+      value: this.currencyFormatService.formatMaskedAmount({ value: Number(v) || 0, currencyCode: code }),
+      num: Number(v) || 0,
+      numFmt: this.currencyFormatService.getExcelNumberFormat(code),
+      isAmount: true,
+      alignment: { horizontal: 'right' },
+    });
     const tableHeaders: ExcelHeader[] = [
       { key: 'voucherNo', label: 'Voucher No' },
       { key: 'voucherDate', label: 'Voucher Date' },
@@ -185,11 +218,11 @@ export class LedgarCurrenecyComponent {
           value: item?.currencyCode || '',
           alignment: { horizontal: 'center' },
         },
-        { value: this.formatNumber(item?.signedOriginalCurrency) },
+        amt(item?.signedOriginalCurrency, item?.currencyCode) ,
         // { value: this.formatNumber(item?.signedLocalAmt) },
         // { value: this.formatNumber(item?.signedOutstandingCurrency) },
         // { value: this.formatNumber(item?.signedoutstandingLocalAmount) },
-        { value: this.formatNumber(item?.cumulativeOutstanding) },
+        amt(item?.cumulativeOutstanding, item?.currencyCode) ,
       ];
       rows.push({ cells, style: 'data' });
     });
@@ -197,16 +230,14 @@ export class LedgarCurrenecyComponent {
     if (transactions && transactions.length > 0) {
       const totalCells: ExcelCell[] = [
         { value: 'TOTAL', colspan: 6, alignment: { horizontal: 'right' } },
-        { value: this.formatNumber(this.getSignedTotal(transactions)) },
+         amt(this.getSignedTotal(transactions)) ,
         // { value: '' },
         // { value: this.formatNumber(this.getSignedTotal(transactions)) },
-        {
-          value: this.formatNumber(
+           amt(
             transactions.length > 0
               ? transactions[transactions.length - 1]?.cumulativeOutstanding
               : 0,
           ),
-        },
       ];
       rows.push({ cells: totalCells, style: 'total' });
     }
@@ -259,4 +290,98 @@ export class LedgarCurrenecyComponent {
       return String(date);
     }
   }
+  
+   private safeDecryptLocalStorage(key: string): any {
+    const value = localStorage.getItem(key);
+    if (!value) return null;
+
+    try {
+      return this.appSettingsService.decrypt(value);
+    } catch {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return null;
+      }
+    }
+  }
+
+   private getCompanyCountryCurrencyCode(): string {
+      const selectedCountry =
+        this.safeDecryptLocalStorage('selected-country') || {};
+      const countryText = [
+        selectedCountry?.countryCode,
+        selectedCountry?.countryName,
+        this.currentCompany?.countryCode,
+        this.currentCompany?.countryName,
+        this.currentCompany?.countryMaster?.countryCode,
+        this.currentCompany?.countryMaster?.countryName,
+        this.currentBranch?.countryCode,
+        this.currentBranch?.countryName,
+        this.currentBranch?.countryMaster?.countryCode,
+        this.currentBranch?.countryMaster?.countryName,
+        this.currentBranch?.branchName,
+        this.currentCompany?.companyName,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toUpperCase();
+  
+      if (
+        countryText.includes('AE') ||
+        countryText.includes('UAE') ||
+        countryText.includes('UNITED ARAB') ||
+        countryText.includes('DUBAI')
+      ) {
+        return 'AED';
+      }
+  
+      if (countryText.includes('IN') || countryText.includes('INDIA')) {
+        return 'INR';
+      }
+  
+      return '';
+    }
+  
+    private getReportCurrencyCode(): string {
+    const configuredCode = String(
+      this.fullData?.currencyCode ||
+        this.fullData?.CurrencyCode ||
+        this.currentCompany?.CurrencyCode ||
+        this.currentCompany?.currencyCode ||
+        '',
+    )
+      .trim()
+      .toUpperCase();
+
+    if (configuredCode === 'UAE') return 'AED';
+    if (configuredCode === 'IND') return 'INR';
+    if (configuredCode) return configuredCode;
+
+    return this.getCompanyCountryCurrencyCode();
+  }
+
+   get localCurrencyCode(): string {
+      if (!this._localCurrencyCode) {
+        const code = this.getReportCurrencyCode();
+        if (code) this._localCurrencyCode = code;
+        return code;
+      }
+      return this._localCurrencyCode;
+    }
+  
+  
+    maskLocal(value: any): string {
+      return this.currencyFormatService.formatMaskedAmount({
+        value: Number(value) || 0,
+        currencyCode: this.localCurrencyCode,
+      });
+    }
+  
+    maskCur(value: any, currencyCode: string): string {
+      return this.currencyFormatService.formatMaskedAmount({
+        value: Number(value) || 0,
+        currencyCode: currencyCode || this.localCurrencyCode,
+      });
+    }
 }
