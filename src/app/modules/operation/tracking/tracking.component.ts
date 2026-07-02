@@ -199,7 +199,7 @@ export class TrackingComponent implements OnInit, OnDestroy {
   matchModalTitle(): string {
     const type = this.matchSearchType;
     if (type === 'CONTAINER') return 'Select a House Job for this Container';
-    if (type === 'MBL' || type === 'MAWB' || type === 'JOB') return 'Select a House Job under this Master';
+    if (type === 'MBL' || type === 'MAWB' || type === 'JOB') return 'Select a House Job';
     return 'Select the correct shipment';
   }
 
@@ -357,7 +357,15 @@ export class TrackingComponent implements OnInit, OnDestroy {
       { label: 'Master Job', value: this.shipmentInfoValue(tracking, 'jobNumber') },
       { label: this.mblLabel(tracking), value: this.shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') },
     ];
-    return fields.filter((field) => field.value && field.value !== '-');
+    // The searched reference is already shown in the header — hide the matching card
+    // below so the same number is not shown twice (e.g. HBL search hides the HBL card).
+    const searched = this.normalizeCardValue(this.searchedReferenceValue(tracking));
+    return fields.filter(
+      (field) =>
+        field.value &&
+        field.value !== '-' &&
+        this.normalizeCardValue(field.value) !== searched,
+    );
   }
 
   /** Overview "Shipment Progress" — info NOT already shown in the header. */

@@ -32,7 +32,7 @@
           class="quick-chip"
           *ngFor="let item of quickSearches"
           (click)="applyQuickSearch(item)"
-          [class.active-chip]="item === activeSearchType()"
+          [class.active-chip]="item === selectedSearchType"
         >
           {{ item }}
         </button>
@@ -152,8 +152,8 @@
         <section class="ship-panel">
           <div class="ship-head">
             <div class="ship-id">
-              <span class="section-label">Shipment Command</span>
-              <h2>{{ shipmentInfoValue(tracking, 'shipmentNumber', 'bookingNumber', 'bookingNo') }}</h2>
+              <span class="section-label">{{ activeSearchType() }}</span>
+              <h2>{{ searchedReferenceValue(tracking) }}</h2>
               <p>{{ displayValue(tracking.shipmentInfo?.customerName) }}</p>
             </div>
 
@@ -194,7 +194,6 @@
               </span>
               <strong class="route-port">{{ point.label }}</strong>
               <small class="route-portname" *ngIf="portName(tracking, point.label)">{{ portName(tracking, point.label) }}</small>
-              <small class="route-role">{{ point.role }}</small>
               <span class="route-when" *ngIf="portPrimaryDate(tracking, i).value !== '-'">
                 {{ portPrimaryDate(tracking, i).label }}{{ portPrimaryDate(tracking, i).value }}
               </span>
