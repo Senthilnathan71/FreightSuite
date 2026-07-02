@@ -50,6 +50,8 @@ export interface CheckExistMilestonePayload {
   BranchMasterSid: number;
   ShipmentNo: string;
   MilestoneMasterSid: number;
+  HouseJobSid?: number;
+  BookingHeaderSid?: number;
 }
 
 export interface SafeInsertShipmentMilestone {
@@ -63,7 +65,7 @@ export interface SafeInsertShipmentMilestone {
   MilestoneDate?: Date;
   Remarks : string;
   BookingHeaderSid?: number;   // anchor booking-stage milestones (e.g. EXDO) on the booking
-  HouseJobSid?: number;        // anchor house-job-stage milestones (e.g. HBL/DRAFT) on the house job
+  HouseJobSid?: number;
 }
 
 export interface InsertMilestoneByMasterJobPayload {
@@ -140,8 +142,14 @@ export class ShipmentMilestoneService {
       );
   }
 
-  softDeleteShipmentMilestone(ShipmentMilestoneSid: number): Observable<ResponseData> {
-    return this.http.delete<ResponseData>(`shipment-milestone/delete/${ShipmentMilestoneSid}`)
+  softDeleteShipmentMilestone(
+    ShipmentMilestoneSid: number,
+    CompanyMasterSid: number,
+    BranchMasterSid: number
+  ): Observable<ResponseData> {
+    return this.http.delete<ResponseData>(`shipment-milestone/delete/${ShipmentMilestoneSid}`, {
+      params: { CompanyMasterSid, BranchMasterSid }
+    })
       .pipe(
         catchError((error) => {
           const formattedError = handleError(error);

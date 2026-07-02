@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -43,7 +43,14 @@ export class MilestoneComponent implements OnInit {
   milestoneForm !: FormGroup;
   isEditMode: boolean;
   userData : any;
-  allMilestones: any[] = []; 
+  allMilestones: any[] = [];
+  // Selectable date range for the open Add/Edit popup, derived from the selected
+  // milestone's SortBy neighbours (previous milestone date .. next milestone date).
+  milestoneMinDate: any = null;
+  milestoneMaxDate: any = null;
+  previousMilestones: any[] = [];
+  previousMilestonesTitle = 'Previous Milestones';
+  currentMilestonesTitle = 'Current Milestones';
   modeOfStatus = [
   { id: 'Active', name: 'Active' },
   { id: 'Suspended', name: 'Suspended' },
@@ -132,6 +139,7 @@ export class MilestoneComponent implements OnInit {
     }
     this._departmentSid = value;
     this.scheduleMilestoneReload();
+    this.scheduleShipmentMilestoneReload();
   }
 
   // departmentName and departmentSid often change together in one change-detection
@@ -211,9 +219,63 @@ export class MilestoneComponent implements OnInit {
     this._shipmentNo = shipmentNo;
   }
 
-  // Need at least one identifier to fetch by.
-  const hasKey = !!this._shipmentNo || this._houseJobSid != null || this._bookingHeaderSid != null;
-  if (!hasKey) {
+  if (this._houseJobSid != null) {
+    if (this._departmentSid == null || this.currentCompany?.CompanyMasterSid == null ||
+        this.currentBranch?.BranchMasterSid == null) {
+      return;
+    }
+    const payload = {
+      companyMasterSid: this.currentCompany.CompanyMasterSid,
+      branchMasterSid: this.currentBranch.BranchMasterSid,
+      bookingHeaderSid: this._bookingHeaderSid ?? null,
+      houseJobSid: this._houseJobSid,
+      departmentMasterSid: this._departmentSid
+    };
+    this.operationService.getMilestoneJobFlow(payload).subscribe({
+      next: (flow) => {
+        this.previousMilestones = flow?.previousMilestones?.items || [];
+        this.previousMilestonesTitle = flow?.previousMilestones?.title || 'Previous Milestones';
+        this.currentMilestonesTitle = flow?.currentMilestones?.title || 'Current Milestones';
+        this.patchValues(flow?.currentMilestones?.items || [], true);
+      },
+      error: (err) => {
+        console.error('Failed to fetch milestone job flow', err);
+        this.appSettingService.showError('Could not load job-flow milestones.');
+      }
+    });
+    return;
+  }
+
+  // Booking screen (no House Job generated yet). For a Transhipment Export booking the
+  // backend also returns the source Import House milestones as read-only "Previous".
+  // Non-transhipment bookings get an empty "previous", so behaviour is unchanged.
+  if (this._bookingHeaderSid != null) {
+    if (this.currentCompany?.CompanyMasterSid == null ||
+        this.currentBranch?.BranchMasterSid == null) {
+      return;
+    }
+    const payload = {
+      companyMasterSid: this.currentCompany.CompanyMasterSid,
+      branchMasterSid: this.currentBranch.BranchMasterSid,
+      bookingHeaderSid: this._bookingHeaderSid
+    };
+    this.operationService.getMilestoneBookingFlow(payload).subscribe({
+      next: (flow) => {
+        this.previousMilestones = flow?.previousMilestones?.items || [];
+        this.previousMilestonesTitle = flow?.previousMilestones?.title || 'Previous Milestones';
+        this.currentMilestonesTitle = flow?.currentMilestones?.title || 'Current Milestones';
+        this.patchValues(flow?.currentMilestones?.items || [], true);
+      },
+      error: (err) => {
+        console.error('Failed to fetch milestone booking flow', err);
+        this.appSettingService.showError('Could not load booking-flow milestones.');
+      }
+    });
+    return;
+  }
+
+  // Legacy screens with only a ShipmentNo continue using the existing API.
+  if (!this._shipmentNo) {
     return;
   }
 
@@ -240,9 +302,9 @@ export class MilestoneComponent implements OnInit {
     this.milestoneForm = this.fb.group({
       ShipmentMilestoneSid: [null],
       ShipmentNo: [{ value: '', disabled: true }],
-      MilestoneMasterSid: [null],
+      MilestoneMasterSid: [null, Validators.required],
       MilestoneName: [''],
-      MilestoneDate: [''],
+      MilestoneDate: ['', Validators.required],
       AutoCaptured: [false],
       Remarks: [''],
       Status: [{ value: 'Active', disabled: true }],
@@ -254,13 +316,24 @@ export class MilestoneComponent implements OnInit {
     })
   }
 
-  patchValues(items: any[]) {
+  // `preservePrevious` is set by callers that manage the previous/current split
+  // themselves (the House job-flow and Booking booking-flow). Legacy ShipmentNo-only
+  // fetches leave it false so the read-only "previous" section is cleared.
+  patchValues(items: any[], preservePrevious = false) {
     this.milestoneFormArray.clear();
     for (const item of items) {
       const formGroupWithData = this.createShipmentMilestone(item);
       this.milestoneFormArray.push(formGroupWithData);
     }
     this.milestoneDataLength = items.length;
+    this.page1 = 1;
+    if (!preservePrevious) {
+      this.previousMilestones = [];
+      this.currentMilestonesTitle = this._departmentName
+        ? `Current ${this._departmentName} Milestones`
+        : 'Current Milestones';
+    }
+    this.sortMilestonesBySortBy();
     this.milestoneFormArray.updateValueAndValidity();
     this.updateMilestonePagination();
     this.syncDataWithParentComponent();
@@ -274,6 +347,9 @@ export class MilestoneComponent implements OnInit {
       ShipmentNo: [data?.ShipmentNo || this.shipmentNo],
       MilestoneMasterSid: [data?.MilestoneMasterSid || null],
       MilestoneName: [data?.MilestoneName || null],
+      // The row's own configured SortBy (sent by the backend) — used to order the grid
+      // reliably even for saved milestones that aren't in the department dropdown.
+      SortBy: [data?.SortBy ?? null],
       MilestoneDate: [data?.MilestoneDate || ''],
       AutoCaptured: [data?.AutoCaptured || null],
       Remarks: [data?.Remarks || null],
@@ -308,8 +384,12 @@ export class MilestoneComponent implements OnInit {
         UpdatedBy: this.userData['userEmail']
       });
       this.milestoneForm.get('Status')?.enable();
+      // Edit: constrain the date to the SortBy window (excluding this row itself).
+      this.applyMilestoneDateBounds(data.MilestoneMasterSid);
     } else {
       this.currentMilestoneIndex = -1;
+      // Add: no milestone chosen yet, so no range until one is selected.
+      this.applyMilestoneDateBounds(null);
       this.milestoneForm.patchValue({
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -353,6 +433,18 @@ export class MilestoneComponent implements OnInit {
       return;
     }
 
+    // Enforce the SortBy date sequence: the date must sit between the previous and next
+    // milestone (by SortBy). Prevents e.g. a later-stage milestone being dated earlier.
+    const dateSequenceError = this.validateMilestoneDateSequence(
+      milestoneFormValue.MilestoneMasterSid,
+      milestoneFormValue.MilestoneDate,
+      this.currentMilestoneIndex,
+    );
+    if (dateSequenceError) {
+      this.appSettingService.showWarning(dateSequenceError);
+      return;
+    }
+
     if(this.currentMilestoneIndex !== -1){
       const existingForm = this.milestoneFormArray.at(this.currentMilestoneIndex) as FormGroup;
       existingForm.patchValue({
@@ -362,6 +454,7 @@ export class MilestoneComponent implements OnInit {
       this.milestoneFormArray.push(this.milestoneForm);
     }
     this.milestoneDataLength = this.milestoneFormArray.length;
+    this.sortMilestonesBySortBy();
     this.milestoneFormArray.updateValueAndValidity();
     this.updateMilestonePagination();
     this.syncDataWithParentComponent();
@@ -405,6 +498,7 @@ export class MilestoneComponent implements OnInit {
         AutoCaptured: false,
         Remarks: ''
       });
+      this.applyMilestoneDateBounds(null);
       return;
     }
 
@@ -417,6 +511,8 @@ export class MilestoneComponent implements OnInit {
       AutoCaptured: false,
       Remarks: milestone.Remarks || ''
     });
+    // Constrain the date picker to this milestone's SortBy window (prev .. next).
+    this.applyMilestoneDateBounds(milestone.MilestoneMasterSid);
   }
 
 
@@ -441,6 +537,142 @@ export class MilestoneComponent implements OnInit {
     const start = (this.page1 - 1) * this.pageSize1;
     const end = start + this.pageSize1;
     this.slicedMilestoneFormArr = this.milestoneFormArray.getRawValue().slice(start, end);
+  }
+
+  /** Numeric SortBy for a milestone, resolved from the department milestone master list. */
+  private milestoneSortValue(milestoneMasterSid: any): number {
+    const master = this.allMilestones?.find((m) => m.MilestoneMasterSid === milestoneMasterSid);
+    const sortBy = Number(master?.SortBy);
+    return Number.isFinite(sortBy) ? sortBy : Number.MAX_SAFE_INTEGER;
+  }
+
+  /**
+   * SortBy for a milestone row: prefer the row's own SortBy (sent by the backend for
+   * saved milestones) and only fall back to the department dropdown lookup for newly
+   * added rows that don't carry one yet.
+   */
+  private resolveSortValue(ownSortBy: any, milestoneMasterSid: any): number {
+    const own = Number(ownSortBy);
+    if (Number.isFinite(own)) {
+      return own;
+    }
+    return this.milestoneSortValue(milestoneMasterSid);
+  }
+
+  /**
+   * Reorder the milestone rows by the configured master SortBy (numeric, ascending),
+   * with Date & Time as the tie-breaker. Reorders the existing FormGroup instances
+   * (does not recreate them) so every value — including Status — is preserved. Keeps
+   * the grid in workflow order even after a new milestone is added at the end.
+   */
+  private sortMilestonesBySortBy(): void {
+    const controls = [...this.milestoneFormArray.controls];
+    if (controls.length < 2) {
+      return;
+    }
+    controls.sort((a, b) => {
+      const sa = this.resolveSortValue(a.get('SortBy')?.value, a.get('MilestoneMasterSid')?.value);
+      const sb = this.resolveSortValue(b.get('SortBy')?.value, b.get('MilestoneMasterSid')?.value);
+      if (sa !== sb) {
+        return sa - sb;
+      }
+      const da = a.get('MilestoneDate')?.value ? new Date(a.get('MilestoneDate')!.value).getTime() : 0;
+      const db = b.get('MilestoneDate')?.value ? new Date(b.get('MilestoneDate')!.value).getTime() : 0;
+      return da - db;
+    });
+    this.milestoneFormArray.clear();
+    controls.forEach((control) => this.milestoneFormArray.push(control));
+  }
+
+  /**
+   * Enforce the SortBy date sequence. A milestone's Date & Time must be:
+   *   - on/after the immediately-PREVIOUS milestone (nearest lower SortBy that has a date), and
+   *   - on/before the immediately-NEXT milestone (nearest higher SortBy that has a date).
+   * Uses full date+time. The row being edited is excluded. Returns an error message
+   * when the date breaks the sequence, else null.
+   */
+  private validateMilestoneDateSequence(milestoneMasterSid: any, dateValue: any, excludeIndex: number): string | null {
+    if (!dateValue) {
+      return null;
+    }
+    const newSort = this.milestoneSortValue(milestoneMasterSid);
+    const newTime = new Date(dateValue).getTime();
+    if (Number.isNaN(newTime) || newSort === Number.MAX_SAFE_INTEGER) {
+      return null;
+    }
+
+    let prev: { name: string; sort: number; date: any } | null = null;
+    let next: { name: string; sort: number; date: any } | null = null;
+
+    this.milestoneFormArray.getRawValue().forEach((row: any, index: number) => {
+      if (excludeIndex !== -1 && index === excludeIndex) {
+        return;
+      }
+      if (!row?.MilestoneDate) {
+        return;
+      }
+      const sort = this.resolveSortValue(row.SortBy, row.MilestoneMasterSid);
+      const time = new Date(row.MilestoneDate).getTime();
+      if (Number.isNaN(time) || sort === Number.MAX_SAFE_INTEGER) {
+        return;
+      }
+      if (sort < newSort && (!prev || sort > prev.sort)) {
+        prev = { name: row.MilestoneName, sort, date: row.MilestoneDate };
+      } else if (sort > newSort && (!next || sort < next.sort)) {
+        next = { name: row.MilestoneName, sort, date: row.MilestoneDate };
+      }
+    });
+
+    if (prev && newTime < new Date((prev as any).date).getTime()) {
+      return `Date & Time must be on or after "${(prev as any).name}" (${this.formatMilestoneDateTime((prev as any).date)}).`;
+    }
+    if (next && newTime > new Date((next as any).date).getTime()) {
+      return `Date & Time must be on or before "${(next as any).name}" (${this.formatMilestoneDateTime((next as any).date)}).`;
+    }
+    return null;
+  }
+
+  /**
+   * Set the calendar's selectable range for the open popup from the selected milestone's
+   * SortBy neighbours: min = the previous milestone's date, max = the next milestone's
+   * date. Null when there is no neighbour on that side (that end is unrestricted).
+   */
+  private applyMilestoneDateBounds(milestoneMasterSid: any): void {
+    if (milestoneMasterSid === null || milestoneMasterSid === undefined) {
+      this.milestoneMinDate = null;
+      this.milestoneMaxDate = null;
+      return;
+    }
+    const newSort = this.milestoneSortValue(milestoneMasterSid);
+    if (newSort === Number.MAX_SAFE_INTEGER) {
+      this.milestoneMinDate = null;
+      this.milestoneMaxDate = null;
+      return;
+    }
+
+    let prev: { sort: number; date: any } | null = null;
+    let next: { sort: number; date: any } | null = null;
+
+    this.milestoneFormArray.getRawValue().forEach((row: any, index: number) => {
+      if (this.currentMilestoneIndex !== -1 && index === this.currentMilestoneIndex) {
+        return;
+      }
+      if (!row?.MilestoneDate) {
+        return;
+      }
+      const sort = this.resolveSortValue(row.SortBy, row.MilestoneMasterSid);
+      if (sort === Number.MAX_SAFE_INTEGER) {
+        return;
+      }
+      if (sort < newSort && (!prev || sort > prev.sort)) {
+        prev = { sort, date: row.MilestoneDate };
+      } else if (sort > newSort && (!next || sort < next.sort)) {
+        next = { sort, date: row.MilestoneDate };
+      }
+    });
+
+    this.milestoneMinDate = prev ? (prev as any).date : null;
+    this.milestoneMaxDate = next ? (next as any).date : null;
   }
 
   reportMilestones(): void {

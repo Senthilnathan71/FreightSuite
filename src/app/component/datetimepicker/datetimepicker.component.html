@@ -28,6 +28,7 @@
         name="datepicker"
         [ngModel]="datetime"
         [minDate]="minDate"
+        [maxDate]="maxDate"
         (ngModelChange)="onDateChange($event)"
       ></ngb-datepicker>
       <button

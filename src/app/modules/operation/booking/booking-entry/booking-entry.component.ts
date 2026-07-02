@@ -4786,6 +4786,7 @@ openDocRef() {
       MilestoneCode: "CFU",
       MilestoneDate: getDefaultTodayDate(),   // note: overridden downstream by the follow-up date (follow-up.component)
       ShipmentNo: this.bookingData?.ShipmentNo,
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       createdBy: this.userData?.userEmail,
       // anchor the CFU milestone on the booking (and house job if already generated)
       BookingHeaderSid: this.bookingData?.BookingHeaderSid,

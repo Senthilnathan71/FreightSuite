@@ -79,8 +79,8 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     JobType: string;
     createdBy: string;
     Remarks: string;
-    BookingHeaderSid?: number;
     HouseJobSid?: number;
+    BookingHeaderSid?: number;
   };
 
   @Output() reloadMilestone = new EventEmitter<void>();
@@ -659,6 +659,8 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
       JobType: this.milestonePayload?.JobType,
       MilestoneCode: this.milestonePayload?.MilestoneCode,
       ShipmentNo: this.milestonePayload?.ShipmentNo,
+      HouseJobSid: this.milestonePayload?.HouseJobSid,
+      BookingHeaderSid: this.milestonePayload?.BookingHeaderSid,
       MilestoneDate: milestoneDate || undefined,
       createdBy: this.milestonePayload?.createdBy,
       // carry the anchors through so the milestone attaches to the booking / house job, not ShipmentNo only

@@ -7009,6 +7009,7 @@ ${this.userData['userName']}`;
       MilestoneCode: milestoneCode,
       // MilestoneDate omitted → backend stamps now() (the actual print/insert time)
       ShipmentNo: this.bookingData?.ShipmentNo,
+      HouseJobSid: this.housejobData?.HouseJobSid,
       createdBy: this.userData?.userEmail,
       // anchor the HBL/DRAFT milestone on the house job (and its booking) instead of ShipmentNo only
       HouseJobSid: this.housejobData?.HouseJobSid,
@@ -7301,6 +7302,7 @@ ${this.userData['userName']}`;
       MilestoneCode: 'HBL',
       // MilestoneDate omitted → backend stamps now() (the actual print/insert time)
       ShipmentNo: this.bookingData?.ShipmentNo,
+      HouseJobSid: this.housejobData?.HouseJobSid,
       createdBy: this.userData?.userEmail,
       // anchor the HBL milestone on the house job (and its booking) instead of ShipmentNo only
       HouseJobSid: this.housejobData?.HouseJobSid,

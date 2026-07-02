@@ -1,5 +1,31 @@
 <div class="modern-table-container">
+    <section *ngIf="previousMilestones.length > 0" class="mb-4">
+        <h6>{{ previousMilestonesTitle }} - Read Only</h6>
+        <div class="modern-table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Sno</th>
+                        <th>Milestone</th>
+                        <th>Date & Time</th>
+                        <th>Auto Captured</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-row" *ngFor="let milestone of previousMilestones; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ milestone.MilestoneName }}</td>
+                        <td>{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</td>
+                        <td>{{ milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y' ? 'Yes' : 'No' }}</td>
+                        <td>{{ milestone.Remarks }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
     <div>
+        <h6>{{ currentMilestonesTitle }} - Editable</h6>
         <div class="table-toolbar">
             <div class="toolbar-left">
                
@@ -80,17 +106,26 @@
                         <ng-select [items]="allMilestones" bindLabel="MilestoneName" bindValue="MilestoneMasterSid" class="ng-select"
                             formControlName="MilestoneMasterSid" placeholder="" (change)="onMilestoneChange($event)">
                         </ng-select>
-                        <label for="text-input" class="input-label">Milestone <span class="text-danger"></span></label>
+                        <label for="text-input" class="input-label">Milestone <span class="text-danger">*</span></label>
+                        <div class="text-danger small"
+                            *ngIf="milestoneForm.get('MilestoneMasterSid')?.touched && milestoneForm.get('MilestoneMasterSid')?.invalid">
+                            Milestone is required.
+                        </div>
                     </div>
                 </aside>
                 <div class="col-md-4">
                     <div class=" custom-form-group custom-form-group-select-date w-100">
                         <div class="input-group w-100">
                             <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                                formControlName="MilestoneDate" [allowPastDates]="true"></app-date-time-picker>
+                                formControlName="MilestoneDate" [allowPastDates]="true"
+                                [minSelectableDate]="milestoneMinDate" [maxSelectableDate]="milestoneMaxDate"></app-date-time-picker>
                         </div>
-                        <label class="input-label"> Date & Time<span class="text-danger"></span>
+                        <label class="input-label"> Date & Time<span class="text-danger">*</span>
                         </label>
+                        <div class="text-danger small"
+                            *ngIf="milestoneForm.get('MilestoneDate')?.touched && milestoneForm.get('MilestoneDate')?.invalid">
+                            Date &amp; Time is required.
+                        </div>
                     </div>
                 </div>
                 <aside class="col-md-4 d-flex align-items-center">

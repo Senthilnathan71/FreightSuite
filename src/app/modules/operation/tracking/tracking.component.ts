@@ -199,7 +199,7 @@ export class TrackingComponent implements OnInit, OnDestroy {
   matchModalTitle(): string {
     const type = this.matchSearchType;
     if (type === 'CONTAINER') return 'Select a House Job for this Container';
-    if (type === 'MBL' || type === 'MAWB' || type === 'JOB') return 'Select a House Job under this Master';
+    if (type === 'MBL' || type === 'MAWB' || type === 'JOB') return 'Select a House Job';
     return 'Select the correct shipment';
   }
 
@@ -231,9 +231,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const type = this.matchSearchType;
 
     if (type === 'CONTAINER') {
+      // A container can span DIFFERENT Master Jobs, so Master Job / MBL are shown per row
+      // (not as shared values). Only the container number is common in the header here.
       push('Container No', this.matchedReference);
-      push('Master Job', first.masterJobNumber);
-      push('MBL / MAWB', first.mblNo);
     } else if (type === 'JOB') {
       push('Master Job', first.masterJobNumber || this.matchedReference);
       push('MBL / MAWB', first.mblNo);
@@ -248,7 +248,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
   /** Master Job & MBL columns stay in each row only when they differ per row (HBL search). */
   matchShowMasterMbl(): boolean {
     const type = this.matchSearchType;
-    return !(type === 'CONTAINER' || type === 'JOB' || type === 'MBL' || type === 'MAWB');
+    // Container matches can come from different Master Jobs, so show Master Job / MBL per
+    // row (like HBL). Job / MBL / MAWB searches share one master, shown once in the header.
+    return !(type === 'JOB' || type === 'MBL' || type === 'MAWB');
   }
 
   matchRoute(match: any): string {
@@ -357,7 +359,15 @@ export class TrackingComponent implements OnInit, OnDestroy {
       { label: 'Master Job', value: this.shipmentInfoValue(tracking, 'jobNumber') },
       { label: this.mblLabel(tracking), value: this.shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') },
     ];
-    return fields.filter((field) => field.value && field.value !== '-');
+    // The searched reference is already shown in the header — hide the matching card
+    // below so the same number is not shown twice (e.g. HBL search hides the HBL card).
+    const searched = this.normalizeCardValue(this.searchedReferenceValue(tracking));
+    return fields.filter(
+      (field) =>
+        field.value &&
+        field.value !== '-' &&
+        this.normalizeCardValue(field.value) !== searched,
+    );
   }
 
   /** Overview "Shipment Progress" — info NOT already shown in the header. */
@@ -436,7 +446,7 @@ export class TrackingComponent implements OnInit, OnDestroy {
     push(this.scheduleLabel(tracking), this.vesselVoyageValue(tracking));
     push('ETD', this.departureDateValue(tracking));
     push('ETA', this.arrivalDateValue(tracking));
-    push('Movement', this.movementOverviewValue(tracking));
+    // Movement (Dept + Job Type) intentionally omitted — both are already separate header cards.
     if (this.showContainerSection(tracking)) {
       push('Containers', this.containerCount(tracking));
     }
@@ -535,6 +545,14 @@ export class TrackingComponent implements OnInit, OnDestroy {
   portVesselLabel(tracking: any, index: number): string {
     if (index === 0) {
       return ''; // POO / place of receipt — pre-carriage, no vessel yet
+    }
+
+    // FPOD (final node) on a NON-transhipment (single-leg) move is post-discharge inland
+    // delivery — the vessel discharges at POD, so no vessel is shown at the final node.
+    // For transhipment (multi-leg) the final node is leg-2's arrival, so keep its vessel.
+    const points = this.routePoints(tracking);
+    if (index === points.length - 1 && !this.isMultiLegSchedule(tracking)) {
+      return '';
     }
 
     const leg = this.portLeg(tracking, index);
@@ -709,7 +727,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const origin = tracking?.routeInfo?.origin || route[0];
     const pol = tracking?.routeInfo?.pol || route[1];
     const pod = tracking?.routeInfo?.pod || route[2];
-    const finalDestination = tracking?.routeInfo?.finalDestination || route[3];
+    // When the Final Destination (FPD) is not set, fall back to the POD so the last node
+    // shows the arrival port instead of the empty "Final Destination" placeholder.
+    const finalDestination = tracking?.routeInfo?.finalDestination || route[3] || pod;
 
     const roles = this.isAirShipment(tracking)
       ? ['Origin', 'Departure Airport', 'Arrival Airport', 'Final Delivery']
@@ -750,17 +770,42 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   routeProgressIndex(tracking: any): number {
-    const status = String(tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || tracking?.shipmentInfo?.shipmentStatus || '').toLowerCase();
+    // Department-AGNOSTIC live position: driven by the shipment's own ACTUAL movement dates
+    // (ATD / ATA / delivery), which exist regardless of how a department names its milestones.
+    // Milestone keywords are a corroborating fallback for when actual dates aren't captured
+    // yet but a recognizable movement milestone is. This works for every department's dynamic
+    // milestone set, for Sea and Air alike.
+    const info = tracking?.shipmentInfo || {};
+    const route = tracking?.routeInfo || {};
+    const legs = this.voyageLegs(tracking);
+    const firstLeg = legs[0] || info;
+    const lastLeg = legs[legs.length - 1] || info;
 
-    if (status.includes('delivered') || status.includes('completed')) {
+    // 1) Actual dates (primary, department-agnostic).
+    const departedByDate = this.hasDisplayValue(firstLeg?.atd || info.atd);
+    const arrivedByDate = this.hasDisplayValue(lastLeg?.ata || info.ata);
+    const deliveredByDate = this.hasDisplayValue(route.deliveryDate);
+
+    // 2) Milestone / status keywords (fallback).
+    const reached = (tracking?.milestones || [])
+      .filter((milestone: any) => milestone?.state === 'completed' || milestone?.state === 'current')
+      .map((milestone: any) => String(milestone?.eventName || milestone?.title || '').toLowerCase());
+    const status = String(
+      tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || info.shipmentStatus || '',
+    ).toLowerCase();
+    const names = [...reached, status];
+    const kw = (keywords: string[]) => names.some((name) => keywords.some((keyword) => name.includes(keyword)));
+
+    // Final delivery
+    if (deliveredByDate || kw(['delivered', 'out for delivery'])) {
       return 3;
     }
-
-    if (status.includes('pod') || status.includes('arrived') || status.includes('destination')) {
+    // Arrived at POD (actual arrival, or vessel/flight arrived / cargo discharged)
+    if (arrivedByDate || kw(['arrived', 'discharg', 'destination'])) {
       return 2;
     }
-
-    if (status.includes('transit') || status.includes('sailing') || status.includes('departed')) {
+    // Departed from POL (actual departure, or loaded / shipped-on-board / sailed / in transit)
+    if (departedByDate || kw(['departed', 'loaded on vessel', 'sob', 'sailing', 'transit'])) {
       return 1;
     }
 
@@ -1007,7 +1052,6 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   overviewCards(tracking: any): OverviewCard[] {
-    const info = tracking?.shipmentInfo || {};
     const containerCount = this.containerCount(tracking);
     // NOTE: "Shipment Status" intentionally omitted here — it duplicates the
     // header "Current status" card. (Tracking requirement 4c)
@@ -1023,12 +1067,6 @@ export class TrackingComponent implements OnInit, OnDestroy {
         label: 'Milestone Progress',
         value: this.milestoneProgressValue(tracking),
         meta: this.milestoneProgressMeta(tracking),
-      },
-      {
-        key: 'movement',
-        label: 'Movement',
-        value: this.movementOverviewValue(tracking),
-        meta: this.displayValue(info.customerName, 'Customer pending'),
       },
       ...(this.showContainerSection(tracking)
         ? [{
