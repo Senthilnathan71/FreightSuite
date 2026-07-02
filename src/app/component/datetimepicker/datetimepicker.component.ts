@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnChanges,
   Input,
   forwardRef,
   ViewChild,
@@ -76,7 +77,7 @@ class PassThroughNgbDateAdapter extends NgbDateAdapter<NgbDateStruct> {
   ],
 })
 export class DateTimePickerComponent
-  implements ControlValueAccessor, OnInit, AfterViewInit
+  implements ControlValueAccessor, OnInit, OnChanges, AfterViewInit
 {
   @Input()
   dateString: string;
@@ -104,11 +105,23 @@ export class DateTimePickerComponent
   @Input()
   allowPastDates = false;
 
+  /**
+   * Optional selectable-range bounds. When set, the calendar only allows dates on/after
+   * minSelectableDate and on/before maxSelectableDate (date granularity). Used e.g. by
+   * ShipmentMilestone to keep a milestone's date between its previous and next milestone.
+   * Accepts a Date, ISO string, or null. Read via UTC components (dates are UTC-naive).
+   */
+  @Input()
+  minSelectableDate: any = null;
+  @Input()
+  maxSelectableDate: any = null;
+
   showTimePickerToggle = false;
 
   datetime: DateTimeModel = new DateTimeModel();
   private firstTimeAssign = true;
-  minDate?: NgbDateStruct; // undefined when allowPastDates is true
+  minDate?: NgbDateStruct; // undefined when unrestricted
+  maxDate?: NgbDateStruct; // undefined when no upper bound
 
   @ViewChild(NgbDatepicker)
   private dp: NgbDatepicker;
@@ -132,8 +145,37 @@ export class DateTimePickerComponent
 
   ngOnInit(): void {
     this.ngControl = this.inj.get(NgControl);
-    if (this.allowPastDates) {
-      // No minimum — back-dated selections allowed (e.g. ShipmentMilestone).
+    this.recomputeBounds();
+  }
+
+  ngOnChanges(): void {
+    // minSelectableDate / maxSelectableDate can change (e.g. when the milestone dropdown
+    // changes) — recompute the calendar bounds so out-of-range dates aren't selectable.
+    this.recomputeBounds();
+  }
+
+  /** Convert a Date/ISO string to an NgbDateStruct using UTC components (UTC-naive dates). */
+  private toBoundStruct(value: any): NgbDateStruct | undefined {
+    if (!value) {
+      return undefined;
+    }
+    const parsed = new Date(value);
+    if (isNaN(parsed.getTime())) {
+      return undefined;
+    }
+    return {
+      year: parsed.getUTCFullYear(),
+      month: parsed.getUTCMonth() + 1,
+      day: parsed.getUTCDate(),
+    };
+  }
+
+  private recomputeBounds(): void {
+    // Lower bound: explicit minSelectableDate wins; else today (unless past dates allowed).
+    const explicitMin = this.toBoundStruct(this.minSelectableDate);
+    if (explicitMin) {
+      this.minDate = explicitMin;
+    } else if (this.allowPastDates) {
       this.minDate = undefined;
     } else {
       const now = new Date();
@@ -143,6 +185,8 @@ export class DateTimePickerComponent
         day: now.getDate(),
       };
     }
+    // Upper bound: explicit maxSelectableDate, else no maximum.
+    this.maxDate = this.toBoundStruct(this.maxSelectableDate);
   }
 
   ngAfterViewInit(): void {

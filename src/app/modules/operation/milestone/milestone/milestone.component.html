@@ -117,7 +117,8 @@
                     <div class=" custom-form-group custom-form-group-select-date w-100">
                         <div class="input-group w-100">
                             <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
-                                formControlName="MilestoneDate" [allowPastDates]="true"></app-date-time-picker>
+                                formControlName="MilestoneDate" [allowPastDates]="true"
+                                [minSelectableDate]="milestoneMinDate" [maxSelectableDate]="milestoneMaxDate"></app-date-time-picker>
                         </div>
                         <label class="input-label"> Date & Time<span class="text-danger">*</span>
                         </label>
