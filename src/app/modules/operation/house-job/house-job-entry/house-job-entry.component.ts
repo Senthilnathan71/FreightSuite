@@ -7012,7 +7012,6 @@ ${this.userData['userName']}`;
       HouseJobSid: this.housejobData?.HouseJobSid,
       createdBy: this.userData?.userEmail,
       // anchor the HBL/DRAFT milestone on the house job (and its booking) instead of ShipmentNo only
-      HouseJobSid: this.housejobData?.HouseJobSid,
       BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       Remarks: isOriginal
         ? `Original BL has been released on ${(new Date().toISOString()).split('T')[0]}`
@@ -7305,7 +7304,6 @@ ${this.userData['userName']}`;
       HouseJobSid: this.housejobData?.HouseJobSid,
       createdBy: this.userData?.userEmail,
       // anchor the HBL milestone on the house job (and its booking) instead of ShipmentNo only
-      HouseJobSid: this.housejobData?.HouseJobSid,
       BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       Remarks: `BL Release on ${(new Date().toISOString()).split('T')[0]}`,
     };

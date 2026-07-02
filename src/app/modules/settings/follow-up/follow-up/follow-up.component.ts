@@ -664,8 +664,6 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
       MilestoneDate: milestoneDate || undefined,
       createdBy: this.milestonePayload?.createdBy,
       // carry the anchors through so the milestone attaches to the booking / house job, not ShipmentNo only
-      BookingHeaderSid: this.milestonePayload?.BookingHeaderSid,
-      HouseJobSid: this.milestonePayload?.HouseJobSid,
       Remarks: this.milestonePayload?.Remarks
     };
     this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({
