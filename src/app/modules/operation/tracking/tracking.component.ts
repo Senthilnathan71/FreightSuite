@@ -231,9 +231,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const type = this.matchSearchType;
 
     if (type === 'CONTAINER') {
+      // A container can span DIFFERENT Master Jobs, so Master Job / MBL are shown per row
+      // (not as shared values). Only the container number is common in the header here.
       push('Container No', this.matchedReference);
-      push('Master Job', first.masterJobNumber);
-      push('MBL / MAWB', first.mblNo);
     } else if (type === 'JOB') {
       push('Master Job', first.masterJobNumber || this.matchedReference);
       push('MBL / MAWB', first.mblNo);
@@ -248,7 +248,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
   /** Master Job & MBL columns stay in each row only when they differ per row (HBL search). */
   matchShowMasterMbl(): boolean {
     const type = this.matchSearchType;
-    return !(type === 'CONTAINER' || type === 'JOB' || type === 'MBL' || type === 'MAWB');
+    // Container matches can come from different Master Jobs, so show Master Job / MBL per
+    // row (like HBL). Job / MBL / MAWB searches share one master, shown once in the header.
+    return !(type === 'JOB' || type === 'MBL' || type === 'MAWB');
   }
 
   matchRoute(match: any): string {
@@ -444,7 +446,7 @@ export class TrackingComponent implements OnInit, OnDestroy {
     push(this.scheduleLabel(tracking), this.vesselVoyageValue(tracking));
     push('ETD', this.departureDateValue(tracking));
     push('ETA', this.arrivalDateValue(tracking));
-    push('Movement', this.movementOverviewValue(tracking));
+    // Movement (Dept + Job Type) intentionally omitted — both are already separate header cards.
     if (this.showContainerSection(tracking)) {
       push('Containers', this.containerCount(tracking));
     }
@@ -543,6 +545,14 @@ export class TrackingComponent implements OnInit, OnDestroy {
   portVesselLabel(tracking: any, index: number): string {
     if (index === 0) {
       return ''; // POO / place of receipt — pre-carriage, no vessel yet
+    }
+
+    // FPOD (final node) on a NON-transhipment (single-leg) move is post-discharge inland
+    // delivery — the vessel discharges at POD, so no vessel is shown at the final node.
+    // For transhipment (multi-leg) the final node is leg-2's arrival, so keep its vessel.
+    const points = this.routePoints(tracking);
+    if (index === points.length - 1 && !this.isMultiLegSchedule(tracking)) {
+      return '';
     }
 
     const leg = this.portLeg(tracking, index);
@@ -1015,7 +1025,6 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   overviewCards(tracking: any): OverviewCard[] {
-    const info = tracking?.shipmentInfo || {};
     const containerCount = this.containerCount(tracking);
     // NOTE: "Shipment Status" intentionally omitted here — it duplicates the
     // header "Current status" card. (Tracking requirement 4c)
@@ -1031,12 +1040,6 @@ export class TrackingComponent implements OnInit, OnDestroy {
         label: 'Milestone Progress',
         value: this.milestoneProgressValue(tracking),
         meta: this.milestoneProgressMeta(tracking),
-      },
-      {
-        key: 'movement',
-        label: 'Movement',
-        value: this.movementOverviewValue(tracking),
-        meta: this.displayValue(info.customerName, 'Customer pending'),
       },
       ...(this.showContainerSection(tracking)
         ? [{
