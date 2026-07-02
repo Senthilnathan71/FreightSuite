@@ -372,7 +372,130 @@
             </div>
         </div>
     </div>
-  
+    
+    <!-- ===================== ANNEXURE ===================== -->
+    <div style="width:100%; margin-top: 15px; font-size:14px;"
+        *ngIf="taxEqualSalesLocal.length || taxEqualSalesOverseas.length || taxEqualPurchaseLocal.length || taxEqualPurchaseOverseas.length">
+        <div style="font-weight:bold;">
+            Annexure
+        </div>
+
+        <!-- ===== Sales (Outwards) – Local Supplies ===== -->
+        <ng-container *ngIf="taxEqualSalesLocal.length">
+            <div style="font-weight:bold; padding:6px 2px 2px;">Sales (Outwards) – Local Supplies</div>
+            <div class="table-responsive">
+                <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                    <thead>
+                        <tr class="bg-info" style="white-space:nowrap">
+                            <th class="bg-transparent text-light text-center">Date</th>
+                            <th class="bg-transparent text-light text-center">Voucher No</th>
+                            <th class="bg-transparent text-light text-center">Ledger</th>
+                            <th class="bg-transparent text-light text-center">Party Name</th>
+                            <th class="bg-transparent text-light text-center">Taxable Amount</th>
+                            <th class="bg-transparent text-light text-center">Tax Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of taxEqualSalesLocal" style="white-space:nowrap">
+                            <td>{{ item?.VoucherDate | formatDate }}</td>
+                            <td>{{ item?.VoucherNumber }}</td>
+                            <td>{{ item?.LedgerName }}</td>
+                            <td>{{ item?.PartyName }}</td>
+                            <td class="text-end">{{ item?.TaxableAmount | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item?.TaxAmount | number:'1.2-2' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </ng-container>
+
+        <!-- ===== Sales (Outwards) – Outside GCC Supplies ===== -->
+        <ng-container *ngIf="taxEqualSalesOverseas.length">
+            <div style="font-weight:bold; padding:8px 2px 2px;">Sales (Outwards) – Outside GCC Supplies</div>
+            <div class="table-responsive">
+                <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                    <thead>
+                        <tr class="bg-info" style="white-space:nowrap">
+                            <th class="bg-transparent text-light text-center">Date</th>
+                            <th class="bg-transparent text-light text-center">Voucher No</th>
+                            <th class="bg-transparent text-light text-center">Ledger</th>
+                            <th class="bg-transparent text-light text-center">Party Name</th>
+                            <th class="bg-transparent text-light text-center">Taxable Amount</th>
+                            <th class="bg-transparent text-light text-center">Tax Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of taxEqualSalesOverseas" style="white-space:nowrap">
+                            <td>{{ item?.VoucherDate | formatDate }}</td>
+                            <td>{{ item?.VoucherNumber }}</td>
+                            <td>{{ item?.LedgerName }}</td>
+                            <td>{{ item?.PartyName }}</td>
+                            <td class="text-end">{{ item?.TaxableAmount | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item?.TaxAmount | number:'1.2-2' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </ng-container>
+
+        <!-- ===== Purchases (Inwards) – Local Purchases ===== -->
+        <ng-container *ngIf="taxEqualPurchaseLocal.length">
+            <div style="font-weight:bold; padding:12px 2px 2px;">Purchases (Inwards) – Local Purchases</div>
+            <div class="table-responsive">
+                <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                    <thead>
+                        <tr class="bg-info" style="white-space:nowrap">
+                            <th class="bg-transparent text-light text-center">Date</th>
+                            <th class="bg-transparent text-light text-center">Voucher No</th>
+                            <th class="bg-transparent text-light text-center">Ledger</th>
+                            <th class="bg-transparent text-light text-center">Party Name</th>
+                            <th class="bg-transparent text-light text-center">Taxable Amount</th>
+                            <th class="bg-transparent text-light text-center">Tax Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of taxEqualPurchaseLocal" style="white-space:nowrap">
+                            <td>{{ item?.VoucherDate | formatDate }}</td>
+                            <td>{{ item?.VoucherNumber }}</td>
+                            <td>{{ item?.LedgerName }}</td>
+                            <td>{{ item?.PartyName }}</td>
+                            <td class="text-end">{{ item?.TaxableAmount | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item?.TaxAmount | number:'1.2-2' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </ng-container>
+
+        <!-- ===== Purchases (Inwards) – Outside GCC Purchases ===== -->
+        <ng-container *ngIf="taxEqualPurchaseOverseas.length">
+            <div style="font-weight:bold; padding:8px 2px 2px;">Purchases (Inwards) – Outside GCC Purchases</div>
+            <div class="table-responsive">
+                <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                    <thead>
+                        <tr class="bg-info" style="white-space:nowrap">
+                            <th class="bg-transparent text-light text-center">Date</th>
+                            <th class="bg-transparent text-light text-center">Voucher No</th>
+                            <th class="bg-transparent text-light text-center">Ledger</th>
+                            <th class="bg-transparent text-light text-center">Party Name</th>
+                            <th class="bg-transparent text-light text-center">Taxable Amount</th>
+                            <th class="bg-transparent text-light text-center">Tax Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of taxEqualPurchaseOverseas" style="white-space:nowrap">
+                            <td>{{ item?.VoucherDate | formatDate }}</td>
+                            <td>{{ item?.VoucherNumber }}</td>
+                            <td>{{ item?.LedgerName }}</td>
+                            <td>{{ item?.PartyName }}</td>
+                            <td class="text-end">{{ item?.TaxableAmount | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item?.TaxAmount | number:'1.2-2' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </ng-container>
+    </div>
 
     <app-print-footer></app-print-footer>
 </div>

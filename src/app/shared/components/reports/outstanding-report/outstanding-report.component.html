@@ -31,9 +31,9 @@
 
             <div>
                
-                <div class="d-flex align-items-center">
+                <div class="d-flex">
                     <strong style="width: 100px;">Address</strong>
-                    <span class="ms-1 my-0">
+                    <span class="ms-1 my-0" style="width:450px">
                         : {{ fullData?.Address }}
                     </span>
                 </div>
@@ -59,8 +59,8 @@
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light text-center">Voucher No</th>
                         <th class="bg-transparent text-light text-center">Voucher Date</th>
+                        <th class="bg-transparent text-light text-center">Voucher No</th>
                         <th class="bg-transparent text-light text-center">Type</th>
                         <!-- <th class="bg-transparent text-light">Master</th>
                         <th class="bg-transparent text-light">House</th> -->
@@ -68,6 +68,7 @@
                         <!-- <th class="bg-transparent text-light">Dept</th>  -->
                         <th class="bg-transparent text-light text-center" width="25%">Narration</th>
                         <!-- <th class="bg-transparent text-light">Salesperson</th> -->
+                        <th class="bg-transparent text-light text-center">Due Date</th>
                         <th class="bg-transparent text-light text-center">Dr/Cr</th>
                         <th class="bg-transparent text-light text-center">Cur</th>
                         <th class="bg-transparent text-light text-center">Amt</th>
@@ -75,15 +76,14 @@
                         <th class="bg-transparent text-light text-center">O/S Currency Amt</th>
                         <th class="bg-transparent text-light text-center">O/S Local Amt</th>
                         <th class="bg-transparent text-light text-center">Cumulative</th>
-                        <th class="bg-transparent text-light text-center">Due Date</th>
                         <th class="bg-transparent text-light text-center">Ageing</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     <tr *ngFor="let item of fullData?.transactions;let i = index">
-                        <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
                         <td style="white-space: nowrap;">{{item?.voucherDate | formatDate}}</td>
+                        <td style="white-space: nowrap;">{{item?.voucherNumber}}</td>
                         <td>{{item?.voucherType}}</td>
                         <!-- <td>{{item?.MasterJobNumber}}</td>
                         <td></td> -->
@@ -91,6 +91,9 @@
                         <!-- <td>{{item?.deptname}}</td>  -->
                         <td>{{item?.naration}}</td>
                         <!-- <td>{{item?.salesmanSid}}</td> -->
+                        <td style="text-align: center;">
+                            {{ item?.dueDate | formatDate }}
+                        </td>
                         <td class="text-center">{{item?.drCr}}</td>
                         <td>{{item?.currencyCode}}</td>
                         <td style="text-align: right;white-space: nowrap;">
@@ -104,14 +107,11 @@
                             {{ maskLocal(item?.cumulativeOutstanding) }}
                         </td>
                         <td style="text-align: center;">
-                            {{ item?.dueDate | formatDate }}
-                        </td>
-                        <td style="text-align: center;">
                             {{item?.ageingDays}}
                         </td>
                     </tr>
                     <tr class="fw-bold bg-light" *ngIf="!fullData?.transactions || fullData.transactions.length !== 0">
-                        <td colspan="7" class="text-end">TOTAL</td>
+                        <td colspan="8" class="text-end">TOTAL</td>
                         <!-- Total Amount (originalLocalAmount) -->
                         <td style="text-align: right;" class="fw-bold">
                             {{ maskLocal(getLocalTotal(fullData?.transactions)) }}
@@ -133,10 +133,10 @@
 
                         <!-- Cumulative Total (same as total outstanding local) -->
                         <td style="text-align: right;"> {{ maskLocal(fullData?.transactions?.[fullData.transactions.length - 1]?.cumulativeOutstanding) }}</td>
-                        <td colspan="2"></td>
+                        <td></td>
                     </tr>
                     <tr *ngIf="!fullData?.transactions || fullData.transactions.length !== 0" class="text-center fw-bold py-1">
-                        <td colspan="9" class="text-end">OVERDUE AMT</td>
+                        <td colspan="10" class="text-end">OVERDUE AMT</td>
                         <td class="text-end">{{ maskLocal(fullData?.totalOverdueAmount) }}</td>
                     </tr>
                     <tr *ngIf="!fullData?.transactions || fullData.transactions.length === 0">

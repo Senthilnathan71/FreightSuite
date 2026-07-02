@@ -15,19 +15,19 @@
                     <strong style="width: 130px;">HBL To Date </strong>
                     <span class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</span>
                 </div>
+                 <div class="d-flex ">
+                    <strong style="width: 130px;">Customer </strong>
+                    <span class="ms-1 my-0" style="width:600px;text-align:justify">: {{ fullData?.Customer }}</span>
+                </div>
             </div>
             <div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 130px;">Branch </strong>
                     <span class="ms-1 my-0">: {{ fullData?.branchInvoled }}</span>
                 </div>
-                <div class="d-flex align-items-center">
+                <div class="d-flex">
                     <strong style="width: 130px;">Dept </strong>
                     <span class="ms-1 my-0">: {{ fullData?.departmentNames }}</span>
-                </div>
-                <div class="d-flex align-items-center">
-                    <strong style="width: 130px;">Customer </strong>
-                    <span class="ms-1 my-0">: {{ fullData?.Customer }}</span>
                 </div>
             </div>
         </div>
