@@ -4174,32 +4174,47 @@ isSeaDepartment(): boolean {
   }
 
   public getFormattedAndPaddedAmount(amount: number | string, CurrencyMasterSid: number) {
-    const currency = this.currencyList.find(
-      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
-    );
-    const input = {
-      value: toNumber(amount),
-      currencyCode: currency?.currencyCode,
-    };
-    const formattedAmount = this.currencyFormatter.formatAmount(input, false);
-    const digitForPadding = this.getAmountDecimalPlaces(CurrencyMasterSid);
-    console.log("formattedAmount", formattedAmount);
-    console.log("digitForPadding", digitForPadding);
-    return Number(formattedAmount).toFixed(digitForPadding);
+    return this.formatCurrencyDisplayAmount(amount, CurrencyMasterSid);
   }
 
   public getFormattedAmount(
     amount: number | string,
     CurrencyMasterSid: number
   ) {
+    return this.formatCurrencyDisplayAmount(amount, CurrencyMasterSid);
+  }
+
+  public formatCurrencyDisplayAmount(
+    amount: number | string,
+    CurrencyMasterSid?: number,
+  ): string {
     const currency = this.currencyList.find(
-      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
+      (currency) => Number(currency.CurrencyMasterSid) === Number(CurrencyMasterSid)
     );
-    const input = {
+
+    return this.currencyFormatter.formatMaskedAmount({
       value: toNumber(amount),
-      currencyCode: currency?.currencyCode,
-    };
-    return this.currencyFormatter.formatAmount(input, false);
+      currencyCode:
+        currency?.currencyCode ||
+        currency?.CurrencyCode ||
+        this.invoiceForm?.get('CurrencyCode')?.getRawValue() ||
+        '',
+    });
+  }
+
+  public formatInvoiceCurrencyAmount(amount: number | string): string {
+    return this.formatCurrencyDisplayAmount(
+      amount,
+      this.invoiceForm?.get('CurrencyMasterSid')?.getRawValue() ||
+        this.invoiceData?.CurrencyMasterSid,
+    );
+  }
+
+  public formatCompanyCurrencyAmount(amount: number | string): string {
+    return this.formatCurrencyDisplayAmount(
+      amount,
+      this.currentCompany?.CurrencyMasterSid,
+    );
   }
 
   public getAmountDecimalPlaces(CurrencyMasterSid: number): number {

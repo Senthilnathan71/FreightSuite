@@ -10,6 +10,8 @@ import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 
 @Component({
   selector: 'app-vendor-credit-note-print',
@@ -48,7 +50,9 @@ export class VendorCreditNotePrintComponent {
     private appSettingService: AppSettingsService,
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+    private currencyFormatService: CurrencyFormatService,
+    private currencyConfigService: CurrencyConfigurationService
   ) {}
 
   get creditNoteData(): any {
@@ -172,7 +176,31 @@ export class VendorCreditNotePrintComponent {
       0
     );
 
-    return total.toFixed(2);
+    return this.formatCompanyCurrencyAmount(total);
+  }
+
+  formatCurrencyDisplayAmount(amount: number | string, currencyCode?: string): string {
+    const resolvedCurrencyCode = String(currencyCode || '').trim();
+    const config = this.currencyConfigService.getCurrencyConfig(resolvedCurrencyCode);
+
+    return this.currencyFormatService.formatMaskedAmount({
+      value: this.parseAmount(amount),
+      currencyCode: config?.currencyCode || resolvedCurrencyCode,
+    });
+  }
+
+  formatVendorCreditNoteCurrencyAmount(amount: number | string): string {
+    return this.formatCurrencyDisplayAmount(
+      amount,
+      this.vendorCreditNoteData?.CurrencyCode || this.invoiceData?.CurrencyCode || ''
+    );
+  }
+
+  formatCompanyCurrencyAmount(amount: number | string): string {
+    return this.formatCurrencyDisplayAmount(
+      amount,
+      this.currentCompanyCurrency?.code || this.currentCompany?.CurrencyCode || ''
+    );
   }
 
   private parseAmount(value: any): number {

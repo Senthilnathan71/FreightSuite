@@ -1698,7 +1698,7 @@
                       padding: 2px 8px;
                       text-align: right;
                     ">
-                      {{ detail.Rate }}
+                      {{ formatCurrencyDisplayAmount(detail.Rate, detail.CurrencyMasterSid) }}
                     </td>
                     <td style="
                       border: 1px solid black;
@@ -1712,7 +1712,7 @@
                       padding: 2px 8px;
                       text-align: right;
                     ">
-                      {{ detail.TaxableAmount }}
+                      {{ formatCompanyCurrencyAmount(detail.TaxableAmount) }}
                     </td>
 
                     <!-- Dynamic Tax Values -->
@@ -1729,7 +1729,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                        {{ detail.cgstAmt }}
+                        {{ formatCompanyCurrencyAmount(detail.cgstAmt) }}
                       </td>
                     </ng-container>
 
@@ -1746,7 +1746,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                        {{ detail.sgstAmt }}
+                        {{ formatCompanyCurrencyAmount(detail.sgstAmt) }}
                       </td>
                     </ng-container>
 
@@ -1763,7 +1763,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                        {{ detail.ugstAmt }}
+                        {{ formatCompanyCurrencyAmount(detail.ugstAmt) }}
                       </td>
                     </ng-container>
 
@@ -1780,7 +1780,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                        {{ detail.igstAmt }}
+                        {{ formatCompanyCurrencyAmount(detail.igstAmt) }}
                       </td>
                     </ng-container>
 
@@ -1797,7 +1797,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                        {{ detail.vatAmt }}
+                        {{ formatCompanyCurrencyAmount(detail.vatAmt) }}
                       </td>
                     </ng-container>
                     <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="
@@ -1805,7 +1805,7 @@
                       padding: 2px 8px;
                       text-align: right;
                     ">
-                      {{ detail?.LocalAmount }}
+                      {{ formatCompanyCurrencyAmount(detail?.LocalAmount) }}
                     </td>
                     <td *ngIf="shouldShowForeignCurrencyColumn()" style="
                       border: 1px solid black;
@@ -1813,7 +1813,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                      {{ detail?.PartyAmount }}
+                      {{ formatInvoiceCurrencyAmount(detail?.PartyAmount) }}
                       <!-- {{ getPartyCurrDebitAmt() }} -->
                     </td>
                   </tr>
@@ -1853,7 +1853,7 @@
                       text-align: right;
                     ">
                       <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') :
-                        invoicePrintData?.totalPartyAmount }}</strong>
+                        formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                     </td>
                     <td *ngIf="shouldShowForeignCurrencyColumn()" style="
                       border: 1px solid black;
@@ -1861,7 +1861,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                      <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                      <strong>{{ formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                     </td>
                   </tr>
 
@@ -1887,7 +1887,7 @@
                       text-align: right;
                     ">
                       <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') :
-                        invoicePrintData?.totalPartyAmount }}</strong>
+                        formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                     </td>
                     <td *ngIf="shouldShowForeignCurrencyColumn()" style="
                       border: 1px solid black;
@@ -1895,7 +1895,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                      <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                      <strong>{{ formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                     </td>
                   </tr>
 
@@ -1916,7 +1916,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                      <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                      <strong>{{ formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                     </td>
                   </tr>
 
@@ -2698,7 +2698,7 @@
                       padding: 2px 8px;
                       text-align: right;
                     ">
-                    {{ detail.Rate }}
+                    {{ formatCurrencyDisplayAmount(detail.Rate, detail.CurrencyMasterSid) }}
                   </td>
                   <td style="
                       border: 1px solid black;
@@ -2712,7 +2712,7 @@
                       padding: 2px 8px;
                       text-align: right;
                     ">
-                    {{ detail.TaxableAmount }}
+                    {{ formatCompanyCurrencyAmount(detail.TaxableAmount) }}
                   </td>
 
                   <!-- Dynamic Tax Values -->
@@ -2729,7 +2729,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                      {{ detail.cgstAmt }}
+                      {{ formatCompanyCurrencyAmount(detail.cgstAmt) }}
                     </td>
                   </ng-container>
 
@@ -2746,7 +2746,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                      {{ detail.sgstAmt }}
+                      {{ formatCompanyCurrencyAmount(detail.sgstAmt) }}
                     </td>
                   </ng-container>
 
@@ -2763,7 +2763,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                      {{ detail.ugstAmt }}
+                      {{ formatCompanyCurrencyAmount(detail.ugstAmt) }}
                     </td>
                   </ng-container>
 
@@ -2780,7 +2780,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                      {{ detail.igstAmt }}
+                      {{ formatCompanyCurrencyAmount(detail.igstAmt) }}
                     </td>
                   </ng-container>
 
@@ -2797,7 +2797,7 @@
                         padding: 2px 8px;
                         text-align: right;
                       ">
-                      {{ detail.vatAmt }}
+                      {{ formatCompanyCurrencyAmount(detail.vatAmt) }}
                     </td>
                   </ng-container>
                   <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="
@@ -2805,7 +2805,7 @@
                       padding: 2px 8px;
                       text-align: right;
                     ">
-                    {{ detail?.LocalAmount }}
+                    {{ formatCompanyCurrencyAmount(detail?.LocalAmount) }}
                   </td>
                   <td *ngIf="shouldShowForeignCurrencyColumn()" style="
                       border: 1px solid black;
@@ -2813,7 +2813,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                    {{ detail?.PartyAmount }}
+                    {{ formatInvoiceCurrencyAmount(detail?.PartyAmount) }}
                     <!-- {{ getPartyCurrDebitAmt() }} -->
                   </td>
                 </tr>
@@ -2853,7 +2853,7 @@
                       text-align: right;
                     ">
                     <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') :
-                      invoicePrintData?.totalPartyAmount }}</strong>
+                      formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                   </td>
                   <td *ngIf="shouldShowForeignCurrencyColumn()" style="
                       border: 1px solid black;
@@ -2861,7 +2861,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                    <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                    <strong>{{ formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                   </td>
                 </tr>
 
@@ -2887,7 +2887,7 @@
                       text-align: right;
                     ">
                     <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') :
-                      invoicePrintData?.totalPartyAmount }}</strong>
+                      formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                   </td>
                   <td *ngIf="shouldShowForeignCurrencyColumn()" style="
                       border: 1px solid black;
@@ -2895,7 +2895,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                    <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                    <strong>{{ formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                   </td>
                 </tr>
 
@@ -2916,7 +2916,7 @@
                       border-right: none;
                       text-align: right;
                     ">
-                    <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                    <strong>{{ formatInvoiceCurrencyAmount(invoicePrintData?.totalPartyAmount) }}</strong>
                   </td>
                 </tr>
 
