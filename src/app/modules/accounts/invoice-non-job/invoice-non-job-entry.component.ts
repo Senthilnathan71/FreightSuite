@@ -84,7 +84,6 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
   subledgerListDetail: any[][] = [];
   hssacListForNonJob: any[] = [];
   private payloadWrapperInstalled = false;
-  private navigationInterceptorInstalled = false;
 
   constructor(
     private nonJobRouter: Router,
@@ -165,7 +164,6 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     }
 
     this.installNonJobPayloadWrapper();
-    this.installNonJobNavigationInterceptor();
     super.ngOnInit();
     this.loadNonJobLedgers();
     if (isCopiedNonJobInvoice && copiedNonJobInvoiceData) {
@@ -934,18 +932,16 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     return Number.isNaN(parsed.getTime()) ? value : parsed;
   }
 
-  private installNonJobNavigationInterceptor(): void {
-    if (this.navigationInterceptorInstalled) return;
-    this.navigationInterceptorInstalled = true;
-
-    const originalNavigate = this.nonJobRouter.navigate.bind(this.nonJobRouter);
-    this.nonJobRouter.navigate = ((commands: any[], extras?: any) => {
-      const firstSegment = String(commands?.[0] ?? '').replace(/^\//, '');
-      if (Array.isArray(commands) && firstSegment === 'operation/invoice/entry' && commands[1]) {
-        return originalNavigate(['/accounts/invoice-non-job/entry', commands[1]], extras);
-      }
-      return originalNavigate(commands, extras);
-    }) as Router['navigate'];
+  /**
+   * Keep post-create navigation on the non-job entry route. Overrides the base
+   * (which routes to the job-invoice entry) so we no longer need to patch the
+   * shared Router — that global patch leaked app-wide and hijacked the operation
+   * invoice list's "view" navigation.
+   */
+  protected override navigateAfterCreate(headerId: number): void {
+    navigateToVoucherEntry(this.nonJobRouter, VoucherType.NON_JOB_INVOICE, headerId, {
+      extras: { replaceUrl: true },
+    });
   }
 
   override updateBillAmount(): void {
