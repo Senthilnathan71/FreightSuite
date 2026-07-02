@@ -7007,9 +7007,12 @@ ${this.userData['userName']}`;
       DepartmentName: this.selectedDepartment?.departmentName,
       JobType: currentJobType,
       MilestoneCode: milestoneCode,
-      MilestoneDate : getDefaultTodayDate(),
+      // MilestoneDate omitted → backend stamps now() (the actual print/insert time)
       ShipmentNo: this.bookingData?.ShipmentNo,
       createdBy: this.userData?.userEmail,
+      // anchor the HBL/DRAFT milestone on the house job (and its booking) instead of ShipmentNo only
+      HouseJobSid: this.housejobData?.HouseJobSid,
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       Remarks: isOriginal
         ? `Original BL has been released on ${(new Date().toISOString()).split('T')[0]}`
         : `Draft BL has been sent on ${(new Date().toISOString()).split('T')[0]}`
@@ -7296,9 +7299,12 @@ ${this.userData['userName']}`;
       DepartmentName: this.selectedDepartment?.departmentName,
       JobType: this.b['JobType']?.value,
       MilestoneCode: 'HBL',
-      MilestoneDate: getDefaultTodayDate(),
+      // MilestoneDate omitted → backend stamps now() (the actual print/insert time)
       ShipmentNo: this.bookingData?.ShipmentNo,
       createdBy: this.userData?.userEmail,
+      // anchor the HBL milestone on the house job (and its booking) instead of ShipmentNo only
+      HouseJobSid: this.housejobData?.HouseJobSid,
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid,
       Remarks: `BL Release on ${(new Date().toISOString()).split('T')[0]}`,
     };
 

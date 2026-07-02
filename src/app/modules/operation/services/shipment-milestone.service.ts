@@ -63,6 +63,7 @@ export interface SafeInsertShipmentMilestone {
   MilestoneDate?: Date;
   Remarks : string;
   BookingHeaderSid?: number;   // anchor booking-stage milestones (e.g. EXDO) on the booking
+  HouseJobSid?: number;        // anchor house-job-stage milestones (e.g. HBL/DRAFT) on the house job
 }
 
 export interface InsertMilestoneByMasterJobPayload {

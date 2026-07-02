@@ -79,6 +79,8 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     JobType: string;
     createdBy: string;
     Remarks: string;
+    BookingHeaderSid?: number;
+    HouseJobSid?: number;
   };
 
   @Output() reloadMilestone = new EventEmitter<void>();
@@ -659,6 +661,9 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
       ShipmentNo: this.milestonePayload?.ShipmentNo,
       MilestoneDate: milestoneDate || undefined,
       createdBy: this.milestonePayload?.createdBy,
+      // carry the anchors through so the milestone attaches to the booking / house job, not ShipmentNo only
+      BookingHeaderSid: this.milestonePayload?.BookingHeaderSid,
+      HouseJobSid: this.milestonePayload?.HouseJobSid,
       Remarks: this.milestonePayload?.Remarks
     };
     this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({

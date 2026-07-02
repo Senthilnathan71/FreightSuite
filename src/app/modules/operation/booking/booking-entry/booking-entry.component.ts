@@ -4784,9 +4784,12 @@ openDocRef() {
       DepartmentName: this.selectedDepartment?.departmentName,
       JobType: currentJobType,
       MilestoneCode: "CFU",
-      MilestoneDate: getDefaultTodayDate(),
+      MilestoneDate: getDefaultTodayDate(),   // note: overridden downstream by the follow-up date (follow-up.component)
       ShipmentNo: this.bookingData?.ShipmentNo,
       createdBy: this.userData?.userEmail,
+      // anchor the CFU milestone on the booking (and house job if already generated)
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid,
+      HouseJobSid: this.bookingData?.HouseJobSid,
       Remarks: `Cargo Followup has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };
     this.followupModalRef.componentInstance.milestonePayload = milestonePayload;
