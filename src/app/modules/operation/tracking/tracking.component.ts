@@ -727,7 +727,9 @@ export class TrackingComponent implements OnInit, OnDestroy {
     const origin = tracking?.routeInfo?.origin || route[0];
     const pol = tracking?.routeInfo?.pol || route[1];
     const pod = tracking?.routeInfo?.pod || route[2];
-    const finalDestination = tracking?.routeInfo?.finalDestination || route[3];
+    // When the Final Destination (FPD) is not set, fall back to the POD so the last node
+    // shows the arrival port instead of the empty "Final Destination" placeholder.
+    const finalDestination = tracking?.routeInfo?.finalDestination || route[3] || pod;
 
     const roles = this.isAirShipment(tracking)
       ? ['Origin', 'Departure Airport', 'Arrival Airport', 'Final Delivery']
@@ -768,17 +770,42 @@ export class TrackingComponent implements OnInit, OnDestroy {
   }
 
   routeProgressIndex(tracking: any): number {
-    const status = String(tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || tracking?.shipmentInfo?.shipmentStatus || '').toLowerCase();
+    // Department-AGNOSTIC live position: driven by the shipment's own ACTUAL movement dates
+    // (ATD / ATA / delivery), which exist regardless of how a department names its milestones.
+    // Milestone keywords are a corroborating fallback for when actual dates aren't captured
+    // yet but a recognizable movement milestone is. This works for every department's dynamic
+    // milestone set, for Sea and Air alike.
+    const info = tracking?.shipmentInfo || {};
+    const route = tracking?.routeInfo || {};
+    const legs = this.voyageLegs(tracking);
+    const firstLeg = legs[0] || info;
+    const lastLeg = legs[legs.length - 1] || info;
 
-    if (status.includes('delivered') || status.includes('completed')) {
+    // 1) Actual dates (primary, department-agnostic).
+    const departedByDate = this.hasDisplayValue(firstLeg?.atd || info.atd);
+    const arrivedByDate = this.hasDisplayValue(lastLeg?.ata || info.ata);
+    const deliveredByDate = this.hasDisplayValue(route.deliveryDate);
+
+    // 2) Milestone / status keywords (fallback).
+    const reached = (tracking?.milestones || [])
+      .filter((milestone: any) => milestone?.state === 'completed' || milestone?.state === 'current')
+      .map((milestone: any) => String(milestone?.eventName || milestone?.title || '').toLowerCase());
+    const status = String(
+      tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || info.shipmentStatus || '',
+    ).toLowerCase();
+    const names = [...reached, status];
+    const kw = (keywords: string[]) => names.some((name) => keywords.some((keyword) => name.includes(keyword)));
+
+    // Final delivery
+    if (deliveredByDate || kw(['delivered', 'out for delivery'])) {
       return 3;
     }
-
-    if (status.includes('pod') || status.includes('arrived') || status.includes('destination')) {
+    // Arrived at POD (actual arrival, or vessel/flight arrived / cargo discharged)
+    if (arrivedByDate || kw(['arrived', 'discharg', 'destination'])) {
       return 2;
     }
-
-    if (status.includes('transit') || status.includes('sailing') || status.includes('departed')) {
+    // Departed from POL (actual departure, or loaded / shipped-on-board / sailed / in transit)
+    if (departedByDate || kw(['departed', 'loaded on vessel', 'sob', 'sailing', 'transit'])) {
       return 1;
     }
 

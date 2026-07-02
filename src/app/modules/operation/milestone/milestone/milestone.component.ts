@@ -347,6 +347,9 @@ export class MilestoneComponent implements OnInit {
       ShipmentNo: [data?.ShipmentNo || this.shipmentNo],
       MilestoneMasterSid: [data?.MilestoneMasterSid || null],
       MilestoneName: [data?.MilestoneName || null],
+      // The row's own configured SortBy (sent by the backend) — used to order the grid
+      // reliably even for saved milestones that aren't in the department dropdown.
+      SortBy: [data?.SortBy ?? null],
       MilestoneDate: [data?.MilestoneDate || ''],
       AutoCaptured: [data?.AutoCaptured || null],
       Remarks: [data?.Remarks || null],
@@ -544,6 +547,19 @@ export class MilestoneComponent implements OnInit {
   }
 
   /**
+   * SortBy for a milestone row: prefer the row's own SortBy (sent by the backend for
+   * saved milestones) and only fall back to the department dropdown lookup for newly
+   * added rows that don't carry one yet.
+   */
+  private resolveSortValue(ownSortBy: any, milestoneMasterSid: any): number {
+    const own = Number(ownSortBy);
+    if (Number.isFinite(own)) {
+      return own;
+    }
+    return this.milestoneSortValue(milestoneMasterSid);
+  }
+
+  /**
    * Reorder the milestone rows by the configured master SortBy (numeric, ascending),
    * with Date & Time as the tie-breaker. Reorders the existing FormGroup instances
    * (does not recreate them) so every value — including Status — is preserved. Keeps
@@ -555,8 +571,8 @@ export class MilestoneComponent implements OnInit {
       return;
     }
     controls.sort((a, b) => {
-      const sa = this.milestoneSortValue(a.get('MilestoneMasterSid')?.value);
-      const sb = this.milestoneSortValue(b.get('MilestoneMasterSid')?.value);
+      const sa = this.resolveSortValue(a.get('SortBy')?.value, a.get('MilestoneMasterSid')?.value);
+      const sb = this.resolveSortValue(b.get('SortBy')?.value, b.get('MilestoneMasterSid')?.value);
       if (sa !== sb) {
         return sa - sb;
       }
@@ -595,7 +611,7 @@ export class MilestoneComponent implements OnInit {
       if (!row?.MilestoneDate) {
         return;
       }
-      const sort = this.milestoneSortValue(row.MilestoneMasterSid);
+      const sort = this.resolveSortValue(row.SortBy, row.MilestoneMasterSid);
       const time = new Date(row.MilestoneDate).getTime();
       if (Number.isNaN(time) || sort === Number.MAX_SAFE_INTEGER) {
         return;
@@ -644,7 +660,7 @@ export class MilestoneComponent implements OnInit {
       if (!row?.MilestoneDate) {
         return;
       }
-      const sort = this.milestoneSortValue(row.MilestoneMasterSid);
+      const sort = this.resolveSortValue(row.SortBy, row.MilestoneMasterSid);
       if (sort === Number.MAX_SAFE_INTEGER) {
         return;
       }
