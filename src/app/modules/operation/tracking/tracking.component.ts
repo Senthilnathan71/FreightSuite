@@ -478,7 +478,6 @@ export class TrackingComponent implements OnInit, OnDestroy {
     }
 
     items.push({ label: 'Volume', value: this.totalVolume(tracking) });
-    items.push({ label: 'Commodities', value: this.totalCommodities(tracking) });
     return items;
   }
 
