@@ -377,6 +377,7 @@ getSubCurrencyNameFromCode(currencyCode: string): string {
         customerMasterSid: this.getCustomerMasterSidForEmail(),
         menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(this.appSettingService.getCurrentCompanyInfo()?.CompanyMasterSid, this.getCurrentMenuMasterSidForEmail());
 
       if (toEmail.length === 0) {
         this.appSettingService.showError('No email found in customer branch email.');
@@ -415,7 +416,8 @@ getSubCurrencyNameFromCode(currencyCode: string): string {
           pod: this.housejobData?.POD || '',
           fpd: this.housejobData?.FPD || ''
         },
-        attachments: [file]
+        attachmentRequired,
+        ...(attachmentRequired ? { attachments: [file] } : {})
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
         this.createEmailAuditLog(documentName);

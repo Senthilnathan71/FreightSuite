@@ -3666,7 +3666,10 @@ isRateLockDisabled(): boolean {
                 departmentName: this.getDepartmentName(this.quotationData?.quoteRoute?.[0]?.DepartmentMasterSid),
                 customerName: this.quotationData?.CustomerName,
                 userName: this.userData?.userName,
-                toEmail: this.quotationData?.Email || '',
+                // {{toEmail}} resolves from CustomerBrEmail (Organization -> Email tab) via enrichContext;
+                // {{menumail}} is the email entered on the quotation record itself.
+                toEmail: '',
+                menumail: this.quotationData?.Email || '',
                 customerBranchSid: this.quotationData?.CustomerBranchSid || null,
                 approvalLink: this.getApprovalUrl(),
                 menuMasterSid: this.MenuMasterSid,
@@ -3725,7 +3728,10 @@ isRateLockDisabled(): boolean {
                 departmentName: this.getDepartmentName(this.quoteRoutes?.at(0)?.get('DepartmentMasterSid')?.value),
                 customerName: this.quotationForm.get('CustomerName')?.value || this.quotationForm.get('customerName')?.value,
                 userName: this.userData?.userName,
-                toEmail: this.quotationForm.get('Email')?.value || '',
+                // {{toEmail}} resolves from CustomerBrEmail (Organization -> Email tab) via enrichContext;
+                // {{menumail}} is the email entered on the quotation record itself.
+                toEmail: '',
+                menumail: this.quotationForm.get('Email')?.value || '',
                 customerBranchSid: this.quotationForm.get('CustomerBranchSid')?.value || null,
                 approvalLink: this.getApprovalUrl(),
                 menuMasterSid: this.MenuMasterSid,
@@ -6399,7 +6405,10 @@ ${this.userData.userName}`;
         userName: this.userData?.userName,
         leadOrCustomer: isCustomer ? 'C' : 'L',
         leadEmail: resolvedLeadEmail,
-        toEmail: resolvedToEmail,
+        // {{toEmail}} resolves from CustomerBrEmail (Organization -> Email tab) via enrichContext;
+        // {{menumail}} is the email entered on the quotation record itself.
+        toEmail: '',
+        menumail: resolvedToEmail,
         customerBranchSid: this.quotationData?.CustomerBranchSid || null,
         approvalLink: this.areAllCarriersApproved() ? '' : `Click here to approve: ${this.getApprovalUrl()}`,
         menuMasterSid: this.MenuMasterSid,
@@ -7129,29 +7138,15 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
   }
 
   async sendEmail() {
+    // Block sending when every carrier has been rejected (same guard as sendManualMail).
+    if (this.areAllCarriersRejected()) {
+      this.appSettingService.showWarning(
+        'Authorization status of routes are rejected. Please change the approval status to Waiting for Approval before sending the mail.'
+      );
+      return;
+    }
+
     try {
-      // Step 1: Validate email FIRST (before expensive PDF generation)
-      const toEmailSet = new Set<string>();
-
-      if (this.selectedItem?.Email) {
-        toEmailSet.add(this.selectedItem.Email);
-      }
-
-      if (toEmailSet.size === 0 && this.selectedItem?.CustomerBranchSid) {
-        const customerEmail = this.customerlist.find(
-          cus => cus.CustomerBranchSid === this.selectedItem?.CustomerBranchSid
-        )?.Email;
-        if (customerEmail) {
-          toEmailSet.add(customerEmail);
-        }
-      }
-
-      if (toEmailSet.size === 0) {
-        this.appSettingService.showError('To Email is missing.');
-        return; // Exit early - no email to send to
-      }
-
-      // Step 2: Now show loader and generate PDF (only after validation passes)
       this.isLoading = true;
       this.spinner.show();
 
@@ -7160,52 +7155,57 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
       if (!pdfBlob) {
         throw new Error('Failed to generate PDF');
       }
-
-      // Step 3: Build FormData
-      const formData = new FormData();
-
-      const toEmail = Array.from(toEmailSet);
-      toEmail.forEach(email => {
-        if (email) {
-          formData.append("EmailTo[]", email);
-        }
-      });
-
-      const ccEmailSet = new Set<string>([this.userData['userEmail']]);
-      const ccEmail = Array.from(ccEmailSet);
-
-      ccEmail.forEach(email => {
-        if (email) {
-          formData.append("EmailCC[]", email);
-        }
-      });
-
-      formData.append('Subject', `Quotation No.${this.selectedItem.QuoteNumber} Date:${new Date(this.selectedItem.QuoteDate)} ${this.getFormattedPort(this.selectedItem.quoteRoute[0].POLSid)} - ${this.getFormattedPort(this.selectedItem.quoteRoute[0].PODSid)}`);
-      const mailBody = `Dear Sir/Madam,
-Please find enclosed the quotation as requested.
-Kindly review the details at your convenience.
-Looking forward to your feedback and the opportunity to work together.
-Best Regards,
-${this.userData['userEmail']}`;
-      const mailHtml = this.emailTriggerService.buildCommonTemplate(
-        mailBody,
-        `Quotation No.${this.selectedItem.QuoteNumber} Date:${new Date(this.selectedItem.QuoteDate)} ${this.getFormattedPort(this.selectedItem.quoteRoute[0].POLSid)} - ${this.getFormattedPort(this.selectedItem.quoteRoute[0].PODSid)}`,
-        { menuName: 'Quotation' }
+      const attachmentFile = new File(
+        [pdfBlob],
+        (this.selectedItem?.QuotationName || this.selectedItem?.QuoteNumber || 'quotation') + '.pdf',
+        { type: 'application/pdf' }
       );
-      formData.append('Mailbody', mailHtml);
-      if (this.QuoteHeaderSid) {
-        formData.append('QuoteHeaderSid', String(this.QuoteHeaderSid));
-      }
-      formData.append('CreatedBy', this.userData?.['userEmail'] || '');
-      formData.append('file', pdfBlob, (this.selectedItem?.QuotationName || 'quotation') + '.pdf');
 
-      // Step 4: Use firstValueFrom for cleaner async handling
-      const response = await firstValueFrom(this.leadService.quotationReport(formData));
+      const leadCustomerValue =
+        this.selectedItem?.LeadOrCustomer ??
+        this.quotationData?.LeadOrCustomer ??
+        this.quotationForm.get('LeadOrCustomer')?.value;
+      const isCustomer = leadCustomerValue === true || String(leadCustomerValue).toUpperCase() === 'C';
+      const recordEmail = this.selectedItem?.Email || this.quotationData?.Email || '';
+      const resolvedLeadEmail = !isCustomer ? recordEmail : '';
+      const route = this.selectedItem?.quoteRoute?.[0] || {};
 
-      if (response?.data) {
-        this.toastr.success('Report Email Sent successfully!');
-      }
+      this.isLoading = false;
+      this.spinner.hide();
 
+      // Route through the same manual-mail trigger as sendManualMail() so the
+      // menu's Mail Configuration decides recipients/subject/body and whether a
+      // popup opens (Popup) or the mail is sent directly (Auto).
+      this.emailTriggerService.triggerManualEmails({
+        companyId: this.currentCompany?.CompanyMasterSid,
+        branchId: this.currentBranch?.BranchMasterSid,
+        menuMasterSid: this.MenuMasterSid,
+        action: 'UPDATE',
+        attachmentFile,
+        context: {
+          requireToEmail: !isCustomer,
+          allowManualEmailEntry: isCustomer,
+          quotationNumber: this.selectedItem?.QuoteNumber,
+          date: this.datePipe.transform(this.selectedItem?.QuoteDate),
+          DepartmentName: this.getQuotationDepartmentName(),
+          POO: this.getFormattedPort(route?.PORSid),
+          POL: this.getFormattedPort(route?.POLSid),
+          POD: this.getFormattedPort(route?.PODSid),
+          FPD: this.getFormattedPort(route?.FPODSid),
+          customerName: this.selectedItem?.CustomerName,
+          userName: this.userData?.userName,
+          leadOrCustomer: isCustomer ? 'C' : 'L',
+          leadEmail: resolvedLeadEmail,
+          // {{toEmail}} -> CustomerBrEmail (Organization -> Email tab); {{menumail}} -> record email.
+          toEmail: '',
+          menumail: recordEmail,
+          customerBranchSid: this.selectedItem?.CustomerBranchSid || null,
+          customerMasterSid: this.selectedItem?.CustomerMasterSid || null,
+          approvalLink: this.areAllCarriersApproved() ? '' : `Click here to approve: ${this.getApprovalUrl()}`,
+          menuMasterSid: this.MenuMasterSid,
+          resourceSid: this.QuoteHeaderSid
+        }
+      });
     } catch (err) {
       console.error('Email send error:', err);
       this.toastr.error('Failed to send email. Please try again.');

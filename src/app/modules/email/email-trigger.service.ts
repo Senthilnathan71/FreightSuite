@@ -135,6 +135,145 @@ export class EmailTriggerService {
     return recipients.toEmail;
   }
 
+  /**
+   * Returns whether an attachment is required for a menu according to its active
+   * Mail Configuration (AttachmentRequire). Used by the print "Send Mail" flows
+   * that manage their own PDF (house-job reports, SI mail) so the attachment is
+   * governed by the configuration, like sendManualMail(). When no configuration
+   * exists the existing behaviour (attach) is preserved by returning true.
+   */
+  async isAttachmentRequiredForMenu(
+    companyId: number | null | undefined,
+    menuMasterSid: number | null | undefined
+  ): Promise<boolean> {
+    try {
+      if (companyId && menuMasterSid) {
+        const resp: any = await firstValueFrom(this.emailService.getAllByCompany(companyId));
+        const configs = Array.isArray(resp?.data) ? resp.data : [];
+        const config = configs.find((item: any) =>
+          item?.Status === 'A' && Number(item?.MenuMasterSid) === Number(menuMasterSid)
+        );
+        if (config) {
+          return String(config.AttachmentRequire || '').toUpperCase() === 'Y';
+        }
+      }
+    } catch (error) {
+      console.error('Error resolving attachment requirement:', error);
+    }
+    // No configuration found -> keep the existing "always attach" behaviour.
+    return true;
+  }
+
+  /**
+   * Resolves the combined To recipients for a record the same way the
+   * "{{toEmail}},{{menumail}}" mail-config placeholders do:
+   *   {{toEmail}}  -> CustomerBrEmail (Organization -> Email tab) matched by menu
+   *   {{menumail}} -> the email entered on the record itself
+   * Branch addresses are listed first, then the record address, and the whole
+   * list is de-duplicated case-insensitively. Used by the print "Send Mail"
+   * flows so they behave like the manual mail trigger.
+   */
+  async resolveToEmailsForRecord(params: {
+    recordEmail?: string | string[] | null;
+    customerBranchSid?: number | null;
+    customerMasterSid?: number | null;
+    menuMasterSid: number | null | undefined;
+  }): Promise<string[]> {
+    const branch = await this.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid: params.customerBranchSid,
+      customerMasterSid: params.customerMasterSid,
+      menuMasterSid: params.menuMasterSid
+    });
+
+    const recordEmails = Array.isArray(params.recordEmail)
+      ? params.recordEmail.flatMap(value => this.splitEmailValues(String(value || '')))
+      : this.splitEmailValues(String(params.recordEmail || ''));
+
+    const seen = new Set<string>();
+    const result: string[] = [];
+    [...branch.toEmail, ...recordEmails].forEach(email => {
+      const trimmed = String(email || '').trim();
+      if (!trimmed) return;
+      const key = trimmed.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      result.push(trimmed);
+    });
+    return result;
+  }
+
+  /**
+   * Resolves To/CC recipients for a record by reading the active Mail
+   * Configuration for the menu and applying its ToEmailidFrom / CcEmailidFrom
+   * placeholders. This makes the print "Send Mail" flows honour whatever the
+   * admin configured ({{toEmail}}, {{menumail}}, or both) exactly like the
+   * auto/manual mail triggers. When no usable configuration exists it falls
+   * back to the combined branch + record addresses.
+   */
+  async resolveConfigToRecipientsForRecord(params: {
+    companyId: number | null | undefined;
+    menuMasterSid: number | null | undefined;
+    recordEmail?: string | string[] | null;
+    customerBranchSid?: number | null;
+    customerMasterSid?: number | null;
+    context?: { [key: string]: any };
+  }): Promise<{ toEmail: string[]; ccEmail: string[]; config?: any }> {
+    const recordEmailStr = Array.isArray(params.recordEmail)
+      ? params.recordEmail.join(', ')
+      : String(params.recordEmail || '');
+
+    const baseContext = {
+      ...(params.context || {}),
+      menuMasterSid: params.menuMasterSid,
+      customerBranchSid: params.customerBranchSid ?? params.context?.['customerBranchSid'] ?? null,
+      customerMasterSid: params.customerMasterSid ?? params.context?.['customerMasterSid'] ?? null,
+      // {{menumail}} = the record's own email; {{toEmail}} left empty so it
+      // resolves from CustomerBrEmail (Organization -> Email tab) via enrichContext.
+      menumail: recordEmailStr,
+      toEmail: ''
+    };
+
+    const enrichedContext = await this.enrichContext(baseContext);
+
+    let config: any;
+    try {
+      if (params.companyId && params.menuMasterSid) {
+        const resp: any = await firstValueFrom(this.emailService.getAllByCompany(params.companyId));
+        const configs = Array.isArray(resp?.data) ? resp.data : [];
+        const menuConfigs = configs.filter((item: any) =>
+          item?.Status === 'A' && Number(item?.MenuMasterSid) === Number(params.menuMasterSid)
+        );
+        // Prefer a config whose To Email actually resolves to something.
+        config = menuConfigs.find((item: any) =>
+          !!this.normalizeEmailList(this.replacePlaceholders(item?.ToEmailidFrom || '', enrichedContext)).trim()
+        ) || menuConfigs[0];
+      }
+    } catch (error) {
+      console.error('Error resolving mail configuration recipients:', error);
+    }
+
+    if (config) {
+      const toEmail = this.splitEmailValues(
+        this.normalizeEmailList(this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext))
+      );
+      const ccEmail = this.splitEmailValues(
+        this.normalizeEmailList(this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext))
+      );
+      if (toEmail.length > 0) {
+        return { toEmail, ccEmail, config };
+      }
+    }
+
+    // No usable configuration -> combined branch + record addresses.
+    const fallback = await this.resolveToEmailsForRecord({
+      recordEmail: params.recordEmail,
+      customerBranchSid: params.customerBranchSid,
+      customerMasterSid: params.customerMasterSid,
+      menuMasterSid: params.menuMasterSid
+    });
+    return { toEmail: fallback, ccEmail: [] };
+  }
+
   async resolveCustomerBranchEmailRecipientsByMenu(params: CustomerBranchEmailResolveParams): Promise<CustomerBranchEmailRecipients> {
     const customerBranchSid = Number(params.customerBranchSid);
     const customerMasterSid = Number(params.customerMasterSid);
@@ -270,13 +409,13 @@ ${userName}`
     }
 
     const toEmailFromConfig = config
-      ? this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext).trim()
+      ? this.normalizeEmailList(this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext))
       : '';
     const toEmail = toEmailFromConfig || enrichedContext['toEmail'] || params.fallbackToEmail || '';
 
     return {
       toEmail,
-      ccEmail: config ? this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext).trim() : '',
+      ccEmail: config ? this.normalizeEmailList(this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext)) : '',
       subject: config ? this.replacePlaceholders(config.MailSubject || '', enrichedContext) : '',
       body: config ? this.replacePlaceholders(config.MailBody || '', enrichedContext).replace(/<br\s*\/?>/gi, '\n') : '',
       config
@@ -483,6 +622,7 @@ ${userName}`
         ...context,
         toEmail,
         ccEmail,
+        menumail: context?.['menumail'] || '',
         userEmail: userData?.userEmail || '',
         userName: context?.['userName'] || userData?.userName || '',
         companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',
@@ -519,6 +659,7 @@ ${userName}`
       ...context,
       toEmail,
       ccEmail,
+      menumail: context?.['menumail'] || '',
       userEmail: userData?.userEmail || '',
       userName: context?.['userName'] || userData?.userName || '',
       companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',
@@ -568,9 +709,9 @@ ${userName}`
     const isLead = String(context?.['leadOrCustomer'] || '').toUpperCase() === 'L';
     const leadEmail = String(context?.['leadEmail'] || '').trim();
     const toEmail = isLead && leadEmail
-      ? leadEmail
-      : this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
-    const ccEmail = this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext);
+      ? this.normalizeEmailList(leadEmail)
+      : this.normalizeEmailList(this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext));
+    const ccEmail = this.normalizeEmailList(this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext));
     if (!toEmail?.trim()) {
       if (context?.['allowManualEmailEntry']) {
         this.openEmailPopup(config, { ...context, requireToEmail: false, toEmail: '' }, attachmentFile);
@@ -632,13 +773,13 @@ ${userName}`
     const isLead = String(context?.['leadOrCustomer'] || '').toUpperCase() === 'L';
     const leadEmail = String(context?.['leadEmail'] || '').trim();
     const toEmail = isLead && leadEmail
-      ? leadEmail
-      : this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
+      ? this.normalizeEmailList(leadEmail)
+      : this.normalizeEmailList(this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext));
     if (context?.['requireToEmail'] && !toEmail?.trim()) {
       this.appSettingService.showError('No customer email found for this record.');
       return;
     }
-  
+
     const modalRef = this.ngbModal.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
@@ -647,7 +788,7 @@ ${userName}`
 
     modalRef.componentInstance.setContent = {
       EmailTo: toEmail,
-      EmailCC: this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext),
+      EmailCC: this.normalizeEmailList(this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext)),
       EmailBCC: '',
       Subject: this.replacePlaceholders(config.MailSubject, enrichedContext),
       Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext).replace(/<br\s*\/?>/gi, '\n'),
@@ -666,6 +807,27 @@ ${userName}`
       result = result.replace(new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'gi'), context[key] ?? '');
     }
     return result;
+  }
+
+  /**
+   * Normalizes a resolved recipient string produced from placeholders such as
+   * "{{toEmail}},{{menumail}}". Splits on comma/semicolon, drops empty segments
+   * (e.g. when one placeholder resolved to nothing), de-duplicates addresses
+   * case-insensitively, and re-joins with ", ".
+   */
+  private normalizeEmailList(value: string): string {
+    if (!value) return '';
+    const seen = new Set<string>();
+    const emails: string[] = [];
+    value.split(/[;,]/).forEach(part => {
+      const email = part.trim();
+      if (!email) return;
+      const key = email.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      emails.push(email);
+    });
+    return emails.join(', ');
   }
 
   private formatEmailBody(rawBody: string): string {

@@ -6015,6 +6015,7 @@ resetForm() {
       const pdfBlob = await this.generatePDFBlob();
       const pdfFileName = (this.bookingHeader?.BookingNo || 'booking') + '.pdf';
       const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(this.currentCompany?.CompanyMasterSid, this.currentMenuId);
 
       await new Promise(resolve => setTimeout(resolve, 300));
 
@@ -6054,7 +6055,8 @@ ${this.userData['userName']}`;
         EmailBCC: [],
         Subject: subject,
         Mailbody: mailBody,
-        attachments: [pdfFile]
+        attachmentRequired,
+        ...(attachmentRequired ? { attachments: [pdfFile] } : {})
       };
 
     } catch (error) {
@@ -6157,11 +6159,33 @@ ${this.userData['userName']}`;
     };
 
     this.operationService.sendSIMail(payload).subscribe({
-      next: (resp: any) => {
+      next: async (resp: any) => {
         this.isSendingSIMail = false;
         if (resp.status) {
           const data = resp.data;
           if (data?.showPopup && data?.emailData) {
+            // Attachment is governed by the SI menu's Mail Configuration (AttachmentRequire),
+            // like sendManualMail(). When required, attach the generated House Job PDF.
+            const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(
+              this.currentCompany?.CompanyMasterSid,
+              this.currentMenuId
+            );
+            let attachmentFile: File | undefined;
+            if (attachmentRequired) {
+              try {
+                const pdfBlob = await this.generatePDFBlob();
+                if (pdfBlob) {
+                  attachmentFile = new File(
+                    [pdfBlob],
+                    (this.housejobData?.HBLNo || this.bookingData?.ShipmentNo || 'HouseJob') + '.pdf',
+                    { type: 'application/pdf' }
+                  );
+                }
+              } catch (e) {
+                console.warn('SI mail PDF generation skipped:', e);
+              }
+            }
+
             // Open email popup for user to review and send
             const modalRef = this.modalService.open(EmailEntryComponent, {
               size: 'lg',
@@ -6173,7 +6197,9 @@ ${this.userData['userName']}`;
               EmailCC: data.emailData.ccEmail,
               EmailBCC: '',
               Subject: data.emailData.subject,
-              Mailbody: data.emailData.body
+              Mailbody: data.emailData.body,
+              attachmentRequired,
+              ...(attachmentRequired && attachmentFile ? { attachments: [attachmentFile] } : {})
             };
           } else {
             this.appSettingService.showSuccess('SI Mail sent successfully');
