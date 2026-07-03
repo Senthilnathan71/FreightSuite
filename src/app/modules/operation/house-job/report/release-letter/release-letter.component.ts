@@ -270,6 +270,7 @@ get primaryCargoRow(): any {
         customerMasterSid: this.getCustomerMasterSidForEmail(),
         menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(this.appSettingsService.getCurrentCompanyInfo()?.CompanyMasterSid, this.getCurrentMenuMasterSidForEmail());
 
       if (toEmail.length === 0) {
         this.appSettingsService.showError('No email found in customer branch email.');
@@ -307,7 +308,8 @@ get primaryCargoRow(): any {
           pod: this.housejobData?.POD || '',
           fpd: this.housejobData?.FPD || ''
         },
-        attachments: [file]
+        attachmentRequired,
+        ...(attachmentRequired ? { attachments: [file] } : {})
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
         this.createEmailAuditLog(documentName);

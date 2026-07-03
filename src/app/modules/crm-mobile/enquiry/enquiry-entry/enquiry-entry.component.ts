@@ -2031,7 +2031,10 @@ private parseFloatSafe(value: any): number {
                 customerName: this.enquiryData?.CustomerName,
                 userName: this.userData?.userName,
                 customerMasterSid: this.enquiryData?.CustomerMasterSid || null,
-                toEmail: resolvedToEmail,
+                // {{toEmail}} resolves from CustomerBrEmail (Organization -> Email tab) via enrichContext;
+                // {{menumail}} is the email entered on the enquiry record itself.
+                toEmail: '',
+                menumail: resolvedToEmail,
                 customerBranchSid: this.enquiryData?.CustomerBranchSid || null
               }
             });
@@ -2099,7 +2102,10 @@ private parseFloatSafe(value: any): number {
               customerName: this.rateRequestForm.get('customerName')?.value,
               userName: this.userData?.userName,
               customerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value || null,
-              toEmail: resolvedToEmail,
+              // {{toEmail}} resolves from CustomerBrEmail (Organization -> Email tab) via enrichContext;
+              // {{menumail}} is the email entered on the enquiry record itself.
+              toEmail: '',
+              menumail: resolvedToEmail,
               customerBranchSid: this.rateRequestForm.get('CustomerBranchSid')?.value || null
             }
           });
@@ -2336,7 +2342,10 @@ private parseFloatSafe(value: any): number {
         customerName: this.enquiryData?.CustomerName,
         userName: this.userData?.userName,
         customerMasterSid: this.enquiryData?.CustomerMasterSid || null,
-        toEmail: resolvedToEmail,
+        // {{toEmail}} resolves from CustomerBrEmail (Organization -> Email tab) via enrichContext;
+        // {{menumail}} is the email entered on the enquiry record itself.
+        toEmail: '',
+        menumail: resolvedToEmail,
         customerBranchSid: this.enquiryData?.CustomerBranchSid || null
       }
     });
@@ -3263,31 +3272,44 @@ if (this.isTermsAndConditionsEnabled) {
     try {
       this.spinner.show();
 
-      const pdfBlob = await this.generatePDFBlob();
-      if (!pdfBlob) {
-        this.spinner.hide();
-        this.appSettingService.showError('Error generating PDF for email.');
-        return;
-      }
-
       const enquiryNumber = enquiry?.EnquiryNumber || 'Enquiry';
-      const pdfFileName = `Enquiry_${enquiryNumber}`.replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
-      const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
       const customerBranchSid = Number(enquiry?.CustomerBranchSid || this.rateRequestForm?.get('CustomerBranchSid')?.value);
+      const customerMasterSid = Number(enquiry?.CustomerMasterSid || this.rateRequestForm?.get('CustomerMasterSid')?.value) || null;
       const menuMasterSid = this.getCurrentEnquiryMenuMasterSid();
-      let toEmail = this.splitEmailForSend(enquiry?.Email || '');
 
-      if (toEmail.length === 0) {
-        toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
-          customerBranchSid,
-          menuMasterSid
-        });
-      }
+      // Resolve recipients from the menu's Mail Configuration (honours
+      // {{toEmail}} / {{menumail}} exactly like the manual mail trigger),
+      // falling back to combined branch + record emails when none is set.
+      const resolvedRecipients = await this.emailTriggerService.resolveConfigToRecipientsForRecord({
+        companyId: this.currentCompany?.CompanyMasterSid,
+        menuMasterSid,
+        recordEmail: enquiry?.Email || '',
+        customerBranchSid,
+        customerMasterSid
+      });
+      const toEmail = resolvedRecipients.toEmail;
 
       if (toEmail.length === 0) {
         this.spinner.hide();
         this.appSettingService.showError('No email found in enquiry or customer branch email.');
         return;
+      }
+
+      // Attachment is governed by the mail configuration (AttachmentRequire),
+      // just like sendManualMail(). When no config exists, keep attaching the PDF.
+      const attachmentRequired = resolvedRecipients.config
+        ? resolvedRecipients.config.AttachmentRequire === 'Y'
+        : true;
+      let pdfFile: File | undefined;
+      if (attachmentRequired) {
+        const pdfBlob = await this.generatePDFBlob();
+        if (!pdfBlob) {
+          this.spinner.hide();
+          this.appSettingService.showError('Error generating PDF for email.');
+          return;
+        }
+        const pdfFileName = `Enquiry_${enquiryNumber}`.replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
+        pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
       }
 
       const route = enquiry?.enquiryRoute?.[0] || {};
@@ -3317,13 +3339,19 @@ if (this.isTermsAndConditionsEnabled) {
         backdrop: 'static'
       });
 
+      const ccEmail = Array.from(new Set([
+        ...resolvedRecipients.ccEmail,
+        ...(this.userData?.userEmail ? [this.userData.userEmail] : [])
+      ].map(email => String(email || '').trim()).filter(Boolean)));
+
       modalRef.componentInstance.setContent = {
         EmailTo: toEmail,
-        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailCC: ccEmail,
         EmailBCC: [],
         Subject: subject,
         Mailbody: body,
-        attachments: [pdfFile],
+        attachmentRequired,
+        ...(attachmentRequired && pdfFile ? { attachments: [pdfFile] } : {}),
         context: {
           menuName: 'Enquiry',
           EnquiryNo: enquiryNumber,
