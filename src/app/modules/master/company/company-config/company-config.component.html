@@ -231,7 +231,7 @@
           </div>
         </div>
         <div class="header-actions">
-          <span class="count-pill">{{ configurations.length }} items</span>
+          <span class="count-pill">{{ filteredConfigCount }} / {{ configurations.length }} items</span>
           <button type="button" class="btn btn-secondary btn-sm table-action-btn" (click)="resetConfiguration()">
             <i class="fas fa-rotate-right me-1"></i>
             Reload
@@ -246,8 +246,42 @@
         </div>
       </div>
 
+      <div class="existing-filters" *ngIf="configurations.length > 0">
+        <div class="config-search">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            class="form-control modern-input modern-input--sm config-search-input"
+            [(ngModel)]="configSearch"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Search configuration by name..." />
+          <button
+            *ngIf="configSearch"
+            type="button"
+            class="config-search-clear"
+            (click)="configSearch = ''"
+            aria-label="Clear search">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="config-type-tabs">
+          <button
+            type="button"
+            *ngFor="let tab of configTypeFilters"
+            class="config-type-tab"
+            [class.active]="configTypeFilter === tab.value"
+            (click)="configTypeFilter = tab.value">
+            {{ tab.label }}
+            <span class="tab-badge">{{ configTypeCount(tab.value) }}</span>
+          </button>
+        </div>
+      </div>
+
       <form [formGroup]="configForm" class="table-form">
         <div class="table-responsive modern-table-wrap" *ngIf="configurations.length > 0; else emptyConfigs">
+          <div class="no-match-note" *ngIf="filteredConfigCount === 0">
+            No configuration matches your search / filter.
+          </div>
           <table class="table modern-table align-middle">
             <thead>
               <tr>
@@ -258,7 +292,7 @@
               </tr>
             </thead>
             <tbody formArrayName="configurations">
-              <tr *ngFor="let config of configurations.controls; let i = index" [formGroupName]="i">
+              <tr *ngFor="let config of configurations.controls; let i = index" [formGroupName]="i" [hidden]="!matchesConfigFilter(config)">
                 <td>
                   <div class="row-title">
                     <strong>{{ config.get('DisplayName')?.value || config.get('ConfigurationName')?.value }}</strong>

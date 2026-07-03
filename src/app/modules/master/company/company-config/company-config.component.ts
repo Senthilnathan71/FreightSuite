@@ -49,6 +49,7 @@ const CONFIG_TEMPLATES: ConfigTemplate[] = [
   { configurationName: 'QuoteApproval', displayName: 'Quote Approval', configType: 'boolean'},
   { configurationName: 'ShowCargowithContainer', displayName: 'Show Cargo with Container(Invoice Print)', configType: 'boolean'},
   { configurationName: 'EnableReportColumnCustomization', displayName: 'Enable Report Column Customization (New report view)', configType: 'boolean'},
+  { configurationName: 'TrackingMilestoneDisplayMode', displayName: 'Tracking Milestone Display Mode (Hide unused pending before latest)', configType: 'boolean'},
 ];
 
 @Component({
@@ -92,6 +93,41 @@ export class CompanyConfigComponent implements OnInit {
   ];
 
   configTemplates = CONFIG_TEMPLATES;
+
+  // Existing-configuration list filters (search by name + tab by config type).
+  configSearch = '';
+  configTypeFilter: 'all' | ConfigType = 'all';
+  configTypeFilters: Array<{ value: 'all' | ConfigType; label: string }> = [
+    { value: 'all', label: 'All' },
+    { value: 'string', label: 'Text' },
+    { value: 'number', label: 'Number' },
+    { value: 'boolean', label: 'Y/N' },
+    { value: 'email-array', label: 'Email List' },
+  ];
+
+  /** True when a config row matches the current search term and the selected type tab. */
+  matchesConfigFilter(control: any): boolean {
+    const name = String(control?.get('ConfigurationName')?.value || '').toLowerCase();
+    const display = String(control?.get('DisplayName')?.value || '').toLowerCase();
+    const type = control?.get('ConfigType')?.value;
+    const term = this.configSearch.trim().toLowerCase();
+    const matchesSearch = !term || name.includes(term) || display.includes(term);
+    const matchesType = this.configTypeFilter === 'all' || type === this.configTypeFilter;
+    return matchesSearch && matchesType;
+  }
+
+  /** Number of config rows visible under the current search + type filter. */
+  get filteredConfigCount(): number {
+    return this.configurations.controls.filter((control) => this.matchesConfigFilter(control)).length;
+  }
+
+  /** How many configured rows exist for a given type tab (for the tab badges). */
+  configTypeCount(value: 'all' | ConfigType): number {
+    if (value === 'all') {
+      return this.configurations.length;
+    }
+    return this.configurations.controls.filter((control) => control.get('ConfigType')?.value === value).length;
+  }
 
   constructor(
     private router: Router,
