@@ -175,6 +175,11 @@ export class TrackingComponent implements OnInit, OnDestroy {
     this.selectedSearchType = type;
   }
 
+  /** Before-search landing state — shows the hero search, so the header search is hidden. */
+  get showWelcome(): boolean {
+    return !this.trackingResult && !this.isLoading && !this.errorMessage && !this.hasSearched;
+  }
+
   private searchTypeCode(): string {
     switch (this.selectedSearchType) {
       case 'Booking No':
@@ -582,10 +587,38 @@ export class TrackingComponent implements OnInit, OnDestroy {
 
   routePointIcon(tracking: any, index: number): string {
     if (this.isAirShipment(tracking)) {
-      return ['fa-box', 'fa-plane-departure', 'fa-plane-arrival', 'fa-map-marker-alt'][index] || 'fa-plane';
+      // Origin → Departure airport → Arrival airport → Final delivery
+      return ['fa-industry', 'fa-plane-departure', 'fa-plane-arrival', 'fa-flag-checkered'][index] || 'fa-plane';
     }
 
-    return ['fa-warehouse', 'fa-ship', 'fa-anchor', 'fa-map-marker-alt'][index] || 'fa-map-marker-alt';
+    // POO (shipper) → POL (loading port) → POD (discharge port) → FPOD (final destination)
+    return ['fa-industry', 'fa-anchor', 'fa-water', 'fa-flag-checkered'][index] || 'fa-map-marker-alt';
+  }
+
+  /** Sea vs Air theme applied to the route track (drives colour + which GIF vehicle shows). */
+  routeThemeClass(tracking: any): Record<string, boolean> {
+    const air = this.isAirShipment(tracking);
+    return { 'air-mode': air, 'sea-mode': !air };
+  }
+
+  /**
+   * Horizontal position (as a % of the track width) for the animated ship / plane.
+   * Nodes sit at 12.5 / 37.5 / 62.5 / 87.5 (centre of each of the 4 columns), so the
+   * moving vehicle snaps onto the current live-position node.
+   */
+  routeVehicleLeft(tracking: any): number {
+    const index = this.routeProgressIndex(tracking);
+    return [12.5, 37.5, 62.5, 87.5][index] ?? 12.5;
+  }
+
+  /** Show the milestone location only when it adds information (not a repeat of the title). */
+  showMilestoneLocation(milestone: any): boolean {
+    if (!milestone?.location) {
+      return false;
+    }
+    const title = String(milestone?.title || milestone?.eventName || '').trim().toLowerCase();
+    const location = String(milestone.location).trim().toLowerCase();
+    return !!location && location !== title;
   }
 
   routeModeTitle(tracking: any): string {

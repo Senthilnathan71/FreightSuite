@@ -35,15 +35,19 @@ $radius-md: 10px;
 .tracking-command {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(245px, 0.42fr) minmax(420px, 1fr) auto;
+  grid-template-columns: minmax(210px, 0.36fr) minmax(420px, 1fr) auto;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   margin-bottom: 10px;
-  padding: 13px 16px;
-  border-radius: 18px;
+  padding: 11px 16px;
+  border-radius: 16px;
   overflow: hidden;
   background: linear-gradient(120deg, #071b3a 0%, #0b3a63 48%, $brand-dark 100%);
-  box-shadow: 0 18px 40px rgba(7, 27, 58, 0.26);
+  box-shadow: 0 14px 32px rgba(7, 27, 58, 0.24);
+}
+
+.tracking-command.no-search {
+  grid-template-columns: 1fr auto;
 }
 
 .tracking-command::before {
@@ -109,8 +113,8 @@ $radius-md: 10px;
 
 .tracking-command h1 {
   margin: 0;
-  font-size: 22px;
-  line-height: 1.1;
+  font-size: 16px;
+  line-height: 1.15;
   font-weight: 850;
   color: #ffffff;
   letter-spacing: 0;
@@ -276,6 +280,311 @@ $radius-md: 10px;
   color: $danger;
 }
 
+/* ── Before-search welcome screen ───────────────────────────────────────── */
+.welcome-state {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.welcome-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr);
+  grid-template-areas: 'topbar topbar' 'copy scene';
+  align-items: center;
+  column-gap: 20px;
+  row-gap: 6px;
+  padding: 16px 28px 30px;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  color: #ffffff;
+  background: linear-gradient(125deg, #071b3a 0%, #0b3a63 52%, $brand-dark 100%);
+  box-shadow: 0 16px 38px rgba(7, 27, 58, 0.22);
+}
+
+.welcome-topbar {
+  grid-area: topbar;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.welcome-copy { grid-area: copy; }
+.welcome-scene { grid-area: scene; }
+
+.welcome-back {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+.welcome-back:hover { background: rgba(255, 255, 255, 0.24); }
+
+.welcome-route {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+.welcome-route span {
+  width: 40px;
+  height: 2px;
+  border-radius: 999px;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.85) 0 55%, transparent 0 100%);
+  background-size: 11px 2px;
+  animation: heroDash 1.1s linear infinite;
+}
+.welcome-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.5;
+}
+
+.welcome-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.welcome-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.welcome-copy h2 {
+  margin: 10px 0 5px;
+  font-size: 20px;
+  line-height: 1.14;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.welcome-copy p {
+  margin: 0;
+  max-width: 520px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.welcome-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.welcome-hint {
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+/* In-hero search box + functional search-type chips */
+.welcome-search {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  max-width: 560px;
+  padding: 5px 5px 5px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 12px 26px rgba(7, 27, 58, 0.28);
+}
+.welcome-search-icon {
+  color: $brand;
+  font-size: 13px;
+}
+.welcome-search-input {
+  width: 100%;
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: $ink;
+  font-size: 12.5px;
+  font-weight: 700;
+  outline: 0;
+}
+.welcome-search-input::placeholder {
+  color: #9aacbf;
+  font-weight: 600;
+}
+.welcome-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(135deg, $brand 0%, $brand-dark 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.welcome-search-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.welcome-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+.welcome-chip {
+  min-height: 28px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 11px;
+  font-weight: 800;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.welcome-chip:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.welcome-chip.active-chip {
+  background: $brand-soft;
+  border-color: $brand;
+  color: $brand-dark;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+.welcome-scene {
+  position: relative;
+  z-index: 1;
+  height: 128px;
+}
+.welcome-scene .ws-sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.welcome-scene .ws-wave {
+  position: absolute;
+  left: -20%;
+  bottom: -2px;
+  width: 140%;
+  height: 40px;
+}
+.welcome-scene .ws-wave path { fill: rgba(56, 189, 248, 0.32); }
+.welcome-scene .ws-wave-front path { fill: rgba(11, 132, 156, 0.4); }
+.welcome-scene .ws-wave-back { animation: waveSlide 7s linear infinite; }
+.welcome-scene .ws-wave-front { animation: waveSlide 4.5s linear infinite reverse; }
+.welcome-scene .ws-ship {
+  position: absolute;
+  left: 22%;
+  bottom: 30px;
+  width: 96px;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.28));
+  animation: shipBob 2.8s ease-in-out infinite;
+}
+.welcome-scene .ws-plane {
+  position: absolute;
+  right: 8%;
+  top: 6px;
+  width: 78px;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.25));
+  animation: planeFly 3.4s ease-in-out infinite;
+}
+
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.welcome-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 13px;
+  border: 1px solid $line;
+  border-radius: $radius-md;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 3px 10px rgba(7, 27, 58, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.welcome-feature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(7, 27, 58, 0.09);
+}
+.welcome-feature > span {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: $brand-soft;
+  color: $brand-dark;
+  font-size: 14px;
+}
+.welcome-feature div { min-width: 0; }
+.welcome-feature b {
+  display: block;
+  color: $ink;
+  font-size: 12.5px;
+  font-weight: 850;
+}
+.welcome-feature small {
+  display: block;
+  margin-top: 1px;
+  color: $muted;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .welcome-hero {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'topbar' 'copy' 'scene';
+  }
+  .welcome-scene { height: 100px; }
+  .welcome-features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .welcome-features { grid-template-columns: 1fr; }
+  .welcome-copy h2 { font-size: 20px; }
+}
+
 .alert-panel {
   display: flex;
   align-items: center;
@@ -321,10 +630,10 @@ $radius-md: 10px;
 }
 
 .ship-id h2 {
-  margin: 0 0 4px;
+  margin: 0 0 3px;
   color: $ink;
-  font-size: 24px;
-  line-height: 1.1;
+  font-size: 18px;
+  line-height: 1.15;
   font-weight: 900;
   overflow-wrap: anywhere;
 }
@@ -332,7 +641,7 @@ $radius-md: 10px;
 .ship-id p {
   margin: 0;
   color: $muted;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -363,8 +672,8 @@ $radius-md: 10px;
   display: block;
   margin: 3px 0 1px;
   color: $brand;
-  font-size: 17px;
-  line-height: 1.1;
+  font-size: 14px;
+  line-height: 1.15;
   font-weight: 900;
 }
 
@@ -429,12 +738,17 @@ $radius-md: 10px;
   align-items: center;
   gap: 7px;
   min-height: 28px;
-  padding: 0 11px;
+  padding: 0 13px;
   border-radius: 999px;
   background: $brand-soft;
   color: $brand-dark;
   font-size: 11px;
   font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.mode-pill.air {
+  background: #e0ecff;
+  color: #1e40af;
 }
 
 .summary-cell,
@@ -448,27 +762,49 @@ $radius-md: 10px;
 }
 
 .summary-cell {
-  padding: 11px 13px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  padding: 9px 12px 9px 13px;
+  background: linear-gradient(180deg, #ffffff 0%, #f6fafd 100%);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  overflow: hidden;
+}
+.summary-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, $brand 0%, $brand-dark 100%);
+  opacity: 0.85;
 }
 .summary-cell:hover {
-  border-color: #c6d6e6;
-  box-shadow: 0 4px 12px rgba(7, 27, 58, 0.05);
+  border-color: #bcd4e6;
+  box-shadow: 0 6px 14px rgba(7, 27, 58, 0.07);
+  transform: translateY(-1px);
 }
 
 .summary-cell span,
 .metric-card span,
 .progress-item span {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   color: $muted;
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 850;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.summary-cell strong,
+.summary-cell strong {
+  display: block;
+  color: $ink;
+  font-size: 11.5px;
+  font-weight: 850;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
 .metric-card strong,
 .progress-item strong {
   display: block;
@@ -478,18 +814,56 @@ $radius-md: 10px;
   overflow-wrap: anywhere;
 }
 
-/* Premium horizontal route timeline (port nodes + status chip + date) */
-.route-track { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 10px; padding: 10px 8px 8px; }
-.route-progress { position: absolute; top: 33px; left: 12.5%; right: 12.5%; height: 3px; background: #dbe4ed; border-radius: 999px; overflow: hidden; }
-.route-progress-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, $success 0%, $brand 100%); transition: width 0.4s ease; }
-.route-stop { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.route-badge { position: relative; z-index: 1; width: 46px; height: 46px; display: grid; place-items: center; border: 2px solid #cbd5e1; border-radius: 50%; background: #ffffff; color: #9fb0c2; font-size: 16px; box-shadow: 0 2px 8px rgba(7, 27, 58, 0.06); }
-.route-stop.completed .route-badge { background: $success; border-color: $success; color: #ffffff; }
-.route-stop.active .route-badge { background: $current; border-color: $current; color: #ffffff; box-shadow: 0 0 0 6px rgba($current, 0.14); }
+/* Premium horizontal route timeline (port nodes + moving GIF vehicle + animated scene) */
+.route-track { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 10px; padding: 54px 8px 12px; border-radius: 16px; overflow: hidden; }
+.route-track.sea-mode { background: linear-gradient(180deg, #eaf6fb 0%, #dcf0f7 46%, #cfeaf3 100%); }
+.route-track.air-mode { background: linear-gradient(180deg, #eef4ff 0%, #e3edff 46%, #f4f8ff 100%); }
+
+/* ── Animated department scene (waves / clouds) ─────────────────────────── */
+.route-scene { position: absolute; left: 0; right: 0; top: 0; height: 62px; pointer-events: none; z-index: 0; overflow: hidden; }
+.scene-sea { position: absolute; inset: 0; }
+.scene-sea .wave { position: absolute; left: -20%; bottom: -2px; width: 140%; height: 30px; }
+.scene-sea .wave path { fill: rgba(56, 189, 248, 0.30); }
+.scene-sea .wave-front path { fill: rgba(14, 116, 144, 0.28); }
+.scene-sea .wave-back { animation: waveSlide 7s linear infinite; }
+.scene-sea .wave-front { animation: waveSlide 4.5s linear infinite reverse; opacity: 0.9; }
+@keyframes waveSlide { from { transform: translateX(0); } to { transform: translateX(14.3%); } }
+
+.scene-sky { position: absolute; inset: 0; }
+.scene-sky .cloud { position: absolute; top: 12px; width: 46px; height: 14px; background: rgba(255, 255, 255, 0.85); border-radius: 999px; box-shadow: 12px 4px 0 -3px rgba(255, 255, 255, 0.85), -12px 5px 0 -4px rgba(255, 255, 255, 0.85); }
+.scene-sky .cloud-1 { top: 8px; animation: cloudDrift 16s linear infinite; }
+.scene-sky .cloud-2 { top: 26px; transform: scale(0.72); opacity: 0.75; animation: cloudDrift 22s linear infinite; animation-delay: -6s; }
+.scene-sky .cloud-3 { top: 16px; transform: scale(0.9); opacity: 0.6; animation: cloudDrift 28s linear infinite; animation-delay: -12s; }
+@keyframes cloudDrift { from { left: -60px; } to { left: 108%; } }
+
+/* ── Moving GIF-style vehicle (cargo ship / airliner) ───────────────────── */
+.route-vehicle { position: absolute; top: 8px; z-index: 2; width: 74px; transform: translateX(-50%); transition: left 0.7s cubic-bezier(0.4, 0.1, 0.2, 1); filter: drop-shadow(0 6px 6px rgba(7, 27, 58, 0.22)); }
+.route-vehicle svg { width: 100%; height: auto; display: block; }
+.route-vehicle.is-sea { animation: shipBob 2.6s ease-in-out infinite; }
+.route-vehicle.is-air { width: 66px; animation: planeFly 3.2s ease-in-out infinite; }
+@keyframes shipBob { 0%, 100% { transform: translateX(-50%) translateY(0) rotate(-1.5deg); } 50% { transform: translateX(-50%) translateY(-3px) rotate(1.5deg); } }
+@keyframes planeFly { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-4px); } }
+.plane-trail { position: absolute; top: 14px; right: 100%; width: 34px; height: 3px; border-radius: 999px; background: linear-gradient(270deg, rgba(37, 99, 235, 0.55), transparent); animation: trailPulse 1.6s ease-in-out infinite; }
+@keyframes trailPulse { 0%, 100% { opacity: 0.35; width: 26px; } 50% { opacity: 0.8; width: 40px; } }
+
+.route-progress { position: absolute; top: 77px; left: 12.5%; right: 12.5%; height: 4px; background: rgba(11, 58, 99, 0.14); border-radius: 999px; overflow: hidden; z-index: 1; }
+.route-progress-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, $success 0%, $brand 100%); transition: width 0.6s ease; }
+.route-track.air-mode .route-progress-fill { background: linear-gradient(90deg, #22c55e 0%, $current 100%); }
+.route-stop { position: relative; z-index: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.route-badge { position: relative; z-index: 1; width: 48px; height: 48px; display: grid; place-items: center; border: 2px solid #cbd5e1; border-radius: 50%; background: #ffffff; color: #9fb0c2; font-size: 17px; box-shadow: 0 4px 10px rgba(7, 27, 58, 0.10); transition: transform 0.2s ease; }
+.route-stop.completed .route-badge { background: linear-gradient(135deg, $success 0%, #0ea371 100%); border-color: $success; color: #ffffff; }
+.route-stop.active .route-badge { background: linear-gradient(135deg, $current 0%, #1e40af 100%); border-color: $current; color: #ffffff; box-shadow: 0 0 0 6px rgba($current, 0.16); animation: nodePulse 2s ease-in-out infinite; }
+.route-track.sea-mode .route-stop.active .route-badge { background: linear-gradient(135deg, $brand 0%, $brand-dark 100%); border-color: $brand; box-shadow: 0 0 0 6px rgba($brand, 0.18); }
 .route-stop.pending .route-badge { background: #ffffff; border-color: #cbd5e1; color: #9fb0c2; }
+@keyframes nodePulse { 0%, 100% { box-shadow: 0 0 0 5px rgba($current, 0.16); } 50% { box-shadow: 0 0 0 9px rgba($current, 0.06); } }
+.badge-tick { position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: #ffffff; color: $success; font-size: 9px; box-shadow: 0 2px 5px rgba(7, 27, 58, 0.18); }
 .route-port { margin-top: 9px; font-size: 14px; font-weight: 850; letter-spacing: 0.01em; color: $ink; overflow-wrap: anywhere; }
 .route-portname { margin-top: 1px; max-width: 140px; color: $text; font-size: 11px; font-weight: 650; line-height: 1.2; overflow-wrap: anywhere; }
-.route-role { margin-top: 2px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: $muted; }
+.route-role { margin-top: 8px; font-size: 9.5px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.07em; color: $muted; }
+.route-track.sea-mode .route-role { color: $brand-dark; }
+.route-track.air-mode .route-role { color: $current; }
+.route-track.sea-mode .route-port { margin-top: 2px; }
+.route-track.air-mode .route-port { margin-top: 2px; }
 .route-chip { margin-top: 7px; display: inline-flex; align-items: center; height: 20px; padding: 0 10px; border-radius: 999px; background: #f1f5f9; color: $muted; font-size: 10px; font-weight: 850; }
 .route-stop.completed .route-chip { background: rgba($success, 0.12); color: $success; }
 .route-stop.active .route-chip { background: rgba($current, 0.14); color: $current; }
@@ -595,12 +969,12 @@ $radius-md: 10px;
 }
 
 .metric-card {
-  padding: 11px 12px;
+  padding: 10px 12px;
   background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
 }
 
 .metric-card strong {
-  font-size: 15px;
+  font-size: 13.5px;
 }
 
 .detail-block {
@@ -707,8 +1081,8 @@ $radius-md: 10px;
 }
 
 .live-card h3 {
-  margin: 7px 0 2px;
-  font-size: 22px;
+  margin: 6px 0 2px;
+  font-size: 17px;
   font-weight: 900;
   overflow-wrap: anywhere;
 }
@@ -867,7 +1241,7 @@ $radius-md: 10px;
   position: absolute;
   top: 34px;
   bottom: 34px;
-  left: 18px;
+  left: 23px;
   width: 2px;
   border-radius: 999px;
   background: linear-gradient(180deg, rgba($success, 0.6) 0%, rgba(#cbd5e1, 0.7) 100%);
@@ -876,7 +1250,7 @@ $radius-md: 10px;
 .milestone-step {
   position: relative;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-columns: 46px minmax(0, 1fr);
   align-items: center;
 }
 
@@ -888,29 +1262,60 @@ $radius-md: 10px;
   justify-content: center;
 }
 
+.milestone-seq {
+  position: absolute;
+  top: -3px;
+  right: 1px;
+  z-index: 2;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid $line;
+  color: $muted;
+  font-size: 9px;
+  font-weight: 900;
+  box-shadow: 0 1px 3px rgba(7, 27, 58, 0.12);
+}
+
 .milestone-node {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   border: 2px solid #cbd5e1;
   border-radius: 50%;
   background: #ffffff;
   color: #cbd5e1;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .milestone-step.completed .milestone-node {
-  background: $success;
+  background: linear-gradient(135deg, $success 0%, #0ea371 100%);
   border-color: $success;
   color: #ffffff;
 }
+.milestone-step.completed .milestone-seq {
+  border-color: rgba($success, 0.4);
+  color: $success;
+}
 
 .milestone-step.current .milestone-node {
-  background: $current;
+  background: linear-gradient(135deg, $current 0%, #1e40af 100%);
   border-color: $current;
   color: #ffffff;
-  box-shadow: 0 0 0 5px rgba($current, 0.16);
+  animation: milestonePulse 2s ease-in-out infinite;
+}
+.milestone-step.current .milestone-seq {
+  border-color: rgba($current, 0.45);
+  color: $current;
+}
+@keyframes milestonePulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba($current, 0.16); }
+  50% { box-shadow: 0 0 0 8px rgba($current, 0.05); }
 }
 
 .milestone-step.exception .milestone-node {
@@ -921,12 +1326,21 @@ $radius-md: 10px;
 
 .milestone-card {
   min-width: 0;
-  padding: 10px 14px;
+  margin-left: 4px;
+  padding: 11px 15px;
   border: 1px solid #e2e9f1;
+  border-left: 3px solid #cbd5e1;
   border-radius: $radius-md;
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(7, 27, 58, 0.04);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
+.milestone-card:hover {
+  box-shadow: 0 6px 16px rgba(7, 27, 58, 0.08);
+}
+.milestone-step.completed .milestone-card { border-left-color: $success; }
+.milestone-step.current .milestone-card { border-left-color: $current; background: linear-gradient(180deg, #f6f9ff 0%, #ffffff 60%); }
+.milestone-step.exception .milestone-card { border-left-color: $danger; }
 
 .milestone-head {
   display: flex;
@@ -938,8 +1352,9 @@ $radius-md: 10px;
 .milestone-head h3 {
   margin: 0;
   color: $ink;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 850;
+  line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
@@ -979,9 +1394,9 @@ $radius-md: 10px;
 .milestone-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 5px;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 7px;
 }
 
 .milestone-loc {
@@ -989,8 +1404,9 @@ $radius-md: 10px;
   align-items: center;
   gap: 5px;
   min-width: 0;
+  max-width: 100%;
   color: $muted;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1002,12 +1418,32 @@ $radius-md: 10px;
   font-size: 10px;
 }
 
+.milestone-loc.dept {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba($brand, 0.1);
+  color: $brand-dark;
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.milestone-loc.dept i { color: $brand-dark; }
+
 .milestone-date {
   flex: 0 0 auto;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: $ink;
   font-size: 12px;
   font-weight: 850;
   white-space: nowrap;
+}
+.milestone-date i {
+  color: $muted;
+  font-size: 10px;
 }
 
 .milestone-step.pending .milestone-date {
@@ -1469,9 +1905,12 @@ $radius-md: 10px;
   .route-track {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: 22px;
+    padding: 14px 8px 12px;
   }
 
-  .route-progress {
+  .route-progress,
+  .route-vehicle,
+  .route-scene {
     display: none;
   }
 
