@@ -740,6 +740,55 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     this.onDetailChange(detailIndex, 'CurrencyCode');
   }
 
+  /**
+   * When a detail row's currency matches the HEADER currency (and it isn't the company/local
+   * currency, which the base already pins to rate 1), mirror the header's exchange rate onto
+   * the row and lock it — instead of fetching an independent rate. This makes a manually set
+   * header rate flow down to same-currency rows. Other currencies fall back to the base fetch.
+   */
+  override patchExchangeRateForDetail(fromCurrencyCode: string, toCurrencyCode: string, index: number): void {
+    const headerCurrencyCode = this.invoiceForm.get('CurrencyCode')?.value;
+    if (
+      fromCurrencyCode &&
+      headerCurrencyCode &&
+      fromCurrencyCode === headerCurrencyCode &&
+      fromCurrencyCode !== toCurrencyCode // toCurrencyCode is the company currency; if equal, let base pin to 1
+    ) {
+      const group = this.details.at(index) as FormGroup;
+      group.get('ExchangeRate')?.setValue(toNumber(this.invoiceForm.get('ExchangeRate')?.value) || 1, { emitEvent: false });
+      group.get('ExchangeRate')?.disable({ emitEvent: false });
+      this.onDetailChange(index, 'ExchangeRate');
+      return;
+    }
+    super.patchExchangeRateForDetail(fromCurrencyCode, toCurrencyCode, index);
+  }
+
+  /**
+   * Keep same-currency detail rows in sync when the HEADER currency or exchange rate changes.
+   * recalculateAllRows() runs after both (header currency change -> fetchExchangeRate, and the
+   * header Ex. Rate input), so re-pinning matching rows here covers both cases.
+   */
+  override recalculateAllRows(): void {
+    this.syncDetailRatesWithHeaderCurrency();
+    super.recalculateAllRows();
+  }
+
+  private syncDetailRatesWithHeaderCurrency(): void {
+    if (this.isPosted) return;
+    const headerCurrencyCode = this.invoiceForm.get('CurrencyCode')?.value;
+    const companyCurrencyCode = this.currentCompanyCurrency?.code;
+    // Company-currency rows are already pinned to rate 1 by the base — nothing to mirror.
+    if (!headerCurrencyCode || headerCurrencyCode === companyCurrencyCode) return;
+    const headerExRate = toNumber(this.invoiceForm.get('ExchangeRate')?.value) || 1;
+    this.details.controls.forEach((control) => {
+      const group = control as FormGroup;
+      if (group.get('CurrencyCode')?.value === headerCurrencyCode) {
+        group.get('ExchangeRate')?.setValue(headerExRate, { emitEvent: false });
+        group.get('ExchangeRate')?.disable({ emitEvent: false });
+      }
+    });
+  }
+
   override onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean): void {
     // Mirror the base "No changes to save" guard BEFORE the normalizations below.
     // Those normalizations mutate the form every call, so if we let them run first they
