@@ -261,6 +261,7 @@
             <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select" [class.filled]="!!invoiceForm.get('CurrencyCode')?.value">
                 <dofi-searchable-dropdown
+                  #nonJobCurrencyDropdown
                   [items]="currencyList"
                   formControlName="CurrencyCode"
                   [placeholder]="''"
@@ -341,10 +342,11 @@
                 <table class="table table-hover table-sm mb-0 text-center">
                   <thead class="table-header-booking">
                     <tr class="align-middle bg-info">
-                      <th rowspan="2" *ngIf="!isEditMode" class="text-center bg-transparent text-light" style="min-width: 30px"></th>
+                      <th rowspan="2" *ngIf="showDetailDeleteColumn" class="text-center bg-transparent text-light" style="min-width: 30px"></th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px">Sno</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 160px">Ledger</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 160px">Subledger</th>
+                      <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 180px">Narration</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px">SAC Code</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px">Dr/Cr</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 70px">Curr</th>
@@ -374,7 +376,7 @@
                   <tbody formArrayName="voucherDetails">
                     <ng-container *ngFor="let row of details.controls; let i = index">
                       <tr [formGroupName]="i">
-                        <td *ngIf="!isEditMode">
+                        <td *ngIf="showDetailDeleteColumn">
                           <button type="button" class="btn border-0 btn-sm pt-1" (click)="removeDetailRow(i)">
                             <i class="fas fa-trash text-danger"></i>
                           </button>
@@ -385,6 +387,9 @@
                         </td>
                         <td>
                           <ng-select formControlName="LedgerMasterSid" [items]="subledgerListDetail[i] || []" bindLabel="SubledgerName" bindValue="SubledgerMasterSid" appendTo="body" placeholder="" (change)="onDetailSubledgerChange($event, i)"></ng-select>
+                        </td>
+                        <td>
+                          <input type="text" class="custom-input-field sm" formControlName="Narration" [attr.maxlength]="LIMITS.header.Narration" placeholder="" />
                         </td>
                         <td>
                           <dofi-searchable-dropdown

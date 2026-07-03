@@ -79,6 +79,7 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
   // Character limits for text fields (single source of truth, mirrors DB widths).
   protected override readonly LIMITS = VOUCHER_FIELD_LIMITS;
   @ViewChild('nonJobprintModal') override nonJobPrintModalRef: any;
+  @ViewChild('nonJobCurrencyDropdown') nonJobCurrencyDropdown?: SearchableDropdown;
 
   coaList: any[] = [];
   subledgerListDetail: any[][] = [];
@@ -188,6 +189,8 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
           this.customerBranchList = resp.data || [];
           if (!this.headerId && this.invoiceData?.VoucherHeaderSid === null) {
             this.restoreCopiedCustomerAddressSelection(this.invoiceData);
+          } else {
+            this.autoSelectCustomerBranch();
           }
         }
       },
@@ -199,6 +202,22 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
         }
       },
     });
+  }
+
+  /**
+   * After a customer is picked, auto-fill the address by selecting the customer's first
+   * (primary) branch — or the only one — and patching its address via onCustomerBranchChange,
+   * then move the cursor to the Currency field. Skips when a branch is already chosen (existing
+   * record being loaded) so the saved address is preserved.
+   */
+  private autoSelectCustomerBranch(): void {
+    if (this.invoiceForm.get('CustomerBranchSid')?.value) return;
+    const branch = (this.customerBranchList || [])[0];
+    if (!branch?.CustomerBranchSid) return;
+
+    this.invoiceForm.get('CustomerBranchSid')?.setValue(branch.CustomerBranchSid);
+    this.onCustomerBranchChange(branch);
+    setTimeout(() => this.nonJobCurrencyDropdown?.focus(), 0);
   }
 
   copyNonJobInvoice(): void {
@@ -626,6 +645,14 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     group.get('NumberOfUnit')?.updateValueAndValidity({ emitEvent: false });
     group.get('COAMasterSid')?.setValidators(Validators.required);
     group.get('COAMasterSid')?.updateValueAndValidity({ emitEvent: false });
+    // Per-row narration (defaults to header narration; manual edits are preserved and saved).
+    // Added after super.createDetailGroup so disableControlsIfVoucherExists doesn't lock it on saved rows.
+    if (!group.get('Narration')) {
+      group.addControl('Narration', this.nonJobFb.control(
+        data?.Narration ?? this.invoiceForm.get('Narration')?.value ?? '',
+        [Validators.maxLength(VOUCHER_FIELD_LIMITS.header.Narration)],
+      ));
+    }
     return group;
   }
 
@@ -714,21 +741,41 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
   }
 
   override onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean): void {
+    // Mirror the base "No changes to save" guard BEFORE the normalizations below.
+    // Those normalizations mutate the form every call, so if we let them run first they
+    // make the form differ from the load-time baseline and defeat the base guard —
+    // which is why an untouched edit was saving. isDirty is the baseline-vs-current flag
+    // maintained by subscribeToFormChanges, so !isDirty means the user changed nothing.
+    if (this.isEditMode && !this.isDirty) {
+      this.nonJobAppSettings.showWarning('No changes to save');
+      this.invoiceForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     const narration = this.invoiceForm.get('Narration')?.value || '';
     this.syncNonJobDueDate(this.invoiceForm.get('voucherOthers.DueDate')?.value || this.dueDate);
     this.invoiceForm.get('Remarks')?.setValue(narration, { emitEvent: false });
     this.invoiceForm.get('DocumentNumber')?.setValue(this.invoiceForm.get('BillNo')?.value || '', { emitEvent: false });
     this.details.controls.forEach((control) => {
       const group = control as FormGroup;
+      // Preserve the row's manual narration; fall back to the header narration only when blank.
+      const rowNarration = String(group.get('Narration')?.value ?? '').trim() || narration;
       group.patchValue({
-        ChargeDescription: narration,
-        Narration: narration,
+        ChargeDescription: rowNarration,
+        Narration: rowNarration,
         MasterJobSid: null,
         HouseJobSid: null,
         DepartmentMasterSid: null,
         ChargeMasterSid: null,
         ChargeUOMSid: null,
         NumberOfUnit: 1,
+        // recalcRow stores these as comma-grouped strings ("73,340.00"). The base save does
+        // Number(...) on them, so >=1000 values become NaN -> 0 (and the header Amount too,
+        // via computeHeaderAmounts). Coerce to plain numbers here so the base saves them intact.
+        Amount: toNumber(group.get('Amount')?.value),
+        LocalAmount: toNumber(group.get('LocalAmount')?.value),
+        PartyAmount: toNumber(group.get('PartyAmount')?.value),
       }, { emitEvent: false });
     });
     super.onSubmit(resolve, isPostingTrue);
@@ -747,14 +794,41 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       CustomsDuty: 'N',
     }, { emitEvent: false });
 
+    const loadedDetails = Array.isArray(data?.VoucherDetail) ? data.VoucherDetail : [];
     this.details.controls.forEach((control, index) => {
       this.hssacList[index] = this.hssacListForNonJob;
+      const rawDetail = loadedDetails[index];
+      (control as FormGroup).get('Narration')?.setValue(
+        rawDetail?.Narration ?? rawDetail?.ChargeDescription ?? '',
+        { emitEvent: false },
+      );
       const coaSid = (control as FormGroup).get('COAMasterSid')?.value;
       if (coaSid) {
         const coa = this.coaList.find((item) => Number(item.COAMasterSid) === Number(coaSid)) || { COAMasterSid: coaSid, SubledgerName: 'Y' };
         this.onCOAChange(coa, index, false);
       }
     });
+    // Reconstruct each row's LocalAmount / PartyAmount from the reliable Amount on load, then
+    // refresh BillAmt. recalcRow stores LocalAmount/PartyAmount as comma-grouped strings which
+    // the base save path's Number(...) turned into 0 for >=1000 values — corrupting the stored
+    // LocalAmount/PartyAmount and the header Amount. Amount itself is stored correctly, so we
+    // rederive: LocalAmount = Amount * rowExRate, PartyAmount via getPartyAmount. This makes the
+    // bill total show on load AND lets the next save persist correct values. Taxes are untouched;
+    // posted and auto-generated rows keep their stored values.
+    if (!this.isPosted) {
+      this.details.controls.forEach((control, index) => {
+        const group = control as FormGroup;
+        const isAuto = group.get('IsAutoGenerated')?.value;
+        if (isAuto === true || String(isAuto ?? 'N').toUpperCase() === 'Y') return;
+        const rowExRate = toNumber(group.get('ExchangeRate')?.value) || 1;
+        const localAmount = toNumber(this.getFormattedAmount(
+          toNumber(group.get('Amount')?.value) * rowExRate,
+          this.currentCompany?.CurrencyMasterSid,
+        ));
+        group.get('LocalAmount')?.setValue(localAmount, { emitEvent: false });
+        group.get('PartyAmount')?.setValue(toNumber(this.getPartyAmount(index)), { emitEvent: false });
+      });
+    }
     this.updateBillAmount();
   }
 
@@ -890,17 +964,23 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
       MasterJobSid: null,
       HouseJobSid: null,
       DepartmentMasterSid: null,
-      VoucherDetail: (payload?.VoucherDetail || []).map((detail: any) => ({
-        ...detail,
-        ChargeDescription: payload?.Narration || payload?.Remarks || '',
-        Narration: payload?.Narration || payload?.Remarks || '',
-        ChargeMasterSid: null,
-        ChargeUOMSid: null,
-        NumberOfUnit: 1,
-        MasterJobSid: null,
-        HouseJobSid: null,
-        DepartmentMasterSid: null,
-      })),
+      VoucherDetail: (payload?.VoucherDetail || []).map((detail: any) => {
+        const headerNarration = payload?.Narration || payload?.Remarks || '';
+        // Base onSubmit carries ChargeDescription (not Narration) per row — read from it,
+        // and fall back to the header narration only when the row narration is blank.
+        const rowNarration = String(detail?.Narration ?? detail?.ChargeDescription ?? '').trim() || headerNarration;
+        return {
+          ...detail,
+          ChargeDescription: rowNarration,
+          Narration: rowNarration,
+          ChargeMasterSid: null,
+          ChargeUOMSid: null,
+          NumberOfUnit: 1,
+          MasterJobSid: null,
+          HouseJobSid: null,
+          DepartmentMasterSid: null,
+        };
+      }),
     };
   }
 
