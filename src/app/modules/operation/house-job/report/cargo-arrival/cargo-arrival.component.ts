@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
@@ -15,6 +15,7 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../../operation.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { ShipmentMilestoneService, SafeInsertShipmentMilestone } from 'src/app/modules/operation/services/shipment-milestone.service';
 @Component({
   selector: 'app-cargo-arrival',
   standalone: true,
@@ -47,7 +48,10 @@ export class CargoArrivalComponent {
   @Input() packageTypeList:any;
   @Input() portList: any[] = []; // Add this input
   @Input() houseMenuMasterSid: number | null = null;
-  
+  @Input() milestonePayload?: SafeInsertShipmentMilestone; // ARRIVAL milestone, built by the parent (house-job entry)
+  @Output() reloadMilestone = new EventEmitter<void>(); // ask the parent to refresh the milestone tab after insert
+  private arrivalMilestoneCaptured = false;
+
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
 
@@ -98,8 +102,34 @@ export class CargoArrivalComponent {
     private operationService: OperationService,
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+    private shipmentMilestoneService: ShipmentMilestoneService
   ) { }
+
+  // Capture the "Arrival Notice Sent" (ARRIVAL) milestone the first time the Cargo Arrival
+  // Notice is generated/emailed — whichever of the with/without-charge variants comes first.
+  // MilestoneDate is omitted in the payload so the backend stamps now() (the real print/send time).
+  // Backend dedups on (HouseJobSid + MilestoneMasterSid + Status='A'), so a second action
+  // (the other variant, or download-then-email) throws "already exist" and is a silent no-op.
+  private captureArrivalNoticeMilestone(): void {
+    if (this.arrivalMilestoneCaptured) return;
+    const payload = this.milestonePayload;
+    if (!payload || !payload.ShipmentNo || !payload.MilestoneCode) return;
+
+    this.arrivalMilestoneCaptured = true;
+    this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status) {
+          this.reloadMilestone.emit(); // refresh the milestone tab now that a new row exists
+        }
+      },
+      error: (err) => {
+        // "already exist" / "not found" (non-import) are expected no-ops; allow a retry on the next action
+        this.arrivalMilestoneCaptured = false;
+        console.error('Arrival Notice milestone capture skipped:', err);
+      }
+    });
+  }
 
 
   getContainerName(ContainerTypeMasterSid: number) {
@@ -282,6 +312,7 @@ export class CargoArrivalComponent {
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
         this.createEmailAuditLog(documentName);
+        this.captureArrivalNoticeMilestone();
       });
     } catch (error) {
       console.error('Cargo Arrival email error:', error);
@@ -402,6 +433,7 @@ printDiv(divId: string): void {
         this.getCargoArrivalPdfOptions()
       );
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      this.captureArrivalNoticeMilestone();
       const payload = {
         tableName: 'HouseJob',
         recordId: String(this.housejobData?.HouseJobSid),

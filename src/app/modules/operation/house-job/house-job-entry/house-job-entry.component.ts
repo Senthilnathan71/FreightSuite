@@ -6886,6 +6886,27 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.TandCList = this.TandCList || [];
     modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+
+    // "DO Issued" (DO) milestone — captured when the Delivery Order is downloaded/emailed inside the
+    // modal. Import-only in the catalog, so the backend silently no-ops for Export. MilestoneDate is
+    // omitted → backend stamps now() (the actual print/send time).
+    const doMilestonePayload: SafeInsertShipmentMilestone = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentName: this.selectedDepartment?.departmentName,
+      JobType: this.b['JobType']?.value,
+      MilestoneCode: 'DO',
+      ShipmentNo: this.bookingData?.ShipmentNo || this.housejobData?.ShipmentNo,
+      HouseJobSid: this.housejobData?.HouseJobSid,
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid || this.housejobData?.BookingHeaderSid,
+      createdBy: this.userData?.userEmail,
+      Remarks: `DO issued on ${(new Date().toISOString()).split('T')[0]}`
+    };
+    modalRef.componentInstance.milestonePayload = doMilestonePayload;
+
+    modalRef.componentInstance.reloadMilestone.subscribe(() => {
+      this.milestoneComponent.loadShipmentMilestones(this.housejobData?.ShipmentNo);
+    });
   }
 
 
@@ -6918,6 +6939,28 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.portList = this.portList || [];
     modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+
+    // "Arrival Notice Sent" (ARRIVAL) milestone — captured when the Cargo Arrival Notice is
+    // downloaded/emailed inside the modal (whichever of the with/without-charge variants comes
+    // first). Import-only in the catalog, so the backend silently no-ops for Export. MilestoneDate
+    // is omitted → backend stamps now() (the actual print/send time).
+    const arrivalMilestonePayload: SafeInsertShipmentMilestone = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentName: this.selectedDepartment?.departmentName,
+      JobType: this.b['JobType']?.value,
+      MilestoneCode: 'ARRIVAL',
+      ShipmentNo: this.bookingData?.ShipmentNo || this.housejobData?.ShipmentNo,
+      HouseJobSid: this.housejobData?.HouseJobSid,
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid || this.housejobData?.BookingHeaderSid,
+      createdBy: this.userData?.userEmail,
+      Remarks: `Arrival Notice sent on ${(new Date().toISOString()).split('T')[0]}`
+    };
+    modalRef.componentInstance.milestonePayload = arrivalMilestonePayload;
+
+    modalRef.componentInstance.reloadMilestone.subscribe(() => {
+      this.milestoneComponent.loadShipmentMilestones(this.housejobData?.ShipmentNo);
+    });
   }
 
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
@@ -15,6 +15,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { OperationService } from '../../../operation.service';
+import { ShipmentMilestoneService, SafeInsertShipmentMilestone } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-delivery-order',
@@ -45,6 +46,9 @@ export class DeliveryOrderComponent {
   @Input() packageTypeList: any;
   @Input() containerTypeList: any;
   @Input() houseMenuMasterSid: number | null = null;
+  @Input() milestonePayload?: SafeInsertShipmentMilestone; // DO milestone, built by the parent (house-job entry)
+  @Output() reloadMilestone = new EventEmitter<void>(); // ask the parent to refresh the milestone tab after insert
+  private doMilestoneCaptured = false;
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -111,8 +115,34 @@ export class DeliveryOrderComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private shipmentMilestoneService: ShipmentMilestoneService
   ) { }
+
+  // Capture the "DO Issued" (DO) milestone the first time the Delivery Order is downloaded/emailed.
+  // MilestoneDate is omitted in the payload so the backend stamps now() (the real print/send time).
+  // Backend dedups on (HouseJobSid + MilestoneMasterSid + Status='A'), so a second action
+  // (download-then-email) throws "already exist" and is a silent no-op. Import-only in the catalog,
+  // so the backend silently no-ops for Export.
+  private captureDeliveryOrderMilestone(): void {
+    if (this.doMilestoneCaptured) return;
+    const payload = this.milestonePayload;
+    if (!payload || !payload.ShipmentNo || !payload.MilestoneCode) return;
+
+    this.doMilestoneCaptured = true;
+    this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status) {
+          this.reloadMilestone.emit(); // refresh the milestone tab now that a new row exists
+        }
+      },
+      error: (err) => {
+        // "already exist" / "not found" (non-import) are expected no-ops; allow a retry on the next action
+        this.doMilestoneCaptured = false;
+        console.error('Delivery Order milestone capture skipped:', err);
+      }
+    });
+  }
 
   getUnitCode(ChargeUomSid: number) {
 
@@ -208,6 +238,7 @@ export class DeliveryOrderComponent {
           this.getDeliveryOrderPdfOptions(),
         );
         this.appSettingService.showSuccess('PDF downloaded successfully!');
+        this.captureDeliveryOrderMilestone();
         const payload = {
         tableName: 'HouseJob',
         recordId: String(this.housejobData?.HouseJobSid),
@@ -421,6 +452,7 @@ getSubCurrencyNameFromCode(currencyCode: string): string {
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
         this.createEmailAuditLog(documentName);
+        this.captureDeliveryOrderMilestone();
       });
     } catch (error) {
       console.error('Delivery Order email error:', error);
