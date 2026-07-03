@@ -539,6 +539,15 @@ function amountCell(value: any): any {
 }
 
 function decimalCell(value: any, decimals: number): any {
+  // Amounts coming from invoicePrintData.voucherDetails are ALREADY masked
+  // per-currency strings (built by preparePrintData via formatMaskedAmount), so
+  // they carry the correct grouping style/separator (e.g. International 3-3-3 for
+  // AED). Render them verbatim — re-running them through formatNumberWithCommas
+  // (en-IN locale) would force Indian 2-2-3 on every currency. Only raw numbers
+  // (the data.charges fallback path) get locale formatting.
+  if (typeof value === 'string' && value.trim() !== '') {
+    return cell(value, 'right', true);
+  }
   const text = value === null || value === undefined || value === '' ? '' : formatNumberWithCommas(parsePdfAmount(value), decimals);
   return cell(text, 'right', true);
 }
