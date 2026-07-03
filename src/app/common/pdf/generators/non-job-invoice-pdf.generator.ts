@@ -305,10 +305,10 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
     cell(detail.Sno || detail.sno || index + 1, 'center'),
     narrationCell(detail.Narration || printData.Narration || printData.Remarks || detail.chargeName || ''),
     ...(showHsnSac ? [cell(detail.HSSACCode || detail.hsnSacCode || '')] : []),
-    cell(detail.CurrencyCode || detail.currencyCode || ''),
-    cell(detail.NumberOfUnit || detail.qty || '1.000', 'right'),
-    amountCell(detail.Rate ?? detail.rate),
-    amountCell(detail.ExchangeRate ?? detail.roe ?? detail.exchangeRate),
+    cell(detail.CurrencyCode || detail.currencyCode || '', 'center', true),
+    decimalCell(detail.NumberOfUnit || detail.qty || '1.000', 3),
+    decimalCell(detail.Rate ?? detail.rate, 2),
+    decimalCell(detail.ExchangeRate ?? detail.roe ?? detail.exchangeRate, 4),
     amountCell(detail.TaxableAmount ?? detail.taxableAmount),
     ...taxCells(detail, taxConfig),
     amountCell(detail.LocalAmount ?? detail.localAmount),
@@ -319,7 +319,7 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
   rows.push([
     { text: 'Total', bold: true, alignment: 'right', colSpan: totalColspan, border: [true, true, true, true] },
     ...Array(totalColspan - 1).fill({ text: '' }),
-    { text: printData.totalPartyAmount || formatNumberWithCommas(data.totals?.grandTotal || 0), bold: true, alignment: 'right' }
+    { text: printData.totalPartyAmount || formatNumberWithCommas(data.totals?.grandTotal || 0), bold: true, alignment: 'right', noWrap: true }
   ]);
 
   const widths = buildChargeTableWidths(showHsnSac, taxConfig, showForeign);
@@ -338,10 +338,6 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
 
   return {
     stack: [
-      {
-        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 575, y2: 0, lineWidth: 0.5 }],
-        margin: [-10, 2, -10, 2]
-      },
       chargesTable
     ]
   };
@@ -508,20 +504,20 @@ function taxHeaders(config: any): any[] {
 
 function taxCells(detail: any, config: any): any[] {
   return [
-    ...(config.showCGST ? [amountCell(detail.cgstRate ?? detail.cgstPercent), amountCell(detail.cgstAmt ?? detail.cgstAmount)] : []),
-    ...(config.showSGST ? [amountCell(detail.sgstRate ?? detail.sgstPercent), amountCell(detail.sgstAmt ?? detail.sgstAmount)] : []),
-    ...(config.showUGST ? [amountCell(detail.ugstRate ?? detail.ugstPercent), amountCell(detail.ugstAmt ?? detail.ugstAmount)] : []),
-    ...(config.showIGST ? [amountCell(detail.igstRate ?? detail.igstPercent), amountCell(detail.igstAmt ?? detail.igstAmount)] : []),
-    ...(config.showVAT ? [amountCell(detail.vatRate ?? detail.vatPercent), amountCell(detail.vatAmt ?? detail.vatAmount)] : [])
+    ...(config.showCGST ? [decimalCell(detail.cgstRate ?? detail.cgstPercent, 3), amountCell(detail.cgstAmt ?? detail.cgstAmount)] : []),
+    ...(config.showSGST ? [decimalCell(detail.sgstRate ?? detail.sgstPercent, 3), amountCell(detail.sgstAmt ?? detail.sgstAmount)] : []),
+    ...(config.showUGST ? [decimalCell(detail.ugstRate ?? detail.ugstPercent, 3), amountCell(detail.ugstAmt ?? detail.ugstAmount)] : []),
+    ...(config.showIGST ? [decimalCell(detail.igstRate ?? detail.igstPercent, 3), amountCell(detail.igstAmt ?? detail.igstAmount)] : []),
+    ...(config.showVAT ? [decimalCell(detail.vatRate ?? detail.vatPercent, 3), amountCell(detail.vatAmt ?? detail.vatAmount)] : [])
   ];
 }
 
 function tableHeader(text: string): any {
-  return { text, bold: true, alignment: 'center', fontSize: 7, noWrap: false };
+  return { text, bold: true, alignment: 'center', fontSize: 7, noWrap: true };
 }
 
-function cell(text: any, alignment: 'left' | 'center' | 'right' = 'left'): any {
-  return { text: text ?? '', alignment, fontSize: 7 };
+function cell(text: any, alignment: 'left' | 'center' | 'right' = 'left', noWrap = false): any {
+  return { text: text ?? '', alignment, fontSize: 7, noWrap };
 }
 
 function narrationCell(text: any): any {
@@ -539,8 +535,17 @@ function softenLongTokens(text: any): string {
 }
 
 function amountCell(value: any): any {
-  const text = value === null || value === undefined || value === '' ? '' : formatNumberWithCommas(Number(value) || 0);
-  return cell(text, 'right');
+  return decimalCell(value, 2);
+}
+
+function decimalCell(value: any, decimals: number): any {
+  const text = value === null || value === undefined || value === '' ? '' : formatNumberWithCommas(parsePdfAmount(value), decimals);
+  return cell(text, 'right', true);
+}
+
+function parsePdfAmount(value: any): number {
+  if (typeof value === 'number') return value;
+  return Number(String(value).replace(/,/g, '')) || 0;
 }
 
 function tableLayout(): any {
@@ -563,32 +568,32 @@ function buildChargeTableWidths(showHsnSac: boolean, taxConfig: any, showForeign
 
   if (showHsnSac && showForeign && taxColumnCount >= 4) {
     return [
-      20,
+      22,
       '*',
       32,
       24,
-      34,
-      28,
-      30,
-      40,
-      ...buildTaxColumnWidths(taxColumnCount, true),
       42,
-      42
+      54,
+      38,
+      56,
+      ...buildTaxColumnWidths(taxColumnCount, true),
+      60,
+      60
     ];
   }
 
   if (showHsnSac && !showForeign && taxColumnCount >= 4) {
     return [
-      20,
+      22,
       '*',
       38,
       24,
-      34,
-      30,
-      30,
       42,
+      56,
+      38,
+      58,
       ...buildTaxColumnWidths(taxColumnCount, true),
-      46
+      62
     ];
   }
 
@@ -597,13 +602,13 @@ function buildChargeTableWidths(showHsnSac: boolean, taxConfig: any, showForeign
     '*',
     ...(showHsnSac ? [veryCompact ? 30 : compact ? 38 : 44] : []),
     veryCompact ? 24 : 28,
-    veryCompact ? 32 : compact ? 38 : 44,
-    veryCompact ? 28 : compact ? 32 : 36,
-    veryCompact ? 28 : compact ? 34 : 38,
-    veryCompact ? 38 : compact ? 44 : 48,
+    veryCompact ? 34 : compact ? 44 : 50,
+    veryCompact ? 44 : compact ? 54 : 60,
+    veryCompact ? 34 : compact ? 38 : 42,
+    veryCompact ? 48 : compact ? 58 : 62,
     ...buildTaxColumnWidths(taxColumnCount),
-    veryCompact ? 38 : compact ? 46 : 54,
-    ...(showForeign ? [veryCompact ? 38 : 46] : [])
+    veryCompact ? 52 : compact ? 62 : 68,
+    ...(showForeign ? [veryCompact ? 52 : 62] : [])
   ];
 }
 

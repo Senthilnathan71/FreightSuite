@@ -607,13 +607,13 @@
           <table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
             <thead>
               <tr>
-                <th style="border: 1px solid black; padding: 2px 4px; font-weight: bolder; text-align: center; width: 42px; border-left: none; white-space: nowrap;"><strong>S.No.</strong></th>
+                <th style="border: 1px solid black; padding: 2px 4px; font-weight: bolder; text-align: center; width: 35px; border-left: none; white-space: nowrap;"><strong>S.No.</strong></th>
                 <th style="border: 1px solid black; padding: 2px 6px; font-weight: bolder; text-align: center; width: 34%;"><strong>Narration</strong></th>
                 <th *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="border: 1px solid black; padding: 2px 4px; text-align: center; font-weight: bolder; width: 70px; white-space: nowrap;"><strong>HSN/SAC</strong></th>
-                <th style="border: 1px solid black; padding: 2px 8px; text-align: left; font-weight: bolder;"><strong>Curr.</strong></th>
-                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>No. of Unit</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: left; font-weight: bolder;width: 40px;"><strong>Curr.</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder; width: 80px;"><strong>No. of Unit</strong></th>
                 <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>Rate</strong></th>
-                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>ROE</strong></th>
+                <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder; width:63px;"><strong>ROE</strong></th>
                 <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>Taxable Amt</strong></th>
                 <ng-container *ngIf="printTaxDisplayConfig.showCGST">
                   <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>CGST %</strong></th>
@@ -632,7 +632,7 @@
                   <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>IGST Amt.</strong></th>
                 </ng-container>
                 <ng-container *ngIf="printTaxDisplayConfig.showVAT">
-                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>VAT %</strong></th>
+                  <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder; width:60px;"><strong>VAT %</strong></th>
                   <th style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;"><strong>VAT Amt.</strong></th>
                 </ng-container>
                 <th [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="border: 1px solid black; padding: 2px 8px; text-align: center;"><strong>Amt In {{ currentCompanyCurrency?.code }}</strong></th>
