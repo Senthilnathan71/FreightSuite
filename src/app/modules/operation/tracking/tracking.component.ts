@@ -356,11 +356,15 @@ export class TrackingComponent implements OnInit, OnDestroy {
    * Movement is intentionally excluded (it duplicates Dept. + Job Type).
    */
   summaryFields(tracking: any): Array<{ label: string; value: string }> {
+    // Dept + Job Type share one box: "Dept / Job Type" → "LCL Export / Export".
+    const department = this.displayValue(tracking?.shipmentInfo?.department, '');
+    const jobType = this.shipmentInfoValue(tracking, 'jobType', 'movementType');
+    const deptJobValue = this.joinUnique([department, jobType === '-' ? '' : jobType]);
+
     const fields = [
       { label: 'Booking No', value: this.shipmentInfoValue(tracking, 'bookingNumber', 'bookingNo') },
       { label: this.hblLabel(tracking), value: this.shipmentInfoValue(tracking, 'hblHawbNumber', 'hblNo') },
-      { label: 'Job Type', value: this.shipmentInfoValue(tracking, 'jobType', 'movementType') },
-      { label: 'Dept.', value: this.displayValue(tracking?.shipmentInfo?.department) },
+      { label: 'Dept / Job Type', value: deptJobValue },
       { label: 'Master Job', value: this.shipmentInfoValue(tracking, 'jobNumber') },
       { label: this.mblLabel(tracking), value: this.shipmentInfoValue(tracking, 'mblMawbNumber', 'mblNo') },
     ];
@@ -609,6 +613,22 @@ export class TrackingComponent implements OnInit, OnDestroy {
   routeVehicleLeft(tracking: any): number {
     const index = this.routeProgressIndex(tracking);
     return [12.5, 37.5, 62.5, 87.5][index] ?? 12.5;
+  }
+
+  /**
+   * Which animated vehicle to show at the live position:
+   *   first-mile pickup (origin)  → truck
+   *   main carriage (POL → POD)   → ship (Sea) / plane (Air)
+   *   last-mile delivery (FPOD)   → truck
+   * Mirrors the real door-to-door journey: truck → ship/plane → truck.
+   */
+  routeVehicleType(tracking: any): 'truck' | 'ship' | 'plane' {
+    const index = this.routeProgressIndex(tracking);
+    const lastIndex = this.routePoints(tracking).length - 1;
+    if (index <= 0 || index >= lastIndex) {
+      return 'truck';
+    }
+    return this.isAirShipment(tracking) ? 'plane' : 'ship';
   }
 
   /** Show the milestone location only when it adds information (not a repeat of the title). */

@@ -278,37 +278,50 @@
               <span class="route-progress-fill" [style.width.%]="routeProgressPercent(tracking)"></span>
             </div>
 
-            <!-- Moving GIF-style vehicle (colour cargo ship for Sea, airliner for Air) -->
+            <!-- Moving vehicle for the live stage: truck (pickup/delivery) → ship/plane (transit) → truck -->
             <div
               class="route-vehicle"
-              [class.is-air]="isAirShipment(tracking)"
-              [class.is-sea]="!isAirShipment(tracking)"
+              [ngClass]="'veh-' + routeVehicleType(tracking)"
               [style.left.%]="routeVehicleLeft(tracking)"
               aria-hidden="true"
             >
-              <ng-container *ngIf="!isAirShipment(tracking); else planeVehicle">
-                <svg class="veh-ship" viewBox="0 0 90 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- containers stacked on deck -->
+              <ng-container [ngSwitch]="routeVehicleType(tracking)">
+                <!-- First / last mile — delivery truck -->
+                <svg *ngSwitchCase="'truck'" class="veh-svg veh-truck-svg" viewBox="0 0 100 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="6" y="14" width="56" height="27" rx="2" fill="#0b3a63"/>
+                  <rect x="10" y="18" width="11" height="19" fill="#f97316"/>
+                  <rect x="23" y="18" width="11" height="19" fill="#facc15"/>
+                  <rect x="36" y="18" width="11" height="19" fill="#22c55e"/>
+                  <rect x="49" y="18" width="9" height="19" fill="#38bdf8"/>
+                  <path d="M64 20 H80 L90 31 V41 H64 Z" fill="#2563eb"/>
+                  <rect x="68" y="24" width="13" height="8" rx="1" fill="#bfdbfe"/>
+                  <rect x="6" y="41" width="84" height="4" rx="1" fill="#1e293b"/>
+                  <circle cx="24" cy="47" r="7" fill="#111827"/>
+                  <circle cx="24" cy="47" r="3" fill="#94a3b8"/>
+                  <circle cx="76" cy="47" r="7" fill="#111827"/>
+                  <circle cx="76" cy="47" r="3" fill="#94a3b8"/>
+                </svg>
+
+                <!-- Main air carriage — airliner -->
+                <svg *ngSwitchCase="'plane'" class="veh-svg veh-plane-svg" viewBox="0 0 96 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 26 L60 22 L86 12 C90 11 92 15 88 18 L64 30 L40 44 L34 42 L44 30 L22 32 L14 40 L9 39 L12 30 L4 29 Z" fill="#2563eb"/>
+                  <path d="M60 22 L86 12 C90 11 92 15 88 18 L64 30 Z" fill="#38bdf8"/>
+                </svg>
+
+                <!-- Main sea carriage — cargo ship -->
+                <svg *ngSwitchDefault class="veh-svg veh-ship-svg" viewBox="0 0 90 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="26" y="18" width="12" height="10" rx="1" fill="#f97316"/>
                   <rect x="39" y="18" width="12" height="10" rx="1" fill="#facc15"/>
                   <rect x="52" y="18" width="12" height="10" rx="1" fill="#22c55e"/>
                   <rect x="31" y="8" width="12" height="10" rx="1" fill="#38bdf8"/>
                   <rect x="46" y="8" width="12" height="10" rx="1" fill="#ef4444"/>
-                  <!-- bridge -->
                   <rect x="64" y="10" width="10" height="18" rx="1.5" fill="#e2e8f0"/>
                   <rect x="66" y="13" width="6" height="4" rx="1" fill="#0b3a63"/>
-                  <!-- hull -->
                   <path d="M14 30 H78 L70 48 H22 Z" fill="#0b3a63"/>
                   <path d="M14 30 H78 L76 36 H16 Z" fill="#eab308"/>
                 </svg>
               </ng-container>
-              <ng-template #planeVehicle>
-                <svg class="veh-plane" viewBox="0 0 96 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 26 L60 22 L86 12 C90 11 92 15 88 18 L64 30 L40 44 L34 42 L44 30 L22 32 L14 40 L9 39 L12 30 L4 29 Z" fill="#2563eb"/>
-                  <path d="M60 22 L86 12 C90 11 92 15 88 18 L64 30 Z" fill="#38bdf8"/>
-                </svg>
-                <span class="plane-trail"></span>
-              </ng-template>
+              <span class="plane-trail" *ngIf="routeVehicleType(tracking) === 'plane'"></span>
             </div>
 
             <div
@@ -320,7 +333,6 @@
                 <i class="fas" [ngClass]="routePointIcon(tracking, i)"></i>
                 <span class="badge-tick" *ngIf="routePointClass(i, tracking) === 'completed'"><i class="fas fa-check"></i></span>
               </span>
-              <span class="route-role">{{ point.role }}</span>
               <strong class="route-port">{{ point.label }}</strong>
               <small class="route-portname" *ngIf="portName(tracking, point.label)">{{ portName(tracking, point.label) }}</small>
               <span class="route-when" *ngIf="portPrimaryDate(tracking, i).value !== '-'">
@@ -348,19 +360,6 @@
                       </div>
                       <div class="metric-grid">
                         <div class="metric-card" *ngFor="let item of cargoDetailItems(tracking)">
-                          <span>{{ item.label }}</span>
-                          <strong>{{ item.value }}</strong>
-                        </div>
-                      </div>
-                    </article>
-
-                    <article class="overview-card progress-card" *ngIf="progressItems(tracking).length">
-                      <div class="card-title">
-                        <i class="fas fa-stream"></i>
-                        <h4>Shipment Progress</h4>
-                      </div>
-                      <div class="progress-grid compact">
-                        <div class="progress-item" *ngFor="let item of progressItems(tracking)">
                           <span>{{ item.label }}</span>
                           <strong>{{ item.value }}</strong>
                         </div>
@@ -484,6 +483,16 @@
           <p>{{ currentRouteStageMeta(tracking) }}</p>
           <div class="live-meter">
             <span [style.width.%]="routeProgressPercent(tracking)"></span>
+          </div>
+          <div class="live-stats">
+            <div class="live-stat">
+              <span>Milestones</span>
+              <strong>{{ milestoneProgressValue(tracking) }}</strong>
+            </div>
+            <div class="live-stat">
+              <span>Last Update</span>
+              <strong>{{ currentStatusDate(tracking) }}</strong>
+            </div>
           </div>
         </section>
 
