@@ -341,6 +341,7 @@ export class VendorInvoicePrintComponent {
         customerMasterSid: this.getVendorMasterSidForEmail(),
         menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(this.appSettingService.getCurrentCompanyInfo()?.CompanyMasterSid, this.getCurrentMenuMasterSidForEmail());
 
       if (toEmail.length === 0) {
         this.appSettingService.showError('No email found in customer branch email.');
@@ -378,6 +379,9 @@ export class VendorInvoicePrintComponent {
           pod: this.vendorInvoiceData?.POD || '',
           fpd: this.vendorInvoiceData?.FPD || ''
         },
+        attachmentRequired,
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
         attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {

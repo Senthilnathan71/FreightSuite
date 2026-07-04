@@ -136,6 +136,31 @@ export class EmailTriggerService {
   }
 
   /**
+   * Resolves the MenuMasterSid for a menu by its (case-insensitive) name, e.g.
+   * "Operation Reports". Operation report print mails store their Mail
+   * Configuration against a shared menu ("Operation Reports"), not the entity's
+   * own menu, so the print flows resolve that menu id for the config lookup
+   * while still resolving recipients from the entity's own menu. Returns null
+   * when no menu matches.
+   */
+  async resolveMenuMasterSidByName(menuName: string): Promise<number | null> {
+    if (!menuName) return null;
+    try {
+      const menus: any = await firstValueFrom(this.settingsService.getAllMenu());
+      const list = Array.isArray(menus) ? menus : (menus?.data || []);
+      const target = menuName.trim().toLowerCase();
+      const match = list.find(
+        (m: any) => String(m?.MenuName || '').trim().toLowerCase() === target
+      );
+      const sid = Number(match?.MenuMasterSid);
+      return Number.isFinite(sid) && sid > 0 ? sid : null;
+    } catch (error) {
+      console.error('Error resolving menu master sid by name:', error);
+      return null;
+    }
+  }
+
+  /**
    * Returns whether an attachment is required for a menu according to its active
    * Mail Configuration (AttachmentRequire). Used by the print "Send Mail" flows
    * that manage their own PDF (house-job reports, SI mail) so the attachment is
@@ -492,9 +517,9 @@ ${userName}`
 
     this.emailService.getAllByCompany(companyId).subscribe({
       next: (resp: any) => {
-        if (!resp.status || !resp.data) return;
+        const allConfigs = (resp?.status && Array.isArray(resp?.data)) ? resp.data : [];
 
-        const configs = resp.data.filter((config: any) => {
+        const configs = allConfigs.filter((config: any) => {
           const trigger = String(config?.Trigger || '').trim().toUpperCase();
           const isManualTrigger = trigger === 'M' || trigger === 'MANUAL';
           const configCompanySids = Array.isArray(config?.CompanyMasterSids)
@@ -512,7 +537,14 @@ ${userName}`
         });
 
         if (configs.length === 0) {
-          this.openEmailPopup(this.buildDefaultManualEmailConfig(attachmentFile), context, attachmentFile);
+          // No Mail Configuration for this menu -> open a blank popup so the user
+          // can fill To/CC/Subject/Body manually (fields stay editable, and To is
+          // not required since there is no configured source to resolve it from).
+          this.openEmailPopup(
+            this.buildDefaultManualEmailConfig(attachmentFile),
+            { ...(context || {}), requireToEmail: false },
+            attachmentFile
+          );
           return;
         }
 
@@ -528,6 +560,14 @@ ${userName}`
             this.openEmailPopup(config, context, attachmentFile);
           }
         }
+      },
+      error: () => {
+        // Config lookup failed -> still let the user compose the mail manually.
+        this.openEmailPopup(
+          this.buildDefaultManualEmailConfig(attachmentFile),
+          { ...(context || {}), requireToEmail: false },
+          attachmentFile
+        );
       }
     });
   }
@@ -751,7 +791,9 @@ ${userName}`
       formData.append('ResourceSid', String(context['resourceSid']));
     }
 
-    if (config.AttachmentRequire === 'Y' && attachmentFile) {
+    // Attach when the config requires it, OR when the caller forces it
+    // (e.g. quotation print mail always carries the PDF).
+    if ((config.AttachmentRequire === 'Y' || context?.['forceAttachment']) && attachmentFile) {
       formData.append('attachments', attachmentFile, this.sanitizeAttachmentFileName(attachmentFile.name));
     }
 
@@ -794,7 +836,9 @@ ${userName}`
       Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext).replace(/<br\s*\/?>/gi, '\n'),
       context: enrichedContext,
       attachmentRequired: config.AttachmentRequire === 'Y',
-      ...(config.AttachmentRequire === 'Y' && attachmentFile ? { attachments: [attachmentFile] } : {})
+      // Attach when the config requires it, OR when the caller forces it
+      // (e.g. quotation print mail always carries the PDF).
+      ...((config.AttachmentRequire === 'Y' || context?.['forceAttachment']) && attachmentFile ? { attachments: [attachmentFile] } : {})
     };
   }
 

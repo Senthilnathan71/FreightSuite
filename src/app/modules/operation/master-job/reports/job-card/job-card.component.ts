@@ -517,6 +517,11 @@ private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: 
         followupLine: 'Kindly review the attached details at your convenience.'
       });
 
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(
+        this.currentCompany?.CompanyMasterSid,
+        this.getCurrentMenuMasterSidForEmail()
+      );
+
       const file = new File([blob], `Job_Card_${documentNo || 'Report'}.pdf`, { type: 'application/pdf' });
       const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
       emailRef.componentInstance.setContent = {
@@ -535,6 +540,9 @@ private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: 
           pod: this.masterJobData?.POD || '',
           fpd: this.masterJobData?.FPD || ''
         },
+        attachmentRequired,
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
         attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {

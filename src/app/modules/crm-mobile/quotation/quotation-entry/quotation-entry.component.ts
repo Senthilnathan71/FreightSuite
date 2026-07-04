@@ -7185,6 +7185,9 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         context: {
           requireToEmail: !isCustomer,
           allowManualEmailEntry: isCustomer,
+          // Quotation print mail always carries the PDF, even if the mail
+          // configuration's AttachmentRequire is 'N'.
+          forceAttachment: true,
           quotationNumber: this.selectedItem?.QuoteNumber,
           date: this.datePipe.transform(this.selectedItem?.QuoteDate),
           DepartmentName: this.getQuotationDepartmentName(),

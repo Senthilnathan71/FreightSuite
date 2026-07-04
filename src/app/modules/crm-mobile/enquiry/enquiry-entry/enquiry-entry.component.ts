@@ -3295,22 +3295,18 @@ if (this.isTermsAndConditionsEnabled) {
         return;
       }
 
-      // Attachment is governed by the mail configuration (AttachmentRequire),
-      // just like sendManualMail(). When no config exists, keep attaching the PDF.
-      const attachmentRequired = resolvedRecipients.config
-        ? resolvedRecipients.config.AttachmentRequire === 'Y'
-        : true;
-      let pdfFile: File | undefined;
-      if (attachmentRequired) {
-        const pdfBlob = await this.generatePDFBlob();
-        if (!pdfBlob) {
-          this.spinner.hide();
-          this.appSettingService.showError('Error generating PDF for email.');
-          return;
-        }
-        const pdfFileName = `Enquiry_${enquiryNumber}`.replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
-        pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+      // Enquiry print mail ALWAYS attaches the PDF, regardless of the mail
+      // configuration's AttachmentRequire. AttachmentRequire only controls the
+      // "send without attachment" validation (fires only when set to 'Y').
+      const attachmentRequired = resolvedRecipients.config?.AttachmentRequire === 'Y';
+      const pdfBlob = await this.generatePDFBlob();
+      if (!pdfBlob) {
+        this.spinner.hide();
+        this.appSettingService.showError('Error generating PDF for email.');
+        return;
       }
+      const pdfFileName = `Enquiry_${enquiryNumber}`.replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
+      const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
 
       const route = enquiry?.enquiryRoute?.[0] || {};
       const POL = route?.POLSid;
@@ -3351,7 +3347,7 @@ if (this.isTermsAndConditionsEnabled) {
         Subject: subject,
         Mailbody: body,
         attachmentRequired,
-        ...(attachmentRequired && pdfFile ? { attachments: [pdfFile] } : {}),
+        attachments: [pdfFile],
         context: {
           menuName: 'Enquiry',
           EnquiryNo: enquiryNumber,

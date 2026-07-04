@@ -1314,53 +1314,74 @@ getOtherPrepaidTotal(): number {
       const documentName = this.selectedReport === 'MAWB' ? 'MAWB' : 'MAWB Draft';
       const documentNo = this.masterAirWayData?.MBLNo || this.masterAirWayData?.MasterBillNumber || '';
       const documentDate = this.formatEmailDate(this.masterAirWayData?.MBLDate || this.masterAirWayData?.MasterJobDate);
-      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
-        customerBranchSid: this.getCustomerBranchSidForEmail(),
-        customerMasterSid: this.getCustomerMasterSidForEmail(),
-        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
-      });
+      const recipientMenuSid = this.getCurrentMenuMasterSidForEmail();
+      const customerBranchSid = this.getCustomerBranchSidForEmail();
+      const customerMasterSid = this.getCustomerMasterSidForEmail();
 
-      if (emailRecipients.toEmail.length === 0) {
-        this.appSettingService.showError('No email found in customer branch email.');
-        return;
-      }
-
-      const emailContent = this.emailTriggerService.buildOperationEmailContent({
-        documentName,
-        documentNoLabel: 'MAWB No.',
-        documentNo,
-        documentDate,
-        pol: this.masterAirWayData?.POL || '',
-        pod: this.masterAirWayData?.POD || '',
-        fpd: this.masterAirWayData?.FPD || '',
-        userName: this.userData?.userName || '',
-        introLine: `Please find attached the ${documentName} for your reference.`,
-        followupLine: 'Kindly review the attached details at your convenience.'
+      // Recipients ({{toEmail}}/{{ccEmail}}) resolve from the entity's own menu —
+      // customer-branch emails are configured against the Master Air Waybill menu.
+      const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid,
+        customerMasterSid,
+        menuMasterSid: recipientMenuSid
       });
+      const organizationEmail = recipients.toEmail.join(', ');
+      const ccEmail = Array.from(
+        new Set(
+          (recipients.ccEmail || [])
+            .map((email: string) => (email || '').trim())
+            .filter((email: string) => !!email)
+        )
+      ).join(', ');
+
+      // The Mail Configuration for operation report prints is stored against the
+      // shared "Operation Reports" menu, so resolve that menu id for the config
+      // lookup (fall back to the entity menu when it can't be resolved).
+      const configMenuSid =
+        (await this.emailTriggerService.resolveMenuMasterSidByName('Operation Reports')) ||
+        recipientMenuSid;
 
       const file = new File([blob], this.getMawbPdfFilename(documentName, documentNo), { type: 'application/pdf' });
-      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
-      emailRef.componentInstance.setContent = {
-        EmailTo: emailRecipients.toEmail,
-        EmailCC: emailRecipients.ccEmail,
-        EmailBCC: [],
-        Subject: emailContent.subject,
-        Mailbody: emailContent.body,
+
+      // Route through the manual-mail trigger (like sendManualMail) so the menu's
+      // Mail Configuration decides the subject/body and whether a popup opens
+      // (Popup) or the mail is sent directly (Auto). forceAttachment makes the
+      // print mail always carry the generated PDF, even when AttachmentRequire = No;
+      // AttachmentRequire still drives the "send without attachment" warning. The
+      // recipients are pre-resolved above so {{toEmail}}/{{ccEmail}} keep using the
+      // Master Air Waybill menu's customer-branch emails.
+      this.emailTriggerService.triggerManualEmails({
+        companyId: this.currentCompany?.CompanyMasterSid,
+        branchId: this.currentBranch?.BranchMasterSid,
+        menuMasterSid: configMenuSid,
+        action: 'UPDATE',
+        attachmentFile: file,
         context: {
+          allowManualEmailEntry: true,
+          requireToEmail: false,
+          forceAttachment: true,
+          menuMasterSid: configMenuSid,
+          resourceSid: this.masterAirWayData?.MasterJobSid,
           documentName,
           documentNoLabel: 'MAWB No',
           menuName: documentName,
           documentNo,
           date: documentDate,
-          pol: this.masterAirWayData?.POL || '',
-          pod: this.masterAirWayData?.POD || '',
-          fpd: this.masterAirWayData?.FPD || ''
-        },
-        attachments: [file]
-      };
-      emailRef.componentInstance.dataChange.subscribe(() => {
-        this.createEmailAuditLog(documentName);
+          POO: this.getPortDisplay(this.masterAirWayData?.POO || this.masterAirWayData?.POL || ''),
+          POL: this.getPortDisplay(this.masterAirWayData?.POL || ''),
+          POD: this.getPortDisplay(this.masterAirWayData?.POD || ''),
+          FPD: this.getPortDisplay(this.masterAirWayData?.FPD || ''),
+          userName: this.userData?.userName,
+          toEmail: organizationEmail,
+          ccEmail,
+          organizationEmail,
+          customerEmail: organizationEmail,
+          customerBranchSid,
+          customerMasterSid
+        }
       });
+
+      this.createEmailAuditLog(documentName);
     } catch (error) {
       console.error('MAWB email error:', error);
       this.appSettingService.showError('Error preparing email');

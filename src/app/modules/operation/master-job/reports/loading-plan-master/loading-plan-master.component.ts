@@ -270,6 +270,10 @@ export class LoadingPlanMasterComponent {
       });
 
       const file = new File([blob], `Loading_Plan_${documentNo || 'Report'}.pdf`, { type: 'application/pdf' });
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(
+        this.currentCompany?.CompanyMasterSid,
+        this.getCurrentMenuMasterSidForEmail()
+      );
       const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
       emailRef.componentInstance.setContent = {
         EmailTo: emailRecipients.toEmail,
@@ -287,6 +291,9 @@ export class LoadingPlanMasterComponent {
           pod: this.masterJobData?.POD || '',
           fpd: this.masterJobData?.FPD || ''
         },
+        attachmentRequired,
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
         attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {

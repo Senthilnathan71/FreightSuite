@@ -327,6 +327,7 @@ export class VendorCreditNotePrintComponent {
         customerMasterSid: this.getVendorMasterSidForEmail(),
         menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(this.appSettingService.getCurrentCompanyInfo()?.CompanyMasterSid, this.getCurrentMenuMasterSidForEmail());
 
       if (emailRecipients.toEmail.length === 0) {
         this.appSettingService.showError('No email found in customer branch email.');
@@ -364,6 +365,9 @@ export class VendorCreditNotePrintComponent {
           pod: this.vendorCreditNoteData?.POD || '',
           fpd: this.vendorCreditNoteData?.FPD || ''
         },
+        attachmentRequired,
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
         attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {

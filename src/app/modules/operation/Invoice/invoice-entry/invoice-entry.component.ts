@@ -3341,6 +3341,10 @@ isSeaDepartment(): boolean {
       });
       const resolvedBody = (mailConfig?.body || '').trim() || emailContent.body;
 
+      // Attachment is governed by the menu's Mail Configuration (AttachmentRequire),
+      // like sendManualMail(). When no config exists, keep attaching the PDF.
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(this.currentCompany?.CompanyMasterSid, menuMasterSid);
+
       const file = new File([blob], `Invoice_${voucherNumber || 'Report'}.pdf`, { type: 'application/pdf' });
       const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
       emailRef.componentInstance.setContent = {
@@ -3359,6 +3363,9 @@ isSeaDepartment(): boolean {
           pod: this.invoicePrintData?.POD || this.invoiceData?.POD || '',
           fpd: this.invoicePrintData?.FPD || this.invoiceData?.FPD || ''
         },
+        attachmentRequired,
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
         attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
