@@ -6056,7 +6056,9 @@ ${this.userData['userName']}`;
         Subject: subject,
         Mailbody: mailBody,
         attachmentRequired,
-        ...(attachmentRequired ? { attachments: [pdfFile] } : {})
+        // Print email always carries the generated PDF, even when the menu's
+        // Mail Configuration has AttachmentRequire = No.
+        attachments: [pdfFile]
       };
 
     } catch (error) {
@@ -6164,26 +6166,26 @@ ${this.userData['userName']}`;
         if (resp.status) {
           const data = resp.data;
           if (data?.showPopup && data?.emailData) {
-            // Attachment is governed by the SI menu's Mail Configuration (AttachmentRequire),
-            // like sendManualMail(). When required, attach the generated House Job PDF.
+            // SI print mail ALWAYS attaches the generated House Job PDF, even when
+            // the SI menu's Mail Configuration has AttachmentRequire = No.
+            // AttachmentRequire only drives the "send without attachment" warning
+            // (fires when set to 'Y' and no attachment is present), like sendManualMail().
             const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(
               this.currentCompany?.CompanyMasterSid,
               this.currentMenuId
             );
             let attachmentFile: File | undefined;
-            if (attachmentRequired) {
-              try {
-                const pdfBlob = await this.generatePDFBlob();
-                if (pdfBlob) {
-                  attachmentFile = new File(
-                    [pdfBlob],
-                    (this.housejobData?.HBLNo || this.bookingData?.ShipmentNo || 'HouseJob') + '.pdf',
-                    { type: 'application/pdf' }
-                  );
-                }
-              } catch (e) {
-                console.warn('SI mail PDF generation skipped:', e);
+            try {
+              const pdfBlob = await this.generatePDFBlob();
+              if (pdfBlob) {
+                attachmentFile = new File(
+                  [pdfBlob],
+                  (this.housejobData?.HBLNo || this.bookingData?.ShipmentNo || 'HouseJob') + '.pdf',
+                  { type: 'application/pdf' }
+                );
               }
+            } catch (e) {
+              console.warn('SI mail PDF generation skipped:', e);
             }
 
             // Open email popup for user to review and send
@@ -6199,7 +6201,8 @@ ${this.userData['userName']}`;
               Subject: data.emailData.subject,
               Mailbody: data.emailData.body,
               attachmentRequired,
-              ...(attachmentRequired && attachmentFile ? { attachments: [attachmentFile] } : {})
+              // Always carry the PDF, even when AttachmentRequire = No.
+              ...(attachmentFile ? { attachments: [attachmentFile] } : {})
             };
           } else {
             this.appSettingService.showSuccess('SI Mail sent successfully');

@@ -381,13 +381,87 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     });
   }
 
-  sendManualMail(): void {
+  async sendManualMail(): Promise<void> {
+    const recipientMenuSid = this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
+    const customerBranchSid =
+      this.masterJobData?.CustomerBranchSid ||
+      this.masterJobData?.customerBranch?.CustomerBranchSid ||
+      this.masterJobData?.houseJob?.[0]?.CustomerBranchSid ||
+      null;
+    const customerMasterSid =
+      this.masterJobData?.DestinationAgent ||
+      this.masterJobData?.CustomerMasterSid ||
+      null;
+
+    // Recipients ({{toEmail}}/{{ccEmail}}) resolve from the Master Air Waybill
+    // menu's customer-branch emails.
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid,
+      customerMasterSid,
+      menuMasterSid: recipientMenuSid
+    });
+    const organizationEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .map((email: string) => (email || '').trim())
+          .filter((email: string) => !!email)
+      )
+    ).join(', ');
+
+    // The Mail Configuration for Master Air Waybill mails is stored against the
+    // shared "Operation Reports" menu, so resolve that menu id for the config
+    // lookup (fall back to the entity menu when it can't be resolved).
+    const configMenuSid =
+      (await this.emailTriggerService.resolveMenuMasterSidByName('Operation Reports')) ||
+      recipientMenuSid;
+
+    const POL = this.masterJobData?.POL;
+    const POD = this.masterJobData?.POD;
+    const FPD = this.masterJobData?.FPD;
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      menuMasterSid: configMenuSid,
       action: 'UPDATE',
-      context: {}
+      context: {
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid: configMenuSid,
+        resourceSid: this.masterJobData?.MasterJobSid,
+        menuName: 'Master Airway',
+        documentNo: this.masterJobData?.MBLNo || this.masterJobData?.MasterBillNumber || this.masterJobData?.MasterJobNumber || '',
+        date: this.masterJobData?.MasterJobDate ? new Date(this.masterJobData.MasterJobDate).toLocaleDateString('en-GB') : '',
+        POO: this.getFormattedPort(this.masterJobData?.POO || POL),
+        POL: this.getFormattedPort(POL),
+        POD: this.getFormattedPort(POD),
+        FPD: this.getFormattedPort(FPD),
+        userName: this.userData?.userName,
+        toEmail: organizationEmail,
+        ccEmail,
+        organizationEmail,
+        customerEmail: organizationEmail,
+        customerBranchSid,
+        customerMasterSid
+      }
+    });
+    const payload = {
+      tableName: 'MasterJob',
+      recordId: String(this.masterJobData?.MasterJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Email Send'
+      },
+      newVal: {
+        Email: 'Email Send'
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
     });
   }
 

@@ -6324,6 +6324,11 @@ async sendEmail(type: BookingEmailType = 'booking'): Promise<void> {
         : 'Looking forward to confirm cargo readiness.'
     });
 
+    const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(
+      this.currentCompany?.CompanyMasterSid,
+      this.getCurrentBookingMenuMasterSid()
+    );
+
     const modalRef = this.modalService.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
@@ -6336,6 +6341,9 @@ async sendEmail(type: BookingEmailType = 'booking'): Promise<void> {
       EmailBCC: [],
       Subject: subject,
       Mailbody: body,
+      attachmentRequired,
+      // Print "Send Mail" always carries the generated PDF, even when the
+      // menu's Mail Configuration has AttachmentRequire = No.
       attachments: [pdfFile],
       context: {
         menuName: 'Booking',

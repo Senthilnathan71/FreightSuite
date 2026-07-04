@@ -364,10 +364,13 @@ getSubledgerName(SubledgerMasterSid : number){
         menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
 
-      if (emailRecipients.toEmail.length === 0) {
-        this.appSettingService.showError('No email found in customer branch email.');
-        return;
-      }
+      // When there is no Mail Configuration / organization email for this menu,
+      // still open the popup so the user can fill To/CC/Subject/Body manually
+      // (recipients pre-fill from the organization email tab when available).
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(
+        this.appSettingService.getCurrentCompanyInfo()?.CompanyMasterSid,
+        this.getCurrentMenuMasterSidForEmail()
+      );
 
       const emailContent = this.emailTriggerService.buildOperationEmailContent({
         documentName,
@@ -394,6 +397,9 @@ getSubledgerName(SubledgerMasterSid : number){
           documentNo,
           date: documentDate
         },
+        attachmentRequired,
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
         attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {

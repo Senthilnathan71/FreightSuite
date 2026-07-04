@@ -4340,6 +4340,14 @@ resetForm() {
 
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // Attachment is governed by the menu's Mail Configuration (AttachmentRequire),
+      // like sendManualMail(). It only drives the "send without attachment" warning
+      // (fires when 'Y' and no attachment); the PDF is always attached below.
+      const attachmentRequired = await this.emailTriggerService.isAttachmentRequiredForMenu(
+        this.currentCompany?.CompanyMasterSid,
+        this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'))
+      );
+
       const modalRef = this.modalService.open(EmailEntryComponent, {
         size: 'lg',
         centered: true,
@@ -4376,6 +4384,9 @@ ${this.userData['userName']}`;
         EmailBCC: [],
         Subject: subject,
         Mailbody: mailBody,
+        attachmentRequired,
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
         attachments: [pdfFile]
       };
 

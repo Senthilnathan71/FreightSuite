@@ -228,7 +228,9 @@ export class CommericalInvoiceComponent {
           fpd: this.housejobData?.FPD || ''
         },
         attachmentRequired,
-        ...(attachmentRequired ? { attachments: [file] } : {})
+        // Print "Send Mail" always carries the generated PDF, even when the
+        // menu's Mail Configuration has AttachmentRequire = No.
+        attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
         this.createEmailAuditLog(documentName);
