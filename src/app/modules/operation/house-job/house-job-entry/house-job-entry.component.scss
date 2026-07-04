@@ -108,6 +108,19 @@
   text-overflow: ellipsis;
 }
 
+:host .no-break-value {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host .booking-no-link {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
 :host .header-actions {
   display: flex;
   align-items: center;

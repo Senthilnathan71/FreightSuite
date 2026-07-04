@@ -1,0 +1,509 @@
+:host {
+  display: block;
+}
+
+:host .milestone-panel {
+  padding: 0;
+  background: #f8fafc;
+  border: 1px solid #e5edf4;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:host .milestone-section {
+  background: #ffffff;
+}
+
+:host .milestone-section + .milestone-section {
+  border-top: 1px solid #e8eef5;
+}
+
+:host .readonly-section {
+  margin-bottom: 8px;
+}
+
+:host .milestone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
+  padding: 7px 10px;
+  background: linear-gradient(90deg, #f8fbfd 0%, #eef6fb 100%);
+  border-bottom: 1px solid #dbe8f0;
+}
+
+:host .milestone-header h6 {
+  position: relative;
+  margin: 0;
+  padding-left: 12px;
+  color: #27394d;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+:host .milestone-header h6::before {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 4px;
+  height: 17px;
+  content: "";
+  background: #0b73a5;
+  border-radius: 4px;
+}
+
+:host .milestone-subtitle {
+  display: block;
+  margin-top: 2px;
+  padding-left: 12px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+:host .toolbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin: 0;
+}
+
+:host .table-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(15, 84, 117, 0.16);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+:host .table-action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 84, 117, 0.22);
+}
+
+:host .table-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  box-shadow: none;
+}
+
+:host .table-action-btn.primary {
+  background: #0b73a5;
+}
+
+:host .table-action-btn.export {
+  background: #10b981;
+}
+
+:host .milestone-table-wrapper {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+:host .milestone-table {
+  width: 100%;
+  min-width: 1500px;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+:host .milestone-table thead th {
+  padding: 7px 10px;
+  background: #086f9f;
+  color: #ffffff;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+:host .milestone-table tbody td {
+  padding: 8px 10px;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  line-height: 1.25;
+  vertical-align: middle;
+}
+
+:host .current-milestone-table th:nth-child(1),
+:host .current-milestone-table td:nth-child(1) {
+  width: 46px;
+}
+
+:host .current-milestone-table th:nth-child(2),
+:host .current-milestone-table td:nth-child(2) {
+  width: 72px;
+}
+
+:host .current-milestone-table th:nth-child(3),
+:host .current-milestone-table td:nth-child(3) {
+  width: 240px;
+}
+
+:host .current-milestone-table th:nth-child(4),
+:host .current-milestone-table td:nth-child(4) {
+  width: 220px;
+}
+
+:host .current-milestone-table th:nth-child(5),
+:host .current-milestone-table td:nth-child(5) {
+  width: 150px;
+}
+
+:host .current-milestone-table th:nth-child(6),
+:host .current-milestone-table td:nth-child(6) {
+  width: 140px;
+}
+
+:host .current-milestone-table th:nth-child(7),
+:host .current-milestone-table td:nth-child(7) {
+  width: 620px;
+}
+
+:host .milestone-table:not(.current-milestone-table) th:nth-child(1),
+:host .milestone-table:not(.current-milestone-table) td:nth-child(1) {
+  width: 72px;
+}
+
+:host .milestone-table:not(.current-milestone-table) th:nth-child(2),
+:host .milestone-table:not(.current-milestone-table) td:nth-child(2) {
+  width: 240px;
+}
+
+:host .milestone-table:not(.current-milestone-table) th:nth-child(3),
+:host .milestone-table:not(.current-milestone-table) td:nth-child(3) {
+  width: 220px;
+}
+
+:host .milestone-table:not(.current-milestone-table) th:nth-child(4),
+:host .milestone-table:not(.current-milestone-table) td:nth-child(4) {
+  width: 150px;
+}
+
+:host .milestone-table:not(.current-milestone-table) th:nth-child(5),
+:host .milestone-table:not(.current-milestone-table) td:nth-child(5) {
+  width: 140px;
+}
+
+:host .milestone-table:not(.current-milestone-table) th:nth-child(6),
+:host .milestone-table:not(.current-milestone-table) td:nth-child(6) {
+  width: 620px;
+}
+
+:host .milestone-table tbody tr {
+  background: #ffffff;
+  transition: background 0.16s ease, box-shadow 0.16s ease;
+}
+
+:host .milestone-table tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+:host .milestone-table tbody tr:hover {
+  background: #eef8fc;
+  box-shadow: inset 3px 0 0 #0b73a5;
+}
+
+:host .action-cell {
+  display: flex;
+  justify-content: center;
+}
+
+:host .action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  background: #eff6ff;
+}
+
+:host .action-icon:hover:not(:disabled) {
+  background: #dff1ff;
+  border-color: #7dd3fc;
+}
+
+:host .serial-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  background: #f1f5f9;
+  border: 1px solid #dbe5ee;
+  border-radius: 999px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+:host .milestone-name-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+}
+
+:host .milestone-name {
+  color: #27394d;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host .milestone-name.muted {
+  color: #475569;
+  font-weight: 600;
+}
+
+:host .date-chip,
+:host .auto-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:host .date-chip {
+  background: #f8fafc;
+  border: 1px solid #d9e4ee;
+  color: #334155;
+}
+
+:host .date-chip.highlight {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+:host .auto-badge {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #047857;
+}
+
+:host .auto-badge.manual {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #c2410c;
+}
+
+:host .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+  padding: 3px 8px;
+  background: #f8fffb;
+  border: 1px solid #d8f3df;
+  border-radius: 4px;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+:host .status-badge::before {
+  width: 7px;
+  height: 7px;
+  content: "";
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #dcfce7;
+}
+
+:host .status-badge.suspended {
+  background: #fffafb;
+  border-color: #f8d5dc;
+  color: #be123c;
+}
+
+:host .status-badge.suspended::before {
+  background: #f43f5e;
+  box-shadow: 0 0 0 3px #ffe4e6;
+}
+
+:host .remarks-text {
+  color: #475569;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+:host .remarks-text.important {
+  display: inline-block;
+  max-width: 100%;
+  padding: 4px 8px;
+  background: #fefce8;
+  border-left: 3px solid #eab308;
+  border-radius: 5px;
+  color: #334155;
+  font-weight: 700;
+}
+
+:host .milestone-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 7px 10px 6px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
+  overflow: hidden;
+}
+
+:host .empty-milestone-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 74px;
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+:host .empty-milestone-state i {
+  color: #0b73a5;
+  font-size: 16px;
+}
+
+:host ::ng-deep .milestone-modal-header {
+  min-height: 38px;
+  padding: 7px 10px;
+}
+
+:host ::ng-deep .milestone-modal-header .modal-title {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+:host ::ng-deep .milestone-modal-body {
+  padding: 14px 18px 8px;
+}
+
+:host ::ng-deep .milestone-form-row {
+  align-items: flex-start;
+  row-gap: 8px;
+  margin-right: -8px;
+  margin-left: -8px;
+}
+
+:host ::ng-deep .milestone-field {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+
+:host ::ng-deep .milestone-field .custom-form-group,
+:host ::ng-deep .milestone-field .custom-form-group-select,
+:host ::ng-deep .milestone-field .custom-form-group-select-date {
+  position: relative;
+  min-height: 66px;
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .milestone-field .ng-select,
+:host ::ng-deep .milestone-field .input-group,
+:host ::ng-deep .milestone-field .custom-input-field {
+  min-height: 32px;
+}
+
+:host ::ng-deep .milestone-field app-date-time-picker {
+  display: block;
+  min-height: 32px;
+}
+
+:host ::ng-deep .milestone-field .text-danger.small {
+  display: block;
+  position: absolute;
+  top: 34px;
+  left: 0;
+  right: 0;
+  min-height: 17px;
+  margin-top: 0;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+:host ::ng-deep .milestone-field .input-label {
+  line-height: 1.1;
+}
+
+:host ::ng-deep .milestone-auto-field {
+  display: flex;
+  align-items: flex-start;
+  min-height: 66px;
+  padding-top: 19px;
+}
+
+:host ::ng-deep .milestone-auto-field .form-check {
+  margin: 0;
+}
+
+:host ::ng-deep .milestone-auto-field .form-check-label {
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .milestone-modal-footer {
+  min-height: 44px;
+  padding: 5px 14px;
+  border-top: 1px solid #d6dde6;
+}
+
+:host ::ng-deep .milestone-modal-footer .btn {
+  min-height: 30px;
+  padding: 4px 9px;
+  line-height: 1.1;
+}
+
+@media (max-width: 768px) {
+  :host .milestone-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  :host .toolbar-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  :host .milestone-table tbody td,
+  :host .milestone-table thead th {
+    padding: 7px 8px;
+  }
+
+  :host ::ng-deep .milestone-modal-body {
+    padding: 12px 14px 8px;
+  }
+}

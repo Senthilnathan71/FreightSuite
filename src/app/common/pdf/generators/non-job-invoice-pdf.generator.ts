@@ -331,8 +331,8 @@ function buildChargesTable(data: InvoicePdfData, taxConfig: any): any {
       body: [headers, ...rows],
       dontBreakRows: true
     },
-    layout: tableLayout(),
-    fontSize: 8,
+    layout: tableLayout(showForeign),
+    fontSize: showForeign ? 6.4 : 8,
     margin: [-10, 8, -10, 8]
   };
 
@@ -347,11 +347,10 @@ function buildAmountInWords(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
   return {
     columns: [
-      { text: 'Amount In Words', width: 80, bold: true },
-      { text: ':', width: 5 },
-      { text: printData.AmountInWords || data.amountInWords || '', width: '*' }
+      { text: 'Amount In Words', width: 80, bold: true, fontSize: 10 },
+      { text: ':', width: 5, fontSize: 10 },
+      { text: printData.AmountInWords || data.amountInWords || '', width: '*', fontSize: 8, lineHeight: 1.05 }
     ],
-    fontSize: 10,
     margin: [0, 0, 0, 8]
   };
 }
@@ -513,11 +512,11 @@ function taxCells(detail: any, config: any): any[] {
 }
 
 function tableHeader(text: string): any {
-  return { text, bold: true, alignment: 'center', fontSize: 7, noWrap: true };
+  return { text, bold: true, alignment: 'center', noWrap: true };
 }
 
 function cell(text: any, alignment: 'left' | 'center' | 'right' = 'left', noWrap = false): any {
-  return { text: text ?? '', alignment, fontSize: 7, noWrap };
+  return { text: text ?? '', alignment, noWrap };
 }
 
 function narrationCell(text: any): any {
@@ -557,16 +556,16 @@ function parsePdfAmount(value: any): number {
   return Number(String(value).replace(/,/g, '')) || 0;
 }
 
-function tableLayout(): any {
+function tableLayout(compact = false): any {
   return {
     hLineWidth: () => 0.5,
     vLineWidth: () => 0.5,
     hLineColor: () => '#000',
     vLineColor: () => '#000',
-    paddingLeft: () => 2,
-    paddingRight: () => 2,
-    paddingTop: () => 3,
-    paddingBottom: () => 3
+    paddingLeft: () => compact ? 1 : 2,
+    paddingRight: () => compact ? 1 : 2,
+    paddingTop: () => compact ? 2 : 3,
+    paddingBottom: () => compact ? 2 : 3
   };
 }
 
@@ -607,17 +606,17 @@ function buildChargeTableWidths(showHsnSac: boolean, taxConfig: any, showForeign
   }
 
   return [
-    veryCompact ? 20 : 24,
+    showForeign ? 18 : veryCompact ? 20 : 24,
     '*',
     ...(showHsnSac ? [veryCompact ? 30 : compact ? 38 : 44] : []),
-    veryCompact ? 24 : 28,
-    veryCompact ? 34 : compact ? 44 : 50,
-    veryCompact ? 44 : compact ? 54 : 60,
-    veryCompact ? 34 : compact ? 38 : 42,
-    veryCompact ? 48 : compact ? 58 : 62,
-    ...buildTaxColumnWidths(taxColumnCount),
-    veryCompact ? 52 : compact ? 62 : 68,
-    ...(showForeign ? [veryCompact ? 52 : 62] : [])
+    showForeign ? 24 : veryCompact ? 24 : 28,
+    showForeign ? 42 : veryCompact ? 34 : compact ? 44 : 50,
+    showForeign ? 74 : veryCompact ? 44 : compact ? 54 : 60,
+    showForeign ? 36 : veryCompact ? 34 : compact ? 38 : 42,
+    showForeign ? 74 : veryCompact ? 48 : compact ? 58 : 62,
+    ...buildTaxColumnWidths(taxColumnCount, showForeign),
+    showForeign ? 82 : veryCompact ? 52 : compact ? 62 : 68,
+    ...(showForeign ? [82] : [])
   ];
 }
 

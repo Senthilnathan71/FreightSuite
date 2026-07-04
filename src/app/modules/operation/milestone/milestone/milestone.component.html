@@ -1,37 +1,53 @@
-<div class="modern-table-container">
-    <section *ngIf="previousMilestones.length > 0" class="mb-4">
-        <h6>{{ previousMilestonesTitle }} - Read Only</h6>
-        <div class="modern-table-wrapper">
-            <table class="modern-table">
+<div class="modern-table-container milestone-panel">
+    <section *ngIf="previousMilestones.length > 0" class="milestone-section readonly-section">
+        <div class="milestone-header">
+            <div>
+                <h6>{{ previousMilestonesTitle }} - Read Only</h6>
+                <span class="milestone-subtitle">{{ previousMilestones.length }} completed reference milestone{{ previousMilestones.length === 1 ? '' : 's' }}</span>
+            </div>
+        </div>
+        <div class="modern-table-wrapper milestone-table-wrapper">
+            <table class="modern-table milestone-table">
                 <thead>
                     <tr>
                         <th>Sno</th>
                         <th>Milestone</th>
                         <th>Date & Time</th>
                         <th>Auto Captured</th>
+                        <th>Status</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="table-row" *ngFor="let milestone of previousMilestones; let i = index">
-                        <td>{{ i + 1 }}</td>
-                        <td>{{ milestone.MilestoneName }}</td>
-                        <td>{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</td>
-                        <td>{{ milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y' ? 'Yes' : 'No' }}</td>
-                        <td>{{ milestone.Remarks }}</td>
+                        <td><span class="serial-pill">{{ i + 1 }}</span></td>
+                        <td><span class="milestone-name muted">{{ milestone.MilestoneName }}</span></td>
+                        <td><span class="date-chip">{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</span></td>
+                        <td>
+                            <span class="auto-badge" [class.manual]="!(milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y')">
+                                <i class="fas" [class.fa-check-circle]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'"
+                                    [class.fa-user-edit]="!(milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y')"></i>
+                                {{ milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y' ? 'Auto' : 'Manual' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge" [class.suspended]="isMilestoneSuspended(milestone.Status)">
+                                {{ getMilestoneStatusLabel(milestone.Status) }}
+                            </span>
+                        </td>
+                        <td><span class="remarks-text">{{ milestone.Remarks || '-' }}</span></td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </section>
-    <div>
-        <h6>{{ currentMilestonesTitle }} - Editable</h6>
-        <div class="table-toolbar">
-            <div class="toolbar-left">
-               
+    <div class="milestone-section current-section">
+        <div class="milestone-header editable-header">
+            <div>
+                <h6>{{ currentMilestonesTitle }} - Editable</h6>
             </div>
             <div class="toolbar-right">
-                 <button class="table-action-btn primary" (click)="openMilestoneModal(milestoneModal)" [disabled]="isFormDisabled || !isHBLNoValid()">
+                 <button class="btn btn-info" (click)="openMilestoneModal(milestoneModal)" [disabled]="isFormDisabled || !isHBLNoValid()">
                     <i class="fas fa-plus"></i> Add Milestone
                 </button>
                 <button class="table-action-btn export" (click)="reportMilestones()">
@@ -40,22 +56,23 @@
             </div>
         </div>
         @if(milestoneDataLength > 0){
-        <div class="modern-table-wrapper">
-            <table class="modern-table">
+        <div class="modern-table-wrapper milestone-table-wrapper">
+            <table class="modern-table milestone-table current-milestone-table">
                 <thead>
                     <tr>
-                        <th width="2%"></th>
+                        <th width="4%"></th>
                         <th>Sno</th>
                         <th>Milestone</th>
                         <th>Date & Time</th>
                         <th>Auto Captured</th>
+                        <th>Status</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="table-row" *ngFor="let milestone of slicedMilestoneFormArr; let i = index">
                         <td >
-                            <div > 
+                            <div class="action-cell"> 
                                 <button class="action-icon edit" (click)="openMilestoneModal(milestoneModal,milestone,i)" [disabled]="isFormDisabled">
                                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                 </button>
@@ -63,30 +80,41 @@
                                     class="action-icon delete"><i class="fas fa-trash"></i></button> -->
                             </div>
                         </td>
-                        <td>{{ (page1 - 1) * pageSize1 + i + 1 }}</td>
-                        <td>{{ milestone.MilestoneName }}</td>
-                        <td>{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</td>
+                        <td><span class="serial-pill">{{ (page1 - 1) * pageSize1 + i + 1 }}</span></td>
                         <td>
-                            <div class="form-check form-check-inline p-0 ps-2 mt-0">
-                                <div class="form-check d-flex align-items-center justify-content-center mt-0">
-                                    <input type="checkbox" id="" class="form-check-input sm"
-                                        [checked]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'" disabled>
-                                </div>
-                        </div>
+                            <div class="milestone-name-cell">
+                                <span class="milestone-name">{{ milestone.MilestoneName }}</span>
+                            </div>
                         </td>
-                        <td>{{ milestone.Remarks }}</td>
+                        <td><span class="date-chip highlight">{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</span></td>
+                        <td>
+                            <span class="auto-badge" [class.manual]="!(milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y')">
+                                <i class="fas" [class.fa-check-circle]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'"
+                                    [class.fa-user-edit]="!(milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y')"></i>
+                                {{ milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y' ? 'Auto' : 'Manual' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge" [class.suspended]="isMilestoneSuspended(milestone.Status)">
+                                {{ getMilestoneStatusLabel(milestone.Status) }}
+                            </span>
+                        </td>
+                        <td><span class="remarks-text important">{{ milestone.Remarks || '-' }}</span></td>
                     </tr>
                 </tbody>
             </table>
-            <div class="mt-2">
-                <ngb-pagination class="d-flex justify-content-end" [collectionSize]="milestoneDataLength" [(page)]="page1" [pageSize]="pageSize1"
-                    (pageChange)="updateMilestonePagination()" [maxSize]="10" [rotate]="true" [ellipses]="false" size="sm">
-                </ngb-pagination>
-            </div>
+        </div>
+        <div class="milestone-pagination">
+            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="milestoneDataLength" [(page)]="page1" [pageSize]="pageSize1"
+                (pageChange)="updateMilestonePagination()" [maxSize]="10" [rotate]="true" [ellipses]="false" size="sm">
+            </ngb-pagination>
         </div>
         }@else {
         <div class="col-12">
-            <div class="text-center">No Record Found</div>
+            <div class="empty-milestone-state">
+                <i class="fas fa-route"></i>
+                <span>No Record Found</span>
+            </div>
         </div>
         }
     </div>
@@ -94,14 +122,14 @@
 
 
 <ng-template #milestoneModal let-modal>
-    <div class="modal-header modalHeaderpart ">
+    <div class="modal-header modalHeaderpart milestone-modal-header">
         <h5 class="modal-title ">Milestone</h5>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body milestone-modal-body">
         <form [formGroup]="milestoneForm">
-            <div class="row compact-form">
-                <aside class="col-md-4">
+            <div class="row compact-form milestone-form-row">
+                <aside class="col-md-4 milestone-field">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('MilestoneMasterSid')?.value">
                         <ng-select [items]="allMilestones" bindLabel="MilestoneName" bindValue="MilestoneMasterSid" class="ng-select"
                             formControlName="MilestoneMasterSid" placeholder="" (change)="onMilestoneChange($event)">
@@ -113,7 +141,7 @@
                         </div>
                     </div>
                 </aside>
-                <div class="col-md-4">
+                <div class="col-md-4 milestone-field">
                     <div class=" custom-form-group custom-form-group-select-date w-100">
                         <div class="input-group w-100">
                             <app-date-time-picker placeholder="dd-mm-yyyy" name="dp" class="w-100"
@@ -128,8 +156,8 @@
                         </div>
                     </div>
                 </div>
-                <aside class="col-md-4 d-flex align-items-center">
-                    <div class="form-check form-check-inline p-0">
+                <aside class="col-md-2 milestone-field milestone-auto-field">
+                    <div class="form-check form-check-inline p-0 m-0">
                         <div class="form-check d-flex align-items-center">
                             <input type="checkbox" id="" class="form-check-input sm" formControlName="AutoCaptured" readonly>
                             <label for="AutoCaptured" class="form-check-label sm">Auto Captured <span
@@ -137,13 +165,13 @@
                         </div>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <aside class="col-md-4 milestone-field">
                     <div class="custom-form-group">
                         <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Remarks">
                         <label for="text-input" class="input-label">Remarks<span class="text-danger"></span></label>
                     </div>
                 </aside>
-                <aside class="col-md-4">
+                <aside class="col-md-4 milestone-field">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('Status')?.value">
                         <ng-select [items]="modeOfStatus" bindLabel="name" bindValue="id" formControlName="Status"
                             id="status"></ng-select>
@@ -153,7 +181,7 @@
             </div>
         </form>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer milestone-modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
         <button type="button" class="btn btn-info btn-sm" (click)="onMilestoneSubmit()" [disabled]="isFormDisabled">Save</button>
     </div>

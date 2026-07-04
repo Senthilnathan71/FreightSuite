@@ -17,7 +17,100 @@
   <p style="color: white;" class="m-0">Loading...</p>
 </ngx-spinner>
 
-<div class="row compact-form">
+<style>
+  .user-list-readable {
+    color: #0b1220;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: auto;
+  }
+
+  .user-list-readable,
+  .user-list-readable * {
+    letter-spacing: 0;
+    text-shadow: none;
+  }
+
+  .user-list-readable app-page-header,
+  .user-list-readable app-reusable-table {
+    color: #111827;
+  }
+
+  .user-list-readable h1,
+  .user-list-readable h2,
+  .user-list-readable h3,
+  .user-list-readable h4,
+  .user-list-readable h5,
+  .user-list-readable .page-title {
+    color: #07111f !important;
+    font-weight: 800 !important;
+    line-height: 1.25;
+  }
+
+  .user-list-readable input,
+  .user-list-readable select,
+  .user-list-readable .form-control,
+  .user-list-readable .custom-input-field {
+    color: #07111f !important;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  .user-list-readable input::placeholder,
+  .user-list-readable .form-control::placeholder {
+    color: #4b5f78 !important;
+    opacity: 1;
+  }
+
+  .user-list-readable .btn {
+    font-weight: 700;
+  }
+
+  .user-list-readable .btn-info,
+  .user-list-readable .bg-info {
+    background-color: #0f6f87 !important;
+    border-color: #0f6f87 !important;
+    color: #fff !important;
+  }
+
+  .user-list-readable table,
+  .user-list-readable .table {
+    color: #101828 !important;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  .user-list-readable th,
+  .user-list-readable thead th,
+  .user-list-readable .table thead th {
+    background-color: #0f5f78 !important;
+    border-color: #0c5369 !important;
+    color: #fff !important;
+    font-weight: 800 !important;
+  }
+
+  .user-list-readable td,
+  .user-list-readable .text-truncate {
+    color: #101828 !important;
+    font-weight: 500;
+  }
+
+  .user-list-readable .text-muted,
+  .user-list-readable small {
+    color: #344054 !important;
+  }
+
+  .user-list-readable .card,
+  .user-list-readable .table-responsive {
+    background-color: #fff;
+    border-color: #d8e1ea;
+  }
+</style>
+
+<div class="row compact-form user-list-readable">
      <app-page-header 
     [title]="'User'" [showFavorite]="true" [showSearch]="true" 
     [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
@@ -213,6 +306,12 @@
     </div> -->
 </div>
 <ng-template #resetTemplate let-modal>
+        <style>
+            .error-message,
+            .error-message span {
+                font-weight: 800;
+            }
+        </style>
    
         <div class="modal-header modalHeaderpart p-2">
             <!-- <span class="db"><img src="assets/images/logos/xtreme-dark-icon.svg" alt="logo" width="50" height="50"/></span> -->

@@ -303,10 +303,7 @@
         <div class="custom-form-group" style="position: relative;">
           @if (isEditMode && b['BookingHeaderSid']?.value) {
           <a [routerLink]="['/operation/booking/entry', b['BookingHeaderSid']?.value]"
-            [title]="'Click to view Booking ' + b['BookingNo']?.value" class="form-control custom-input-field sm" style="
-            text-decoration: none;
-            color: #0d6efd;
-          ">
+            [title]="'Click to view Booking ' + b['BookingNo']?.value" class="form-control custom-input-field sm no-break-value booking-no-link">
             {{ b['BookingNo']?.value }}
           </a>
           } @else {
