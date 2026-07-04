@@ -683,6 +683,7 @@ export class MilestoneComponent implements OnInit {
         MilestoneName: milestone.MilestoneName || '',
         MilestoneDate: this.formatMilestoneDateTime(milestone.MilestoneDate) || '',
         AutoCaptured: (milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y') ? 'Yes' : 'No',
+        Status: this.getMilestoneStatusLabel(milestone.Status),
         Remarks: milestone.Remarks || ''
     }));
 
@@ -695,6 +696,7 @@ export class MilestoneComponent implements OnInit {
             { key: 'MilestoneName', label: 'Milestone' },
             { key: 'MilestoneDate', label: 'Date & Time' },
             { key: 'AutoCaptured', label: 'Auto Captured' },
+            { key: 'Status', label: 'Status' },
             { key: 'Remarks', label: 'Remarks' }
         ],
         fileName: 'Booking-Milestone-Report',
@@ -727,6 +729,15 @@ export class MilestoneComponent implements OnInit {
       hour12 = 12;
     }
     return `${day}-${month}-${year} ${String(hour12).padStart(2, '0')}:${minute} ${meridian}`;
+  }
+
+  getMilestoneStatusLabel(status: any): string {
+    return this.isMilestoneSuspended(status) ? 'Suspended' : 'Active';
+  }
+
+  isMilestoneSuspended(status: any): boolean {
+    const normalizedStatus = String(status || '').trim().toLowerCase();
+    return normalizedStatus === 's' || normalizedStatus === 'suspended' || normalizedStatus === 'suspend';
   }
 
 isHBLNoValid(): boolean {
