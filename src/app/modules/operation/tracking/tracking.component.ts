@@ -124,6 +124,12 @@ export class TrackingComponent implements OnInit, OnDestroy {
 
   private runTracking(referenceNo: string, context: any): void {
     this.isLoading = true;
+    // Clear the previous result so the old shipment's data is not shown under the
+    // loading state while the new search is in flight.
+    this.trackingResult = null;
+    this.matchResults = [];
+    this.showMatchModal = false;
+    this.noShipmentFound = false;
     this.operationService
       .trackShipment(referenceNo, context)
       .pipe(takeUntil(this.destroy$))
