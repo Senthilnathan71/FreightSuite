@@ -1158,17 +1158,13 @@ clearCustomerSearch(): void {
   }
   // Update the createLoginsArray method to include customer/branch info
   createLoginsArray(logins: any[]): FormGroup[] {
-    return logins.map(login => {
-      const pw = this.resolveLoadedPassword(login.LoginPassword);
-      return this.fb.group({
-        CustomerLoginSid: [login.CustomerLoginSid || null],
-        LoginName: [login.LoginName || '', [Validators.required]],
-        LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
-        LoginPassword: [pw.display, [Validators.maxLength(50), PasswordValidators.validate(), this.loginPasswordRequired()]],
-        LoginPasswordOriginal: [pw.original],
-        status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
-      });
-    });
+    return logins.map(login => this.fb.group({
+      CustomerLoginSid: [login.CustomerLoginSid || null],
+      LoginName: [login.LoginName || '', [Validators.required]],
+      LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
+      LoginPassword: [this.decryptLoginPassword(login.LoginPassword) || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+      status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
+    }));
   }
 
   addNewBranch() {
@@ -1221,8 +1217,7 @@ clearCustomerSearch(): void {
       CustomerLoginSid: [null],
       LoginName: ['', [Validators.required]],
       LoginEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
-      LoginPassword: ['', [Validators.maxLength(50), PasswordValidators.validate(), this.loginPasswordRequired()]],
-      LoginPasswordOriginal: [''],
+      LoginPassword: ['', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
       status: [this.isBranchSuspended(branchIndex) ? 'Suspended' : 'Active', Validators.required]
     });
     this.getLogins(branchIndex).push(loginForm);
@@ -2903,8 +2898,7 @@ loadCustomerSalesTeamData() {
       CustomerBranchSid: ['', [Validators.required]], // Branch dropdown
       LoginName: ['', [Validators.required]],
       LoginEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
-      LoginPassword: ['', [Validators.maxLength(50), PasswordValidators.validate(), this.loginPasswordRequired()]],
-      LoginPasswordOriginal: [''],
+      LoginPassword: ['', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
       status: ['Active', Validators.required]
     });
 
@@ -2984,14 +2978,12 @@ loadCustomerSalesTeamData() {
 
     // Add logins from all branches
     this.customerData.CustomerLogin.forEach((login: any) => {
-      const pw = this.resolveLoadedPassword(login.LoginPassword);
       const loginForm = this.fb.group({
         CustomerLoginSid: [login.CustomerLoginSid || null],
         CustomerBranchSid: [login.customerBranch?.CustomerBranchSid || '', [Validators.required]],
         LoginName: [login.LoginName || '', [Validators.required]],
         LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
-        LoginPassword: [pw.display, [Validators.maxLength(50), PasswordValidators.validate(), this.loginPasswordRequired()]],
-        LoginPasswordOriginal: [pw.original],
+        LoginPassword: [this.decryptLoginPassword(login.LoginPassword) || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
         status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
       });
 
@@ -3345,7 +3337,7 @@ private getFirstInvalidField(): string {
       loginsPayload.push({
         LoginName: loginData.LoginName?.trim(),
         LoginEmail: loginData.LoginEmail,
-        LoginPassword: this.resolveSavedPassword(loginData),
+        LoginPassword: this.encryptLoginPassword(loginData.LoginPassword),
         status: loginData.status === 'Active' ? 'A' : 'S'
       });
     }
@@ -3636,7 +3628,7 @@ private buildBranchLoginPayload(loginData: any): any {
   const loginPayload: any = {
     LoginName: loginData.LoginName?.trim(),
     LoginEmail: loginData.LoginEmail,
-    LoginPassword: this.resolveSavedPassword(loginData),
+    LoginPassword: this.encryptLoginPassword(loginData.LoginPassword),
     status: this.isActiveStatus(loginData.status) ? 'A' : 'S'
   };
 
@@ -3648,59 +3640,24 @@ private buildBranchLoginPayload(loginData: any): any {
 }
 
 /**
- * True for a crypto-js AES blob produced by AppSettingsService.encrypt — it starts with the
- * base64 "Salted__" marker AND decrypts cleanly. This is the only format we can turn back
- * into a readable password.
+ * Encrypt a branch-login password before persisting, using the SAME scheme the login
+ * page uses for stored credentials (AppSettingsService AES). Empty values pass through
+ * untouched so we never store an encrypted blank.
  */
-private isOurEncryptedPassword(value: any): boolean {
-  if (typeof value !== 'string' || !value.startsWith('U2FsdGVkX1')) return false;
-  return this.appSettingService.decrypt(value) !== null;
-}
-
-/** True for a one-way bcrypt hash ($2a$/$2b$/$2y$…) — legacy data that can never be shown as plain text. */
-private isBcryptHash(value: any): boolean {
-  return typeof value === 'string' && /^\$2[aby]\$/.test(value);
+private encryptLoginPassword(password: string): string {
+  if (password === null || password === undefined || password === '') return password;
+  return this.appSettingService.encrypt(password);
 }
 
 /**
- * Resolve a stored LoginPassword into { display, original }:
- *  - AES blob      → decrypt for display (editable), keep original.
- *  - bcrypt hash   → cannot be reversed, so display blank; keep original so Save preserves it.
- *  - anything else → treat as legacy plain text and show as-is.
- * `original` is stashed in a hidden control so an untouched legacy credential is never wiped.
+ * Decrypt a stored branch-login password back to plain text for display/editing.
+ * Falls back to the raw value when decryption fails (legacy rows saved as plain text),
+ * so existing data keeps working and gets re-encrypted on the next save.
  */
-private resolveLoadedPassword(stored: any): { display: string; original: string } {
-  const raw = (stored ?? '') as string;
-  if (!raw) return { display: '', original: '' };
-  if (this.isOurEncryptedPassword(raw)) return { display: this.appSettingService.decrypt(raw) ?? '', original: raw };
-  if (this.isBcryptHash(raw)) return { display: '', original: raw };
-  return { display: raw, original: raw };
-}
-
-/**
- * Build the LoginPassword to persist (create/update). Any value present in the field is
- * AES-encrypted with the SAME scheme the login page uses. A blank field on a row that had a
- * previously stored value keeps that original (e.g. a legacy bcrypt hash) instead of wiping it.
- */
-private resolveSavedPassword(loginData: any): string {
-  const entered = loginData?.LoginPassword;
-  if (entered !== null && entered !== undefined && entered !== '') {
-    return this.appSettingService.encrypt(entered);
-  }
-  return loginData?.LoginPasswordOriginal || '';
-}
-
-/**
- * Password is mandatory only for a brand-new login row. If a stored credential already exists
- * (LoginPasswordOriginal is set — e.g. an un-revealable bcrypt hash) a blank field is allowed
- * and the existing value is preserved on Save.
- */
-private loginPasswordRequired() {
-  return (control: AbstractControl): ValidationErrors | null => {
-    if (control.value) return null;
-    const original = control.parent?.get('LoginPasswordOriginal')?.value;
-    return original ? null : { required: true };
-  };
+private decryptLoginPassword(stored: string): string {
+  if (stored === null || stored === undefined || stored === '') return stored;
+  const decrypted = this.appSettingService.decrypt(stored);
+  return (decrypted === null || decrypted === undefined) ? stored : decrypted;
 }
   private prepareUpdateSalesTeamsPayload(branchSid?: number): any[] {
   if (this.cusSalesteam.length === 0) return [];
