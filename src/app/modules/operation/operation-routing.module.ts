@@ -47,6 +47,7 @@ import { ProRateComponent } from './master-job/pro-rate/pro-rate.component';
 import { PaymentRequestEntryComponent } from './payment-request/payment-request-entry/payment-request-entry.component';
 import { PaymentRequestListComponent } from './payment-request/payment-request-list/payment-request-list.component';
 import { TrackingComponent } from './tracking/tracking.component';
+import { MilestoneTrackerComponent } from './milestone-tracker/milestone-tracker.component';
 
 
 export const OperationRoutes: Routes = [
@@ -59,6 +60,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Tracking',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Tracking' }],
+        },
+      },
+      {
+        path: 'milestone-tracker',
+        component: MilestoneTrackerComponent,
+        data: {
+          title: 'Milestone Update',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Milestone Update' }],
         },
       },
       {
