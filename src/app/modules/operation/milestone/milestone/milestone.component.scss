@@ -110,21 +110,39 @@
   margin: 0;
   border: 0;
   border-radius: 0;
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: hidden;
 }
 
+:host .milestone-table-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+
+:host .milestone-table-wrapper::-webkit-scrollbar-track {
+  background: #eef4f8;
+}
+
+:host .milestone-table-wrapper::-webkit-scrollbar-thumb {
+  background: #8a8a8a;
+  border-radius: 999px;
+}
+
+:host .milestone-table-wrapper {
+  scrollbar-color: #8a8a8a #eef4f8;
+  scrollbar-width: thin;
+}
+
 :host .milestone-table {
-  width: 100%;
-  min-width: 1500px;
+  width: max-content;
+  min-width: 100%;
   margin: 0;
   border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 :host .milestone-table thead th {
-  padding: 7px 10px;
+  padding: 5px 6px;
   background: #086f9f;
   color: #ffffff;
   border: 0;
@@ -135,7 +153,7 @@
 }
 
 :host .milestone-table tbody td {
-  padding: 8px 10px;
+  padding: 5px 6px;
   color: #334155;
   border-bottom: 1px solid #e2e8f0;
   font-size: 13px;
@@ -145,67 +163,67 @@
 
 :host .current-milestone-table th:nth-child(1),
 :host .current-milestone-table td:nth-child(1) {
-  width: 46px;
+  width: 40px;
 }
 
 :host .current-milestone-table th:nth-child(2),
 :host .current-milestone-table td:nth-child(2) {
-  width: 72px;
+  width: 52px;
 }
 
 :host .current-milestone-table th:nth-child(3),
 :host .current-milestone-table td:nth-child(3) {
-  width: 240px;
+  width: 180px;
 }
 
 :host .current-milestone-table th:nth-child(4),
 :host .current-milestone-table td:nth-child(4) {
-  width: 220px;
+  width: 170px;
 }
 
 :host .current-milestone-table th:nth-child(5),
 :host .current-milestone-table td:nth-child(5) {
-  width: 150px;
+  width: 115px;
 }
 
 :host .current-milestone-table th:nth-child(6),
 :host .current-milestone-table td:nth-child(6) {
-  width: 140px;
+  width: 105px;
 }
 
 :host .current-milestone-table th:nth-child(7),
 :host .current-milestone-table td:nth-child(7) {
-  width: 620px;
+  width: 318px;
 }
 
 :host .milestone-table:not(.current-milestone-table) th:nth-child(1),
 :host .milestone-table:not(.current-milestone-table) td:nth-child(1) {
-  width: 72px;
+  width: 52px;
 }
 
 :host .milestone-table:not(.current-milestone-table) th:nth-child(2),
 :host .milestone-table:not(.current-milestone-table) td:nth-child(2) {
-  width: 240px;
+  width: 180px;
 }
 
 :host .milestone-table:not(.current-milestone-table) th:nth-child(3),
 :host .milestone-table:not(.current-milestone-table) td:nth-child(3) {
-  width: 220px;
+  width: 170px;
 }
 
 :host .milestone-table:not(.current-milestone-table) th:nth-child(4),
 :host .milestone-table:not(.current-milestone-table) td:nth-child(4) {
-  width: 150px;
+  width: 115px;
 }
 
 :host .milestone-table:not(.current-milestone-table) th:nth-child(5),
 :host .milestone-table:not(.current-milestone-table) td:nth-child(5) {
-  width: 140px;
+  width: 105px;
 }
 
 :host .milestone-table:not(.current-milestone-table) th:nth-child(6),
 :host .milestone-table:not(.current-milestone-table) td:nth-child(6) {
-  width: 620px;
+  width: 358px;
 }
 
 :host .milestone-table tbody tr {
@@ -353,20 +371,26 @@
 }
 
 :host .remarks-text {
+  display: inline-block;
   color: #475569;
   font-weight: 500;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
 :host .remarks-text.important {
   display: inline-block;
-  max-width: 100%;
+  max-width: none;
   padding: 4px 8px;
   background: #fefce8;
   border-left: 3px solid #eab308;
   border-radius: 5px;
   color: #334155;
   font-weight: 700;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 :host .milestone-pagination {
