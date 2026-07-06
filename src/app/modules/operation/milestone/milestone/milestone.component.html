@@ -22,7 +22,7 @@
                     <tr class="table-row" *ngFor="let milestone of previousMilestones; let i = index">
                         <td><span class="serial-pill">{{ i + 1 }}</span></td>
                         <td><span class="milestone-name muted">{{ milestone.MilestoneName }}</span></td>
-                        <td><span class="date-chip">{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</span></td>
+                        <td><span class="date-chip">{{ formatMilestoneDateTime(milestone.MilestoneDate, milestone.AutoCaptured) }}</span></td>
                         <td>
                             <span class="auto-badge" [class.manual]="!(milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y')">
                                 <i class="fas" [class.fa-check-circle]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'"
@@ -86,7 +86,7 @@
                                 <span class="milestone-name">{{ milestone.MilestoneName }}</span>
                             </div>
                         </td>
-                        <td><span class="date-chip highlight">{{ formatMilestoneDateTime(milestone.MilestoneDate) }}</span></td>
+                        <td><span class="date-chip highlight">{{ formatMilestoneDateTime(milestone.MilestoneDate, milestone.AutoCaptured) }}</span></td>
                         <td>
                             <span class="auto-badge" [class.manual]="!(milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y')">
                                 <i class="fas" [class.fa-check-circle]="milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y'"

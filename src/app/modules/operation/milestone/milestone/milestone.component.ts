@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
+import { normalizeTimezoneOffset, getOffsetMinutes } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-milestone',
@@ -48,6 +49,9 @@ export class MilestoneComponent implements OnInit {
   // milestone's SortBy neighbours (previous milestone date .. next milestone date).
   milestoneMinDate: any = null;
   milestoneMaxDate: any = null;
+  // Branch-local shift (ms) baked into the edit picker for the currently-open auto-captured ACTION
+  // milestone, so save can undo it and persist the original stored instant. 0 for date-field/manual.
+  private editDateShiftMs = 0;
   previousMilestones: any[] = [];
   previousMilestonesTitle = 'Previous Milestones';
   currentMilestonesTitle = 'Current Milestones';
@@ -369,6 +373,9 @@ export class MilestoneComponent implements OnInit {
     if(data) {
       this.currentMilestoneIndex = milestoneIndex;
       this.selectedMode = data.Mode;
+      // Auto-captured action milestones are stored as a UTC instant but shown branch-local in the
+      // list; show the SAME wall clock in the edit picker (record the shift so save can undo it).
+      this.editDateShiftMs = this.milestoneShiftMs(data?.MilestoneDate, data.AutoCaptured);
       this.milestoneForm.patchValue({
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -376,7 +383,7 @@ export class MilestoneComponent implements OnInit {
         ShipmentNo: data.ShipmentNo,
         MilestoneMasterSid: data.MilestoneMasterSid,
         MilestoneName : data.MilestoneName,
-        MilestoneDate: data?.MilestoneDate || null,
+        MilestoneDate: this.toPickerDate(data?.MilestoneDate, data.AutoCaptured),
         AutoCaptured: data.AutoCaptured,
         Remarks: data.Remarks,
         Status: data.Status,
@@ -388,6 +395,7 @@ export class MilestoneComponent implements OnInit {
       this.applyMilestoneDateBounds(data.MilestoneMasterSid);
     } else {
       this.currentMilestoneIndex = -1;
+      this.editDateShiftMs = 0;   // add rows are manual → no branch shift
       // Add: no milestone chosen yet, so no range until one is selected.
       this.applyMilestoneDateBounds(null);
       this.milestoneForm.patchValue({
@@ -424,6 +432,10 @@ export class MilestoneComponent implements OnInit {
       return;
     }
     const milestoneFormValue = this.milestoneForm.getRawValue();
+    // The edit picker shows branch-local for auto-captured action rows; convert back to the stored
+    // (raw/UTC) instant so the date-sequence check compares like-for-like with the other (raw) rows
+    // and we persist the original instant unchanged.
+    milestoneFormValue.MilestoneDate = this.fromPickerDate(milestoneFormValue.MilestoneDate);
 
     // Prevent the same milestone being added twice. Match by milestone code (the
     // business identity) when available, else by MilestoneMasterSid. The row being
@@ -505,6 +517,7 @@ export class MilestoneComponent implements OnInit {
     // Patch milestone values when selected. A milestone entered manually here is NOT a
     // system auto-capture, so AutoCaptured is always unticked ('N'/false) regardless of
     // the master's AutoCapture setting.
+    this.editDateShiftMs = 0;   // picking a milestone here makes it a manual entry → no branch shift
     this.milestoneForm.patchValue({
       MilestoneName: milestone.MilestoneName,
       // leave date empty so user can choose
@@ -601,8 +614,8 @@ export class MilestoneComponent implements OnInit {
       return null;
     }
 
-    let prev: { name: string; sort: number; date: any } | null = null;
-    let next: { name: string; sort: number; date: any } | null = null;
+    let prev: { name: string; sort: number; date: any; auto?: any } | null = null;
+    let next: { name: string; sort: number; date: any; auto?: any } | null = null;
 
     this.milestoneFormArray.getRawValue().forEach((row: any, index: number) => {
       if (excludeIndex !== -1 && index === excludeIndex) {
@@ -617,17 +630,17 @@ export class MilestoneComponent implements OnInit {
         return;
       }
       if (sort < newSort && (!prev || sort > prev.sort)) {
-        prev = { name: row.MilestoneName, sort, date: row.MilestoneDate };
+        prev = { name: row.MilestoneName, sort, date: row.MilestoneDate, auto: row.AutoCaptured };
       } else if (sort > newSort && (!next || sort < next.sort)) {
-        next = { name: row.MilestoneName, sort, date: row.MilestoneDate };
+        next = { name: row.MilestoneName, sort, date: row.MilestoneDate, auto: row.AutoCaptured };
       }
     });
 
     if (prev && newTime < new Date((prev as any).date).getTime()) {
-      return `Date & Time must be on or after "${(prev as any).name}" (${this.formatMilestoneDateTime((prev as any).date)}).`;
+      return `Date & Time must be on or after "${(prev as any).name}" (${this.formatMilestoneDateTime((prev as any).date, (prev as any).auto)}).`;
     }
     if (next && newTime > new Date((next as any).date).getTime()) {
-      return `Date & Time must be on or before "${(next as any).name}" (${this.formatMilestoneDateTime((next as any).date)}).`;
+      return `Date & Time must be on or before "${(next as any).name}" (${this.formatMilestoneDateTime((next as any).date, (next as any).auto)}).`;
     }
     return null;
   }
@@ -650,8 +663,8 @@ export class MilestoneComponent implements OnInit {
       return;
     }
 
-    let prev: { sort: number; date: any } | null = null;
-    let next: { sort: number; date: any } | null = null;
+    let prev: { sort: number; date: any; auto: any } | null = null;
+    let next: { sort: number; date: any; auto: any } | null = null;
 
     this.milestoneFormArray.getRawValue().forEach((row: any, index: number) => {
       if (this.currentMilestoneIndex !== -1 && index === this.currentMilestoneIndex) {
@@ -665,14 +678,16 @@ export class MilestoneComponent implements OnInit {
         return;
       }
       if (sort < newSort && (!prev || sort > prev.sort)) {
-        prev = { sort, date: row.MilestoneDate };
+        prev = { sort, date: row.MilestoneDate, auto: row.AutoCaptured };
       } else if (sort > newSort && (!next || sort < next.sort)) {
-        next = { sort, date: row.MilestoneDate };
+        next = { sort, date: row.MilestoneDate, auto: row.AutoCaptured };
       }
     });
 
-    this.milestoneMinDate = prev ? (prev as any).date : null;
-    this.milestoneMaxDate = next ? (next as any).date : null;
+    // Bounds must be in the SAME frame the picker shows (branch-local for auto-captured action rows),
+    // so an auto milestone's selectable range lines up with its (shifted) displayed value.
+    this.milestoneMinDate = prev ? this.toPickerDate((prev as any).date, (prev as any).auto) : null;
+    this.milestoneMaxDate = next ? this.toPickerDate((next as any).date, (next as any).auto) : null;
   }
 
   reportMilestones(): void {
@@ -681,7 +696,7 @@ export class MilestoneComponent implements OnInit {
     const formattedData = allMilestones.map((milestone, index) => ({
         SerialNo: index + 1,
         MilestoneName: milestone.MilestoneName || '',
-        MilestoneDate: this.formatMilestoneDateTime(milestone.MilestoneDate) || '',
+        MilestoneDate: this.formatMilestoneDateTime(milestone.MilestoneDate, milestone.AutoCaptured) || '',
         AutoCaptured: (milestone.AutoCaptured === true || milestone.AutoCaptured === 'Y') ? 'Yes' : 'No',
         Status: this.getMilestoneStatusLabel(milestone.Status),
         Remarks: milestone.Remarks || ''
@@ -705,18 +720,29 @@ export class MilestoneComponent implements OnInit {
 }
 
 /**
-   * Format a milestone's date + time for display. The date-time picker stores the
-   * picked wall-clock as UTC (UTC-naive), so we read the UTC components here to show
-   * exactly what the user selected (no timezone shift). Returns "" for empty/invalid.
+   * Format a milestone's date + time for display.
+   *
+   * MilestoneDate is a naive `timestamp` with THREE meanings depending on how the row was created:
+   *  - Auto-captured ACTION (DB `now()`): a real UTC instant → shift by the CURRENT BRANCH's offset
+   *    (branchOffset) so the chip reads branch-local, not UTC.
+   *  - Auto-captured DATE-FIELD (DB stores the datepicker field, e.g. SOBDate — a @db.Date, so always
+   *    midnight): a naive calendar date → read RAW, so the shown date always equals the field's date
+   *    (offsetting would show a bogus time and could roll the date back on a negative-offset branch).
+   *  - Manual (date-time picker): the picked wall-clock stored UTC-naive → read RAW.
+   * All read via getUTC* getters so the output is independent of the viewer's browser TZ.
+   * Distinguisher: only an auto-captured row with a NON-midnight UTC time is a now() action (⇒ shift).
+   * Returns "" for empty/invalid. `autoCaptured` omitted ⇒ treated as manual (raw, no shift).
    */
-  formatMilestoneDateTime(value: any): string {
+  formatMilestoneDateTime(value: any, autoCaptured?: any): string {
     if (!value) {
       return '';
     }
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
+    const parsed = new Date(value);
+    if (isNaN(parsed.getTime())) {
       return '';
     }
+    const shift = this.milestoneShiftMs(value, autoCaptured);
+    const date = shift ? new Date(parsed.getTime() + shift) : parsed;
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const day = String(date.getUTCDate()).padStart(2, '0');
     const month = months[date.getUTCMonth()];
@@ -729,6 +755,56 @@ export class MilestoneComponent implements OnInit {
       hour12 = 12;
     }
     return `${day}-${month}-${year} ${String(hour12).padStart(2, '0')}:${minute} ${meridian}`;
+  }
+
+  /** Current branch's UTC offset in ms (company-config timezone); 0 when unknown. */
+  private branchOffsetMs(): number {
+    const tz = this.appSettingService.getCurrentBranchInfo()?.timeZone;
+    return getOffsetMinutes(normalizeTimezoneOffset(tz)) * 60 * 1000;
+  }
+
+  /**
+   * ms to add to a stored MilestoneDate to reach the branch-local wall clock. Non-zero ONLY for
+   * auto-captured ACTION rows (a now() UTC instant — AutoCaptured with a non-midnight UTC time);
+   * 0 for auto DATE-FIELD rows (@db.Date → midnight) and manual rows, which are already naive.
+   * Single source of truth shared by display, edit-load (toPickerDate) and save (fromPickerDate).
+   */
+  private milestoneShiftMs(value: any, autoCaptured: any): number {
+    const isAuto = autoCaptured === true || autoCaptured === 'Y';
+    if (!isAuto || !value) {
+      return 0;
+    }
+    const d = new Date(value);
+    if (isNaN(d.getTime())) {
+      return 0;
+    }
+    const isMidnightUtc = d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0;
+    return isMidnightUtc ? 0 : this.branchOffsetMs();
+  }
+
+  /**
+   * Stored MilestoneDate → the value fed to the edit date-time picker. The picker reads UTC
+   * components, so bake the branch offset into the ISO string for auto-captured ACTION rows, making
+   * the modal show the SAME wall clock as the list chip. Date-field/manual values pass through raw.
+   */
+  private toPickerDate(value: any, autoCaptured: any): any {
+    const shift = this.milestoneShiftMs(value, autoCaptured);
+    if (!shift || !value) {
+      return value || null;
+    }
+    return new Date(new Date(value).getTime() + shift).toISOString();
+  }
+
+  /**
+   * Edit picker value → stored MilestoneDate: undo the branch-local shift applied on load (using the
+   * shift recorded when the modal opened) so the date-sequence check compares like-for-like with the
+   * other (raw) rows and the persisted UTC instant is unchanged. No-op when nothing was shifted.
+   */
+  private fromPickerDate(value: any): any {
+    if (!this.editDateShiftMs || !value) {
+      return value ?? null;
+    }
+    return new Date(new Date(value).getTime() - this.editDateShiftMs).toISOString();
   }
 
   getMilestoneStatusLabel(status: any): string {
