@@ -159,6 +159,7 @@ $radius-md: 10px;
 .tracking-tabs,
 .tracking-insights,
 .empty-state,
+.tracking-loading,
 .alert-panel {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -361,6 +362,55 @@ $radius-md: 10px;
   color: $danger;
 }
 
+/* ── Data-load feedback (shown while the tracking query runs) ────────────── */
+.tracking-loading {
+  margin-top: 18px;
+  padding: 34px 28px;
+  text-align: center;
+}
+.tracking-loading h2 {
+  margin: 14px 0 6px;
+  font-size: 19px;
+  font-weight: 850;
+  color: $ink;
+}
+.tracking-loading p {
+  max-width: 560px;
+  margin: 0 auto;
+  color: $muted;
+}
+.loading-orbit {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: $brand-soft;
+  color: $brand;
+  font-size: 22px;
+}
+.loading-skeleton {
+  max-width: 460px;
+  margin: 22px auto 4px;
+  display: grid;
+  gap: 10px;
+}
+.loading-skeleton .sk-line {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(203, 220, 235, 0.35) 25%, rgba(203, 220, 235, 0.7) 37%, rgba(203, 220, 235, 0.35) 63%);
+  background-size: 400% 100%;
+  animation: skShimmer 1.4s ease infinite;
+}
+.loading-skeleton .sk-wide { width: 100%; }
+.loading-skeleton .sk-line:not(.sk-wide):not(.sk-narrow) { width: 82%; }
+.loading-skeleton .sk-narrow { width: 58%; }
+@keyframes skShimmer {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+
 /* ── Before-search welcome screen ───────────────────────────────────────── */
 .welcome-state {
   margin-top: 12px;
@@ -383,7 +433,7 @@ $radius-md: 10px;
   color: $ink;
   background:
     linear-gradient(90deg, rgba(247, 252, 255, 0.97) 0%, rgba(247, 252, 255, 0.91) 35%, rgba(247, 252, 255, 0.18) 58%, rgba(247, 252, 255, 0) 100%),
-    url('/assets/tracking/tracking-welcome-bg.png') center / cover no-repeat;
+    url('/assets/tracking/tracking-welcome-bg.webp') center / cover no-repeat;
   box-shadow: 0 16px 38px rgba(7, 27, 58, 0.22);
 }
 
@@ -916,12 +966,12 @@ $radius-md: 10px;
 .route-track.sea-mode {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(239, 249, 253, 0.22) 48%, rgba(234, 247, 252, 0.94) 100%),
-    url('/assets/tracking/tracking-sea-bg.png') center / cover no-repeat;
+    url('/assets/tracking/tracking-sea-bg.webp') center / cover no-repeat;
 }
 .route-track.air-mode {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(244, 248, 255, 0.28) 48%, rgba(244, 248, 255, 0.96) 100%),
-    url('/assets/tracking/tracking-air-bg.png') center / cover no-repeat;
+    url('/assets/tracking/tracking-air-bg.webp') center / cover no-repeat;
 }
 
 /* ── Animated department scene (waves / clouds) ─────────────────────────── */

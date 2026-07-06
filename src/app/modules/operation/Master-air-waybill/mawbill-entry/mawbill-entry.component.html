@@ -315,8 +315,8 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group inputChnages">
                                                 <!-- For Air Import - Always manual entry, no dropdown -->
-                                                <div  class="custom-form-group custom-form-group-select inputChnages mt-md-1" 
-                                                    [class.filled]="masterJobForm.get('MBLNo')?.value" *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Import'">
+                                                <div  class="custom-form-group custom-form-group-select inputChnages mt-md-1"
+                                                    [class.filled]="masterJobForm.get('MBLNo')?.value" *ngIf="isAirImportDept">
                                                     <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder="">
                                                     <label class="input-label">
                                                         MAWB
@@ -327,12 +327,12 @@
                                                             title="Copy MAWB No"
                                                             (click)="copyDocumentNumber('MBLNo', 'MAWB No', $event)"
                                                         ></i>
-                                                        <span *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Import'" class="text-danger">*</span>
+                                                        <span *ngIf="isAirImportDept" class="text-danger">*</span>
                                                     </label>
                                                 </div>
-                                        
-                                                <!-- For Air Export - Show dropdown with toggle (existing logic) -->
-                                                <div *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export' && !isMawbStockAllocationEnabled">
+
+                                                <!-- For Air Export (no auto allocation) and Air "Others" - dropdown with manual toggle -->
+                                                <div *ngIf="(isAirExportDept && !isMawbStockAllocationEnabled) || isAirOtherDept">
                                                     <!-- Dropdown mode (when stock available and not in manual mode) -->
                                                     <div class="custom-form-group custom-form-group-select inputChnages mt-md-1" 
                                                     [class.filled]="masterJobForm.get('MBLNo')?.value"
@@ -358,9 +358,9 @@
                                                             title="Copy MAWB No"
                                                             (click)="copyDocumentNumber('MBLNo', 'MAWB No', $event)"
                                                         ></i>
-                                                        <span *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Import'" class="text-danger">*</span>
+                                                        <span *ngIf="isAirImportDept" class="text-danger">*</span>
                                                         <!-- ✅ Also required for Air Export in edit mode -->
-                                                        <span *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export' && isEditMode"
+                                                        <span *ngIf="isAirExportDept && isEditMode"
                                                             class="text-danger">*</span>
                                                     </label>
 
@@ -392,7 +392,7 @@
 
                                                 <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
                                                     [class.filled]="masterJobForm.get('MBLNo')?.value"
-                                                    *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export' && isMawbStockAllocationEnabled">
+                                                    *ngIf="isAirExportDept && isMawbStockAllocationEnabled">
                                                     <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder=""
                                                         [readonly]="!allowManualMawbEntryOnAutoAllocationError">
                                                     <label class="input-label">MAWB

@@ -565,6 +565,42 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     return this.masterJobData?.Status === 'S';
   }
 
+  // MAWB field visibility helpers.
+  // The department direction can be 'Import', 'Export' or 'Others' (see Department master).
+  // The template previously only handled 'Import'/'Export', so an Air department set to
+  // 'Others' rendered NO MAWB field at all. These getters make the intent explicit and
+  // give 'Others' the same dropdown + manual entry behaviour as Air Export.
+  get isAirImportDept(): boolean {
+    return this.isAirDepartment &&
+      this.normalizePortText(this.selectedDepartment?.ExportImport) === 'IMPORT';
+  }
+
+  get isAirExportDept(): boolean {
+    return this.isAirDepartment &&
+      this.normalizePortText(this.selectedDepartment?.ExportImport) === 'EXPORT';
+  }
+
+  get isAirOtherDept(): boolean {
+    return this.isAirDepartment && !this.isAirImportDept && !this.isAirExportDept;
+  }
+
+  // True for Air departments that should offer the MAWB stock dropdown + manual toggle:
+  // Air Export (without auto-allocation) and Air "Others".
+  private isAirMawbSelectableDept(): boolean {
+    const type = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
+    if (type !== 'AIR') {
+      return false;
+    }
+    const direction = this.normalizePortText(this.selectedDepartment?.ExportImport);
+    if (direction === 'IMPORT') {
+      return false;
+    }
+    if (direction === 'EXPORT' && this.isMawbStockAllocationEnabled) {
+      return false;
+    }
+    return true;
+  }
+
   private loadTermsAndConditionsConfig(): void {
     const companyId = this.currentCompany?.CompanyMasterSid;
     if (!companyId) {
@@ -804,7 +840,7 @@ private handleCarrierSelectionChange(carrier: any, carrierName: string | null, c
 
   this.onCarrierChangeForAir(carrier);
 
-  if (this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT' && !this.isMawbStockAllocationEnabled) {
+  if (this.isAirMawbSelectableDept()) {
     this.loadMawbStock({
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -1353,9 +1389,7 @@ toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   this.masterJobForm.get(mainCtrl)?.reset();
 }
 loadMawbStock(data: any): void {
-  const isAirDept = this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR';
-  const isAirExport = this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT';
-  if (!isAirDept || !isAirExport || this.isMawbStockAllocationEnabled) {
+  if (!this.isAirMawbSelectableDept()) {
     this.mawbStockList = [];
     this.mawbStockSource = 'NONE';
     this.isMawbDropdownDisabled = true;
@@ -2071,15 +2105,8 @@ loadMawbStock(data: any): void {
         Validators.maxLength(50)
       ]);
       this.isMawbDropdownDisabled = true;
-    } else if (isAirExport && !this.isMawbStockAllocationEnabled) {
-      mblNoControl?.enable();
-      mblNoControl?.setValidators(
-        this.isEditMode
-          ? [Validators.required, Validators.maxLength(50)]
-          : [Validators.maxLength(50)]
-      );
-      this.isMawbDropdownDisabled = false;
-    } else {
+    } else if (isAirExport && this.isMawbStockAllocationEnabled) {
+      // Air Export with auto MAWB stock allocation → number is allocated on save.
       mblNoControl?.setValidators([Validators.maxLength(50)]);
       this.isMawbDropdownDisabled = true;
 
@@ -2091,6 +2118,15 @@ loadMawbStock(data: any): void {
           mblNoControl?.setValue('');
         }
       }
+    } else {
+      // Air Export (no auto allocation) OR Air "Others" → MAWB stock dropdown + manual entry.
+      mblNoControl?.enable();
+      mblNoControl?.setValidators(
+        this.isEditMode && isAirExport
+          ? [Validators.required, Validators.maxLength(50)]
+          : [Validators.maxLength(50)]
+      );
+      this.isMawbDropdownDisabled = false;
     }
   } else {
     mblNoControl?.enable();
@@ -2104,7 +2140,7 @@ loadMawbStock(data: any): void {
 
   this.enableManualMawbEntryForBlankEditRecord();
 
-  if (this.isAirDepartment && isAirExport && !this.isMawbStockAllocationEnabled) {
+  if (this.isAirMawbSelectableDept()) {
     const mawbSource = this.isEditMode
       ? this.masterAirWayData
       : {

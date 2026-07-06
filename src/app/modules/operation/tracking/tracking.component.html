@@ -103,6 +103,17 @@
     </div>
   </section>
 
+  <section class="tracking-loading" *ngIf="isLoading" aria-live="polite">
+    <div class="loading-orbit"><i class="fas fa-spinner fa-spin"></i></div>
+    <h2>Fetching shipment details…</h2>
+    <p *ngIf="searchText">Loading status, routing, milestones and documents for &ldquo;{{ searchText }}&rdquo;.</p>
+    <div class="loading-skeleton" aria-hidden="true">
+      <span class="sk-line sk-wide"></span>
+      <span class="sk-line"></span>
+      <span class="sk-line sk-narrow"></span>
+    </div>
+  </section>
+
   <section class="alert-panel" *ngIf="errorMessage && !isLoading">
     <i class="fas fa-info-circle"></i>
     <span>{{ errorMessage }}</span>
@@ -276,7 +287,11 @@
                 <img
                   *ngSwitchCase="'plane'"
                   class="veh-image veh-plane-image"
-                  src="assets/tracking/cargo-plane.png"
+                  src="assets/tracking/cargo-plane.webp"
+                  width="480"
+                  height="240"
+                  decoding="async"
+                  loading="lazy"
                   alt=""
                 />
 
@@ -284,7 +299,11 @@
                 <img
                   *ngSwitchDefault
                   class="veh-image veh-ship-image"
-                  src="assets/tracking/cargo-ship.png"
+                  src="assets/tracking/cargo-ship.webp"
+                  width="480"
+                  height="264"
+                  decoding="async"
+                  loading="lazy"
                   alt=""
                 />
               </ng-container>
