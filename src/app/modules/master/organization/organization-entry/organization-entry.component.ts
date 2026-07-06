@@ -1162,7 +1162,7 @@ clearCustomerSearch(): void {
       CustomerLoginSid: [login.CustomerLoginSid || null],
       LoginName: [login.LoginName || '', [Validators.required]],
       LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
-      LoginPassword: [login.LoginPassword || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+      LoginPassword: [this.decryptLoginPassword(login.LoginPassword) || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
       status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
     }));
   }
@@ -2983,7 +2983,7 @@ loadCustomerSalesTeamData() {
         CustomerBranchSid: [login.customerBranch?.CustomerBranchSid || '', [Validators.required]],
         LoginName: [login.LoginName || '', [Validators.required]],
         LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
-        LoginPassword: [login.LoginPassword || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+        LoginPassword: [this.decryptLoginPassword(login.LoginPassword) || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
         status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
       });
 
@@ -3337,7 +3337,7 @@ private getFirstInvalidField(): string {
       loginsPayload.push({
         LoginName: loginData.LoginName?.trim(),
         LoginEmail: loginData.LoginEmail,
-        LoginPassword: loginData.LoginPassword,
+        LoginPassword: this.encryptLoginPassword(loginData.LoginPassword),
         status: loginData.status === 'Active' ? 'A' : 'S'
       });
     }
@@ -3628,7 +3628,7 @@ private buildBranchLoginPayload(loginData: any): any {
   const loginPayload: any = {
     LoginName: loginData.LoginName?.trim(),
     LoginEmail: loginData.LoginEmail,
-    LoginPassword: loginData.LoginPassword,
+    LoginPassword: this.encryptLoginPassword(loginData.LoginPassword),
     status: this.isActiveStatus(loginData.status) ? 'A' : 'S'
   };
 
@@ -3637,6 +3637,27 @@ private buildBranchLoginPayload(loginData: any): any {
   }
 
   return loginPayload;
+}
+
+/**
+ * Encrypt a branch-login password before persisting, using the SAME scheme the login
+ * page uses for stored credentials (AppSettingsService AES). Empty values pass through
+ * untouched so we never store an encrypted blank.
+ */
+private encryptLoginPassword(password: string): string {
+  if (password === null || password === undefined || password === '') return password;
+  return this.appSettingService.encrypt(password);
+}
+
+/**
+ * Decrypt a stored branch-login password back to plain text for display/editing.
+ * Falls back to the raw value when decryption fails (legacy rows saved as plain text),
+ * so existing data keeps working and gets re-encrypted on the next save.
+ */
+private decryptLoginPassword(stored: string): string {
+  if (stored === null || stored === undefined || stored === '') return stored;
+  const decrypted = this.appSettingService.decrypt(stored);
+  return (decrypted === null || decrypted === undefined) ? stored : decrypted;
 }
   private prepareUpdateSalesTeamsPayload(branchSid?: number): any[] {
   if (this.cusSalesteam.length === 0) return [];
