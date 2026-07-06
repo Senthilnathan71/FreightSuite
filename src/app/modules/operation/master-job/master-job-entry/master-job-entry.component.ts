@@ -2484,7 +2484,7 @@ onETDDateSelect(): void {
       // Import department - enable and make required
       mblNoControl?.enable();
       mblDateControl?.enable();
-      mblNoControl?.setValidators([Validators.required, Validators.maxLength(20)]);
+      mblNoControl?.setValidators([Validators.required, Validators.maxLength(50)]);
       mblDateControl?.setValidators([Validators.required]);
 
     } else {
@@ -2493,7 +2493,7 @@ onETDDateSelect(): void {
       mblDateControl?.enable();
       mblNoControl?.clearValidators();
       mblDateControl?.clearValidators();
-      mblNoControl?.setValidators([Validators.maxLength(20)]);
+      mblNoControl?.setValidators([Validators.maxLength(50)]);
     }
 
     mblNoControl?.updateValueAndValidity();

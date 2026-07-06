@@ -368,7 +368,7 @@
                                     <aside class="col-md-6">
     <div class="custom-form-group " style="margin-top: 7px;">
         <input type="text" formControlName="MBLNo" class="custom-input-field sm"
-            maxlength="20" placeholder="">
+            maxlength="50" placeholder="">
         <label class="input-label">
             {{ selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL NO' }}
             <i
@@ -389,7 +389,7 @@
             <span>Required</span>
             }
             @else if(masterJobForm.get('MBLNo')?.hasError('maxlength')){
-            <span>Max 20 chars</span>
+            <span>Max 50 chars</span>
             }
             @else if(masterJobForm.get('MBLNo')?.hasError('duplicate')){
             <span>{{ selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL No' }} already exists</span>
