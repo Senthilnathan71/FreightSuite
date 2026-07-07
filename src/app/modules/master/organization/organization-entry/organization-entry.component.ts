@@ -18,6 +18,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
   ValidationErrors,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -1156,13 +1157,33 @@ clearCustomerSearch(): void {
       });
     });
   }
+  /** Placeholder the API returns for an existing login's (hashed) password. */
+  private readonly MASKED_PASSWORD = '*******';
+
+  /**
+   * Validator for a login password field. An existing login loads the masked
+   * placeholder ('*******') and is treated as valid/unchanged; any real edit
+   * runs the full PasswordValidators strength check. Mirrors the hashed
+   * password convention used by userMaster's userPassword.
+   */
+  private loginPasswordValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (control.value === this.MASKED_PASSWORD) {
+        return null;
+      }
+      return PasswordValidators.validate()(control);
+    };
+  }
+
   // Update the createLoginsArray method to include customer/branch info
   createLoginsArray(logins: any[]): FormGroup[] {
     return logins.map(login => this.fb.group({
       CustomerLoginSid: [login.CustomerLoginSid || null],
       LoginName: [login.LoginName || '', [Validators.required]],
       LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
-      LoginPassword: [login.LoginPassword || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+      // Existing (already-saved) logins load a masked password and are locked;
+      // the field re-enables only for a brand-new login row.
+      LoginPassword: [{ value: login.LoginPassword || '', disabled: !!login.CustomerLoginSid }, [Validators.required, Validators.maxLength(50), this.loginPasswordValidator()]],
       status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
     }));
   }
@@ -1217,7 +1238,7 @@ clearCustomerSearch(): void {
       CustomerLoginSid: [null],
       LoginName: ['', [Validators.required]],
       LoginEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
-      LoginPassword: ['', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+      LoginPassword: ['', [Validators.required, Validators.maxLength(50), this.loginPasswordValidator()]],
       status: [this.isBranchSuspended(branchIndex) ? 'Suspended' : 'Active', Validators.required]
     });
     this.getLogins(branchIndex).push(loginForm);
@@ -2898,7 +2919,7 @@ loadCustomerSalesTeamData() {
       CustomerBranchSid: ['', [Validators.required]], // Branch dropdown
       LoginName: ['', [Validators.required]],
       LoginEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
-      LoginPassword: ['', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+      LoginPassword: ['', [Validators.required, Validators.maxLength(50), this.loginPasswordValidator()]],
       status: ['Active', Validators.required]
     });
 
@@ -2983,7 +3004,9 @@ loadCustomerSalesTeamData() {
         CustomerBranchSid: [login.customerBranch?.CustomerBranchSid || '', [Validators.required]],
         LoginName: [login.LoginName || '', [Validators.required]],
         LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
-        LoginPassword: [login.LoginPassword || '', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
+        // Existing (already-saved) logins load a masked password and are locked;
+      // the field re-enables only for a brand-new login row.
+      LoginPassword: [{ value: login.LoginPassword || '', disabled: !!login.CustomerLoginSid }, [Validators.required, Validators.maxLength(50), this.loginPasswordValidator()]],
         status: [login.status === 'A' ? 'Active' : login.status === 'S' ? 'Suspended' : 'Active', Validators.required]
       });
 

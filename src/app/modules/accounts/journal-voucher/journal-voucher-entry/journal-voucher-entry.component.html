@@ -267,13 +267,13 @@
                          <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
                             <div class="input-group">
-                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                    #d6="ngbDatepicker" (click)="d6.toggle()"  formControlName="DocumentDate" />
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="billDate" id="billDate" ngbDatepicker
+                                    #d6="ngbDatepicker" (click)="d6.toggle()" readonly formControlName="DocumentDate" />
                                 <button class="btn bi bi-calendar3" (click)="d6.toggle()" type="button">
                                     <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                             </div>
-                            <label class="input-label" for="dp">Bill Date <span class="text-danger"></span></label>
+                            <label class="input-label" for="billDate">Bill Date <span class="text-danger"></span></label>
                         </div>
                     </aside>
 
