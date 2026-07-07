@@ -169,8 +169,8 @@ getGrandTotal(field: string): number {
 
         rows.push({
           cells: [
-            { value: '' },
-            { value: '' },
+            { value: hj?.JobNo || '' },
+            { value: hj?.deptName || '' },
             { value: item.MBLNo || '' },
             { value: hj.HBLNo || '' },
             { value: hj.houseStatus || '' },
@@ -182,10 +182,10 @@ getGrandTotal(field: string): number {
             { value: hj.POL || '' },
             { value: hj.POD || '' },
             { value: hj.FPD || '' },
-            { value: '' },
-            { value: '' },
-            { value: '' },
-            { value: '' },
+            { value: this.formatDate(hj.ETA) },
+            { value: this.formatDate(hj.ETD) },
+            { value: this.formatDate(hj.ATA) },
+            { value: this.formatDate(hj.ATD) },
             { value: hj.ModeOfTransport || '' },
             { value: hj.salesPerson || '' },
             { value: hj.PPCC || '' },

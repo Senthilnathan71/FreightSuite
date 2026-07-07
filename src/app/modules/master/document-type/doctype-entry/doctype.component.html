@@ -271,6 +271,18 @@
 
                                     </div>
                                 </aside>
+                                
+                                 <aside class="col-md-6">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!documentForm.get('AllowedLedgerTypes')?.value">
+                                        <multi-select formControlName="AllowedLedgerTypes" [items]="modeOfledgertype" bindLabel="name"
+                                        bindValue="name" placeholder="" >
+                                        </multi-select>
+                                        <label for="text-input" class="input-label">Allowed Ledger Types <span
+                                                class="text-danger"></span></label>
+                                    </div>
+                                </aside>
+
                                 <aside class="col-md-6">
                                     <div class="custom-form-group">
                                         <textarea id="Remarks" class="custom-input-field sm" placeholder="" rows="1"

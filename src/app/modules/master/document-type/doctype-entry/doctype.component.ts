@@ -24,7 +24,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
-
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 @Component({
 	selector: 'app-doctype',
 	standalone: true,
@@ -38,7 +38,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
 		NgbDropdownModule,
 		SearchableDropdown,
 		ElementStateGuardDirective,
-		FormStateGuardDirective
+		FormStateGuardDirective,
+		MultiSelectComponent
 	],
 	templateUrl: 'doctype.component.html',
 	styleUrl: './doctype.component.scss'
@@ -99,6 +100,33 @@ currentBranch: any;
 		{ id : 11 , code : "NIN"},
 		{ id : 12 , code : 'IJV'},
 	]
+
+	modeOfledgertype = [
+    { id: 1, name: 'Accrual'},
+    { id: 2, name: 'Asset' },
+    { id: 3, name: 'Bank' },
+    { id: 4, name: 'Cash' },
+    { id: 5, name: 'Cost' },
+    { id: 6, name: 'Depreciation' },
+    { id: 7, name: 'Expenses GST' },
+    { id: 8, name: 'Imprest' },
+    { id: 9, name: 'Income GST' },
+    { id: 10, name: 'Income Tax Payable' },
+    { id: 11, name: 'Income Tax Receivable' },
+    { id: 12, name: 'Input Tax' },
+    { id: 13, name: 'Liabilities' },
+    { id: 14, name: 'Other Cost'},
+    { id: 15, name: 'Other Revenue'},
+    { id: 16, name: 'Output Tax' },
+    { id: 17, name: 'Revenue' },
+    { id: 18, name: 'Sy Cr' },
+    { id: 19, name: 'Sy Dr' },
+    { id: 20, name: 'TDS Payable' },
+    { id: 21, name: 'TDS Receivable' },
+    { id: 22, name: 'Inter Branch' },
+    { id: 23, name: 'Cost and Revenue' },
+    { id: 24, name: 'Asset and Liability' },
+  ];
 
 	typeOptions = ['Cash', 'Bank', 'Others'];
 
@@ -181,6 +209,7 @@ hasAnyDropdownPermission(): boolean {
 			Subledger: [''],
 			ReportTitle : [''],
 			ReportFooter : [''],
+			AllowedLedgerTypes: [''],
 			DocumentStartingNo: ['', [Validators.required]],
 			DocumentSeparator: [""],
 			DocumentSLNoLength: ['', [Validators.required]],
@@ -389,6 +418,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			BranchMasterSid : this.currentBranch?. BranchMasterSid,
 			COALedger : Number(formValue.COALedger),
 			Subledger : Number(formValue.Subledger),
+			AllowedLedgerTypes : formValue.AllowedLedgerTypes,
 			DocumentSeparator: formValue.DocumentSeparator === 'None' ? '' : formValue.DocumentSeparator,
 			CompanyFlag: formValue.CompanyFlag ? 'Y' : 'N',
 			BranchFlag: formValue.BranchFlag ? 'Y' : 'N',
@@ -470,6 +500,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
     Subledger: '',
     ReportTitle: '',
     ReportFooter: '',
+    AllowedLedgerTypes: '',
     DocumentStartingNo: '',
     DocumentSeparator: null,
     DocumentSLNoLength: '',
