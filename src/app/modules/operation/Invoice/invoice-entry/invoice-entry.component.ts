@@ -4959,12 +4959,32 @@ isSeaDepartment(): boolean {
     return this.shouldShowIndiaGstAmountTotals(configOverride) || this.shouldShowVatAmountTotals(configOverride);
   }
 
-  getInvoicePrintAmountTotal(fieldName: 'cgstAmt' | 'sgstAmt' | 'vatAmt' | 'LocalAmount'): string {
+  getInvoicePrintAmountTotal(fieldName: 'cgstAmt' | 'sgstAmt' | 'vatAmt' | 'TaxableAmount' | 'LocalAmount'): string {
     const total = (this.invoicePrintData?.voucherDetails || []).reduce((sum: number, detail: any) => {
       return sum + toNumber(detail?.[fieldName]);
     }, 0);
 
     return this.getFormattedAndPaddedAmount(total, this.currentCompany.CurrencyMasterSid);
+  }
+
+  getInvoicePrintVatSummary(): Array<{ vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }> {
+    const summary = new Map<string, { vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }>();
+
+    for (const detail of this.invoicePrintData?.voucherDetails || []) {
+      const vatRate = detail?.vatRate ?? '0.000';
+      const summaryRow = summary.get(vatRate) || {
+        vatRate,
+        vatRateDisplay: `${toNumber(vatRate)}%`,
+        taxableAmount: 0,
+        vatAmt: 0,
+      };
+
+      summaryRow.taxableAmount += toNumber(detail?.TaxableAmount);
+      summaryRow.vatAmt += toNumber(detail?.vatAmt);
+      summary.set(vatRate, summaryRow);
+    }
+
+    return Array.from(summary.values());
   }
 
   calculateBaseInvoicePrintColspan(): number {
