@@ -4776,28 +4776,24 @@ openDocRef() {
     }
 
     const allMilestones = this.milestoneComponent.allMilestones || [];
-    const cfuMilestoneId = allMilestones.find(m => m.MilestoneCode === "CFU")?.MilestoneMasterSid;
-    const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === cfuMilestoneId);
-    // console.log("AutoInsert Or Not", {
-    //   ImportOrExport: this.selectedDepartment?.ExportImport,
-    //   validDepartment,
-    //   currentJobType,
-    //   validJobType,
-    //   allMilestones,
-    //   tabValue: this.milestoneResult,
-    //   existingMilestone,
-    //   validMilestone: existingMilestone ? false : true,
-    //   finalDecision: validDepartment && validJobType && !existingMilestone
-    // })
+    // "Cargo Follow up" is coded differently per department (LCL Export='CFU', Air Export='CRFUP', …),
+    // so resolve the code from THIS department's catalog by name instead of hardcoding 'CFU' — else an
+    // Air Export booking posts 'CFU' and the backend returns "Milestone not found".
+    const followupMilestone = allMilestones.find(
+      (m: any) => (m.MilestoneName || '').trim().toLowerCase() === 'cargo follow up',
+    );
+    const followupCode = followupMilestone?.MilestoneCode || 'CFU';
+    const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === followupMilestone?.MilestoneMasterSid);
 
-    this.followupModalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType && !existingMilestone;
+    this.followupModalRef.componentInstance.autoInsertMilestone =
+      validDepartment && validJobType && !existingMilestone && !!followupMilestone;
 
     const milestonePayload: SafeInsertShipmentMilestone = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DepartmentName: this.selectedDepartment?.departmentName,
       JobType: currentJobType,
-      MilestoneCode: "CFU",
+      MilestoneCode: followupCode,
       MilestoneDate: getDefaultTodayDate(),   // note: overridden downstream by the follow-up date (follow-up.component)
       ShipmentNo: this.bookingData?.ShipmentNo,
       BookingHeaderSid: this.bookingData?.BookingHeaderSid,

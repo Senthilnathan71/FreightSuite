@@ -7439,6 +7439,27 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
       modalRef.componentInstance.currencyList = this.currencyList || [];
       modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+
+      // "Proof of Delivery" (PDLV) milestone — captured when the POD is downloaded/emailed inside the
+      // modal. Import-only in the catalog, so the backend silently no-ops for Export. MilestoneDate is
+      // omitted → backend stamps now() (the actual print/send time).
+      const podMilestonePayload: SafeInsertShipmentMilestone = {
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        DepartmentName: this.selectedDepartment?.departmentName,
+        JobType: this.b['JobType']?.value,
+        MilestoneCode: 'PDLV',
+        ShipmentNo: this.bookingData?.ShipmentNo || this.housejobData?.ShipmentNo,
+        HouseJobSid: this.housejobData?.HouseJobSid,
+        BookingHeaderSid: this.bookingData?.BookingHeaderSid || this.housejobData?.BookingHeaderSid,
+        createdBy: this.userData?.userEmail,
+        Remarks: `Proof of Delivery sent on ${(new Date().toISOString()).split('T')[0]}`,
+      };
+      modalRef.componentInstance.milestonePayload = podMilestonePayload;
+
+      modalRef.componentInstance.reloadMilestone.subscribe(() => {
+        this.milestoneComponent.loadShipmentMilestones(this.housejobData?.ShipmentNo);
+      });
     }
 
 

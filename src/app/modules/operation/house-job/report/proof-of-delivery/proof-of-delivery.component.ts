@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -19,6 +19,7 @@ import {
 } from 'src/app/common/pdf/generators/proof-of-delivery-pdf.generator';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../../operation.service';
+import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-proof-of-delivery',
@@ -46,6 +47,10 @@ export class ProofOfDeliveryComponent {
   @Input() portList: any[] = []; // Add this input
   @Input() selectedDepartmentType : any;
   @Input() houseMenuMasterSid: number | null = null;
+  // "Proof of Delivery" (PDLV) milestone — payload built by the parent (house-job entry)
+  @Input() milestonePayload?: SafeInsertShipmentMilestone;
+  @Output() reloadMilestone = new EventEmitter<void>();
+  private podMilestoneCaptured = false;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
   private pdfDepsPromise?: Promise<{ pdfMake: any }>;
@@ -62,8 +67,31 @@ export class ProofOfDeliveryComponent {
     private operationService: OperationService,
     private modalService: NgbModal,
     private emailTriggerService: EmailTriggerService,
-    private companySettings: CompanySettingsManagerService
+    private companySettings: CompanySettingsManagerService,
+    private shipmentMilestoneService: ShipmentMilestoneService
   ) { }
+
+  // "Proof of Delivery" (PDLV) milestone — captured the first time the POD is downloaded/emailed.
+  // The payload (code 'PDLV') is built by the parent house-job entry. MilestoneDate is omitted →
+  // backend stamps now() (the actual print/send time). Backend dedups on (HouseJobSid +
+  // MilestoneMasterSid + Status='A'); PDLV is Import-only in the catalog, so it no-ops for Export.
+  private captureProofOfDeliveryMilestone(): void {
+    if (this.podMilestoneCaptured) return;
+    const payload = this.milestonePayload;
+    if (!payload || !payload.ShipmentNo || !payload.MilestoneCode) return;
+    this.podMilestoneCaptured = true;
+    this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status) {
+          this.reloadMilestone.emit(); // refresh the milestone tab now that a new row exists
+        }
+      },
+      error: (err) => {
+        this.podMilestoneCaptured = false; // "already exist"/"not found" (non-import) → allow retry
+        console.error('Proof of Delivery milestone capture skipped:', err);
+      },
+    });
+  }
 
     ngOnInit() {
     this.userData = this.appSettingsService.getDecryptedUserProfile();
@@ -207,6 +235,7 @@ export class ProofOfDeliveryComponent {
         .createPdf(docDefinition)
         .download(`Proof-of-Delivery-${this.housejobData?.HBLNo || 'Report'}.pdf`);
       this.appSettingsService.showSuccess('PDF downloaded successfully!');
+      this.captureProofOfDeliveryMilestone();
       const payload = {
         tableName: 'HouseJob',
         recordId: String(this.housejobData?.HouseJobSid),
@@ -282,6 +311,7 @@ export class ProofOfDeliveryComponent {
         this.appSettingService.showError('No email found in customer branch email.');
         return;
       }
+      this.captureProofOfDeliveryMilestone();
 
       const emailContent = this.emailTriggerService.buildOperationEmailContent({
         documentName,
