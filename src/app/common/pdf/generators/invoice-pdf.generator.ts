@@ -246,8 +246,7 @@
         ...(isNonJobInvoice ? [] : [buildShipmentDetails(data)]),
         buildChargesTable(data),
         buildTotalsSection(data),
-        buildAmountInWords(data),
-        ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
+        buildAmountAndVatSummarySection(data),
         ...(!isNonJobInvoice && buildContainerDetails(data) ? [buildContainerDetails(data)] : []),
         ...buildBankDetailsSection(data),
         ...(resolvedTerms.length > 0
@@ -1438,6 +1437,149 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     if (value === null || value === undefined || value === '') return 0;
     if (typeof value === 'number') return value;
     return Number(String(value).replace(/,/g, '')) || 0;
+  }
+
+  function softenPdfText(value: any): string {
+    const input = String(value || '');
+    if (!input) return '';
+
+    return input
+      .replace(/,/g, ',\u200B')
+      .replace(/\//g, '/\u200B')
+      .replace(/-/g, '-\u200B')
+      .replace(/([^\s\u200B]{14})(?=[^\s\u200B])/g, '$1\u200B');
+  }
+
+  function getPdfDisplayDetails(data: InvoicePdfData): any[] {
+    const printData = (data as any).invoicePrintData;
+    const voucherDetails = printData?.voucherDetails || [];
+    return voucherDetails.length > 0 ? voucherDetails : (data.charges || []);
+  }
+
+  function getPdfVatSummary(data: InvoicePdfData): Array<{ vatRateDisplay: string; taxableAmount: number; vatAmt: number }> {
+    const summary = new Map<string, { vatRateDisplay: string; taxableAmount: number; vatAmt: number }>();
+
+    for (const detail of getPdfDisplayDetails(data)) {
+      const rawRate = detail?.vatRate ?? detail?.vatPercent ?? 0;
+      const rateNumber = parsePdfNumber(rawRate);
+      const key = String(rateNumber);
+      const summaryRow = summary.get(key) || {
+        vatRateDisplay: `${rateNumber}%`,
+        taxableAmount: 0,
+        vatAmt: 0,
+      };
+
+      summaryRow.taxableAmount += parsePdfNumber(detail?.TaxableAmount ?? detail?.taxableAmount ?? detail?.amount);
+      summaryRow.vatAmt += parsePdfNumber(detail?.vatAmt ?? detail?.vatAmount);
+      summary.set(key, summaryRow);
+    }
+
+    return Array.from(summary.values());
+  }
+
+  function buildVatSummaryTable(data: InvoicePdfData): any {
+    const taxConfig = (data.taxDisplayConfig as any) || {};
+    const summaryRows = getPdfVatSummary(data);
+
+    if (!taxConfig.showVAT || summaryRows.length === 0) {
+      return { text: '' };
+    }
+
+    const body: any[] = [
+      [
+        { text: 'Tax Type', style: 'tableHeaderSmall', alignment: 'center', bold: true },
+        { text: 'Taxable Amt.', style: 'tableHeaderSmall', alignment: 'center', bold: true },
+        { text: 'Tax', style: 'tableHeaderSmall', alignment: 'center', bold: true },
+      ],
+      ...summaryRows.map((row) => [
+        { text: row.vatRateDisplay, style: 'tableCellSmall', alignment: 'right', noWrap: true },
+        { text: formatCompanyCurrencyAmount(data, row.taxableAmount), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+        { text: formatCompanyCurrencyAmount(data, row.vatAmt), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+      ]),
+      [
+        { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', bold: true },
+        { text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(getPdfDisplayDetails(data), 'TaxableAmount', 'taxableAmount')), style: 'tableCellBoldSmall', alignment: 'right', bold: true, noWrap: true },
+        { text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(getPdfDisplayDetails(data), 'vatAmt', 'vatAmount')), style: 'tableCellBoldSmall', alignment: 'right', bold: true, noWrap: true },
+      ],
+    ];
+
+    return {
+      table: {
+        widths: [36, 82, 66],
+        body,
+      },
+      layout: {
+        hLineWidth: () => 0.5,
+        vLineWidth: () => 0.5,
+        hLineColor: () => '#000',
+        vLineColor: () => '#000',
+        paddingLeft: () => 2,
+        paddingRight: () => 2,
+        paddingTop: () => 2,
+        paddingBottom: () => 2,
+      },
+      fontSize: 8,
+    };
+  }
+
+  function buildAmountAndVatSummarySection(data: InvoicePdfData): any {
+    const printData = (data as any).invoicePrintData;
+    const taxConfig = (data.taxDisplayConfig as any) || {};
+    const amountInWords = printData?.AmountInWords || data.amountInWords || '';
+    const remarks = printData?.Remarks || data.invoice?.remarks || '';
+    const showVatSummary = !!taxConfig.showVAT && getPdfVatSummary(data).length > 0;
+
+    if (!amountInWords && !remarks && !showVatSummary) {
+      return { text: '' };
+    }
+
+    const leftStack: any[] = [];
+
+    if (amountInWords) {
+      leftStack.push({
+        columns: [
+          { width: 100, text: 'Amount In Words', style: 'labelBold', fontSize: 10 },
+          { width: 6, text: ':', alignment: 'center', fontSize: 10 },
+          { width: '*', text: softenPdfText(amountInWords), margin: [4, 0, 0, 0], noWrap: false, fontSize: 10, lineHeight: 1.15 },
+        ],
+        columnGap: 0,
+      });
+    }
+
+    if (remarks) {
+      leftStack.push({
+        columns: [
+          { width: 100, text: 'Remarks', style: 'labelBold', fontSize: 9 },
+          { width: 6, text: ':', alignment: 'center', fontSize: 8 },
+          { width: '*', text: softenPdfText(remarks), margin: [4, 0, 0, 0], noWrap: false, fontSize: 8, lineHeight: 1.15 },
+        ],
+        columnGap: 0,
+        margin: [0, 6, 0, 0],
+      });
+    }
+
+    if (!showVatSummary) {
+      return {
+        stack: leftStack,
+        margin: [0, 4, 0, 2],
+      };
+    }
+
+    return {
+      columns: [
+        {
+          width: '*',
+          stack: leftStack.length ? leftStack : [{ text: '' }],
+          margin: [0, 0, 0, 0],
+        },
+        {
+          width: 204,
+          stack: [buildVatSummaryTable(data)],
+        },
+      ],
+      columnGap: 12,
+      margin: [0, 4, 0, 2],
+    };
   }
 
   /**
