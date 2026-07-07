@@ -1491,19 +1491,19 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
 
     const body: any[] = [
       [
-        { text: 'Tax Type', style: 'tableHeaderSmall', alignment: 'center', bold: true },
-        { text: 'Taxable Amt.', style: 'tableHeaderSmall', alignment: 'center', bold: true },
-        { text: 'Tax', style: 'tableHeaderSmall', alignment: 'center', bold: true },
+        { text: 'Tax Type', style: 'tableHeaderSmall', alignment: 'center', bold: true, fontSize: 7 },
+        { text: 'Taxable Amt.', style: 'tableHeaderSmall', alignment: 'center', bold: true, fontSize: 7 },
+        { text: 'Tax', style: 'tableHeaderSmall', alignment: 'center', bold: true, fontSize: 7 },
       ],
       ...summaryRows.map((row) => [
-        { text: row.vatRateDisplay, style: 'tableCellSmall', alignment: 'right', noWrap: true },
-        { text: formatCompanyCurrencyAmount(data, row.taxableAmount), style: 'tableCellSmall', alignment: 'right', noWrap: true },
-        { text: formatCompanyCurrencyAmount(data, row.vatAmt), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+        { text: row.vatRateDisplay, style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+        { text: formatCompanyCurrencyAmount(data, row.taxableAmount), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
+        { text: formatCompanyCurrencyAmount(data, row.vatAmt), style: 'tableCellSmall', alignment: 'right', noWrap: true, fontSize: 7 },
       ]),
       [
-        { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', bold: true },
-        { text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(getPdfDisplayDetails(data), 'TaxableAmount', 'taxableAmount')), style: 'tableCellBoldSmall', alignment: 'right', bold: true, noWrap: true },
-        { text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(getPdfDisplayDetails(data), 'vatAmt', 'vatAmount')), style: 'tableCellBoldSmall', alignment: 'right', bold: true, noWrap: true },
+        { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', bold: true, fontSize: 7 },
+        { text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(getPdfDisplayDetails(data), 'TaxableAmount', 'taxableAmount')), style: 'tableCellBoldSmall', alignment: 'right', bold: true, noWrap: true, fontSize: 7 },
+        { text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(getPdfDisplayDetails(data), 'vatAmt', 'vatAmount')), style: 'tableCellBoldSmall', alignment: 'right', bold: true, noWrap: true, fontSize: 7 },
       ],
     ];
 
@@ -1523,7 +1523,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
         paddingTop: () => 2,
         paddingBottom: () => 2,
       },
-      fontSize: 8,
+      fontSize: 7,
     };
   }
 
@@ -1543,7 +1543,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     if (amountInWords) {
       leftStack.push({
         columns: [
-          { width: 100, text: 'Amount In Words', style: 'labelBold', fontSize: 10 },
+          { width: 88, text: 'Amount In Words', style: 'labelBold', fontSize: 10 },
           { width: 6, text: ':', alignment: 'center', fontSize: 10 },
           { width: '*', text: softenPdfText(amountInWords), margin: [4, 0, 0, 0], noWrap: false, fontSize: 10, lineHeight: 1.15 },
         ],
@@ -1554,7 +1554,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     if (remarks) {
       leftStack.push({
         columns: [
-          { width: 100, text: 'Remarks', style: 'labelBold', fontSize: 9 },
+          { width: 88, text: 'Remarks', style: 'labelBold', fontSize: 9 },
           { width: 6, text: ':', alignment: 'center', fontSize: 8 },
           { width: '*', text: softenPdfText(remarks), margin: [4, 0, 0, 0], noWrap: false, fontSize: 8, lineHeight: 1.15 },
         ],
