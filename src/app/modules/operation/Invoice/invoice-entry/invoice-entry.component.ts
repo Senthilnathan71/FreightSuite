@@ -1578,6 +1578,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           Sno: index + 1,
           ChargeDescription: detail.ChargeDescription,
           HSSACCode: hssacCode,
+          taxGroupName: detail?.hSSACMaster?.taxGroup?.TaxGroup ?? null,
           DrCr : detail.DrCr,
           CurrencyMasterSid : detail.CurrencyMasterSid,
           CurrencyCode: detail.CurrencyCode,
@@ -4972,16 +4973,21 @@ isSeaDepartment(): boolean {
 
     for (const detail of this.invoicePrintData?.voucherDetails || []) {
       const vatRate = detail?.vatRate ?? '0.000';
-      const summaryRow = summary.get(vatRate) || {
+      // UAE: group by HSSAC -> TaxGroup name (VAT 5% / VAT 0% / Exempt / Out of Scope);
+      // other countries keep the tax-percentage grouping.
+      const groupByTaxGroup = this.isUAECompany;
+      const key = groupByTaxGroup ? (detail?.taxGroupName || 'Unmapped') : vatRate;
+      const display = groupByTaxGroup ? (detail?.taxGroupName || 'Unmapped') : `${toNumber(vatRate)}%`;
+      const summaryRow = summary.get(key) || {
         vatRate,
-        vatRateDisplay: `${toNumber(vatRate)}%`,
+        vatRateDisplay: display,
         taxableAmount: 0,
         vatAmt: 0,
       };
 
       summaryRow.taxableAmount += toNumber(detail?.TaxableAmount);
       summaryRow.vatAmt += toNumber(detail?.vatAmt);
-      summary.set(vatRate, summaryRow);
+      summary.set(key, summaryRow);
     }
 
     return Array.from(summary.values());

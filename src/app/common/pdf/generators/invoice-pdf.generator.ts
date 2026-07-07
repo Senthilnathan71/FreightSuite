@@ -1458,13 +1458,17 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
 
   function getPdfVatSummary(data: InvoicePdfData): Array<{ vatRateDisplay: string; taxableAmount: number; vatAmt: number }> {
     const summary = new Map<string, { vatRateDisplay: string; taxableAmount: number; vatAmt: number }>();
+    // UAE: group by HSSAC -> TaxGroup name (VAT 5% / VAT 0% / Exempt / Out of Scope);
+    // other countries keep the tax-percentage grouping.
+    const isUAE = String((data as any)?.companyCountryCode || '').toLowerCase() === 'ae';
 
     for (const detail of getPdfDisplayDetails(data)) {
       const rawRate = detail?.vatRate ?? detail?.vatPercent ?? 0;
       const rateNumber = parsePdfNumber(rawRate);
-      const key = String(rateNumber);
+      const key = isUAE ? (detail?.taxGroupName || 'Unmapped') : String(rateNumber);
+      const display = isUAE ? (detail?.taxGroupName || 'Unmapped') : `${rateNumber}%`;
       const summaryRow = summary.get(key) || {
-        vatRateDisplay: `${rateNumber}%`,
+        vatRateDisplay: display,
         taxableAmount: 0,
         vatAmt: 0,
       };
@@ -1505,7 +1509,8 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
 
     return {
       table: {
-        widths: [36, 82, 66],
+        // Tax Type widened for TaxGroup names (e.g. "OutofScope"); total fits the 204pt container.
+        widths: [64, 78, 58],
         body,
       },
       layout: {
