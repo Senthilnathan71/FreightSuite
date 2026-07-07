@@ -102,6 +102,10 @@ import {
   generateVatSummaryReportDocument,
   transformVatSummaryReportData
 } from './generators/vat-summary-report-pdf.generator';
+import {
+  generateVat201ReportDocument,
+  transformVat201ReportData
+} from './generators/vat-201-report-pdf.generator';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -592,6 +596,43 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformVatSummaryReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateVatSummaryReportDocument(pdfData);
+    return this.getBlob(docDefinition);
+  }
+
+  generateVat201Report(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'portrait',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    },
+    filename = 'VAT-201-Report'
+  ): void {
+    const pdfData = transformVat201ReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
+    const docDefinition = generateVat201ReportDocument(pdfData);
+    this.download(docDefinition, filename);
+  }
+
+  async generateVat201ReportBlob(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'portrait',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    }
+  ): Promise<Blob> {
+    const pdfData = transformVat201ReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
+    const docDefinition = generateVat201ReportDocument(pdfData);
     return this.getBlob(docDefinition);
   }
 

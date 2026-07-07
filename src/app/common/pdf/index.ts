@@ -29,6 +29,10 @@ export {
   generateBalanceSheetReportDocument,
   transformBalanceSheetReportData
 } from './generators/balance-sheet-report-pdf.generator';
+export {
+  generateVat201ReportDocument,
+  transformVat201ReportData
+} from './generators/vat-201-report-pdf.generator';
 export { generateMasterJobCardDocument, transformMasterJobCardApiData } from './generators/master-job-card-pdf.generator';
 
 // Builders (for custom PDF creation)

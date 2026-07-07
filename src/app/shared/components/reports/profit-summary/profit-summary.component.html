@@ -93,8 +93,8 @@
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.aGpPercent | number:'1.2-2' }}</td>
                         </tr>
                         <tr *ngFor="let hj of item.houseWithCR" style="white-space: nowrap;">
-                            <td></td>
-                            <td></td>
+                            <td>{{ hj?.JobNo}}</td>
+                            <td>{{ hj?.deptName}}</td>
                             <td class="fw-bold">{{ item?.MBLNo}}</td>
                             <td class="fw-bold">{{hj.HBLNo}}</td>
                             <td>{{hj.houseStatus}}</td>
@@ -106,7 +106,10 @@
                             <td>{{hj.POL}}</td>
                             <td>{{hj.POD}}</td>
                             <td>{{hj.FPD}}</td>
-                            <td colspan="4"></td>
+                            <td>{{hj.ETA | formatDate}}</td>
+                            <td>{{hj.ETD | formatDate}}</td>
+                            <td>{{hj.ATA | formatDate}}</td>
+                            <td>{{hj.ATD | formatDate}}</td>
                             <td>{{hj.ModeOfTransport}}</td>
                             <td>{{hj.salesPerson}}</td>
                             <td>{{hj.PPCC}}</td>

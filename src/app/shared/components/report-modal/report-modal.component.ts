@@ -364,6 +364,28 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         return;
       }
 
+      if (this.reportId === 'vat-report') {
+        const company = this.appSettingsService.getCurrentCompanyInfo();
+        const branch = this.appSettingsService.getCurrentBranchInfo();
+        const userData = this.appSettingsService.getDecryptedUserProfile();
+        const logo = this.pdfMakeService.getReportLogo();
+        const printSettings = this.companySettings.getPrintSettings();
+
+        this.pdfMakeService.generateVat201Report(
+          this.buildInjectedReportData(),
+          company,
+          branch,
+          userData,
+          logo,
+          this.reportConfig?.pdfOrientation || 'portrait',
+          printSettings,
+          filename
+        );
+        this.appSettingsService.showSuccess('PDF downloaded successfully!');
+        this.spinner.hide();
+        return;
+      }
+
       if (this.reportId === 'balance-sheet') {
         const company = this.appSettingsService.getCurrentCompanyInfo();
         const branch = this.appSettingsService.getCurrentBranchInfo();
@@ -490,6 +512,22 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
             userData,
             logo,
             'landscape',
+            printSettings
+          );
+        } else if (this.reportId === 'vat-report') {
+          const company = this.appSettingsService.getCurrentCompanyInfo();
+          const branch = this.appSettingsService.getCurrentBranchInfo();
+          const userData = this.appSettingsService.getDecryptedUserProfile();
+          const logo = this.pdfMakeService.getReportLogo();
+          const printSettings = this.companySettings.getPrintSettings();
+
+          pdfBlob = await this.pdfMakeService.generateVat201ReportBlob(
+            this.buildInjectedReportData(),
+            company,
+            branch,
+            userData,
+            logo,
+            this.reportConfig?.pdfOrientation || 'portrait',
             printSettings
           );
         } else if (exportConfig?.reportHeader && exportConfig?.rows) {
