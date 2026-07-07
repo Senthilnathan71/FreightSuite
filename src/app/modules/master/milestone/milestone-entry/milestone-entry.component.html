@@ -135,6 +135,25 @@
           <!-- ROW 2 -->
           <aside class="col-md-6">
             <div class="custom-form-group custom-form-group-select"
+              [class.filled]="(milestoneForm.get('CompanyMasterSids')?.value?.length ?? 0) > 0">
+
+              <multi-select
+                [items]="companyList"
+                bindLabel="companyName"
+                bindValue="CompanyMasterSid"
+                [displayCount]="1"
+                [control]="milestoneForm.get('CompanyMasterSids')">
+              </multi-select>
+
+              <label class="input-label">
+                Company <span class="text-danger">*</span>
+              </label>
+
+            </div>
+          </aside>
+
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!milestoneForm.get('DepartmentMasterSid')?.value">
 
               <multi-select
@@ -152,6 +171,7 @@
             </div>
           </aside>
 
+          <!-- ROW 3 -->
           <aside class="col-md-6">
             <div class="custom-form-group">
               <input type="text"

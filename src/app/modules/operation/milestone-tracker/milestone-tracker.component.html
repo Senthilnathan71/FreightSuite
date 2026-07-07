@@ -1,200 +1,254 @@
 <div class="milestone-tracker">
+  <section class="global-hero">
+    <div class="hero-copy">
+      <h1> Milestone Tracker</h1>
+      <p>Track and Update Every Milestone. Stay Ahead.</p>
+    </div>
 
-  <!-- Command bar -->
-  <section class="mt-command">
-    <div class="command-brand">
-      <span class="brand-icon"><i-feather name="map-pin"></i-feather></span>
-      <div class="hero-copy">
-        <h1>Milestone Update</h1>
+    <div class="transport-art" aria-hidden="true">
+      <div class="air-route">
+        <span></span><span></span><span></span>
+        <svg class="hero-aircraft" viewBox="0 0 210 86" fill="none">
+          <path d="M9 48 77 36 127 6l18 3-28 28 68 5c10 1 16 5 16 9 0 4-7 7-17 8l-67 4 26 17-14 4-51-19-50 3L9 48Z"/>
+          <path d="m77 36 31 5M78 65l31-6M126 13l7 23M132 63l-3 17"/>
+          <path d="M42 43 25 29l-10 2 16 16M40 63 25 75l-9-2 15-13"/>
+        </svg>
+      </div>
+      <div class="sea-route">
+        <svg class="hero-ship" viewBox="0 0 290 128" fill="none">
+          <path d="M14 84h245l18-13-10 31-27 16H52L29 105 14 84Z"/>
+          <path d="M43 84V65h34v19M80 84V52h38v32M121 84V61h35v23"/>
+          <path d="M47 65V47h30v18M82 52V34h36v18M123 61V43h33v18"/>
+          <path d="M160 84V39h39v45M199 84V57h31v27"/>
+          <path d="M166 39V25h27v14M171 25V15h17v10M179 15V7M188 20h18"/>
+          <path d="M199 50h20l11 7M164 50h35M164 62h35M164 73h35"/>
+          <path d="M48 96h202"/>
+          <circle cx="64" cy="105" r="3"/><circle cx="83" cy="105" r="3"/>
+          <circle cx="102" cy="105" r="3"/><circle cx="121" cy="105" r="3"/>
+          <path d="M48 118c12 8 24 8 36 0 12 8 24 8 36 0 12 8 24 8 36 0 12 8 24 8 36 0 12 8 24 8 36 0"/>
+        </svg>
+        <span class="waves"></span>
       </div>
     </div>
 
-    <div class="command-search">
-      <div class="search-row">
-        <input
-          type="text"
-          class="command-input"
-          [(ngModel)]="refNo"
-          (keyup.enter)="onSearch()"
-          placeholder="Enter HBL / MBL / Master Job No and press Enter"
-          aria-label="Reference number" />
-        <button type="button" class="command-btn search" (click)="onSearch()" [disabled]="searching">
-          <i-feather name="search" class="feather-sm" *ngIf="!searching"></i-feather>
-          <span class="spinner" *ngIf="searching"></span>
-          <span>{{ searching ? 'Searching' : 'Search' }}</span>
-        </button>
-        <button type="button" class="command-btn reset" (click)="onReset()" aria-label="Reset">
-          <i-feather name="rotate-ccw" class="feather-sm"></i-feather>
-          <span>Reset</span>
-        </button>
+    <div class="department-families" aria-label="Supported freight departments">
+      <div class="family-card">
+        <svg class="family-ship" viewBox="0 0 64 48" fill="none" aria-hidden="true">
+          <path d="M6 28h51L49 40H16L6 28ZM17 28V16h12v12m3 0V11h13v17M25 16V9h8v7"/>
+          <path d="M14 42c4 3 8 3 12 0 4 3 8 3 12 0 4 3 8 3 12 0"/>
+        </svg>
+        <div><strong>Sea Freight</strong><span>FCL · LCL</span></div>
       </div>
-
-      <div class="quick-searches" aria-label="Search type">
-        <button
-          type="button"
-          class="quick-chip"
-          *ngFor="let item of searchTypes"
-          (click)="searchType = item.id"
-          [class.active-chip]="searchType === item.id">
-          {{ item.name }}
-        </button>
+      <div class="family-card">
+        <svg class="family-aircraft" viewBox="0 0 64 48" fill="none" aria-hidden="true">
+          <path d="m6 25 21-4L40 5l5 1-7 15 19 3c3 1 3 3 0 4l-19 3 7 12-5 1-13-12-21-3v-4Z"/>
+        </svg>
+        <div><strong>Air Freight</strong><span>Import · Export</span></div>
       </div>
-    </div>
-
-    <div class="command-route" aria-hidden="true">
-      <i-feather name="home"></i-feather>
-      <span></span>
-      <i-feather name="anchor"></i-feather>
-      <span></span>
-      <i-feather name="send"></i-feather>
-      <span></span>
-      <i-feather name="map-pin"></i-feather>
     </div>
   </section>
 
-  <!-- House picker (MBL → multiple houses) -->
-  <div class="mt-card picker-card" *ngIf="showHousePicker">
-    <div class="mt-card-body">
-      <div class="picker-head">
-        <i-feather name="layers" class="feather-sm"></i-feather>
-        <span>Multiple shipments matched — select a house</span>
-      </div>
-      <div class="picker-grid">
-        <button type="button" class="picker-item" *ngFor="let h of houses" (click)="onSelectHouse(h)">
-          <div class="picker-main">
-            <span class="picker-hbl">{{ h.HBLNo || '—' }}</span>
-            <span class="picker-chip">{{ h.DepartmentName || 'Shipment' }}</span>
-          </div>
-          <div class="picker-meta">
-            <span><em>MBL</em> {{ h.MBLNo || '—' }}</span>
-            <span><em>Customer</em> {{ h.CustomerName || '—' }}</span>
-            <span><em>Shipment</em> {{ h.ShipmentNo || '—' }}</span>
-          </div>
-          <i-feather name="chevron-right" class="picker-arrow"></i-feather>
-        </button>
-      </div>
+  <section class="search-console">
+    <div class="search-types" aria-label="Search type">
+      <button
+        type="button"
+        *ngFor="let item of searchTypes"
+        (click)="searchType = item.id"
+        [class.active]="searchType === item.id">
+        {{ item.name }}
+      </button>
     </div>
-  </div>
-
-  <!-- Loading state -->
-  <div class="mt-card" *ngIf="loading">
-    <div class="mt-card-body mt-loading">
-      <span class="spinner big"></span>
-      <span>Loading milestones…</span>
+    <div class="search-controls">
+      <input
+        type="text"
+        [(ngModel)]="refNo"
+        (keyup.enter)="onSearch()"
+        placeholder="Enter shipment reference"
+        aria-label="Shipment reference" />
+      <button type="button" class="btn primary" (click)="onSearch()" [disabled]="searching">
+        <i-feather name="search" *ngIf="!searching"></i-feather>
+        <span class="mt-loading-spinner" *ngIf="searching"></span>
+        {{ searching ? 'Searching' : 'Track Shipment' }}
+      </button>
+      <button type="button" class="btn secondary" (click)="onReset()">
+        <i-feather name="rotate-ccw"></i-feather>
+        Reset
+      </button>
     </div>
-  </div>
+  </section>
 
-  <!-- No shipment found -->
-  <div class="mt-card notfound-card" *ngIf="notFound && !loading">
-    <div class="mt-card-body notfound">
-      <span class="notfound-icon"><i-feather name="package"></i-feather></span>
-      <h2>No Shipment Found</h2>
-      <p>
-        We couldn't find any shipment for
-        <strong>"{{ notFoundRef }}"</strong>. Check the number
-        and selected search type, then try again.
-      </p>
-    </div>
-  </div>
-
-  <!-- Header summary -->
-  <div class="mt-card header-card" *ngIf="hasResult">
-    <div class="header-strip">
-      <div class="header-lead">
-        <span class="header-chip" *ngIf="header.DepartmentName">{{ header.DepartmentName }}</span>
+  <section class="state-card picker-card" *ngIf="showHousePicker">
+    <div class="state-title">
+      <i-feather name="layers"></i-feather>
+      <div>
+        <h2>Select a house shipment</h2>
+        <p>Multiple shipments matched this reference.</p>
       </div>
     </div>
-    <div class="mt-card-body">
-      <div class="info-grid">
-        <div class="info-item"><span class="lbl"><i-feather name="file-text" class="feather-xs"></i-feather> HBL No</span><div class="val">{{ header.HBLNo || '—' }}</div></div>
-        <div class="info-item"><span class="lbl"><i-feather name="file-text" class="feather-xs"></i-feather> MBL No</span><div class="val">{{ header.MBLNo || '—' }}</div></div>
-        <div class="info-item"><span class="lbl"><i-feather name="user" class="feather-xs"></i-feather> Customer</span><div class="val">{{ header.CustomerName || '—' }}</div></div>
-        <div class="info-item"><span class="lbl"><i-feather name="anchor" class="feather-xs"></i-feather> Vessel</span><div class="val">{{ header.VesselName || '—' }}</div></div>
-        <div class="info-item"><span class="lbl"><i-feather name="navigation" class="feather-xs"></i-feather> Voyage</span><div class="val">{{ header.VoyageNo || '—' }}</div></div>
-        <div class="info-item"><span class="lbl"><i-feather name="calendar" class="feather-xs"></i-feather> ETD</span><div class="val">{{ formatDateOnly(header.ETD) || '—' }}</div></div>
-        <div class="info-item"><span class="lbl"><i-feather name="calendar" class="feather-xs"></i-feather> ETA</span><div class="val">{{ formatDateOnly(header.ETA) || '—' }}</div></div>
-        <div class="info-item"><span class="lbl"><i-feather name="package" class="feather-xs"></i-feather> Shipment No</span><div class="val">{{ header.ShipmentNo || '—' }}</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row panels" *ngIf="hasResult">
-    <!-- Milestone Pending (editable) -->
-    <div class="col-lg-6">
-      <div class="mt-card panel-card">
-        <div class="panel-header pending">
-          <span class="ph-title"><i-feather name="clock" class="feather-sm"></i-feather> Milestone Pending</span>
-          <span class="ph-count">{{ pendingControls.length }}</span>
+    <div class="picker-grid">
+      <button type="button" class="picker-item" *ngFor="let h of houses" (click)="onSelectHouse(h)">
+        <div>
+          <strong>{{ h.HBLNo || '—' }}</strong>
+          <span>{{ h.DepartmentName || 'Shipment' }}</span>
         </div>
-        <div class="mt-card-body">
-          <div class="pending-list" *ngIf="pendingControls.length; else noPending">
-            <div class="pending-row" *ngFor="let row of pendingControls; let i = index" [formGroup]="row"
-                 [class.filled]="row.get('MilestoneDate')?.value">
-              <div class="pr-name">
-                <span class="pr-dot"></span>
-                {{ row.get('MilestoneName')?.value }}
-              </div>
-              <div class="mt-date">
-                <app-date-time-picker
-                  class="w-100"
-                  placeholder="dd-mmm-yyyy hh:mm"
-                  formControlName="MilestoneDate"
-                  [allowPastDates]="true"
-                  [minSelectableDate]="previousMilestoneDate(i)">
-                </app-date-time-picker>
-                <div class="mt-date-error text-danger small" *ngIf="rowDateError(i) as err">{{ err }}</div>
-              </div>
-              <input class="mt-remarks" formControlName="Remarks" placeholder="Add remarks…" />
+        <small>MBL {{ h.MBLNo || '—' }} · {{ h.CustomerName || 'No customer' }}</small>
+        <i-feather name="chevron-right"></i-feather>
+      </button>
+    </div>
+  </section>
+
+  <section class="state-card loading-state" *ngIf="loading">
+    <span class="mt-loading-spinner large"></span>
+    <p>Loading shipment milestones…</p>
+  </section>
+
+  <section class="state-card empty-state" *ngIf="notFound && !loading">
+    <span class="state-icon"><i-feather name="package"></i-feather></span>
+    <h2>No shipment found</h2>
+    <p>No shipment matched <strong>“{{ notFoundRef }}”</strong>. Check the reference and search type.</p>
+  </section>
+
+  <ng-container *ngIf="hasResult">
+    <section class="shipment-card">
+      <div class="mode-identity">
+        <span class="mode-icon">
+          <i-feather [name]="isAirDepartment ? 'send' : 'anchor'"></i-feather>
+        </span>
+        <div>
+          <span>{{ freightModeLabel }}</span>
+          <strong>{{ header.DepartmentName || 'Department not set' }}</strong>
+        </div>
+      </div>
+
+      <div class="shipment-details">
+        <div><span>Customer</span><strong>{{ header.CustomerName || '—' }}</strong></div>
+        <div><span>HBL No</span><strong>{{ header.HBLNo || '—' }}</strong></div>
+        <div><span>MBL No</span><strong>{{ header.MBLNo || '—' }}</strong></div>
+        <div><span>Master Job No</span><strong>{{ header.MasterJobNumber || '—' }}</strong></div>
+        <div><span>{{ isAirDepartment ? 'Flight' : 'Vessel / Voyage' }}</span><strong>{{ transportReference }}</strong></div>
+        <div><span>ETD</span><strong>{{ formatDateOnly(header.ETD) || '—' }}</strong></div>
+        <div><span>ETA</span><strong>{{ formatDateOnly(header.ETA) || '—' }}</strong></div>
+        <div><span>Shipment No</span><strong>{{ header.ShipmentNo || '—' }}</strong></div>
+      </div>
+    </section>
+
+    <section class="progress-ribbon">
+      <div class="progress-stat achieved-stat">
+        <i-feather name="check-circle"></i-feather>
+        <strong>{{ completed.length }}</strong><span>Achieved</span>
+      </div>
+      <span class="progress-line complete"></span>
+      <div class="progress-stat next-stat">
+        <i-feather name="arrow-right-circle"></i-feather>
+        <span>Next:</span><strong>{{ nextMilestoneName }}</strong>
+      </div>
+      <span class="progress-line"></span>
+      <div class="progress-stat pending-stat">
+        <i-feather name="clock"></i-feather>
+        <strong>{{ pendingControls.length }}</strong><span>Pending</span>
+      </div>
+    </section>
+
+    <section class="milestone-workspace">
+      <article class="workspace-card pending-card">
+        <header class="card-header">
+          <div>
+            <div class="title-row">
+              <h2>Pending Milestones</h2>
+              <span class="count blue">{{ pendingControls.length }}</span>
             </div>
+            <p>Add date and remarks in milestone sequence</p>
           </div>
-          <ng-template #noPending>
-            <div class="mt-empty">
-              <i-feather name="check-circle"></i-feather>
-              <span>All milestones recorded — nothing pending.</span>
+          <span class="sequence-note"><i-feather name="info"></i-feather> Dates must follow the milestone order</span>
+        </header>
+
+        <div class="pending-table" *ngIf="pendingControls.length; else noPending">
+          <div class="table-head">
+            <span>#</span><span>Milestone</span><span>Date &amp; Time</span><span>Remarks</span>
+          </div>
+          <div
+            class="pending-row"
+            *ngFor="let row of pendingControls; let i = index"
+            [formGroup]="row"
+            [class.next-row]="i === 0"
+            [class.ready-row]="row.get('MilestoneDate')?.value && !rowDateError(i)"
+            [class.error-row]="rowDateError(i)">
+            <span class="row-number">{{ completed.length + i + 1 }}</span>
+            <div class="milestone-name">
+              <strong>{{ row.get('MilestoneName')?.value }}</strong>
+              <small *ngIf="i === 0">Next required milestone</small>
             </div>
-          </ng-template>
-
-          <div class="panel-footer" *ngIf="pendingControls.length">
-            <span class="hint">Only rows with a date will be saved.</span>
-            <button type="button" class="mt-btn success" (click)="onSubmit()" [disabled]="submitting">
-              <i-feather name="save" class="feather-sm" *ngIf="!submitting"></i-feather>
-              <span class="spinner" *ngIf="submitting"></span>
-              Submit
-            </button>
+            <div class="date-cell">
+              <app-date-time-picker
+                class="w-100"
+                placeholder="Select date & time"
+                formControlName="MilestoneDate"
+                [allowPastDates]="true"
+                [minSelectableDate]="previousMilestoneDate(i)">
+              </app-date-time-picker>
+              <small class="validation-error" *ngIf="rowDateError(i) as err">{{ err }}</small>
+            </div>
+            <input class="remarks-input" formControlName="Remarks" placeholder="Add remarks…" />
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Milestone Achieved (read-only) -->
-    <div class="col-lg-6">
-      <div class="mt-card panel-card">
-        <div class="panel-header achieved">
-          <span class="ph-title"><i-feather name="check-circle" class="feather-sm"></i-feather> Milestone Achieved</span>
-          <span class="ph-count">{{ completed.length }}</span>
-        </div>
-        <div class="mt-card-body">
-          <ul class="timeline" *ngIf="completed.length; else noAchieved">
-            <li class="timeline-item" *ngFor="let m of completed">
-              <span class="tl-marker"><i-feather name="check" class="feather-xs"></i-feather></span>
-              <div class="tl-content">
-                <div class="tl-top">
-                  <span class="tl-name">{{ m.MilestoneName }}</span>
-                  <span class="tl-date">{{ formatMilestoneDateTime(m.MilestoneDate) }}</span>
-                </div>
-                <div class="tl-remarks" *ngIf="m.Remarks">{{ m.Remarks }}</div>
+        <ng-template #noPending>
+          <div class="table-empty">
+            <i-feather name="check-circle"></i-feather>
+            <strong>All milestones are complete</strong>
+            <span>There are no pending milestones for this shipment.</span>
+          </div>
+        </ng-template>
+
+        <footer class="action-bar" *ngIf="pendingControls.length">
+          <span><i-feather name="info"></i-feather> Only rows with a date will be saved.</span>
+          <button type="button" class="btn primary save-button" (click)="onSubmit()" [disabled]="submitting">
+            <i-feather name="save" *ngIf="!submitting"></i-feather>
+            <span class="mt-loading-spinner" *ngIf="submitting"></span>
+            {{ submitting ? 'Saving' : (filledPendingCount ? 'Save ' + filledPendingCount + (filledPendingCount === 1 ? ' Milestone' : ' Milestones') : 'Save Milestones') }}
+          </button>
+        </footer>
+      </article>
+
+      <article class="workspace-card achieved-card">
+        <header class="card-header">
+          <div>
+            <div class="title-row">
+              <h2>Achieved Milestones</h2>
+              <span class="count green">{{ completed.length }}</span>
+            </div>
+            <p>Completed shipment events</p>
+          </div>
+          <i-feather name="check-circle" class="header-check"></i-feather>
+        </header>
+
+        <ul class="achieved-timeline" *ngIf="completed.length; else noAchieved">
+          <li *ngFor="let m of completed">
+            <span class="timeline-check"><i-feather name="check"></i-feather></span>
+            <div class="event-card">
+              <div class="event-top">
+                <strong>{{ m.MilestoneName }}</strong>
+                <time>{{ formatMilestoneDateTime(m.MilestoneDate) }}</time>
               </div>
-            </li>
-          </ul>
-          <ng-template #noAchieved>
-            <div class="mt-empty">
-              <i-feather name="inbox"></i-feather>
-              <span>No milestones achieved yet.</span>
+              <p *ngIf="m.Remarks">{{ m.Remarks }}</p>
+              <p *ngIf="!m.Remarks">Milestone completed</p>
             </div>
-          </ng-template>
-        </div>
-      </div>
-    </div>
-  </div>
+          </li>
+        </ul>
 
+        <ng-template #noAchieved>
+          <div class="table-empty">
+            <i-feather name="inbox"></i-feather>
+            <strong>No achieved milestones</strong>
+            <span>Completed events will appear here.</span>
+          </div>
+        </ng-template>
+
+        <footer class="read-only-note">
+          <i-feather name="lock"></i-feather>
+          Completed milestones are read-only.
+        </footer>
+      </article>
+    </section>
+  </ng-container>
 </div>
