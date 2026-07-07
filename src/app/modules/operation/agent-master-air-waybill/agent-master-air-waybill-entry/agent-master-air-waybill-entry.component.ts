@@ -736,6 +736,15 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     // Find the full carrier object from carrierList
     const selectedCarrier = this.carrierList.find(c => c.CustomerName === carrierName);
     this.onCarrierChangeForAir(selectedCarrier);
+
+    // Refresh the MAWB stock dropdown for the newly selected carrier
+    // (Air Export without auto-allocation, and Air "Others").
+    if (this.isAirMawbSelectableDept()) {
+      this.loadMawbStock({
+        CustomerMasterSid: this.houseJobForm.get('CustomerMasterSid')?.value ?? this.bookingData?.CustomerMasterSid ?? null,
+        CarrierName: carrierName || null
+      });
+    }
   }
 });
 
@@ -2938,15 +2947,8 @@ private getAgentNameById(agentId: number): string {
       mblNoControl?.enable();
       mblNoControl?.setValidators([Validators.required, Validators.maxLength(50)]);
       this.isMawbDropdownDisabled = true;
-    } else if (isAirExport && !this.isMawbStockAllocationEnabled) {
-      mblNoControl?.enable();
-      mblNoControl?.setValidators(
-        this.isEditMode
-          ? [Validators.required, Validators.maxLength(50)]
-          : [Validators.maxLength(50)]
-      );
-      this.isMawbDropdownDisabled = false;
-    } else {
+    } else if (isAirExport && this.isMawbStockAllocationEnabled) {
+      // Air Export with auto MAWB stock allocation → number is allocated on save.
       mblNoControl?.setValidators([Validators.maxLength(50)]);
       this.isMawbDropdownDisabled = true;
 
@@ -2958,6 +2960,15 @@ private getAgentNameById(agentId: number): string {
           mblNoControl?.setValue('');
         }
       }
+    } else {
+      // Air Export (no auto allocation) OR Air "Others" → MAWBL dropdown + manual entry.
+      mblNoControl?.enable();
+      mblNoControl?.setValidators(
+        this.isEditMode && isAirExport
+          ? [Validators.required, Validators.maxLength(50)]
+          : [Validators.maxLength(50)]
+      );
+      this.isMawbDropdownDisabled = false;
     }
   } else {
     mblNoControl?.enable();
@@ -2969,7 +2980,7 @@ private getAgentNameById(agentId: number): string {
   mblNoControl?.updateValueAndValidity();
   this.updateCarrierValidation(department);
 
-  if (this.selectedDepartmentType === 'AIR' && isAirExport && !this.isMawbStockAllocationEnabled && this.bookingData) {
+  if (this.isAirMawbSelectableDept() && this.bookingData) {
     setTimeout(() => {
       this.loadMawbStock(this.bookingData);
     }, 300);
@@ -5966,10 +5977,43 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
   this.toastr?.warning('No MAWB Stock Available');
 }
 
+// MAWB field visibility helpers.
+// Department direction can be 'Import', 'Export' or 'Others' (see Department master).
+// The screen previously only handled 'Import'/'Export', so an Air department set to
+// 'Others' rendered NO MAWBL No field. Give 'Others' the same dropdown + manual
+// entry behaviour as Air Export.
+get isAirImportDept(): boolean {
+  return this.selectedDepartmentType === 'AIR' &&
+    this.normalizePortText(this.selectedDepartment?.ExportImport) === 'IMPORT';
+}
+
+get isAirExportDept(): boolean {
+  return this.selectedDepartmentType === 'AIR' &&
+    this.normalizePortText(this.selectedDepartment?.ExportImport) === 'EXPORT';
+}
+
+get isAirOtherDept(): boolean {
+  return this.selectedDepartmentType === 'AIR' && !this.isAirImportDept && !this.isAirExportDept;
+}
+
+// True for Air departments that should offer the MAWB stock dropdown + manual toggle:
+// Air Export (without auto-allocation) and Air "Others".
+private isAirMawbSelectableDept(): boolean {
+  if (this.selectedDepartmentType !== 'AIR') {
+    return false;
+  }
+  const direction = this.normalizePortText(this.selectedDepartment?.ExportImport);
+  if (direction === 'IMPORT') {
+    return false;
+  }
+  if (direction === 'EXPORT' && this.isMawbStockAllocationEnabled) {
+    return false;
+  }
+  return true;
+}
+
 loadMawbStock(data: any): void {
-  const isAirDept = this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR';
-  const isAirExport = this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT';
-  if (!isAirDept || !isAirExport || this.isMawbStockAllocationEnabled) {
+  if (!this.isAirMawbSelectableDept()) {
     this.mawbStockList = [];
     this.mawbStockSource = 'NONE';
     this.isMawbDropdownDisabled = true;
