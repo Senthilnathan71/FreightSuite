@@ -325,6 +325,33 @@ export class MilestoneTrackerComponent implements OnInit {
     return this.pendingForm.controls as FormGroup[];
   }
 
+  get filledPendingCount(): number {
+    return this.pendingControls.filter(
+      (row) => !!row.get('MilestoneDate')?.value,
+    ).length;
+  }
+
+  get nextMilestoneName(): string {
+    return (
+      this.pendingControls[0]?.get('MilestoneName')?.value ||
+      (this.completed.length ? 'All complete' : 'Not started')
+    );
+  }
+
+  get isAirDepartment(): boolean {
+    return /air/i.test(this.header?.DepartmentName || '');
+  }
+
+  get freightModeLabel(): string {
+    return this.isAirDepartment ? 'Air Freight' : 'Sea Freight';
+  }
+
+  get transportReference(): string {
+    const vessel = this.header?.VesselName || '';
+    const voyage = this.header?.VoyageNo || '';
+    return [vessel, voyage].filter(Boolean).join(' / ') || '—';
+  }
+
   /** Latest MilestoneDate among the achieved milestones, or null. */
   private latestAchievedDate(): Date | null {
     let latest: Date | null = null;
