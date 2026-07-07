@@ -9,6 +9,8 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { firstValueFrom } from 'rxjs';
+import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-hawb',
@@ -45,6 +47,11 @@ export class HAWBComponent {
   @Input() containerTypeList: any;
   @Input() chargeList: any;
   @Output() hblCountUpdated = new EventEmitter<void>();
+  // "Draft AWB" (DRAFT) milestone plumbing — parent sets these only for the HAWBDraft print.
+  @Input() milestonePayload?: SafeInsertShipmentMilestone;
+  @Input() autoInsertMilestone = false;
+  @Output() reloadMilestone = new EventEmitter<void>();
+  private milestoneInserted = false;
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
@@ -117,7 +124,8 @@ export class HAWBComponent {
     private pdfService: PdfDownloadService,
     private operationService: OperationService,
     public logoService: LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private milestoneService: ShipmentMilestoneService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -223,6 +231,27 @@ export class HAWBComponent {
   }
 
 
+  // "Draft AWB" (DRAFT) milestone — captured when the HAWB Draft is downloaded from this modal. Only
+  // the Draft variant carries a payload (built by the parent for HAWBDraft), so the final HAWB print
+  // is a no-op here. Backend dedups on (HouseJobSid + MilestoneMasterSid + Status='A').
+  private async insertMilestoneSafelyForPrint(): Promise<void> {
+    if (!this.autoInsertMilestone || !this.milestonePayload || this.milestoneInserted) {
+      return;
+    }
+    try {
+      const resp: any = await firstValueFrom(
+        this.milestoneService.safeInsertMilestone(this.milestonePayload),
+      );
+      if (resp?.status) {
+        this.milestoneInserted = true;
+        this.autoInsertMilestone = false;
+        this.reloadMilestone.emit();
+      }
+    } catch (error) {
+      console.error('Error inserting Draft AWB milestone', error);
+    }
+  }
+
   async downloadPDF() {
     // HAWB Draft - download directly
     if (this.selectedReportAir === 'HAWBDraft') {
@@ -265,6 +294,7 @@ export class HAWBComponent {
         `HAWB_${BankPaymentNo}`,
         () => {
           this.appSettingService.showSuccess('PDF downloaded successfully!');
+          this.insertMilestoneSafelyForPrint();
           const payload = {
         tableName: 'HouseJob',
         recordId: String(this.masterJobData?.MasterJobSid),

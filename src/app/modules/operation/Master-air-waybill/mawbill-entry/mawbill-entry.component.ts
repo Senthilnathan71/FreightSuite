@@ -53,6 +53,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { CargoManifestComponent } from '../../master-job/reports/cargo-manifest/cargo-manifest.component';
 import { PreAlertComponent } from '../../master-job/reports/pre-alert/pre-alert.component';
+import { InsertMilestoneByMasterJobPayload } from '../../services/shipment-milestone.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
@@ -3938,7 +3939,36 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.packageTypeList = this.packageTypeList;
         modalRef.componentInstance.agentList = this.agentList;
         modalRef.componentInstance.yardList = this.yardList;
+
+        // Pre-Alert print/download/email → PREALERT milestone. pre-alert.component fires the capture
+        // on download/print/send; we only supply the master-job payload (mirrors master-job-entry).
+        this.initializeMilestoneContentForPreAlert(modalRef);
       }
+
+  private initializeMilestoneContentForPreAlert(modalRef: any): void {
+    const validDepartment = String(this.selectedDepartment?.ExportImport || '').trim().toUpperCase() === 'EXPORT';
+    const masterJobSid = this.masterJobData?.MasterJobSid || this.masterAirWayData?.MasterJobSid;
+
+    modalRef.componentInstance.autoInsertMilestone = !!(validDepartment && masterJobSid);
+
+    const milestonePayload: InsertMilestoneByMasterJobPayload = {
+      MasterJobSid: Number(masterJobSid),
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MilestoneCode: 'PREALERT',
+      MilestoneDate: getDefaultTodayDate(),
+      createdBy: this.userData?.userEmail,
+      Remarks: `Pre Alert has been sent on ${(new Date().toISOString()).split('T')[0]}`,
+    };
+
+    modalRef.componentInstance.milestonePayload = milestonePayload;
+
+    modalRef.componentInstance.reloadMilestone.subscribe(() => {
+      if (masterJobSid) {
+        this.loadMasterJobData(Number(masterJobSid));
+      }
+    });
+  }
 
         reportMAWBpreprintedModel() {
           const modalRef = this.modalService.open(MawbPreprintComponent, {

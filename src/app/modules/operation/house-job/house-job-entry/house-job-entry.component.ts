@@ -7554,6 +7554,11 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.chargeList = this.chargeList || [];
     modalRef.componentInstance.selectedReportAir = type;
     modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+
+    // Draft AWB print → DRAFT milestone (only the HAWBDraft variant; the final HAWB print has no
+    // house-level air milestone — MAWB Release is captured on the master MAWB report).
+    this.initializeMilestoneContentForHAWBPrint(type, modalRef);
+
      modalRef.result.then((result) => {
            if (result === 'UPDATED') {
              const prev = Number(this.houseJobForm.get('HBLCount')?.value);
@@ -7562,9 +7567,44 @@ ${this.userData['userName']}`;
                HBLCount: prev + 1,
              });
 
-             this.housejobData.HBLCount = prev + 1; 
+             this.housejobData.HBLCount = prev + 1;
            }
          });
+  }
+
+  // Draft AWB (HAWBDraft) print captures the DRAFT milestone; the final HAWB print has no house-level
+  // air milestone, so only the draft sets a payload. Mirrors initializeMilestoneContentForHBLPrint.
+  initializeMilestoneContentForHAWBPrint(reportType: 'HAWB' | 'HAWBDraft', modalRef: any) {
+    if (reportType !== 'HAWBDraft') return;
+
+    const validDepartment = this.selectedDepartment?.ExportImport === 'Export';
+    const currentJobType = this.b['JobType']?.value;
+    const validJobType = currentJobType === 'Export';
+
+    const allMilestones = this.milestoneComponent.allMilestones || [];
+    const targetMilestoneId = allMilestones.find(m => (m.MilestoneCode || '').toUpperCase() === 'DRAFT')?.MilestoneMasterSid;
+    const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === targetMilestoneId);
+
+    modalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType && !existingMilestone;
+
+    const milestonePayload: SafeInsertShipmentMilestone = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentName: this.selectedDepartment?.departmentName,
+      JobType: currentJobType,
+      MilestoneCode: 'DRAFT',
+      // MilestoneDate omitted → backend stamps now() (the actual print time)
+      ShipmentNo: this.bookingData?.ShipmentNo,
+      HouseJobSid: this.housejobData?.HouseJobSid,
+      createdBy: this.userData?.userEmail,
+      BookingHeaderSid: this.bookingData?.BookingHeaderSid,
+      Remarks: `Draft AWB has been sent on ${(new Date().toISOString()).split('T')[0]}`,
+    };
+    modalRef.componentInstance.milestonePayload = milestonePayload;
+
+    modalRef.componentInstance.reloadMilestone.subscribe(() => {
+      this.milestoneComponent.loadShipmentMilestones(this.housejobData?.ShipmentNo);
+    });
   }
 
 // Helper Funstion 

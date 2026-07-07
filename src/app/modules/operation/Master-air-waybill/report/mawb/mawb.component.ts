@@ -1,5 +1,5 @@
 import { CommonModule, formatDate } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -11,6 +11,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { InsertMilestoneByMasterJobPayload, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-mawb',
@@ -44,8 +45,11 @@ export class MAWBComponent implements OnChanges {
   @Input() chargeList: any;
   @Input() packageTypeList: any[] = [];
   @Input() portList: any[] = [];
-  @Input() selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB'; 
+  @Input() selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB';
   @Input() currentMenuId: number | null = null;
+  @Output() reloadMilestone = new EventEmitter<void>();
+  // guard: one capture per code per modal open (backend also dedups on the active milestone)
+  private capturedMilestoneCodes = new Set<string>();
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
@@ -163,7 +167,8 @@ export class MAWBComponent implements OnChanges {
     private globalDateService: GlobalDateFormatService,
     public mps: MenuPermissionService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private shipmentMilestoneService: ShipmentMilestoneService
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['masterAirWayData']) {
@@ -1239,6 +1244,43 @@ getOtherPrepaidTotal(): number {
   }
 
 
+  // "MAWB Release" (AWB) milestone — captured when the MAWB is downloaded or emailed from this modal.
+  // Master-level: insert-by-master-job fans the milestone out to the linked air-export house jobs
+  // (dept {Air Export}); a sea/non-air master finds no matching row and the backend no-ops.
+  // MilestoneDate is omitted → backend stamps now() (the actual print/send time). The guard avoids a
+  // redundant second call in the same open; the backend also dedups on the existing active milestone.
+  private captureMawbMilestone(): void {
+    const code = 'AWB';
+    const masterJobSid = this.masterAirWayData?.MasterJobSid;
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    const createdBy = this.appSettingService.userSettingSource.value?.['userEmail'];
+    if (!masterJobSid || !companyMasterSid || !branchMasterSid || this.capturedMilestoneCodes.has(code)) {
+      return;
+    }
+    const payload: InsertMilestoneByMasterJobPayload = {
+      MasterJobSid: masterJobSid,
+      CompanyMasterSid: companyMasterSid,
+      BranchMasterSid: branchMasterSid,
+      MilestoneCode: code,
+      createdBy,
+      Remarks: `MAWB Release on ${(new Date().toISOString()).split('T')[0]}`,
+    };
+    this.capturedMilestoneCodes.add(code);
+    this.shipmentMilestoneService.insertMilestoneByMasterJob(payload).subscribe({
+      next: (resp: any) => {
+        if (resp?.status) {
+          this.reloadMilestone.emit(); // refresh the milestone tab now that a new row exists
+        }
+      },
+      error: (err) => {
+        // "already exist" / "not found" (non-air) are expected no-ops; allow a retry on the next action
+        this.capturedMilestoneCodes.delete(code);
+        console.error('MAWB milestone capture skipped:', err);
+      },
+    });
+  }
+
   async downloadPDF() {
     this.showPrintLogo = false;
     this.showPdfLogo = true;
@@ -1248,6 +1290,7 @@ getOtherPrepaidTotal(): number {
       const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
       await this.downloadPdfWithPdfMake(`MAWB_${BankPaymentNo}`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      this.captureMawbMilestone();
       const payload = {
         tableName: 'MasterJob',
         recordId: String(this.masterAirWayData?.MasterJobSid),
@@ -1310,6 +1353,7 @@ getOtherPrepaidTotal(): number {
         this.appSettingService.showError('Error generating PDF. Please try again.');
         return;
       }
+      this.captureMawbMilestone();
 
       const documentName = this.selectedReport === 'MAWB' ? 'MAWB' : 'MAWB Draft';
       const documentNo = this.masterAirWayData?.MBLNo || this.masterAirWayData?.MasterBillNumber || '';
