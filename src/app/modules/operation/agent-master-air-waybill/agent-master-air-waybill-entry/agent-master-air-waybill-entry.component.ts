@@ -422,6 +422,9 @@ isVoyageFreeText: boolean = false;
   // Variable Declaration - Milestone Part
   resetTriggerMilestone : boolean;
   milestoneResult: any[] =[];
+  // Set true by the first milestone emission (the initial load), so that load is not
+  // mistaken for a user edit. Later emissions mark the form dirty. Reset on every (re)load.
+  private milestoneSyncInitialized = false;
   today : any;
   minDate : any;
   minDODate : any;
@@ -1960,7 +1963,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
 }
   patchValues(response: any) {
   this.isPatching = true;
-  
+  this.milestoneSyncInitialized = false;   // re-baseline milestones for this record load
+
   try {
     this.bookingHeader = response;
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
@@ -2419,7 +2423,12 @@ private loadMasterJobDetails(masterJobSid: number): void {
   }
 
   handleMilestoneChange(allmilestones:any[]){
-    this.milestoneResult = [...allmilestones];
+    this.milestoneResult = [...(allmilestones || [])];
+    if (!this.milestoneSyncInitialized) {
+      // First emission is the initial load, not a user edit → don't flag as unsaved.
+      this.milestoneSyncInitialized = true;
+      return;
+    }
     this.markAsDirty();
   }
 
@@ -4219,6 +4228,7 @@ resetForm() {
   this.rateResult = [];
   this.resetTriggerMilestone = !this.resetTriggerMilestone;
   this.milestoneResult = [];
+  this.milestoneSyncInitialized = false;
 
   this.detailForm.reset();
   (this.detailForm.get('bookingProducts') as FormArray).clear();

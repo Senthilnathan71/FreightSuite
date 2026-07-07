@@ -3604,17 +3604,19 @@ private applyExportToImportFieldLocks(): void {
   }
 
   handleMilestoneChange(allmilestones:any[]){
-   
-    if(allmilestones.length !== 0){
-      this.milestoneResult = [...allmilestones];
-      if (!this.milestoneSyncInitialized) {
-        this.milestoneSyncInitialized = true;
-        this.resetDirtyState();
-        return;
-      }
-      if (!this.isPatching) {
-        this.markAsDirty('handleMilestoneChange');
-      }
+    // Mirror the child's current list unconditionally. An empty array is a real state too
+    // (the job had no milestones and the user just added the first, or removed the last);
+    // gating on length !== 0 dropped those, so the snapshot diff missed them and Save said
+    // "No changes". Keeping it always in sync lets add/edit/delete all register.
+    this.milestoneResult = [...(allmilestones || [])];
+    if (!this.milestoneSyncInitialized) {
+      // First emission is the initial load → establish the baseline, not a change.
+      this.milestoneSyncInitialized = true;
+      this.resetDirtyState();
+      return;
+    }
+    if (!this.isPatching) {
+      this.markAsDirty('handleMilestoneChange');
     }
     if(this.hblModalRef){
       this.initializeMilestoneContentForHBLPrint(this.selectedReport);

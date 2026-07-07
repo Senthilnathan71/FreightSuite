@@ -43,6 +43,9 @@ export class MilestoneComponent implements OnInit {
   selectedMode: string;
   milestoneForm !: FormGroup;
   isEditMode: boolean;
+  // True while the open modal is showing an auto-captured (system-triggered) milestone.
+  // For such rows the Milestone dropdown is locked (system-chosen); other fields stay editable.
+  isAutoCapturedMilestone = false;
   userData : any;
   allMilestones: any[] = [];
   // Selectable date range for the open Add/Edit popup, derived from the selected
@@ -309,7 +312,10 @@ export class MilestoneComponent implements OnInit {
       MilestoneMasterSid: [null, Validators.required],
       MilestoneName: [''],
       MilestoneDate: ['', Validators.required],
-      AutoCaptured: [false],
+      // Auto Captured is system-controlled, not user-selectable. Disabled so a manual
+      // entry can never be ticked as auto; getRawValue() still persists its value and
+      // patchValue() still reflects an existing auto row's checked state when viewing.
+      AutoCaptured: [{ value: false, disabled: true }],
       Remarks: [''],
       Status: [{ value: 'Active', disabled: true }],
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -373,6 +379,8 @@ export class MilestoneComponent implements OnInit {
     if(data) {
       this.currentMilestoneIndex = milestoneIndex;
       this.selectedMode = data.Mode;
+      // Auto-captured (system-triggered) rows open as view-only — nothing is editable.
+      this.isAutoCapturedMilestone = data.AutoCaptured === true || data.AutoCaptured === 'Y';
       // Auto-captured action milestones are stored as a UTC instant but shown branch-local in the
       // list; show the SAME wall clock in the edit picker (record the shift so save can undo it).
       this.editDateShiftMs = this.milestoneShiftMs(data?.MilestoneDate, data.AutoCaptured);
@@ -393,8 +401,11 @@ export class MilestoneComponent implements OnInit {
       this.milestoneForm.get('Status')?.enable();
       // Edit: constrain the date to the SortBy window (excluding this row itself).
       this.applyMilestoneDateBounds(data.MilestoneMasterSid);
+      // Lock every field when this is an auto-captured milestone (view-only).
+      this.applyAutoCapturedLock();
     } else {
       this.currentMilestoneIndex = -1;
+      this.isAutoCapturedMilestone = false;   // add rows are always manual → fully editable
       this.editDateShiftMs = 0;   // add rows are manual → no branch shift
       // Add: no milestone chosen yet, so no range until one is selected.
       this.applyMilestoneDateBounds(null);
@@ -419,6 +430,24 @@ export class MilestoneComponent implements OnInit {
       backdrop: 'static',
       centered: true,
     });
+  }
+
+  /**
+   * Auto-captured (system-triggered) rows carry a fixed, system-chosen milestone, so the
+   * Milestone dropdown must not be changed. Disable only that control for auto rows (the
+   * other fields — Date & Time, Remarks, Status — stay editable); manual rows re-enable it.
+   * getRawValue() still persists the disabled MilestoneMasterSid on save.
+   */
+  private applyAutoCapturedLock(): void {
+    const control = this.milestoneForm.get('MilestoneMasterSid');
+    if (!control) {
+      return;
+    }
+    if (this.isAutoCapturedMilestone) {
+      control.disable();
+    } else {
+      control.enable();
+    }
   }
 
   onMilestoneSubmit() {

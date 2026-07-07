@@ -411,6 +411,10 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   // Variable Declaration - Milestone Part
   resetTriggerMilestone: boolean;
   milestoneResult: any[] = [];
+  // Set true by the first milestone emission (initial load). Because milestones load from a
+  // separate async fetch that can finish after the 500ms baseline timers, that first emission
+  // folds them into initialFormValue so the save-time diff is accurate. Reset on every (re)load.
+  private milestoneSyncInitialized = false;
   followupModalRef : NgbModalRef;
   website:any;
   today: any;
@@ -1854,6 +1858,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   
   patchValues(response: any) {
   this.isPatching = true;
+  this.milestoneSyncInitialized = false;   // re-baseline milestones for this record load
   try {
     this.bookingHeader = response;
     const barcodeData = `${response.BookingNo}`;
@@ -2358,11 +2363,19 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   handleMilestoneChange(allmilestones: any[]) {
-    if (allmilestones.length !== 0) {
-      this.milestoneResult = [...allmilestones];
-      if (this.followupModalRef) {
-        this.initializeMilestoneContentForFollowup();
-      }
+    // Always mirror the child's current list (including when it becomes empty after a
+    // delete) so the save-time deepEqual against the initial snapshot detects any change.
+    // Gating on length !== 0 left milestoneResult stale on an empty emission → "No changes".
+    this.milestoneResult = [...(allmilestones || [])];
+    if (!this.milestoneSyncInitialized) {
+      // First emission = initial load. Milestones come from a separate async fetch that can
+      // land after the 500ms baseline timers, so fold them into the baseline right now.
+      // The forms are already patched synchronously by this point, so the snapshot is complete.
+      this.milestoneSyncInitialized = true;
+      this.initialFormValue = this.getCurrentFormState();
+    }
+    if (this.followupModalRef) {
+      this.initializeMilestoneContentForFollowup();
     }
   }
 
@@ -4440,6 +4453,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
     this.rateResult = [];
     this.resetTriggerMilestone = !this.resetTriggerMilestone;
     this.milestoneResult = [];
+    this.milestoneSyncInitialized = false;
 
     this.detailForm.reset();
     (this.detailForm.get('bookingCargo') as FormArray).clear();
