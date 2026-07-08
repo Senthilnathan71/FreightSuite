@@ -361,7 +361,7 @@ export class MilestoneComponent implements OnInit {
       // reliably even for saved milestones that aren't in the department dropdown.
       SortBy: [data?.SortBy ?? null],
       MilestoneDate: [data?.MilestoneDate || ''],
-      AutoCaptured: [data?.AutoCaptured || null],
+      AutoCaptured: [this.isAutoCapturedValue(data?.AutoCaptured)],
       Remarks: [data?.Remarks || null],
       Status: [data.Status ? (data.Status === "A" ? "Active" : "Suspended") : "Active"],
       CreatedBy: this.userData['userEmail'],
@@ -380,7 +380,7 @@ export class MilestoneComponent implements OnInit {
       this.currentMilestoneIndex = milestoneIndex;
       this.selectedMode = data.Mode;
       // Auto-captured (system-triggered) rows open as view-only — nothing is editable.
-      this.isAutoCapturedMilestone = data.AutoCaptured === true || data.AutoCaptured === 'Y';
+      this.isAutoCapturedMilestone = this.isAutoCapturedValue(data.AutoCaptured);
       // Auto-captured action milestones are stored as a UTC instant but shown branch-local in the
       // list; show the SAME wall clock in the edit picker (record the shift so save can undo it).
       this.editDateShiftMs = this.milestoneShiftMs(data?.MilestoneDate, data.AutoCaptured);
@@ -392,7 +392,7 @@ export class MilestoneComponent implements OnInit {
         MilestoneMasterSid: data.MilestoneMasterSid,
         MilestoneName : data.MilestoneName,
         MilestoneDate: this.toPickerDate(data?.MilestoneDate, data.AutoCaptured),
-        AutoCaptured: data.AutoCaptured,
+        AutoCaptured: this.isAutoCapturedValue(data.AutoCaptured),
         Remarks: data.Remarks,
         Status: data.Status,
         CreatedBy: this.userData['userEmail'],  
@@ -448,6 +448,10 @@ export class MilestoneComponent implements OnInit {
     } else {
       control.enable();
     }
+  }
+
+  private isAutoCapturedValue(value: any): boolean {
+    return value === true || String(value || '').trim().toUpperCase() === 'Y';
   }
 
   onMilestoneSubmit() {
@@ -561,7 +565,7 @@ export class MilestoneComponent implements OnInit {
 
   syncDataWithParentComponent() {
     const formValue : any[] = (this.milestoneFormArray.getRawValue() || []).map(
-      m => ({...m, AutoCaptured : m.AutoCaptured ? 'Y' : 'N'})
+      m => ({...m, AutoCaptured : this.isAutoCapturedValue(m.AutoCaptured) ? 'Y' : 'N'})
     );
     this.dataEmitter.emit(formValue);
   }

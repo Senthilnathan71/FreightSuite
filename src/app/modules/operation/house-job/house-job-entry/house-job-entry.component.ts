@@ -434,6 +434,11 @@ isExportToImportLinked: boolean = false;
   private milestoneSyncInitialized = false;
   arapData: any[] = [];
   arapLoading = false;
+  // True once an invoice / voucher / payment request has been generated for this House Job.
+  // Such a House Job is financially locked and must not be suspended (also enforced on backend).
+  financialDocumentExists = false;
+  // Human-readable label of the strongest lock reason ('an invoice' | 'a voucher' | 'a payment request').
+  financialDocumentLabel = '';
   today : any;
   minDate : any;
   minDODate : any;
@@ -2697,9 +2702,21 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.calculateCustomerWiseAmount();
     this.applyExportToImportFieldLocks();
     this.applyProductTabLocks();
+    // Capture the invoice / voucher / payment-request lock flags returned by the API so the
+    // Status control can be disabled and suspend attempts blocked when the House Job is
+    // financially linked. (Backend enforces the same rule on save.)
+    this.financialDocumentExists = !!(response?.hasInvoice || response?.hasVoucher || response?.hasPaymentRequest);
+    this.financialDocumentLabel = response?.hasInvoice
+      ? 'an invoice'
+      : response?.hasVoucher
+        ? 'a voucher'
+        : response?.hasPaymentRequest
+          ? 'a payment request'
+          : '';
     // Status (Suspend) enable/disable is decided in one place so it always reflects the
-    // real rule: editable only when the job is Active, not closed and detached from its
-    // Master Job. Runs after disableAllForms()/bookingRateArr so it has the final say.
+    // real rule: editable only when the job is Active, not closed, detached from its
+    // Master Job and not financially locked. Runs after disableAllForms()/bookingRateArr
+    // so it has the final say.
     this.applyStatusControlState(response);
     
     setTimeout(() => {
@@ -3657,6 +3674,18 @@ onCurrencyChange(event: any) {
 
     if (this.isEditMode && !this.hasUnsavedChanges()) {
       this.appSettingService.showWarning('No changes to save');
+      resolve?.(false);
+      return;
+    }
+
+    // 🔒 Block saving a suspended status when the House Job is financially locked (invoice /
+    // voucher / payment request). The Status control is normally disabled in this case, this is
+    // the belt-and-braces guard; the backend rejects it regardless.
+    const submittingStatus = this.houseJobForm.get('status')?.getRawValue();
+    if (this.isEditMode && submittingStatus === 'Suspended' && this.financialDocumentExists) {
+      this.appSettingService.showWarning(
+        `This House Job cannot be suspended because ${this.financialDocumentLabel || 'an invoice'} has already been generated for it.`
+      );
       resolve?.(false);
       return;
     }
@@ -8317,7 +8346,8 @@ getProductFormGroup(index: number): FormGroup {
     const isJobClosed = this.isClosedJobStatus(response?.masterJob?.JobStatus);
     const isMasterJobAttached = !!(response?.MasterJobSid ?? this.houseJobForm.get('MasterJobSid')?.getRawValue());
 
-    const canEditStatus = isActive && !isJobClosed && !isMasterJobAttached;
+    // A financially-linked House Job (invoice / voucher / payment request) cannot be suspended.
+    const canEditStatus = isActive && !isJobClosed && !isMasterJobAttached && !this.financialDocumentExists;
 
     if (canEditStatus) {
       statusControl.enable({ emitEvent: false });
@@ -8328,9 +8358,22 @@ getProductFormGroup(index: number): FormGroup {
 
   onStatusChange() {
     const status = this.b['status']?.getRawValue();
+    // A House Job that already has an invoice / voucher / payment request generated cannot be
+    // suspended (this same rule is enforced on the backend). Blocked before the Master Job check.
+    if (this.financialDocumentExists && (status === 'Suspended' || !status)) {
+      this.appSettingService.showWarning(
+        `This House Job cannot be suspended because ${this.financialDocumentLabel || 'an invoice'} has already been generated for it.`
+      );
+      this.b['status']?.setValue('Active');
+      this.currentFormValue = {
+        ...(this.currentFormValue || {}),
+        status: 'Active'
+      };
+      return;
+    }
     // Suspend is only blocked while the House Job is still attached to a Master Job.
     // A Booking linkage alone no longer prevents suspension — once detached from the
-    // Master Job the House Job can be suspended, which releases its Booking link.
+    // Master Job the House Job can be suspended, which suspends its linked Booking too.
     const masterJobSid = this.houseJobForm.get('MasterJobSid')?.getRawValue() ?? this.housejobData?.MasterJobSid;
     if (masterJobSid && (status === 'Suspended' || !status)) {
       this.appSettingService.showWarning(
