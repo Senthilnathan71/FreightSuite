@@ -3003,7 +3003,10 @@ loadCustomerSalesTeamData() {
         CustomerLoginSid: [login.CustomerLoginSid || null],
         CustomerBranchSid: [login.customerBranch?.CustomerBranchSid || '', [Validators.required]],
         LoginName: [login.LoginName || '', [Validators.required]],
-        LoginEmail: [login.LoginEmail || '', [Validators.required, EmailValidators.singleEmail()]],
+        // Existing (already-saved) logins lock the email so it cannot be changed;
+        // the field stays editable only for a brand-new login row.
+        // (getRawValue() in the payload builder still submits the locked value.)
+        LoginEmail: [{ value: login.LoginEmail || '', disabled: !!login.CustomerLoginSid }, [Validators.required, EmailValidators.singleEmail()]],
         // Existing (already-saved) logins load a masked password and are locked;
       // the field re-enables only for a brand-new login row.
       LoginPassword: [{ value: login.LoginPassword || '', disabled: !!login.CustomerLoginSid }, [Validators.required, Validators.maxLength(50), this.loginPasswordValidator()]],
@@ -3750,8 +3753,8 @@ private buildBranchLoginPayload(loginData: any): any {
           this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
           resolve();
         } else {
-          // Show the actual error message from API
-          const errorMsg = resp.message || 'Error creating customer';
+          // Show the actual error message from API (handles string or nested object shapes)
+          const errorMsg = this.extractApiErrorMessage(resp.message, 'Error creating customer');
           console.error('API Error:', errorMsg);
           this.appSettingService.showError(errorMsg);
           reject(errorMsg);
@@ -3788,8 +3791,9 @@ private buildBranchLoginPayload(loginData: any): any {
           this.loadCustomerData(this.CustomerMasterSid);
           resolve();
         } else {
-          this.appSettingService.showError(resp.message);
-          reject(resp.message);
+          const errorMsg = this.extractApiErrorMessage(resp.message, 'Error updating customer');
+          this.appSettingService.showError(errorMsg);
+          reject(errorMsg);
         }
       },
       error: (error) => {
@@ -3803,19 +3807,44 @@ private buildBranchLoginPayload(loginData: any): any {
 }
 
 private extractApiErrorMessage(error: any, fallbackMessage: string): string {
-  if (typeof error?.error?.message === 'string' && error.error.message.trim()) {
-    return error.error.message.trim();
+  const message = this.deepFindMessage(error);
+  return message ? message : fallbackMessage;
+}
+
+// Pull a human-readable string out of any backend error shape:
+//  - a plain string
+//  - a NestJS exception object ({ message, response: { message }, ... })
+//  - an Angular HttpErrorResponse (server body in `.error`)
+//  - a class-validator messages array
+private deepFindMessage(value: any): string {
+  if (!value) return '';
+
+  if (typeof value === 'string') return value.trim();
+
+  if (Array.isArray(value)) {
+    return value.map(v => this.deepFindMessage(v)).filter(Boolean).join(', ');
   }
 
-  if (typeof error?.message === 'string' && error.message.trim()) {
-    return error.message.trim();
+  if (typeof value === 'object') {
+    // HttpErrorResponse keeps the server body in `.error` — dig there first,
+    // otherwise its own `.message` is a generic "Http failure response ...".
+    if (value.error && typeof value.error === 'object') {
+      const fromErrorBody = this.deepFindMessage(value.error);
+      if (fromErrorBody) return fromErrorBody;
+    }
+
+    const fromMessage = this.deepFindMessage(value.message);
+    if (fromMessage) return fromMessage;
+
+    const fromResponse = this.deepFindMessage(value.response);
+    if (fromResponse) return fromResponse;
+
+    if (typeof value.error === 'string' && value.error.trim()) {
+      return value.error.trim();
+    }
   }
 
-  if (typeof error?.error === 'string' && error.error.trim()) {
-    return error.error.trim();
-  }
-
-  return fallbackMessage;
+  return '';
 }
 
 

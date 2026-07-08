@@ -852,22 +852,82 @@ export class TrackingComponent implements OnInit, OnDestroy {
       tracking?.currentStatus?.label || tracking?.currentStatus?.eventName || info.shipmentStatus || '',
     ).toLowerCase();
     const names = [...reached, status];
-    const kw = (keywords: string[]) => names.some((name) => keywords.some((keyword) => name.includes(keyword)));
 
     // Final delivery
-    if (deliveredByDate || kw(['delivered', 'out for delivery'])) {
+    if (deliveredByDate || this.hasFinalRouteStage(names)) {
       return 3;
     }
     // Arrived at POD (actual arrival, or vessel/flight arrived / cargo discharged)
-    if (arrivedByDate || kw(['arrived', 'discharg', 'destination'])) {
+    if (arrivedByDate || this.hasRouteStageKeyword(names, this.arrivalRouteKeywords())) {
       return 2;
     }
     // Departed from POL (actual departure, or loaded / shipped-on-board / sailed / in transit)
-    if (departedByDate || kw(['departed', 'loaded on vessel', 'sob', 'sailing', 'transit'])) {
+    if (departedByDate || this.hasRouteStageKeyword(names, this.departureRouteKeywords())) {
       return 1;
     }
 
     return 0;
+  }
+
+  private hasRouteStageKeyword(names: string[], keywords: string[]): boolean {
+    return names.some((name) => keywords.some((keyword) => name.includes(keyword)));
+  }
+
+  private hasFinalRouteStage(names: string[]): boolean {
+    return names.some((name) => {
+      if (name.includes('delivered to customs') || name.includes('cargo delivered to customs')) {
+        return false;
+      }
+      return this.finalRouteKeywords().some((keyword) => name.includes(keyword));
+    });
+  }
+
+  private departureRouteKeywords(): string[] {
+    return [
+      'departed',
+      'departure',
+      'flight departed',
+      'flight departure',
+      'vessel departed',
+      'vessel departure',
+      'loaded on vessel',
+      'loaded',
+      'sob',
+      'shipped on board',
+      'on board',
+      'sailing',
+      'sailed',
+      'in transit',
+      'transit',
+      'handover to airline',
+      'handed to airline',
+      'cargo handover',
+    ];
+  }
+
+  private arrivalRouteKeywords(): string[] {
+    return [
+      'arrived',
+      'arrival',
+      'flight arrived',
+      'flight arrival',
+      'vessel arrived',
+      'vessel arrival',
+      'discharg',
+      'destination',
+      'cargo delivered to customs',
+      'delivered to customs',
+    ];
+  }
+
+  private finalRouteKeywords(): string[] {
+    return [
+      'delivered',
+      'delivery completed',
+      'proof of delivery',
+      'pod completed',
+      'out for delivery',
+    ];
   }
 
   routeProgressPercent(tracking: any): number {
@@ -962,11 +1022,11 @@ export class TrackingComponent implements OnInit, OnDestroy {
     if (name.includes('stuffing')) return 'fa-boxes';
     if (name.includes('gate')) return 'fa-warehouse';
     if (name.includes('custom')) return 'fa-stamp';
-    if (name.includes('airline') || name.includes('loaded') || name.includes('departed')) {
+    if (name.includes('airline') || name.includes('loaded') || name.includes('departed') || name.includes('departure')) {
       return name.includes('flight') || name.includes('airline') ? 'fa-plane' : 'fa-ship';
     }
     if (name.includes('transship') || name.includes('tranship')) return 'fa-exchange-alt';
-    if (name.includes('arrived')) return name.includes('flight') ? 'fa-plane' : 'fa-anchor';
+    if (name.includes('arrived') || name.includes('arrival')) return name.includes('flight') ? 'fa-plane' : 'fa-anchor';
     if (name.includes('discharg')) return 'fa-dolly';
     if (name.includes('out for delivery')) return 'fa-truck';
     if (name.includes('delivered')) return 'fa-check-circle';
