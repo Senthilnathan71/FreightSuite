@@ -357,6 +357,7 @@ export class AgeingReportSalesmanComponent implements OnInit {
           { label: 'To Date', value: this.formatDate(this.fullData?.concludedUpto) },
           { label: 'Branch', value: this.fullData?.branchInvolvedText || '' },
           { label: 'Ledger', value: this.fullData?.LedgerName || '' },
+          { label:'Salesman', value:this.fullData?.salesmanText || ''}
         ],
       },
       tableHeaders,
@@ -369,12 +370,12 @@ export class AgeingReportSalesmanComponent implements OnInit {
         ...buckets.map(() => 13),
         14,
       ],
-      notes: [
-        'OS Local & buckets are in local currency; OS Local sums to the Grand Total.',
-        'Unallocated = department-less vouchers (Non-Job INV / JV / Receipt / Payment), no salesperson.',
-        'On Acc Local = Advances + JV portion.',
-        'Unassigned = no matching salesteam record.',
-      ],
+      // notes: [
+      //   'OS Local & buckets are in local currency; OS Local sums to the Grand Total.',
+      //   'Unallocated = department-less vouchers (Non-Job INV / JV / Receipt / Payment), no salesperson.',
+      //   'On Acc Local = Advances + JV portion.',
+      //   'Unassigned = no matching salesteam record.',
+      // ],
       // Repeat the terse legend in the PDF footer on every page (not just the last).
       notesEveryPage: true,
     };

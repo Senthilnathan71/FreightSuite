@@ -1,3 +1,9 @@
+// Ensure [hidden] fields (e.g. Salesman dropdown before the checkbox is ticked) stay collapsed
+// even against Bootstrap grid classes.
+[hidden] {
+  display: none !important;
+}
+
 ::ng-deep .ng-select.ng-select-multiple .ng-select-container {
   min-height: 29px;
   height: auto !important;

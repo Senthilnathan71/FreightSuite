@@ -74,6 +74,10 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   private parameterDependencies: Map<string, string[]> = new Map(); // parent -> children[]
   private subscriptions: Subscription = new Subscription();
 
+  // Ageing Report: parameters hidden from the form until their trigger is met
+  // (currently the Salesman dropdown, shown only when the "Salesman" checkbox is ticked).
+  private hiddenParams: Set<string> = new Set();
+
   readonly FIELD_TYPES = {
     TEXT: 'TEXT',
     NUMBER: 'NUMBER',
@@ -172,6 +176,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
 
     // Ageing Report: Salesman view is local-only, so lock CurrencyWise off when it is on.
     this.setupSalesmanCurrencyLock();
+    // Ageing Report: show the Salesman dropdown only when the "Salesman" checkbox is ticked.
+    this.setupSalesmanFilterVisibility();
     this.setupFormValueChanges();
   }
 
@@ -201,6 +207,62 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
       .pipe(distinctUntilChanged())
       .subscribe((value) => apply(!!value));
     this.subscriptions.add(sub);
+  }
+
+  /**
+   * Ageing Report only: the Salesman dropdown is hidden until the "Salesman" checkbox is ticked.
+   * When hidden the control is cleared + disabled so it is neither validated nor submitted
+   * (parameterForm.value excludes disabled controls); when shown it is re-enabled.
+   * The dropdown is detected as any dropdown-type parameter whose name/label mentions "salesman"
+   * (the checkbox itself is a CHECKBOX field, so it is never matched).
+   */
+  private setupSalesmanFilterVisibility(): void {
+    const salesman = this.parameterForm.get('Salesman');
+    const dropdownNames = this.getSalesmanDropdownNames();
+    if (!salesman || dropdownNames.length === 0) return;
+
+    const apply = (ticked: boolean) => {
+      dropdownNames.forEach((name) => {
+        const control = this.parameterForm.get(name);
+        if (!control) return;
+        if (ticked) {
+          this.hiddenParams.delete(name);
+          control.enable({ emitEvent: false });
+        } else {
+          this.hiddenParams.add(name);
+          control.setValue(null, { emitEvent: false });
+          control.disable({ emitEvent: false });
+        }
+      });
+    };
+
+    apply(!!salesman.value); // initial state
+
+    const sub = salesman.valueChanges
+      .pipe(distinctUntilChanged())
+      .subscribe((value) => apply(!!value));
+    this.subscriptions.add(sub);
+  }
+
+  /** Dropdown-type parameter(s) that represent the Salesman filter (excludes the Salesman checkbox). */
+  private getSalesmanDropdownNames(): string[] {
+    const dropdownTypes = [
+      this.FIELD_TYPES.DROPDOWN,
+      this.FIELD_TYPES.DROPDOWN_M,
+      this.FIELD_TYPES.DROPDOWN_D,
+    ];
+    return this.parameters
+      .filter((p) => dropdownTypes.includes(p.ParameterFieldType))
+      .filter((p) => {
+        const text = `${p.ParameterName} ${p.DisplayLabel ?? ''}`.toLowerCase();
+        return text.includes('salesman');
+      })
+      .map((p) => p.ParameterName);
+  }
+
+  /** Whether a parameter field should be rendered (false while hidden behind its trigger). */
+  isParamVisible(param: ReportParameter): boolean {
+    return !this.hiddenParams.has(param.ParameterName);
   }
 
   private setupFormValueChanges(): void {
