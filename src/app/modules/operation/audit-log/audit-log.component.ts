@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { OperationService } from '../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -10,9 +9,10 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './audit-log.component.html',
-  styleUrl: './audit-log.component.scss'
+  styleUrl: './audit-log.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AuditLogComponent implements OnInit, OnDestroy {
+export class AuditLogComponent implements OnInit {
   @Input() tableName!: string;
   @Input() recordId!: string;
   @Input() screenName!: string;
@@ -20,112 +20,55 @@ export class AuditLogComponent implements OnInit, OnDestroy {
 
   auditLogs: any[] = [];
   loading = false;
-  loadingMore = false;
-
-  // Pagination
-  page = 0;
-  pageSize = 50;
-  hasMore = true;
-
-  // Raw-scan cursor returned by the backend. The backend scans raw audit rows
-  // in batches and filters out no-op saves, returning up to pageSize *real*
-  // changes per call plus the raw offset to resume from. We echo this back on
-  // "Load more" so the next call continues scanning where this one stopped.
-  private nextRawOffset = 0;
-
-  // Keyed group store so appended pages merge instead of duplicating
-  // a group that straddles a page boundary.
-  private groupStore = new Map<string, any>();
-
-  // Track the in-flight fetch so we can cancel it on destroy — a subscription
-  // that resolves after the modal closes does wasted merge/render work.
-  private fetchSub?: Subscription;
 
   constructor(
     public activeModal: NgbActiveModal,
     private operationService: OperationService,
-    private appSettingsService: AppSettingsService
+    private appSettingsService: AppSettingsService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.getAuditLog();
   }
 
-  ngOnDestroy(): void {
-    this.fetchSub?.unsubscribe();
+  // Stable identities for *ngFor so Angular reuses DOM instead of re-rendering the
+  // whole list on every change-detection pass. The list is built once and never
+  // mutated afterwards, so index-based tracking is safe and cheapest.
+  trackByIndex(index: number): number {
+    return index;
   }
-
-  // ---- trackBy (prevents full list re-render) ----
-  trackByGroup = (_: number, g: any): string =>
-    `${g.changedAt}-${g.changedBy}-${g.operation}`;
-
-  trackBySection = (_: number, s: any): string => s.title;
-
-  trackByLine = (_: number, line: string): string => line;
 
   private normalize(val: any): string {
     return val === null || val === undefined || val === '' ? '-' : String(val).trim();
   }
 
-  /**
-   * Raw-equality check used to decide whether a field actually changed.
-   * This must NOT use normalize() — normalize() collapses null/undefined/''
-   * all to '-', which would hide genuine changes like null -> '' and, worse,
-   * make a section render empty so the whole group gets filtered out.
-   */
-  private valuesEqual(a: any, b: any): boolean {
-    const aMissing = a === null || a === undefined;
-    const bMissing = b === null || b === undefined;
-    if (aMissing && bMissing) return true;       // null/undefined are interchangeable
-    if (aMissing !== bMissing) return false;      // one set, one not -> changed
-    // Compare by structural JSON so arrays/objects diff correctly, with a
-    // trimmed-string fast path so '  x ' === 'x'.
-    if (typeof a === 'string' && typeof b === 'string') return a.trim() === b.trim();
-    return JSON.stringify(a) === JSON.stringify(b);
+  // A numeric field that was never set (null / '') and one holding 0 mean the same
+  // thing, so a null -> 0 transition is not a real change and must not be shown.
+  // Booleans are excluded so `false` is never collapsed into zero.
+  private isBlankOrZero(val: any): boolean {
+    if (val === null || val === undefined) return true;
+    if (typeof val === 'boolean') return false;
+    if (typeof val === 'number') return val === 0;
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      if (trimmed === '') return true;
+      const num = Number(trimmed);
+      return !Number.isNaN(num) && num === 0;
+    }
+    return false;
+  }
+
+  // True when the raw old/new values are equal for display purposes — either their
+  // normalized display strings match, or both are blank/zero.
+  private valuesEqual(rawOld: any, rawNew: any, displayOld: string, displayNew: string): boolean {
+    if (this.isBlankOrZero(rawOld) && this.isBlankOrZero(rawNew)) return true;
+    return displayOld === displayNew;
   }
 
   private isActionOnlyOperation(operation: string): boolean {
     const op = (operation || '').toUpperCase();
     return ['PRINT', 'PDF', 'EMAIL'].includes(op);
-  }
-
-  /**
-   * Resolve { logs, hasMore, nextRawOffset } from any of the response shapes the
-   * stack can produce (bare array, single envelope, http+service double envelope).
-   *
-   * Strategy: walk down `.data` links looking for the *service envelope* — the
-   * object that carries the `hasMore` flag alongside its own `.data` array.
-   * Only if no such envelope is found do we fall back to the length heuristic,
-   * which is unreliable here because no-op rows are filtered server-side.
-   */
-  private unwrapAuditResponse(res: any): { logs: any[]; hasMore: boolean; nextRawOffset: number | null } {
-    // Bare array — no envelope, no server hasMore available.
-    if (Array.isArray(res)) {
-      return { logs: res, hasMore: res.length === this.pageSize, nextRawOffset: null };
-    }
-
-    // Walk up to two `.data` levels searching for the envelope that has a
-    // boolean hasMore and an array data.
-    let node: any = res;
-    for (let i = 0; i < 3 && node && typeof node === 'object'; i++) {
-      if (typeof node.hasMore === 'boolean' && Array.isArray(node.data)) {
-        return {
-          logs: node.data,
-          hasMore: node.hasMore,
-          nextRawOffset: typeof node.nextRawOffset === 'number' ? node.nextRawOffset : null,
-        };
-      }
-      node = node.data;
-    }
-
-    // No envelope with hasMore found — dig out whatever array we can and fall
-    // back to the length heuristic.
-    let arr: any = res;
-    for (let i = 0; i < 3 && arr && typeof arr === 'object' && !Array.isArray(arr); i++) {
-      arr = arr.data;
-    }
-    const logs: any[] = Array.isArray(arr) ? arr : [];
-    return { logs, hasMore: logs.length === this.pageSize, nextRawOffset: null };
   }
 
   private getBranchTimezoneOffset(): string {
@@ -164,20 +107,14 @@ export class AuditLogComponent implements OnInit, OnDestroy {
     return sign * ((hours * 60) + minutes);
   }
 
-  /** Branch-offset-shifted Date (UTC fields then read as branch-local). */
-  private toBranchShifted(value: string | Date): Date {
-    const date = new Date(value);
-    const offsetMinutes = this.getOffsetMinutes(this.getBranchTimezoneOffset());
-    return new Date(date.getTime() + (offsetMinutes * 60 * 1000));
-  }
-
   formatAuditDate(value: string | Date | null | undefined): string {
     if (!value) return '-';
 
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '-';
 
-    const shifted = this.toBranchShifted(date);
+    const offsetMinutes = this.getOffsetMinutes(this.getBranchTimezoneOffset());
+    const shifted = new Date(date.getTime() + (offsetMinutes * 60 * 1000));
     const pad = (num: number) => String(num).padStart(2, '0');
 
     const day = pad(shifted.getUTCDate());
@@ -191,175 +128,115 @@ export class AuditLogComponent implements OnInit, OnDestroy {
     return `${day}-${month}-${year} ${pad(hours12)}:${minutes} ${meridian}`;
   }
 
-  /** Group key uses the SAME branch-shifted time as the display, rounded to the minute. */
-  private buildGroupKey(log: any): string {
-    const s = this.toBranchShifted(log.changedAt);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const rounded =
-      `${s.getUTCFullYear()}-${pad(s.getUTCMonth() + 1)}-${pad(s.getUTCDate())}` +
-      `T${pad(s.getUTCHours())}:${pad(s.getUTCMinutes())}`;
-    return `${rounded}-${log.changedBy}-${log.operation}`;
-  }
-
-  /**
-   * Merge a batch of raw logs into the keyed group store.
-   * Safe to call repeatedly for appended pages — existing groups/sections
-   * accumulate instead of being duplicated.
-   */
-  private mergeLogs(logs: any[]): void {
-    logs.forEach((log: any) => {
-      const groupKey = this.buildGroupKey(log);
-
-      let group = this.groupStore.get(groupKey);
-      if (!group) {
-        group = {
-          changedAt: log.changedAt,
-          changedBy: log.changedBy,
-          operation: log.operation,
-          isActionOnly: this.isActionOnlyOperation(log.operation),
-          // Precompute display strings ONCE here, not in the template. Calling
-          // formatAuditDate()/getOperationClass() from the template re-runs them
-          // for every row on every change-detection cycle — and formatAuditDate
-          // reaches into appSettingsService each time — which is what makes the
-          // modal slow to interact with and slow to close once many rows load.
-          changedAtDisplay: this.formatAuditDate(log.changedAt),
-          operationClass: this.getOperationClass(log.operation),
-          sections: {}
-        };
-        this.groupStore.set(groupKey, group);
-      }
-
-      const sectionName = log.sectionLabel || log.tableName || 'Details';
-      const rowLabel = log.rowLabel ? String(log.rowLabel).trim() : null;
-      const sectionTitle = rowLabel ? rowLabel : sectionName;
-
-      if (!group.sections[sectionTitle]) {
-        group.sections[sectionTitle] = {
-          title: sectionTitle,
-          oldValDisplay: [],
-          newValDisplay: [],
-          actionDisplay: []
-        };
-      }
-      const section = group.sections[sectionTitle];
-
-      const oldObj = log.oldVal || {};
-      const newObj = log.newVal || {};
-      const allKeys = new Set([...Object.keys(oldObj), ...Object.keys(newObj)]);
-
-      allKeys.forEach((field) => {
-        const rawOld = oldObj[field];
-        const rawNew = newObj[field];
-
-        // Decide "changed" from the RAW values, not the normalized display
-        // strings — otherwise null -> '' (and similar) is silently swallowed,
-        // emptying the section and dropping the whole group in rebuildView().
-        if (this.valuesEqual(rawOld, rawNew)) return;
-
-        let oldVal: string;
-        let newVal: string;
-
-        if (field === 'meetingDate' || field === 'followUpDate') {
-          oldVal = rawOld ? this.formatAuditDate(rawOld) : '-';
-          newVal = rawNew ? this.formatAuditDate(rawNew) : '-';
-        } else {
-          oldVal = this.normalize(rawOld);
-          newVal = this.normalize(rawNew);
-        }
-
-        if (group.isActionOnly) {
-          section.actionDisplay.push(`${field} : ${newVal}`);
-        } else {
-          // A field present on only one side (CREATE/DELETE) still renders,
-          // because valuesEqual already confirmed it differs.
-          section.oldValDisplay.push(`${field} : ${oldVal}`);
-          section.newValDisplay.push(`${field} : ${newVal}`);
-        }
-      });
-    });
-  }
-
-  /** Project the keyed store into the array the template renders. */
-  private rebuildView(): void {
-    this.auditLogs = Array.from(this.groupStore.values())
-      .map((group: any) => ({
-        ...group,
-        sections: Object.values(group.sections).filter((section: any) =>
-          group.isActionOnly
-            ? section.actionDisplay.length > 0
-            : section.oldValDisplay.length > 0 || section.newValDisplay.length > 0
-        )
-      }))
-      .filter((group: any) => group.sections.length > 0)
-      .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime());
-  }
-
-  getAuditLog(append = false): void {
+  getAuditLog() {
     if (!this.tableName || !this.recordId || !this.screenName) return;
 
-    if (!append) {
-      this.page = 0;
-      this.nextRawOffset = 0;
-      this.hasMore = true;
-      this.groupStore.clear();
-      this.auditLogs = [];
-      this.loading = true;
-    } else {
-      this.loadingMore = true;
-    }
+    this.loading = true;
 
-    // Cancel any previous in-flight request before starting a new one.
-    this.fetchSub?.unsubscribe();
+    this.operationService.getAuditLogs(this.tableName, this.recordId, this.screenName).subscribe({
+      next: (logs: any[]) => {
+        const groupedLogs: any = {};
 
-    // Pass the raw-scan cursor as the 6th arg. The backend accumulates up to
-    // pageSize *real* changes starting from this raw offset, so a page that is
-    // mostly no-op saves still returns a full page of meaningful rows.
-    this.fetchSub = this.operationService
-      .getAuditLogs(
-        this.tableName,
-        this.recordId,
-        this.screenName,
-        this.page,
-        this.pageSize,
-        this.nextRawOffset,
-      )
-      .subscribe({
-        next: (res: any) => {
-          // The response can arrive in any of these shapes depending on whether
-          // the HTTP interceptor / operationService unwraps layers:
-          //   A) bare array:                         [ ...logs ]
-          //   B) service envelope:                   { data: [...], hasMore, nextRawOffset }
-          //   C) http + service envelope:            { status, data: { data: [...], hasMore, nextRawOffset }, message }
-          const { logs, hasMore, nextRawOffset } = this.unwrapAuditResponse(res);
+        logs.forEach((log: any) => {
+          const changedDate = new Date(log.changedAt);
 
-          this.hasMore = hasMore;
-          if (nextRawOffset !== null) {
-            this.nextRawOffset = nextRawOffset;
+          const roundedTime = new Date(
+            changedDate.getFullYear(),
+            changedDate.getMonth(),
+            changedDate.getDate(),
+            changedDate.getHours(),
+            changedDate.getMinutes(),
+            0,
+            0
+          ).toISOString();
+
+          const groupKey = `${roundedTime}-${log.changedBy}-${log.operation}`;
+
+          if (!groupedLogs[groupKey]) {
+            groupedLogs[groupKey] = {
+              changedAt: log.changedAt,
+              // Precompute display values once here instead of calling these methods
+              // from the template — under change detection a template method binding
+              // re-runs for every card on every event, which is what froze the modal.
+              changedAtDisplay: this.formatAuditDate(log.changedAt),
+              changedBy: log.changedBy,
+              operation: log.operation,
+              operationClass: this.getOperationClass(log.operation),
+              isActionOnly: this.isActionOnlyOperation(log.operation),
+              sections: {}
+            };
           }
 
-          // TEMP DEBUG: uncomment to inspect exactly what the backend returns.
-          // console.log('[audit] page', this.page, 'visible:', logs.length,
-          //   'hasMore:', this.hasMore, 'nextRawOffset:', this.nextRawOffset, 'res:', res);
+          const sectionName = log.sectionLabel || log.tableName || 'Details';
+          const rowLabel = log.rowLabel ? String(log.rowLabel).trim() : null;
+          const sectionTitle = rowLabel ? rowLabel : sectionName;
 
-          this.mergeLogs(logs);
-          this.rebuildView();
-          this.loading = false;
-          this.loadingMore = false;
-        },
-        error: (err) => {
-          console.error('Error fetching audit logs:', err);
-          if (!append) this.auditLogs = [];
-          this.loading = false;
-          this.loadingMore = false;
-        }
-      });
-  }
+          if (!groupedLogs[groupKey].sections[sectionTitle]) {
+            groupedLogs[groupKey].sections[sectionTitle] = {
+              title: sectionTitle,
+              oldValDisplay: [],
+              newValDisplay: [],
+              actionDisplay: []
+            };
+          }
 
-  loadMore(): void {
-    if (this.loadingMore || !this.hasMore) return;
-    this.page++;
-    // nextRawOffset already points at where the backend should resume scanning.
-    this.getAuditLog(true);
+          const oldObj = log.oldVal || {};
+          const newObj = log.newVal || {};
+          const allKeys = new Set([
+            ...Object.keys(oldObj),
+            ...Object.keys(newObj)
+          ]);
+
+          allKeys.forEach((field) => {
+            const rawOld = oldObj[field];
+            const rawNew = newObj[field];
+
+            let oldVal = this.normalize(rawOld);
+            let newVal = this.normalize(rawNew);
+
+            if (field === 'meetingDate' || field === 'followUpDate') {
+              oldVal = rawOld
+                ? this.formatAuditDate(rawOld)
+                : '-';
+
+              newVal = rawNew
+                ? this.formatAuditDate(rawNew)
+                : '-';
+            }
+
+            if (!this.valuesEqual(rawOld, rawNew, oldVal, newVal)) {
+              if (groupedLogs[groupKey].isActionOnly) {
+                groupedLogs[groupKey].sections[sectionTitle].actionDisplay.push(`${field} : ${newVal}`);
+              } else {
+                groupedLogs[groupKey].sections[sectionTitle].oldValDisplay.push(`${field} : ${oldVal}`);
+                groupedLogs[groupKey].sections[sectionTitle].newValDisplay.push(`${field} : ${newVal}`);
+              }
+            }
+          });
+        });
+
+        this.auditLogs = Object.values(groupedLogs)
+          .map((group: any) => ({
+            ...group,
+            sections: Object.values(group.sections).filter((section: any) => {
+              if (group.isActionOnly) {
+                return section.actionDisplay.length > 0;
+              }
+              return section.oldValDisplay.length > 0 || section.newValDisplay.length > 0;
+            })
+          }))
+          .filter((group: any) => group.sections.length > 0);
+
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error fetching audit logs:', err);
+        this.auditLogs = [];
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   getOperationClass(operation: string): string {

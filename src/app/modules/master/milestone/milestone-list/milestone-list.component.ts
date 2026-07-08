@@ -2,11 +2,12 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbPaginationModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { MatDialog } from '@angular/material/dialog';
 import { MasterService } from '../../master.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
+import { MilestoneAllocateComponent } from '../milestone-allocate/milestone-allocate.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
@@ -52,6 +53,9 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
   // sortDirection: string = 'asc';
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  // Whether the login user's email is listed in the company's `MilestoneCopy`
+  // configuration (email list). Gates the Allocate button.
+  canAllocateMilestone = false;
   // pagination
   // page = 1;
   // pageSize = 15;
@@ -180,6 +184,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
     private masterService: MasterService,
     private router: Router,
     private dialog: MatDialog,
+    private modalService: NgbModal,
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
@@ -203,6 +208,7 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
       this.userData = userProfile;
     }
     this.loadDepartments();
+    this.loadMilestoneCopyConfig();
     // this.loadMilestones();
     // Initialize table configuration
     this.initializeTableConfig();
@@ -291,6 +297,13 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
         action: 'create',
         disabled: !this.mps.can('insert')
       },
+      // Allocate is only shown to users whitelisted in the company's `MilestoneCopy` config.
+      ...(this.canAllocateMilestone ? [{
+        label: 'Allocate',
+        icon: 'fas fa-share-square',
+        action: 'allocate',
+        disabled: !this.mps.can('insert')
+      }] : []),
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
@@ -305,11 +318,58 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
     ];
   }
 
+  // Loads the company's `MilestoneCopy` configuration (an email allow-list) and
+  // decides whether the login user may see the Allocate button. Mirrors the
+  // `CustomerNameUpdateUsers` gating used on the Organization screen.
+  private loadMilestoneCopyConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.canAllocateMilestone = false;
+      return;
+    }
+    this.masterService.getAllCompanyConfigsByCompanyId(companyId).subscribe({
+      next: (response: any) => {
+        const configs = response?.data ?? response ?? [];
+        const config = Array.isArray(configs)
+          ? configs.find((c: any) => c.ConfigurationName === 'MilestoneCopy')
+          : null;
+        this.canAllocateMilestone = this.isUserInConfigEmails(config);
+        this.initializeHeaderActions();
+      },
+      error: (err) => {
+        console.error('Error loading MilestoneCopy configuration:', err);
+        this.canAllocateMilestone = false;
+        this.initializeHeaderActions();
+      }
+    });
+  }
+
+  // True when the login user's email is present in the config's email list.
+  // `ConfigurationValue` is a comma-separated string (email-array type), but an
+  // array is tolerated too.
+  private isUserInConfigEmails(config: any): boolean {
+    const configValue = config?.ConfigurationValue;
+    if (!configValue) return false;
+
+    const email = (this.userData?.userEmail || this.userData?.UserEmail || this.userData?.email || '')
+      .trim().toLowerCase();
+    if (!email) return false;
+
+    const allowedEmails = (Array.isArray(configValue) ? configValue : String(configValue).split(','))
+      .map((e: any) => String(e).trim().toLowerCase())
+      .filter((e: string) => e.length > 0);
+
+    return allowedEmails.includes(email);
+  }
+
 
   onActionTriggered(action: string): void {
     switch (action) {
       case 'create':
         this.navigateToCreateMilestone();
+        break;
+      case 'allocate':
+        this.openAllocateModal();
         break;
       case 'report':
         this.report();
@@ -531,6 +591,26 @@ export class MilestoneListComponent extends BaseListComponent implements OnInit 
 
   navigateToCreateMilestone() {
     this.router.navigate(['master/milestone/entry']);
+  }
+
+  openAllocateModal() {
+    // The modal loads the full company master; the login company is excluded
+    // inside it so it can't be an allocation target.
+    const modalRef = this.modalService.open(MilestoneAllocateComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+    });
+    modalRef.componentInstance.sourceCompanyId = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.createdBy = this.userData?.userEmail || 'system';
+
+    modalRef.result
+      .then((result) => {
+        if (result) {
+          this.searchMilestone();
+        }
+      })
+      .catch(() => {});
   }
 
   // resetPage() {

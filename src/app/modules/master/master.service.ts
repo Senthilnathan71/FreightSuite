@@ -2793,6 +2793,24 @@ getFieldConfiguration() {
       })
     );
   }
+  getAllocatableMilestones(SourceCompanyMasterSid: number, TargetCompanyMasterSid: number) {
+    return this.http.post<{ data: any[] }>('milestone/allocatable', { SourceCompanyMasterSid, TargetCompanyMasterSid }).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
+  allocateMilestones(payload: any) {
+    return this.http.post<{ data: any }>('milestone/allocate', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
     getAuditLogsMilestone(tableName: string, recordId?: string) {
     let url = `milestone/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;

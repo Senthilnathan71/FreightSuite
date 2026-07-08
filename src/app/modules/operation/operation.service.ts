@@ -2054,23 +2054,15 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     );
   }
 
-getAuditLogs(
-  tableName: string,
-  recordId?: string,
-  screenName?: string,
-  page: number = 0,
-  pageSize: number = 50,
-  rawSkip = 0,
-) {
-  let url = `audit-log/logs?tableName=${encodeURIComponent(tableName)}`;
-  if (recordId) url += `&recordId=${encodeURIComponent(recordId)}`;
-  if (screenName) url += `&screenName=${encodeURIComponent(screenName)}`;
-  url += `&page=${page}&pageSize=${pageSize}&rawSkip=${rawSkip}`;
+getAuditLogs(tableName: string, recordId?: string,screenName?: string) {
+    let url = `audit-log/logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+    if (screenName)url += `&screenName=${screenName}`;
 
-  return this.http.get<{ data: any }>(url).pipe(
-    map((resp) => resp.data)
-  );
-}
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 
   createAuditLog(payload:any) {
     return this.http.post<{ data: any }>('audit-log/create', payload).pipe(

@@ -54,7 +54,6 @@ export class MilestoneEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   departmentList: any[] = [];
   departmentOptions: any[] = [];
   selectedDepartments: any[] = [];
-  companyList: any[] = [];
   userData: any;
   milestoneData : any
   permissions: string[] = [];
@@ -103,18 +102,12 @@ export class MilestoneEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     // Load departments after setting current company
   console.log('Current Company:', this.currentCompany);
   console.log('CompanyMasterSid:', this.currentCompany?.CompanyMasterSid);
-  this.getAllDepartments();
-  this.getAllCompanies();
+  this.getAllDepartments(); 
     const userProfile = this.appSettingService.getDecryptedUserProfile();
 		if(userProfile){
 			this.userData = userProfile;
 		}
     this.mps.init().subscribe();
-    // Pre-select the active company for a new milestone; edit mode overwrites
-    // this with the record's company in getMilestoneById().
-    if (this.currentCompany?.CompanyMasterSid) {
-      this.milestoneForm.get('CompanyMasterSids')?.setValue([Number(this.currentCompany.CompanyMasterSid)]);
-    }
     this.initialFormValue = this.milestoneForm.getRawValue();
     this.subscribeToFormChanges();
     this.route.params.subscribe(params => {
@@ -191,14 +184,11 @@ hasAnyDropdownPermission(): boolean {
     this.milestoneForm = this.fb.group({
       MilestoneName: ['', [Validators.required, Validators.maxLength(30)]],
       MilestoneCode: ['', [Validators.required, Validators.maxLength(30)]],
-      CompanyMasterSids: [[], Validators.required],
       DepartmentMasterSid: [[], Validators.required],
       ShipmentType: ['', Validators.required],
       SortBy: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
       AutoCapture: ['N'],
       AutomailRequire: ['N'],
-      IsCustomerSpecific: ['N'],
-      IsMandatory: ['N'],
       status: [{value: 'A', disabled: true}, Validators.required],
       Remarks: ['', Validators.maxLength(500)],
     //   CompanyMasterSid: [null],
@@ -236,24 +226,6 @@ hasAnyDropdownPermission(): boolean {
   );
 }
 
-  getAllCompanies() {
-    this.masterService.getAllCompanies().subscribe({
-      next: (resp: any) => {
-        const list = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
-        this.companyList = list
-          .map((c: any) => ({
-            CompanyMasterSid: Number(c.CompanyMasterSid),
-            companyName: c.companyName || c.CompanyName || `Company ${c.CompanyMasterSid}`
-          }))
-          .filter((c: any) => !!c.CompanyMasterSid);
-      },
-      error: (error) => {
-        console.error('Error loading companies:', error);
-        this.companyList = [];
-      }
-    });
-  }
-
   getMilestoneById(id: number) {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
@@ -273,24 +245,15 @@ hasAnyDropdownPermission(): boolean {
         this.milestoneForm.patchValue({
           MilestoneName: milestone.MilestoneName,
           MilestoneCode: milestone.MilestoneCode,
-          CompanyMasterSids: Array.isArray(milestone.CompanyMasterSids) && milestone.CompanyMasterSids.length
-            ? milestone.CompanyMasterSids.map((id: any) => Number(id))
-            : (milestone.CompanyMasterSid != null ? [Number(milestone.CompanyMasterSid)] : []),
           DepartmentMasterSid: milestone.DepartmentMasterSid,
           ShipmentType: milestone.ShipmentType,
           SortBy: milestone.SortBy,
           AutoCapture: milestone.AutoCapture || 'N',
           AutomailRequire: milestone.AutomailRequire || 'N',
-          IsCustomerSpecific: milestone.IsCustomerSpecific || 'N',
-          IsMandatory: milestone.IsMandatory || 'N',
           status: milestone.status || 'A',
           Remarks: milestone.Remarks || ''
         });
         this.milestoneForm.get('status')?.enable();
-        // Keep the company selector open in edit mode: the record's own company
-        // is updated, and any newly-added company gets a fresh milestone created
-        // (the backend skips companies that already have it — no duplication).
-        this.milestoneForm.get('CompanyMasterSids')?.enable();
         this.initialFormValue = this.milestoneForm.getRawValue();
         this.isDirty = false;
       },
@@ -331,10 +294,9 @@ hasAnyDropdownPermission(): boolean {
     
     const payload = {
       CompanyMasterSid :this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid:this.currentBranch?.BranchMasterSid,
       ...formValue,
       DepartmentMasterSid: formValue.DepartmentMasterSid,
-      // Milestones are company-level, not branch-scoped — never persist a branch.
-      BranchMasterSid: null,
       status: this.isEditMode ? formValue.status : 'A',
       ...(this.isEditMode ? updatedBy : createdBy)
     };
@@ -381,14 +343,11 @@ hasAnyDropdownPermission(): boolean {
       this.milestoneForm.reset({
         MilestoneName: '',
         MilestoneCode: '',
-        CompanyMasterSids: this.currentCompany?.CompanyMasterSid ? [Number(this.currentCompany.CompanyMasterSid)] : [],
         DepartmentMasterSid: [],
         ShipmentType: '',
         SortBy: '',
         AutoCapture: 'N',
         AutomailRequire: 'N',
-        IsCustomerSpecific: 'N',
-        IsMandatory: 'N',
         status: 'A',
         Remarks: ''
       });
