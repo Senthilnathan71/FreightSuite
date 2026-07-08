@@ -5,6 +5,7 @@
       <!-- Dynamic Parameter Fields -->
       <div
         *ngFor="let param of parameters"
+        [hidden]="!isParamVisible(param)"
         [ngClass]="{
           'col-md-3': parameters.length > 0,
           'col-12': parameters.length === 1
