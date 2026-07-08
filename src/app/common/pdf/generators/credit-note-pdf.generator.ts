@@ -201,8 +201,7 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
       buildShipmentDetails(data),
       buildChargesTable(data),
       buildTotalsSection(data),
-      buildAmountInWords(data),
-      buildRemarks(data.credit?.remarks || ''),
+      buildAmountAndVatSummary(data),
       ...buildBankDetailsSection(data),
       ...(resolvedTerms.length > 0
         ? [
@@ -1045,6 +1044,144 @@ function parsePdfNumber(value: any): number {
   if (value === null || value === undefined || value === '') return 0;
   if (typeof value === 'number') return value;
   return Number(String(value).replace(/,/g, '')) || 0;
+}
+
+function isUaeCompany(data: CreditNotePdfData): boolean {
+  const branchCountryCode = String(data.branch?.countryCode || '').trim().toLowerCase();
+  const companyCountryCode = String(data.company?.countryCode || '').trim().toLowerCase();
+  return branchCountryCode === 'ae' || companyCountryCode === 'ae';
+}
+
+function getCreditNoteDisplayDetails(data: CreditNotePdfData): any[] {
+  const printData = (data as any).creditNotePrintData;
+  const voucherDetails = printData?.voucherDetails || [];
+  return voucherDetails.length > 0 ? voucherDetails : (data.charges || []);
+}
+
+function getCreditNoteVatSummary(data: CreditNotePdfData): Array<{ vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }> {
+  const summary = new Map<string, { vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }>();
+  const isUAECompany = isUaeCompany(data);
+
+  for (const detail of getCreditNoteDisplayDetails(data)) {
+    const vatRate = detail?.vatRate ?? detail?.vatPercent ?? detail?.TaxPercentage1 ?? '0.000';
+    const key = isUAECompany ? (detail?.taxGroupName || 'Unmapped') : String(vatRate);
+    const display = isUAECompany ? (detail?.taxGroupName || 'Unmapped') : String(vatRate);
+    const summaryRow = summary.get(key) || {
+      vatRate: String(vatRate),
+      vatRateDisplay: display,
+      taxableAmount: 0,
+      vatAmt: 0,
+    };
+
+    summaryRow.taxableAmount += parsePdfNumber(detail?.TaxableAmount ?? detail?.taxableAmount);
+    summaryRow.vatAmt += parsePdfNumber(detail?.vatAmt ?? detail?.vatAmount ?? detail?.TaxAmount1);
+    summary.set(key, summaryRow);
+  }
+
+  return Array.from(summary.values());
+}
+
+function buildVatSummaryTable(data: CreditNotePdfData): any {
+  const details = getCreditNoteDisplayDetails(data);
+
+  return {
+    table: {
+      widths: [44, 76, 54],
+      body: [
+        [
+          { text: 'Tax Type', bold: true, alignment: 'center', fontSize: 6.5 },
+          { text: 'Taxable Amt.', bold: true, alignment: 'center', fontSize: 6.5 },
+          { text: 'Tax', bold: true, alignment: 'center', fontSize: 6.5 }
+        ],
+        ...getCreditNoteVatSummary(data).map((detail) => [
+          { text: detail.vatRateDisplay, alignment: 'right', fontSize: 6.5 },
+          { text: formatCompanyCurrencyAmount(data, detail.taxableAmount), alignment: 'right', fontSize: 6.5, noWrap: true },
+          { text: formatCompanyCurrencyAmount(data, detail.vatAmt), alignment: 'right', fontSize: 6.5, noWrap: true }
+        ]),
+        [
+          { text: 'Total', bold: true, alignment: 'right', fontSize: 6.5 },
+          {
+            text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(details, 'TaxableAmount', 'taxableAmount')),
+            bold: true,
+            alignment: 'right',
+            fontSize: 6.5,
+            noWrap: true
+          },
+          {
+            text: formatCompanyCurrencyAmount(data, sumPdfDetailAmount(details, 'vatAmt', 'vatAmount')),
+            bold: true,
+            alignment: 'right',
+            fontSize: 6.5,
+            noWrap: true
+          }
+        ]
+      ]
+    },
+    layout: {
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingLeft: () => 2,
+      paddingRight: () => 2,
+      paddingTop: () => 1,
+      paddingBottom: () => 1
+    }
+  };
+}
+
+function buildAmountAndVatSummary(data: CreditNotePdfData): any {
+  const printData = (data as any).creditNotePrintData;
+  const amountInWords = printData?.AmountInWords || data.amountInWords || '';
+  const remarks = printData?.Remarks || data.credit?.remarks || '';
+  const showVATSummary = !!data.taxDisplayConfig?.showVAT;
+  const leftStack: any[] = [];
+
+  if (amountInWords) {
+    leftStack.push({
+      columns: [
+        { width: 92, text: 'Amount In Words', style: 'labelBold', fontSize: 9.5 },
+        { width: 10, text: ':', alignment: 'center', fontSize: 9.5 },
+        { width: '*', text: amountInWords, fontSize: 8.5, lineHeight: 1.15, margin: [6, 0, 0, 0] }
+      ],
+      margin: [0, 0, 0, 5]
+    });
+  }
+
+  leftStack.push({
+    columns: [
+      { width: 92, text: 'Remarks', style: 'labelBold', fontSize: 9 },
+      { width: 10, text: ':', alignment: 'center', fontSize: 9 },
+      { width: '*', text: remarks, fontSize: 8, lineHeight: 1.15, margin: [6, 0, 0, 0] }
+    ]
+  });
+
+  if (!leftStack.length && !showVATSummary) {
+    return { text: '' };
+  }
+
+  return {
+    columns: [
+      {
+        width: 310,
+        stack: leftStack
+      },
+      ...(showVATSummary
+        ? [{
+            width: 50,
+            text: ''
+          }]
+        : []),
+      ...(showVATSummary
+        ? [{
+            width: 174,
+            stack: [buildVatSummaryTable(data)]
+          }]
+        : [])
+    ],
+    columnGap: showVATSummary ? 3 : 0,
+    margin: [0, 2, 0, 0]
+  };
 }
 
 /**

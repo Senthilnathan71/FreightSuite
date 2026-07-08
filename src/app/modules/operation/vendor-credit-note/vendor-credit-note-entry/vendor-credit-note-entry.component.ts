@@ -3650,6 +3650,7 @@ export class VendorCreditNoteEntryComponent {
           CurrencyCode: detail.CurrencyCode || '',
           NumberOfUnit: Number(detail.NumberOfUnit || 0).toFixed(3),
           Rate: this.getFormattedAmount(detail.Rate, detail.CurrencyMasterSid),
+          taxGroupName: detail?.hSSACMaster?.taxGroup?.TaxGroup ?? null,
           ExchangeRate: this.getFormattedAndPaddedExchangeRate(toNumber(detail.ExchangeRate), detail.CurrencyMasterSid),
           TaxableAmount: this.getFormattedAmount(detail.TaxableAmount, this.currentCompany.CurrencyMasterSid),
           cgstRate: Number(taxPercentages.cgstRate || 0).toFixed(3),

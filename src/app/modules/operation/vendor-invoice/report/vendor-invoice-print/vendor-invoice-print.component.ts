@@ -184,13 +184,36 @@ export class VendorInvoicePrintComponent {
     return baseColumns;
   }
 
-  getPrintAmountTotal(fieldName: 'vatAmt' | 'LocalAmount'): string {
+  getPrintAmountTotal(fieldName: 'vatAmt' | 'TaxableAmount' | 'LocalAmount'): string {
     const total = (this.vendorInvoiceData?.voucherDetails || []).reduce(
       (sum: number, detail: any) => sum + this.parseAmount(detail?.[fieldName]),
       0
     );
 
     return this.formatCompanyCurrencyAmount(total);
+  }
+
+  getVendorInvoicePrintVatSummary(): Array<{ vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }> {
+    const summary = new Map<string, { vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }>();
+    const isUAECompany = this.currentCompanyCountryCode?.toLowerCase() === 'ae';
+
+    for (const detail of this.vendorInvoiceData?.voucherDetails || []) {
+      const vatRate = detail?.vatRate ?? '0.000';
+      const key = isUAECompany ? (detail?.taxGroupName || 'Unmapped') : String(vatRate);
+      const display = isUAECompany ? (detail?.taxGroupName || 'Unmapped') : String(vatRate);
+      const summaryRow = summary.get(key) || {
+        vatRate,
+        vatRateDisplay: display,
+        taxableAmount: 0,
+        vatAmt: 0,
+      };
+
+      summaryRow.taxableAmount += this.parseAmount(detail?.TaxableAmount);
+      summaryRow.vatAmt += this.parseAmount(detail?.vatAmt);
+      summary.set(key, summaryRow);
+    }
+
+    return Array.from(summary.values());
   }
 
   formatCurrencyDisplayAmount(amount: number | string, currencyCode?: string): string {

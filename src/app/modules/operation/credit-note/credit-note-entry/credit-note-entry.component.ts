@@ -1729,6 +1729,7 @@ export class CreditNoteEntryComponent {
             detail.TaxableAmount,
             this.currentCompany.CurrencyMasterSid,
           ),
+          taxGroupName: detail?.hSSACMaster?.taxGroup?.TaxGroup ?? null,
           cgstRate: Number(taxPercentages.cgstRate).toFixed(3),
           cgstAmt: this.getFormattedAndPaddedAmount(
             taxAmounts.cgstAmt,
@@ -3952,13 +3953,39 @@ export class CreditNoteEntryComponent {
     return this.shouldShowVatAmountTotals(configOverride);
   }
 
-  getCreditNotePrintAmountTotal(fieldName: 'vatAmt' | 'LocalAmount'): string {
+  getCreditNotePrintAmountTotal(fieldName: 'vatAmt' | 'TaxableAmount' | 'LocalAmount'): string {
     const total = (this.creditNotePrintData?.voucherDetails || []).reduce(
       (sum: number, detail: any) => sum + toNumber(detail?.[fieldName]),
       0,
     );
 
     return this.formatCompanyCurrencyAmount(total);
+  }
+
+  getCreditNotePrintVatSummary(): Array<{ vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }> {
+    const summary = new Map<string, { vatRate: string; vatRateDisplay: string; taxableAmount: number; vatAmt: number }>();
+    const groupByTaxGroup = this.currentCompanyCountryCode?.toLowerCase() === 'ae';
+
+    for (const detail of this.creditNotePrintData?.voucherDetails || []) {
+      const vatRate = detail?.vatRate ?? '0.000';
+      const key = groupByTaxGroup ? (detail?.taxGroupName || 'Unmapped') : vatRate;
+      const display = groupByTaxGroup ? (detail?.taxGroupName || 'Unmapped') : `${toNumber(vatRate)}%`;
+
+      if (!summary.has(key)) {
+        summary.set(key, {
+          vatRate,
+          vatRateDisplay: display,
+          taxableAmount: 0,
+          vatAmt: 0,
+        });
+      }
+
+      const summaryRow = summary.get(key)!;
+      summaryRow.taxableAmount += toNumber(detail?.TaxableAmount);
+      summaryRow.vatAmt += toNumber(detail?.vatAmt);
+    }
+
+    return Array.from(summary.values());
   }
 
   calculateBaseCreditNotePrintColspan(): number {
