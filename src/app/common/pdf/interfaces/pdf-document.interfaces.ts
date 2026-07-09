@@ -53,7 +53,9 @@ export interface QuotationRouteData {
   expDate?: Date | string;
   carriers: QuotationCarrierData[];
   cargo?: PdfCargoItem[];
-  products?: Array<{ length?: number; width?: number; height?: number }>;
+  products?: Array<{ length?: number; width?: number; height?: number; packageQty?: number }>;
+  weightUom?: string;
+  dimUom?: string;
 }
 
 export interface QuotationCarrierData {

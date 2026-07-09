@@ -3417,16 +3417,14 @@
       <div style="padding:2px; display:flex;">
         <strong style="width:80px;">Carrier</strong>
      <span>: {{ carrier?.CarrierName || '' }}</span>
-     <strong *ngIf="carrier?.CarrierName && carrier?.TransitTime">&nbsp;/&nbsp;</strong>
-     <span>{{ carrier?.TransitTime ? (carrier.TransitTime + ' days') : '' }}</span>
     </div>
 
       <div style="padding:2px; display:flex;">
-        @if(!shouldShowContainerQuantity(route)){
-          <strong style="width:80px;">Cargo Type</strong>
-          <span>: {{ getRoutePrintCargoTypeSummary(route) || '' }}</span>
-        }
-      </div>
+        <strong style="width:80px;">Tr. Days</strong>
+     <span>: {{ carrier?.TransitTime || '' }}</span>
+    </div>
+
+     
 
       <div style="padding:2px; display:flex;">
         <strong style="width:80px;">Valid</strong>
@@ -3437,6 +3435,12 @@
     <!-- Row 2 : measurements are not applicable to FCL, which uses the container table instead -->
     @if(!shouldShowContainerQuantity(route)){
     <div style="display:grid; grid-template-columns:repeat(3,1fr);">
+       <div style="padding:2px; display:flex;">
+        @if(!shouldShowContainerQuantity(route)){
+          <strong style="width:80px;">Cargo Type</strong>
+          <span>: {{ getRoutePrintCargoTypeSummary(route) || '' }}</span>
+        }
+      </div>
       <div style="padding:2px; display:flex;">
         <strong style="width:80px;">Gross Wt</strong>
         <span>: {{ getRouteGrossWeight(route) | number:'1.3-3' }}</span>
@@ -3453,30 +3457,34 @@
       </div>
 
       <div style="padding:2px; display:flex;">
-        <strong style="width:80px;">CBM</strong>
-        <span>: {{ getRouteCBM(route) | number:'1.3-3' }}</span>
+        @if(isLclStyleQuotationSegment(route)){
+          <strong style="width:80px;">CBM</strong>
+          <span>: {{ getRouteCBM(route) | number:'1.3-3' }}</span>
+        }
       </div>
 
-      @if(getProductLenght(route)){
+     @if(getProductLenght(route) || getProductWidth(route) || getProductHeight(route)){
       <div style="padding:2px; display:flex;">
-        <strong style="width:80px;">Length</strong>
-        <span>: {{ getProductLenght(route) | number:'1.3-3' }}</span>
+        <strong style="width:80px;">Dims</strong>
+        <span>
+          :
+          {{ getProductLenght(route) ? (getProductLenght(route)) : '-' }}
+          ×
+          {{ getProductWidth(route) ? (getProductWidth(route)) : '-' }}
+          ×
+          {{ getProductHeight(route) ? (getProductHeight(route)) : '-' }}
+        </span>
+        <span>&nbsp;{{ getDimUom(route) }}</span>
       </div>
       }
 
-      @if(getProductWidth(route)){
-      <div style="padding:2px; display:flex;">
-        <strong style="width:80px;">Width</strong>
-        <span>: {{ getProductWidth(route) | number:'1.3-3' }}</span>
-      </div>
+      @if(getNofoPackegas(route)){
+        <div style="padding:2px; display:flex;">
+          <strong style="width:80px;">No of Pkgs</strong>
+          <span>: {{ getNofoPackegas(route) | number:'1.0-0' }}</span>
+        </div>
       }
 
-      @if(getProductHeight(route)){
-      <div style="padding:2px; display:flex;">
-        <strong style="width:80px;">Height</strong>
-        <span>: {{ getProductHeight(route) | number:'1.3-3' }}</span>
-      </div>
-      }
     </div>
     }
 
@@ -3509,9 +3517,6 @@
                 <th style="text-align: center; font-weight: bolder; width: 15%; border: 1px solid #000; padding: 3px 8px;">
                   Net Wt
                 </th>
-                <th style="text-align: center; font-weight: bolder; width: 14%; border: 1px solid #000; padding: 3px 8px;">
-                  CBM
-                </th>
               </tr>
             </thead>
 
@@ -3534,9 +3539,6 @@
                   </td>
                   <td style="padding: 3px 8px; text-align: end; border: 1px solid #000;">
                     {{ cargoDetail.netWeight | number:'1.3-3' }}
-                  </td>
-                  <td style="padding: 3px 8px; text-align: end; border: 1px solid #000;">
-                    {{ cargoDetail.cbm | number:'1.3-3' }}
                   </td>
                 </tr>
               }

@@ -258,11 +258,11 @@ function buildRouteSections(data: QuotationPdfData): any[] {
       const showCargoTable = shouldShowRouteCargoTable(route, data);
       const showCargoSummary = !shouldShowContainerQuantity(route, data);
 
-      blocks.push(buildRouteInfo(route, carrier, showCargoSummary, data));
+      blocks.push(buildRouteInfo(route, carrier));
 
       // FCL shows the container table instead of weight/volume measurements.
       if (showCargoSummary) {
-        blocks.push(buildRouteMeasurements(route));
+        blocks.push(buildRouteMeasurements(route, data));
       }
 
       if (showCargoTable) {
@@ -282,7 +282,7 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
   const showQuantity = shouldShowContainerQuantity(route, data);
   const cargoDetails = getRoutePrintCargoDetails(route, data);
   const widths = showQuantity
-    ? ['18%', '20%', '18%', '15%', '15%', '14%']
+    ? ['18%', '20%', '18%', '18%', '18%']
     : ['25%', '25%', '17%', '17%', '16%'];
   const body: any[] = [[
     { text: 'Cargo Type', bold: true, alignment: 'center' },
@@ -290,7 +290,6 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
     ...(showQuantity ? [{ text: 'No of Container', bold: true, alignment: 'center' }] : []),
     { text: 'Gross Wt', bold: true, alignment: 'center' },
     { text: 'Net Wt', bold: true, alignment: 'center' },
-    { text: 'CBM', bold: true, alignment: 'center' }
   ]];
 
   cargoDetails.forEach((cargo: any) => {
@@ -300,7 +299,6 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
       ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'right' }] : []),
       { text: formatNumeric(cargo?.grossWeight, 3), alignment: 'right' },
       { text: formatNumeric(cargo?.netWeight, 3), alignment: 'right' },
-      { text: formatNumeric(cargo?.cbm, 3), alignment: 'right' }
     ]);
   });
 
@@ -320,7 +318,7 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
       paddingTop: () => 2,
       paddingBottom: () => 2
     },
-    margin: [55, 0, 55, 4]
+    margin: [40, 0, 40, 4]
   };
 }
 
@@ -482,6 +480,12 @@ function getRouteCargoGroups(route: any): any[] {
   return route.cargo ? [route.cargo] : [];
 }
 
+function resolveUomCode(list: any[] | undefined, uomMasterSid: any): string {
+  if (!uomMasterSid || !list?.length) return '';
+  const uom = list.find((item: any) => item?.UOMMasterSid === uomMasterSid);
+  return uom?.UOMCode || uom?.UOMName || '';
+}
+
 function sumCargoField(route: any, field: string): number {
   return getRouteCargoGroups(route).reduce((sum: number, cargo: any) => sum + (Number(cargo?.[field]) || 0), 0);
 }
@@ -494,6 +498,18 @@ function isAirSegment(route: any): boolean {
   const segment = (route?.segmentType || '').toString().toUpperCase();
   if (segment) return segment === 'AIR';
   return (route?.departmentName || '').toLowerCase().includes('air');
+}
+
+function getRoutePackageCount(route: any): number {
+  // Cargo-level PackageQty is often 0; the real count is carried on each product.
+  const productTotal = sumProductField(route, 'packageQty');
+  return productTotal || sumCargoField(route, 'noOfPackage');
+}
+
+function isLclSegment(route: any): boolean {
+  const segment = (route?.segmentType || '').toString().toUpperCase();
+  if (segment) return segment === 'LCL';
+  return (route?.departmentName || '').toLowerCase().includes('lcl');
 }
 
 function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>): any {
@@ -520,37 +536,41 @@ function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>)
   return { stack: rows, margin: [0, 0, 0, 2] };
 }
 
-function buildRouteInfo(route: any, carrier: any, showCargoSummary: boolean, data: QuotationPdfData): any {
-  const carrierName = carrier?.carrierName || '';
-  const transitTime = carrier?.transitTime ? `${carrier.transitTime} days` : '';
-
-  const cells: Array<{ label: string; value: string } | null> = [
-    { label: 'Carrier', value: [carrierName, transitTime].filter(Boolean).join(' / ') }
-  ];
-  // Always occupy the middle column so Valid stays pinned to column 3.
-  cells.push(showCargoSummary
-    ? { label: 'Cargo Type', value: getRoutePrintCargoTypeSummary(route, data) }
-    : null);
-  cells.push({ label: 'Valid', value: `${formatDate(route.effDate)} - ${formatDate(route.expDate)}` });
-
-  return buildLabeledGrid(cells);
+function buildRouteInfo(route: any, carrier: any): any {
+  return buildLabeledGrid([
+    { label: 'Carrier', value: carrier?.carrierName || '' },
+    { label: 'Tr. Days', value: carrier?.transitTime || '' },
+    { label: 'Valid', value: `${formatDate(route.effDate)} - ${formatDate(route.expDate)}` }
+  ]);
 }
 
-function buildRouteMeasurements(route: any): any {
-  const cells: Array<{ label: string; value: string }> = [
-    { label: 'Gross Wt', value: formatNumeric(sumCargoField(route, 'grossWeight'), 3) },
+function buildRouteMeasurements(route: any, data: QuotationPdfData): any {
+  const weightUom = route?.weightUom ? ` ${route.weightUom}` : '';
+
+  const cells: Array<{ label: string; value: string } | null> = [
+    { label: 'Cargo Type', value: getRoutePrintCargoTypeSummary(route, data) },
+    { label: 'Gross Wt', value: `${formatNumeric(sumCargoField(route, 'grossWeight'), 3)}${weightUom}` },
     isAirSegment(route)
-      ? { label: 'Chrg Wt', value: formatNumeric(sumCargoField(route, 'chargeableWeight'), 3) }
-      : { label: 'Net Wt', value: formatNumeric(sumCargoField(route, 'netWeight'), 3) },
-    { label: 'CBM', value: formatNumeric(sumCargoField(route, 'volume'), 3) }
+      ? { label: 'Chrg Wt', value: `${formatNumeric(sumCargoField(route, 'chargeableWeight'), 3)}${weightUom}` }
+      : { label: 'Net Wt', value: `${formatNumeric(sumCargoField(route, 'netWeight'), 3)}${weightUom}` },
+    // CBM only applies to LCL; keep the slot so Dims starts on the next row.
+    isLclSegment(route)
+      ? { label: 'CBM', value: formatNumeric(sumCargoField(route, 'volume'), 3) }
+      : null
   ];
 
   const length = sumProductField(route, 'length');
   const width = sumProductField(route, 'width');
   const height = sumProductField(route, 'height');
-  if (length) cells.push({ label: 'Length', value: formatNumeric(length, 3) });
-  if (width) cells.push({ label: 'Width', value: formatNumeric(width, 3) });
-  if (height) cells.push({ label: 'Height', value: formatNumeric(height, 3) });
+  if (length || width || height) {
+    const dims = `${length || '-'} × ${width || '-'} × ${height || '-'}`;
+    cells.push({ label: 'Dims', value: `${dims}${route?.dimUom ? ` ${route.dimUom}` : ''}` });
+  }
+
+  const packageCount = getRoutePackageCount(route);
+  if (packageCount) {
+    cells.push({ label: 'No of Pkgs', value: formatNumeric(packageCount) });
+  }
 
   return buildLabeledGrid(cells);
 }
@@ -616,6 +636,8 @@ export function transformQuotationApiData(
     departments?: any[];
     ports?: any[];
     containerTypeList?: any[];
+    weightUnitList?: any[];
+    measurementUnitList?: any[];
   },
   options?: {
     printSettings?: {
@@ -696,14 +718,21 @@ export function transformQuotationApiData(
         grossWeight: Number(cargo.GrossWeight) || 0,
         netWeight: Number(cargo.NetWeight) || 0,
         volume: Number(cargo.Volume) || 0,
-        chargeableWeight: Number(cargo.ChargeableWeight) || 0
+        chargeableWeight: Number(cargo.ChargeableWeight) || 0,
+        noOfPackage: Number(cargo.PackageQty) || 0
       })),
       products: (route.quoteCargo || []).flatMap((cargo: any) =>
         (cargo.quoteProduct || cargo.quoteProducts || cargo.products || []).map((product: any) => ({
           length: Number(product.Length) || 0,
           width: Number(product.Width) || 0,
-          height: Number(product.Height) || 0
+          height: Number(product.Height) || 0,
+          packageQty: Number(product.ExternalQty) || 0
         }))
+      ),
+      weightUom: resolveUomCode(lookups?.weightUnitList, (route.quoteCargo || [])[0]?.WeightUnitSid),
+      dimUom: resolveUomCode(
+        lookups?.measurementUnitList,
+        ((route.quoteCargo || [])[0]?.quoteProduct || [])[0]?.ProductUnit
       )
     })),
     terms: normalizedTerms.map((term: string) => ({
