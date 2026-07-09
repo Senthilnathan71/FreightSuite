@@ -7512,15 +7512,65 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     }
   }
 
-  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string }> {
+  getRouteGrossWeight(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.GrossWeight || 0), 0);
+  }
+
+  getRouteNetWeight(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.NetWeight || 0), 0);
+  }
+
+  getRouteCBM(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.Volume || 0), 0);
+  }
+
+  getRouteChargeableWeight(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.ChargeableWeight || 0), 0);
+  }
+
+  private getRouteProducts(route: any): any[] {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce(
+      (products: any[], cargo: any) => products.concat(this.getQuotationCargoProducts(cargo)),
+      []
+    );
+  }
+
+  getProductLenght(route: any): number {
+    return this.getRouteProducts(route).reduce((sum: number, product: any) => sum + Number(product?.Length || 0), 0);
+  }
+
+  getProductWidth(route: any): number {
+    return this.getRouteProducts(route).reduce((sum: number, product: any) => sum + Number(product?.Width || 0), 0);
+  }
+
+  getProductHeight(route: any): number {
+    return this.getRouteProducts(route).reduce((sum: number, product: any) => sum + Number(product?.Height || 0), 0);
+  }
+
+  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string; grossWeight: number; netWeight: number; cbm: number }> {
     const cargoGroups = this.getRouteCargoGroups(route);
     return cargoGroups
       .map((cargo: any) => ({
         cargoType: cargo?.CargoType || '',
         containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
-        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? ''
+        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? '',
+        grossWeight: Number(cargo?.GrossWeight) || 0,
+        netWeight: Number(cargo?.NetWeight) || 0,
+        cbm: Number(cargo?.Volume) || 0
       }))
       .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
+  }
+
+  getCarrierTotalLocalAmount(carrier: any): number {
+    return (carrier?.quoteCharge || []).reduce(
+      (sum: number, charge: any) => sum + (Number(charge?.RevenueLocalAmount) || 0),
+      0
+    );
   }
 
   getContainerTypeDisplay(containerType: any): string {
