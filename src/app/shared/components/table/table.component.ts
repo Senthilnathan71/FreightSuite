@@ -404,6 +404,27 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
     return normalized === 'active' || normalized === 'posted' || normalized === 'approved';
   }
 
+  isStatusEmpty(value: any): boolean {
+    return value === null || value === undefined || String(value).trim() === '';
+  }
+
+  // Resolves the visual state of a status badge: a null/empty value gets a
+  // neutral badge instead of the misleading red "inactive" pill.
+  getStatusState(value: any): 'active' | 'inactive' | 'neutral' {
+    if (this.isStatusEmpty(value)) {
+      return 'neutral';
+    }
+    return this.isStatusActive(value) ? 'active' : 'inactive';
+  }
+
+  getStatusDisplay(row: any, column: TableColumn): string {
+    const value = this.getCellValue(row, column.key);
+    if (this.isStatusEmpty(value)) {
+      return column.emptyStatusText || 'N/A';
+    }
+    return this.getCellDisplay(row, column);
+  }
+
   // Action handling
   onActionClick(action: string, row: any, column?: TableColumn): void {
     const actionConfig = this.config.actions?.find(configAction => configAction.action === action);

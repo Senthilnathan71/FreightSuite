@@ -180,10 +180,9 @@
 
             <!-- Status Template -->
             <span *ngIf="column.template === 'status'" class="status-badge"
-              [class.active]="isStatusActive(getCellValue(row, column.key))"
-              [class.inactive]="!isStatusActive(getCellValue(row, column.key))">
+              [ngClass]="getStatusState(getCellValue(row, column.key))">
               <i class="status-dot"></i>
-              {{ getCellDisplay(row, column) }}
+              {{ getStatusDisplay(row, column) }}
             </span>
 
             <!-- Action Template -->

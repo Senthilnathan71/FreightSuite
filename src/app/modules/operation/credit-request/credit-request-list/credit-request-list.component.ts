@@ -243,7 +243,8 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
         template: 'status',
         width: '100px',
         dataType: 'string',
-        cellClass: 'status-column'
+        cellClass: 'status-column',
+        emptyStatusText: 'No Request'
       },
       {
         key: 'ApprovalStatus',
@@ -254,7 +255,8 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
         template: 'status',
         width: '100px',
         dataType: 'string',
-        cellClass: 'approval-status-column'
+        cellClass: 'approval-status-column',
+        emptyStatusText: 'No Request'
       }
     ],
     actions: [

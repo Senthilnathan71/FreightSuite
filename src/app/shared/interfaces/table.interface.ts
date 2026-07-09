@@ -13,6 +13,7 @@ export interface TableColumn {
   sortKey?: string; // Different key for sorting if needed
   filterKey?: string; // Different key for filtering if needed
   tooltipKey?:string;
+  emptyStatusText?: string; // Label shown by the 'status' template when the value is null/empty (default 'N/A')
 }
 
 export interface TableAction {
