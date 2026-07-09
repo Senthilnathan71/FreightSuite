@@ -210,6 +210,12 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   packageUnitMaster: any[] = [];
   measurementUnitList: any[] = [];
   weightUnitList: any[] = [];
+  // Mirrors the enquiry's hardcoded list; EnquiryCargo.WeightUnitSid stores these ids, not UOMMasterSid.
+  readonly dimensionUnits = [
+    { id: 1, name: 'M' },
+    { id: 2, name: 'CM' },
+    { id: 3, name: 'Inch' }
+  ];
   incoList: any[] = [];
   salesmanList: any[] = [];
   cusBranchList: any[] = [];
@@ -7507,21 +7513,9 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     }
   }
 
-  getUom(route: any): string {
-    const weightUnitSid = this.getRouteCargoGroups(route)[0]?.WeightUnitSid ?? route?.WeightUnitSid;
-    if (!weightUnitSid || this.weightUnitList.length === 0) {
-      return '';
-    }
-    return this.weightUnitList.find(uom => uom.UOMMasterSid === weightUnitSid)?.UOMCode || '';
-  }
-
   getDimUom(route: any): string {
-    const productUnitSid = this.getRouteProducts(route)[0]?.ProductUnit;
-    if (!productUnitSid || this.measurementUnitList.length === 0) {
-      return '';
-    }
-    const unit = this.measurementUnitList.find(uom => uom.UOMMasterSid === productUnitSid);
-    return unit?.UOMCode || unit?.UOMName || '';
+    const unitSid = Number(this.getRouteCargoGroups(route)[0]?.WeightUnitSid  ?? route?.WeightUnitSid );
+    return this.dimensionUnits.find(unit => unit.id === unitSid)?.name || '';
   }
 
   getCurrencyCodeById(CurrencyMasterSid) {
