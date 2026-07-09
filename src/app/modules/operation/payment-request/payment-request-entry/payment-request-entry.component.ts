@@ -15,7 +15,7 @@ import { NgSelectComponent } from '@ng-select/ng-select';
 import { Subject, firstValueFrom, forkJoin } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
-import { getDefaultTodayDate, toNgbDateStruct } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
@@ -245,7 +245,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       if (!ctrl.get('Selected')?.value) {
         return sum;
       }
-      return sum + Number(ctrl.get('CostLocalAmount')?.value || 0);
+      return sum + toNumber(ctrl.get('CostLocalAmount')?.value || 0);
     }, 0);
   }
 
@@ -414,13 +414,13 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
 
   getPrintTotalAmount(): number {
     return this.getSelectedDetailRows().reduce((sum: number, item: any) => {
-      return sum + Number(item?.CostAmount || 0);
+      return sum + toNumber(item?.CostAmount || 0);
     }, 0);
   }
 
   getPrintTotalLocalAmount(): number {
     return this.getSelectedDetailRows().reduce((sum: number, item: any) => {
-      return sum + Number(item?.CostLocalAmount || 0);
+      return sum + toNumber(item?.CostLocalAmount || 0);
     }, 0);
   }
 
@@ -438,6 +438,10 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     const raw = this.form.getRawValue();
     const detailItems = this.getSelectedDetailRows().map((item: any) => ({
       ...item,
+      // toNumber — Cost amounts are masked strings; the print template's `| number` pipe needs numbers.
+      CostRate: toNumber(item?.CostRate),
+      CostAmount: toNumber(item?.CostAmount),
+      CostLocalAmount: toNumber(item?.CostLocalAmount),
       ChargeName: this.getChargeName(item?.ChargeMasterSid),
       UnitName: this.getUnitName(item?.CostChargeUomSid),
       CurrencyCode: this.getDetailCurrencyCode(item),
@@ -1099,7 +1103,14 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       ...(this.isEditMode ? { UpdatedBy: userEmail } : { CreatedBy: userEmail }),
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      detailItems: this.detailItems.getRawValue(),
+      // toNumber — Cost amounts are stored as masked "20,000.00" strings; strip separators so the
+      // payload sends numbers (Number()/JSON would turn a comma value into NaN -> null).
+      detailItems: this.detailItems.getRawValue().map((d: any) => ({
+        ...d,
+        CostRate: toNumber(d.CostRate),
+        CostAmount: toNumber(d.CostAmount),
+        CostLocalAmount: toNumber(d.CostLocalAmount),
+      })),
       authDetails: {
         AuthorizationRequired: this.authorizationRequired,
         canAuthorize: statusChanged && !!this.authorizerDetails?.canAuthorize,

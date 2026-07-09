@@ -2356,8 +2356,11 @@ isSeaDepartment(): boolean {
     row.get('TaxAmount2')?.setValue(
       toNumber(this.getFormattedAmount(taxResult.TaxAmount2, companyCurrency))
     );
-    row.get('LocalAmount')?.setValue(this.getFormattedAmount(localAmount, companyCurrency));
-    row.get('PartyAmount')?.setValue(this.getPartyAmount(index));
+    // Store as clean numbers (rounded to the currency's decimals) — NOT masked strings. The template
+    // re-masks via getFormattedAmount for display; storing "20,000.00" here makes Number(...) NaN in
+    // the save payload (JSON serialises NaN -> null), which zeroed Local/Party on save.
+    row.get('LocalAmount')?.setValue(toNumber(this.getFormattedAmount(localAmount, companyCurrency)));
+    row.get('PartyAmount')?.setValue(toNumber(this.getPartyAmount(index)));
 
     this.updateBillAmount();
     this.invoiceForm.updateValueAndValidity();
@@ -2830,28 +2833,28 @@ isSeaDepartment(): boolean {
           DrCr: d.DrCr || 'D',
           CurrencyCode: d.CurrencyCode || raw.CurrencyCode,
           CurrencyMasterSid: d.CurrencyMasterSid || this.getCurrencyId(d.CurrencyCode),
-          Rate: d.Rate != null ? Number(d.Rate) : 0,
+          // toNumber (not Number) for every money field — strips the per-currency thousands separator so
+          // a masked value like "20,000.00" parses to 20000 instead of NaN (which JSON serialises to null).
+          Rate: toNumber(d.Rate),
           ExchangeRate:
             d.ExchangeRate != null
-              ? Number(d.ExchangeRate)
+              ? toNumber(d.ExchangeRate)
               : raw.ExchangeRate != null
-              ? Number(raw.ExchangeRate)
+              ? toNumber(raw.ExchangeRate)
               : 1,
-          Amount: d.Amount != null ? Number(d.Amount) : 0,
+          Amount: toNumber(d.Amount),
           TaxableAmount:
             d.TaxableAmount != null
-              ? Number(d.TaxableAmount)
-              : d.Amount != null
-              ? Number(d.Amount)
-              : 0,
+              ? toNumber(d.TaxableAmount)
+              : toNumber(d.Amount),
           TaxPercentage1:
             d.TaxPercentage1 != null ? Number(d.TaxPercentage1) : 0,
-          TaxAmount1: d.TaxAmount1 != null ? Number(d.TaxAmount1) : 0,
+          TaxAmount1: toNumber(d.TaxAmount1),
           TaxPercentage2:
             d.TaxPercentage2 != null ? Number(d.TaxPercentage2) : 0,
-          TaxAmount2: d.TaxAmount2 != null ? Number(d.TaxAmount2) : 0,
-          LocalAmount: d.LocalAmount != null ? Number(d.LocalAmount) : 0,
-          PartyAmount: d.PartyAmount != null ? Number(d.PartyAmount) : 0,
+          TaxAmount2: toNumber(d.TaxAmount2),
+          LocalAmount: toNumber(d.LocalAmount),
+          PartyAmount: toNumber(d.PartyAmount),
           MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : null,
           HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null,
           YearMasterSid: YearMasterSid,

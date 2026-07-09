@@ -1870,8 +1870,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
     });
 
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    row.get('Amount')?.setValue(this.getFormattedAmount(amount, companyCurrency));
-    row.get('TaxableAmount')?.setValue(this.getFormattedAmount(taxableAmount, companyCurrency));
+    // Store as clean numbers (rounded to the currency's decimals) — NOT masked strings. The template
+    // re-masks via getFormattedAmount for display; storing "20,000.00" here makes bare Number()/parseFloat()
+    // consumers (on-screen totals, net-amount guard) return NaN / a truncated value on grouped amounts.
+    row.get('Amount')?.setValue(toNumber(this.getFormattedAmount(amount, companyCurrency)));
+    row.get('TaxableAmount')?.setValue(toNumber(this.getFormattedAmount(taxableAmount, companyCurrency)));
     row.get('TaxPercentage1')?.setValue(taxResult.TaxPercentage1);
     row.get('TaxAmount1')?.setValue(
       toNumber(this.getFormattedAmount(taxResult.TaxAmount1, companyCurrency))
@@ -1880,8 +1883,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     row.get('TaxAmount2')?.setValue(
       toNumber(this.getFormattedAmount(taxResult.TaxAmount2, companyCurrency))
     );
-    row.get('LocalAmount')?.setValue(this.getFormattedAmount(localAmount, companyCurrency));
-    row.get('PartyAmount')?.setValue(this.getPartyAmount(index));
+    row.get('LocalAmount')?.setValue(toNumber(this.getFormattedAmount(localAmount, companyCurrency)));
+    row.get('PartyAmount')?.setValue(toNumber(this.getPartyAmount(index)));
 
     this.updateBillAmount();
     this.vendorInvoiceForm.updateValueAndValidity();

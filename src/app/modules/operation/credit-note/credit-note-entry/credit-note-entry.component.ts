@@ -2220,8 +2220,11 @@ export class CreditNoteEntryComponent {
     });
 
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    row.get('Amount')?.setValue(this.getFormattedAmount(amount, companyCurrency));
-    row.get('TaxableAmount')?.setValue(this.getFormattedAmount(taxableAmount, companyCurrency));
+    // Store as clean numbers (not masked "20,000.00" strings) — the template re-masks via
+    // getFormattedAmount for display. Masked strings fed to bare Number()/parseFloat() (totals,
+    // guards) become NaN, and JSON serialises NaN -> null on save.
+    row.get('Amount')?.setValue(toNumber(this.getFormattedAmount(amount, companyCurrency)));
+    row.get('TaxableAmount')?.setValue(toNumber(this.getFormattedAmount(taxableAmount, companyCurrency)));
     row.get('TaxPercentage1')?.setValue(taxResult.TaxPercentage1);
     row.get('TaxAmount1')?.setValue(
       toNumber(this.getFormattedAmount(taxResult.TaxAmount1, companyCurrency))
@@ -2230,8 +2233,8 @@ export class CreditNoteEntryComponent {
     row.get('TaxAmount2')?.setValue(
       toNumber(this.getFormattedAmount(taxResult.TaxAmount2, companyCurrency))
     );
-    row.get('LocalAmount')?.setValue(this.getFormattedAmount(localAmount, companyCurrency));
-    row.get('PartyAmount')?.setValue(this.getPartyAmount(index));
+    row.get('LocalAmount')?.setValue(toNumber(this.getFormattedAmount(localAmount, companyCurrency)));
+    row.get('PartyAmount')?.setValue(toNumber(this.getPartyAmount(index)));
 
     this.updateBillAmount();
     this.creditNoteForm.updateValueAndValidity();

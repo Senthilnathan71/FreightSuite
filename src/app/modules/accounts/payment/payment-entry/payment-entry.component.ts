@@ -1543,7 +1543,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     const zeroLocalAmountIndex = detailItems.findIndex(
-      (d) => isNaN(Number(d.LocalAmount)) || Number(d.LocalAmount) <= 0
+      (d) => toNumber(d.LocalAmount) <= 0
     );
     if (zeroLocalAmountIndex !== -1) {
       this.appSettingService.showError(
@@ -1658,7 +1658,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const allotted = toNumber(this.getFormattedAndPaddedAmount(allottedRaw, matchCur));
       const branchMatched = toNumber(
         this.getFormattedAndPaddedAmount(
-          vmRows5.filter((vm) => vm.allotmentBranchSid === sid).reduce((s, vm) => s + (Number(vm.matchPartyAmt) || 0), 0),
+          vmRows5.filter((vm) => vm.allotmentBranchSid === sid).reduce((s, vm) => s + (toNumber(vm.matchPartyAmt) || 0), 0),
           matchCur,
         ),
       );
@@ -1740,15 +1740,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       CurrencyCode: vm.curr,
       ExchangeRate: vm.exRate || 1,
       DrCr: vm.drCr,
-      Amount: vm.currAmt,
-      LocalAmount: vm.localAmt,
+      // toNumber — matching amounts may be masked "20,000.00" strings; strip separators so the payload
+      // sends numbers (bare Number()/JSON would turn a comma value into NaN -> null).
+      Amount: toNumber(vm.currAmt),
+      LocalAmount: toNumber(vm.localAmt),
       MatchingCurrency: vm.matchCurr,
       MatchingExRate: vm.matchExRate,
-      MatchingAmount: vm.matchCurrAmt,
-      MatchingLocalAmount: vm.matchLocalAmt,
-      PartyAmount: vm.matchPartyAmt,
-      MatchingTDSAmount: vm.tdsAmt,
-      tdsAmt: vm.tdsAmt,
+      MatchingAmount: toNumber(vm.matchCurrAmt),
+      MatchingLocalAmount: toNumber(vm.matchLocalAmt),
+      PartyAmount: toNumber(vm.matchPartyAmt),
+      MatchingTDSAmount: toNumber(vm.tdsAmt),
+      tdsAmt: toNumber(vm.tdsAmt),
       updatedBy: currentUserEmail
     }));
 
@@ -1787,8 +1789,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       CurrencyMasterSid: formValue.CurrencyMasterSid,
       CurrencyCode: formValue.CurrencyCode,
       ExchangeRate: formValue.ExchangeRate,
-      Amount: bankRow?.Amount ?? 0,
-      LocalAmount: bankRow?.LocalAmount ?? 0,
+      Amount: toNumber(bankRow?.Amount),
+      LocalAmount: toNumber(bankRow?.LocalAmount),
       NetAmount: 0,
       TaxType:
         this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT',
@@ -1800,6 +1802,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         const isBankRecord = d.COAMasterSid === formValue.BankCOA;
         return {
           ...d,
+          // toNumber — detail amounts are stored as masked "20,000.00" strings; strip separators so
+          // the payload sends numbers, not NaN/null.
+          Amount: toNumber(d.Amount),
+          LocalAmount: toNumber(d.LocalAmount),
+          PartyAmount: toNumber(d.PartyAmount),
           Sno : index + 1,
           Narration : d.Narration || formValue.Narration,
         };
@@ -3851,8 +3858,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const row = this.voucherMatchings.at(index) as FormGroup;
 
     const amount = Number(row.get('matchCurrAmt')?.value);
-    const osCurrAmt = Number(row.get('osCurrAmt')?.value || 0);
-    const osLocalAmt = Number(row.get('osLocalAmt')?.value || 0);
+    const osCurrAmt = toNumber(row.get('osCurrAmt')?.value || 0);
+    const osLocalAmt = toNumber(row.get('osLocalAmt')?.value || 0);
 
     // If outstanding has a currency amount but zero local amount, keep local at 0
     if (osCurrAmt !== 0 && osLocalAmt === 0) {
@@ -4003,9 +4010,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const totalMatchCurrAmt = this.activeTabMatchings.reduce(
       (total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
-          return total + Number(control.get('matchCurrAmt')?.value || 0);
+          return total + toNumber(control.get('matchCurrAmt')?.value || 0);
         }
-        return total - Number(control.get('matchCurrAmt')?.value || 0);
+        return total - toNumber(control.get('matchCurrAmt')?.value || 0);
       },
       0
     );
@@ -4016,7 +4023,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const partyDetail = this.detailItems
       .getRawValue()
       .find((d) => d.LedgerMasterSid === this.r['PartyMasterSid']?.value);
-    const amount = Number(partyDetail?.PartyAmount || 0);
+    const amount = toNumber(partyDetail?.PartyAmount || 0);
     return amount.toFixed(2);
   }
 
@@ -4030,9 +4037,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
-          return total + Number(control.get('matchLocalAmt')?.value || 0);
+          return total + toNumber(control.get('matchLocalAmt')?.value || 0);
         }
-        return total - Number(control.get('matchLocalAmt')?.value || 0);
+        return total - toNumber(control.get('matchLocalAmt')?.value || 0);
       }, 0)
       .toFixed(2);
   }
@@ -4041,9 +4048,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.sourceMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
-          return total + Number(control.get('matchPartyAmt')?.value || 0);
+          return total + toNumber(control.get('matchPartyAmt')?.value || 0);
         }
-        return total - Number(control.get('matchPartyAmt')?.value || 0);
+        return total - toNumber(control.get('matchPartyAmt')?.value || 0);
       }, 0)
       .toFixed(2);
   }
@@ -4053,9 +4060,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.activeTabMatchings
       .reduce((total, control) => {
         if (control.get('drCr')?.value === 'Cr') {
-          return total + Number(control.get('matchPartyAmt')?.value || 0);
+          return total + toNumber(control.get('matchPartyAmt')?.value || 0);
         }
-        return total - Number(control.get('matchPartyAmt')?.value || 0);
+        return total - toNumber(control.get('matchPartyAmt')?.value || 0);
       }, 0)
       .toFixed(2);
   }
@@ -4534,7 +4541,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.voucherMatchings
           .getRawValue()
           .filter((vm) => vm.allotmentBranchSid === sid)
-          .reduce((s, vm) => s + (Number(vm.matchPartyAmt) || 0), 0),
+          .reduce((s, vm) => s + (toNumber(vm.matchPartyAmt) || 0), 0),
         cur,
       ),
     );
@@ -4746,7 +4753,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const amount = Number(row.get('Amount')?.value) || 0;
       const matched = rows
         .filter((vm) => vm.allotmentBranchSid === sid)
-        .reduce((s, vm) => s + (Number(vm.matchPartyAmt) || 0), 0);
+        .reduce((s, vm) => s + (toNumber(vm.matchPartyAmt) || 0), 0);
       const matchedRounded = Math.round(matched * 100) / 100;
       row.get('MatchedAmount')?.setValue(matchedRounded, { emitEvent: false });
       row.get('AdvanceAmount')?.setValue(Math.max(Math.round((amount - matchedRounded) * 100) / 100, 0), { emitEvent: false });
@@ -6122,8 +6129,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     const originalCurr = row.get('curr')?.value;
-    const osCurrAmt = Number(row.get('osCurrAmt')?.value);
-    const osLocalAmt = Number(row.get('osLocalAmt')?.value);
+    const osCurrAmt = toNumber(row.get('osCurrAmt')?.value);
+    const osLocalAmt = toNumber(row.get('osLocalAmt')?.value);
     const exRate = Number(row.get('exRate')?.value);
 
     // FIXED HERE
@@ -6151,7 +6158,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * based on total matched currency/local amounts.
    */
   updateDetailAmountsFromMatching() {
-    const totalMatchCurrAmt = Number(this.getTotalMatchPartyAmt());
+    const totalMatchCurrAmt = toNumber(this.getTotalMatchPartyAmt());
     const partyRow = this.detailItems.at(0) as FormGroup;
     if (partyRow) {
       partyRow.patchValue({ Amount: totalMatchCurrAmt });
@@ -6217,8 +6224,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   validateMatchLimits(index: number) {
     const row = this.voucherMatchings.at(index) as FormGroup;
 
-    const osCurr = Number(row.get('osCurrAmt')?.value || 0);
-    const osLocal = Number(row.get('osLocalAmt')?.value || 0);
+    const osCurr = toNumber(row.get('osCurrAmt')?.value || 0);
+    const osLocal = toNumber(row.get('osLocalAmt')?.value || 0);
 
     const currAmt = Number(row.get('matchCurrAmt')?.value || 0);
     const localAmt = Number(row.get('matchLocalAmt')?.value || 0);
