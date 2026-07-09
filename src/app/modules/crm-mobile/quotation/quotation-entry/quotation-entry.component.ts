@@ -804,6 +804,7 @@ dataFromEnqPage:any;
         BookingHeaderSid: route?.BookingHeaderSid || null,
         BookingNo: route?.BookingNo || route?.bookingHeader?.BookingNo || '',
         Qty: primaryCargo?.Qty || route?.Qty || 1,
+        WeightUnitSid: primaryCargo?.WeightUnitSid || route?.WeightUnitSid || null,
         GrossWeight: primaryCargo?.GrossWeight || route?.GrossWeight || 0,
         NetWeight: primaryCargo?.NetWeight || route?.NetWeight || 0,
         Volume: primaryCargo?.Volume || route?.Volume || 1,
@@ -7330,7 +7331,9 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         chargeUnitMaster: this.chargeUnitMaster,
         departments: this.departments,
         ports: this.ports,
-        containerTypeList: this.containerTypeList
+        containerTypeList: this.containerTypeList,
+        weightUnitList: this.weightUnitList,
+        measurementUnitList: this.measurementUnitList
       },
       {
         printSettings: this.companySettings.getPrintSettings()
@@ -7504,6 +7507,23 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     }
   }
 
+  getUom(route: any): string {
+    const weightUnitSid = this.getRouteCargoGroups(route)[0]?.WeightUnitSid ?? route?.WeightUnitSid;
+    if (!weightUnitSid || this.weightUnitList.length === 0) {
+      return '';
+    }
+    return this.weightUnitList.find(uom => uom.UOMMasterSid === weightUnitSid)?.UOMCode || '';
+  }
+
+  getDimUom(route: any): string {
+    const productUnitSid = this.getRouteProducts(route)[0]?.ProductUnit;
+    if (!productUnitSid || this.measurementUnitList.length === 0) {
+      return '';
+    }
+    const unit = this.measurementUnitList.find(uom => uom.UOMMasterSid === productUnitSid);
+    return unit?.UOMCode || unit?.UOMName || '';
+  }
+
   getCurrencyCodeById(CurrencyMasterSid) {
     if(!CurrencyMasterSid || this.currencyMaster.length === 0){
       return '';
@@ -7512,15 +7532,76 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     }
   }
 
-  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string }> {
+  getRouteGrossWeight(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.GrossWeight || 0), 0);
+  }
+
+  getRouteNetWeight(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.NetWeight || 0), 0);
+  }
+
+  getRouteCBM(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.Volume || 0), 0);
+  }
+
+  getNofoPackegas(route: any): number {
+    // Cargo-level PackageQty is often 0; the real count is carried on each product.
+    const productTotal = this.getRouteProducts(route)
+      .reduce((sum: number, product: any) => sum + (Number(product?.ExternalQty) || 0), 0);
+    if (productTotal) {
+      return productTotal;
+    }
+    return this.getRouteCargoGroups(route)
+      .reduce((sum: number, cargo: any) => sum + (Number(cargo?.PackageQty) || 0), 0);
+  }
+
+  getRouteChargeableWeight(route: any): number {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce((sum: number, cargo: any) => sum + Number(cargo?.ChargeableWeight || 0), 0);
+  }
+
+  private getRouteProducts(route: any): any[] {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups.reduce(
+      (products: any[], cargo: any) => products.concat(this.getQuotationCargoProducts(cargo)),
+      []
+    );
+  }
+
+  getProductLenght(route: any): number {
+    return this.getRouteProducts(route).reduce((sum: number, product: any) => sum + Number(product?.Length || 0), 0);
+  }
+
+  getProductWidth(route: any): number {
+    return this.getRouteProducts(route).reduce((sum: number, product: any) => sum + Number(product?.Width || 0), 0);
+  }
+
+  getProductHeight(route: any): number {
+    return this.getRouteProducts(route).reduce((sum: number, product: any) => sum + Number(product?.Height || 0), 0);
+  }
+
+  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string; grossWeight: number; netWeight: number; cbm: number }> {
     const cargoGroups = this.getRouteCargoGroups(route);
     return cargoGroups
       .map((cargo: any) => ({
         cargoType: cargo?.CargoType || '',
         containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
-        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? ''
+        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? '',
+        grossWeight: Number(cargo?.GrossWeight) || 0,
+        netWeight: Number(cargo?.NetWeight) || 0,
+        cbm: Number(cargo?.Volume) || 0
       }))
       .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
+  }
+
+  getCarrierTotalLocalAmount(carrier: any): number {
+    return (carrier?.quoteCharge || []).reduce(
+      (sum: number, charge: any) => sum + (Number(charge?.RevenueLocalAmount) || 0),
+      0
+    );
   }
 
   getContainerTypeDisplay(containerType: any): string {

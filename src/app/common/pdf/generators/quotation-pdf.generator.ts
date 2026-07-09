@@ -37,7 +37,7 @@ export function generateQuotationDocument(
     ],
     footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
     defaultStyle: {
-      fontSize: 10,
+      fontSize: 8,
       color: '#000'
     }
   };
@@ -160,7 +160,7 @@ function buildTitle(title: string): any {
   return {
     table: {
       widths: ['*'],
-      body: [[{ text: title, bold: true, alignment: 'center', fontSize: 15, margin: [0, 2, 0, 2] }]]
+      body: [[{ text: title, bold: true, alignment: 'center', fontSize: 10, margin: [0, 2, 0, 2] }]]
     },
     layout: {
       hLineWidth: (i: number) => (i === 0 ? 0.5 : 0),
@@ -218,8 +218,8 @@ function buildGreeting(): any {
       {
         text: 'Thank you very much for the opportunity to quote for your esteemed organization.\nWe are pleased to submit our best rates as outlined below.',
         bold: false,
-        fontSize: 9,
-        margin: [20, 0, 0, 6]
+        fontSize: 7,
+        margin: [10, 0, 0, 6]
       }
     ]
   };
@@ -241,8 +241,8 @@ function buildRouteSections(data: QuotationPdfData): any[] {
       table: {
         widths: ['20%', '80%'],
         body: [[
-          { text: deptName, bold: false, margin: [10, 1, 0, 2] },
-          { text: routeLabel, bold: false, alignment: 'right', margin: [0, 1, 14, 2] }
+          { text: deptName, bold: true, margin: [7, 1, 0, 2] },
+          { text: routeLabel, bold: true, alignment: 'right', margin: [0, 1, 14, 2] }
         ]]
       },
       layout: {
@@ -258,17 +258,12 @@ function buildRouteSections(data: QuotationPdfData): any[] {
       const showCargoTable = shouldShowRouteCargoTable(route, data);
       const showCargoSummary = !shouldShowContainerQuantity(route, data);
 
-      blocks.push({
-        columns: [
-          { text: [{ text: 'Carrier : ', bold: false }, carrier?.carrierName || ''], width: '25%', margin: [10, 2, 0, 2] },
-          showCargoSummary
-            ? { text: [{ text: 'Cargo Type : ', bold: false }, getRoutePrintCargoTypeSummary(route, data)], width: '25%', margin: [0, 2, 0, 2] }
-            : { text: '', width: '25%', margin: [0, 2, 0, 2] },
-          { text: [{ text: 'Valid From : ', bold: false }, formatDate(route.effDate)], width: '25%', margin: [0, 2, 0, 2] },
-          { text: [{ text: 'Valid To : ', bold: false }, formatDate(route.expDate)], width: '25%', alignment: 'right', margin: [0, 2, 10, 2] }
-        ],
-        columnGap: 0
-      });
+      blocks.push(buildRouteInfo(route, carrier));
+
+      // FCL shows the container table instead of weight/volume measurements.
+      if (showCargoSummary) {
+        blocks.push(buildRouteMeasurements(route, data));
+      }
 
       if (showCargoTable) {
         blocks.push(buildRouteCargoTable(route, data));
@@ -286,18 +281,24 @@ function buildRouteSections(data: QuotationPdfData): any[] {
 function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
   const showQuantity = shouldShowContainerQuantity(route, data);
   const cargoDetails = getRoutePrintCargoDetails(route, data);
-  const widths = showQuantity ? ['33%', '33%', '34%'] : ['50%', '50%'];
+  const widths = showQuantity
+    ? ['18%', '20%', '18%', '18%', '18%']
+    : ['25%', '25%', '17%', '17%', '16%'];
   const body: any[] = [[
-    { text: 'Cargo Type', bold: false, alignment: 'left' },
-    { text: 'Container Type', bold: false, alignment: 'left' },
-    ...(showQuantity ? [{ text: 'No of Container', bold: false, alignment: 'center' }] : [])
+    { text: 'Cargo Type', bold: true, alignment: 'center' },
+    { text: 'Container Type', bold: true, alignment: 'center' },
+    ...(showQuantity ? [{ text: 'No of Container', bold: true, alignment: 'center' }] : []),
+    { text: 'Gross Wt', bold: true, alignment: 'center' },
+    { text: 'Net Wt', bold: true, alignment: 'center' },
   ]];
 
   cargoDetails.forEach((cargo: any) => {
     body.push([
       { text: cargo?.cargoType || '-', alignment: 'left' },
       { text: cargo?.containerType || '-', alignment: 'left' },
-      ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'right' }] : [])
+      ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'right' }] : []),
+      { text: formatNumeric(cargo?.grossWeight, 3), alignment: 'right' },
+      { text: formatNumeric(cargo?.netWeight, 3), alignment: 'right' },
     ]);
   });
 
@@ -317,33 +318,33 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
       paddingTop: () => 2,
       paddingBottom: () => 2
     },
-    margin: [55, 8, 55, 4]
+    margin: [40, 0, 40, 4]
   };
 }
 
 function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
   const header: any[] = [
-    { text: 'Charge', bold: false, alignment: 'center' },
-    { text: 'Unit', bold: false, alignment: 'center' },
-    { text: 'Qty.', bold: false, alignment: 'center' },
-    { text: 'Curr.', bold: false, alignment: 'center' }
+    { text: 'Charge', bold: true, alignment: 'center' },
+    { text: 'Unit', bold: true, alignment: 'center' },
+    { text: 'Qty.', bold: true, alignment: 'center' },
+    { text: 'Curr.', bold: true, alignment: 'center' }
   ];
   if (showAgreedRate) {
-    header.push({ text: 'Ex Rate', bold: false, alignment: 'center' });
+    header.push({ text: 'Ex Rate', bold: true, alignment: 'center' });
   }
-  header.push({ text: 'Rate', bold: false, alignment: 'center' });
-  header.push({ text: 'Amt', bold: false, alignment: 'center' });
+  header.push({ text: 'Rate', bold: true, alignment: 'center' });
+  header.push({ text: 'Amt', bold: true, alignment: 'center' });
   if (showAgreedRate) {
-    header.push({ text: 'Local Amt', bold: false, alignment: 'center' });
+    header.push({ text: 'Local Amt', bold: true, alignment: 'center' });
   }
 
   const body: any[] = [header];
   (charges || []).forEach((charge: any) => {
     const row: any[] = [
       { text: charge?.chargeName || '', alignment: 'left' },
-      { text: charge?.unit || '', alignment: 'left' },
+      { text: charge?.unit || '', alignment: 'center' },
       { text: formatNumeric(charge?.qty), alignment: 'right' },
-      { text: charge?.currency || '', alignment: 'left' }
+      { text: charge?.currency || '', alignment: 'center' }
     ];
     if (showAgreedRate) {
       row.push({ text: formatNumeric(charge?.exchangeRate, 3), alignment: 'right' });
@@ -355,6 +356,18 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
     }
     body.push(row);
   });
+
+  if (showAgreedRate) {
+    const totalLocalAmount = (charges || []).reduce(
+      (sum: number, charge: any) => sum + (Number(charge?.localAmount) || 0),
+      0
+    );
+    body.push([
+      { text: 'Total', bold: true, alignment: 'right', colSpan: 7 },
+      {}, {}, {}, {}, {}, {},
+      { text: formatNumeric(totalLocalAmount, 3), bold: true, alignment: 'right' }
+    ]);
+  }
 
   const widths: any[] = showAgreedRate
     ? ['34%', '10%', '8%', '8%', '10%', '10%', '10%', '10%']
@@ -402,8 +415,8 @@ function buildTermsSection(data: QuotationPdfData): any {
 
   return {
     stack: [
-      { text: 'Terms and Conditions', bold: false, fontSize: 12, margin: [10, 10, 0, 2] },
-      { ul: termValues, fontSize: 9, margin: [12, 0, 0, 10], lineHeight: 1.4 }
+      { text: 'Terms and Conditions', bold: true, fontSize: 8, margin: [10, 10, 0, 2] },
+      { ul: termValues, fontSize: 7, margin: [12, 0, 0, 10], lineHeight: 1.4 }
     ]
   };
 }
@@ -411,7 +424,7 @@ function buildTermsSection(data: QuotationPdfData): any {
 function buildClosingMessage(): any {
   return {
     text: 'We kindly look forward to your valuable support regarding the above shipment.',
-    bold: false,
+    bold: true,
     margin: [10, 0, 0, 10]
   };
 }
@@ -419,10 +432,10 @@ function buildClosingMessage(): any {
 function buildSignature(data: QuotationPdfData): any {
   return {
     stack: [
-      { text: 'Best Regards', bold: false, margin: [10, 0, 0, 4] },
+      { text: 'Best Regards', bold: true, margin: [10, 0, 0, 4] },
       {
         columns: [
-          { text: 'Name', bold: false, width: 70 },
+          { text: 'Name', bold: true, width: 70 },
           { text: ':', width: 10 },
           { text: data.userData?.userName || '', width: '*' }
         ],
@@ -430,7 +443,7 @@ function buildSignature(data: QuotationPdfData): any {
       },
       {
         columns: [
-          { text: 'Company', bold: false, width: 70 },
+          { text: 'Company', bold: true, width: 70 },
           { text: ':', width: 10 },
           { text: data.company?.companyName || 'Company Name', width: '*' }
         ],
@@ -467,6 +480,101 @@ function getRouteCargoGroups(route: any): any[] {
   return route.cargo ? [route.cargo] : [];
 }
 
+function resolveUomCode(list: any[] | undefined, uomMasterSid: any): string {
+  if (!uomMasterSid || !list?.length) return '';
+  const uom = list.find((item: any) => item?.UOMMasterSid === uomMasterSid);
+  return uom?.UOMCode || uom?.UOMName || '';
+}
+
+function sumCargoField(route: any, field: string): number {
+  return getRouteCargoGroups(route).reduce((sum: number, cargo: any) => sum + (Number(cargo?.[field]) || 0), 0);
+}
+
+function sumProductField(route: any, field: string): number {
+  return (route?.products || []).reduce((sum: number, product: any) => sum + (Number(product?.[field]) || 0), 0);
+}
+
+function isAirSegment(route: any): boolean {
+  const segment = (route?.segmentType || '').toString().toUpperCase();
+  if (segment) return segment === 'AIR';
+  return (route?.departmentName || '').toLowerCase().includes('air');
+}
+
+function getRoutePackageCount(route: any): number {
+  // Cargo-level PackageQty is often 0; the real count is carried on each product.
+  const productTotal = sumProductField(route, 'packageQty');
+  return productTotal || sumCargoField(route, 'noOfPackage');
+}
+
+function isLclSegment(route: any): boolean {
+  const segment = (route?.segmentType || '').toString().toUpperCase();
+  if (segment) return segment === 'LCL';
+  return (route?.departmentName || '').toLowerCase().includes('lcl');
+}
+
+function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>): any {
+  const rows: any[] = [];
+  for (let i = 0; i < cells.length; i += 3) {
+    const group = cells.slice(i, i + 3);
+    rows.push({
+      columns: [0, 1, 2].map((offset: number) => {
+        const cell = group[offset];
+        if (!cell) return { text: '', width: '*' };
+        return {
+          columns: [
+            { text: cell.label, bold: true, width: 45 },
+            { text: `: ${cell.value}`, width: '*' }
+          ],
+          width: '*'
+        };
+      }),
+      columnGap: 0,
+      margin: [10, 1, 10, 1]
+    });
+  }
+
+  return { stack: rows, margin: [0, 0, 0, 2] };
+}
+
+function buildRouteInfo(route: any, carrier: any): any {
+  return buildLabeledGrid([
+    { label: 'Carrier', value: carrier?.carrierName || '' },
+    { label: 'Tr. Days', value: carrier?.transitTime || '' },
+    { label: 'Valid', value: `${formatDate(route.effDate)} - ${formatDate(route.expDate)}` }
+  ]);
+}
+
+function buildRouteMeasurements(route: any, data: QuotationPdfData): any {
+  const weightUom = route?.weightUom ? ` ${route.weightUom}` : '';
+
+  const cells: Array<{ label: string; value: string } | null> = [
+    { label: 'Cargo Type', value: getRoutePrintCargoTypeSummary(route, data) },
+    { label: 'Gross Wt', value: `${formatNumeric(sumCargoField(route, 'grossWeight'), 3)}${weightUom}` },
+    isAirSegment(route)
+      ? { label: 'Chrg Wt', value: `${formatNumeric(sumCargoField(route, 'chargeableWeight'), 3)}${weightUom}` }
+      : { label: 'Net Wt', value: `${formatNumeric(sumCargoField(route, 'netWeight'), 3)}${weightUom}` },
+    // CBM only applies to LCL; keep the slot so Dims starts on the next row.
+    isLclSegment(route)
+      ? { label: 'CBM', value: formatNumeric(sumCargoField(route, 'volume'), 3) }
+      : null
+  ];
+
+  const length = sumProductField(route, 'length');
+  const width = sumProductField(route, 'width');
+  const height = sumProductField(route, 'height');
+  if (length || width || height) {
+    const dims = `${length || '-'} × ${width || '-'} × ${height || '-'}`;
+    cells.push({ label: 'Dims', value: `${dims}${route?.dimUom ? ` ${route.dimUom}` : ''}` });
+  }
+
+  const packageCount = getRoutePackageCount(route);
+  if (packageCount) {
+    cells.push({ label: 'No of Pkgs', value: formatNumeric(packageCount) });
+  }
+
+  return buildLabeledGrid(cells);
+}
+
 function getContainerTypeDisplay(containerType: any, data: QuotationPdfData): string {
   if (containerType === null || containerType === undefined || containerType === '') {
     return '';
@@ -486,12 +594,15 @@ function getContainerTypeDisplay(containerType: any, data: QuotationPdfData): st
   return matchedType.ContainerName || matchedType.ContainerTypeName || matchedType.ContainerCode || String(containerType);
 }
 
-function getRoutePrintCargoDetails(route: any, data: QuotationPdfData): Array<{ cargoType: string; containerType: string; quantity: number | string }> {
+function getRoutePrintCargoDetails(route: any, data: QuotationPdfData): Array<{ cargoType: string; containerType: string; quantity: number | string; grossWeight: number; netWeight: number; cbm: number }> {
   return getRouteCargoGroups(route)
     .map((cargo: any) => ({
       cargoType: cargo?.cargoType || cargo?.CargoType || '',
       containerType: getContainerTypeDisplay(cargo?.containerType ?? cargo?.ContainerType, data),
-      quantity: cargo?.qty ?? cargo?.Qty ?? cargo?.noOfContainers ?? cargo?.NoofContainers ?? ''
+      quantity: cargo?.qty ?? cargo?.Qty ?? cargo?.noOfContainers ?? cargo?.NoofContainers ?? '',
+      grossWeight: Number(cargo?.grossWeight) || 0,
+      netWeight: Number(cargo?.netWeight) || 0,
+      cbm: Number(cargo?.volume) || 0
     }))
     .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
 }
@@ -525,6 +636,8 @@ export function transformQuotationApiData(
     departments?: any[];
     ports?: any[];
     containerTypeList?: any[];
+    weightUnitList?: any[];
+    measurementUnitList?: any[];
   },
   options?: {
     printSettings?: {
@@ -578,6 +691,7 @@ export function transformQuotationApiData(
     routes: routes.map((route: any) => ({
       departmentSid: route.DepartmentMasterSid,
       departmentName: route.departmentMaster?.departmentName || '',
+      segmentType: route.segmentType || '',
       polSid: route.POLSid,
       podSid: route.PODSid,
       fdpSid: route.FDPSid || route.FPODSid,
@@ -585,6 +699,7 @@ export function transformQuotationApiData(
       expDate: route.expdate || route.expDate,
       carriers: (route.quoteCarrier || []).map((carrier: any) => ({
         carrierName: carrier.CarrierName || '',
+        transitTime: carrier.TransitTime || '',
         charges: (carrier.quoteCharge || []).map((charge: any) => ({
           chargeName: charge.ChargeDisplayName || '',
           unit: (lookups?.chargeUnitMaster || []).find((u: any) => u.UOMMasterSid === charge.RevenueChargeUomSid)?.UOMCode || '',
@@ -599,8 +714,26 @@ export function transformQuotationApiData(
       cargo: (route.quoteCargo || []).map((cargo: any) => ({
         cargoType: cargo.CargoType || '',
         containerType: cargo.ContainerType,
-        noOfContainers: cargo.Qty ?? cargo.NoofContainers ?? 0
-      }))
+        noOfContainers: cargo.Qty ?? cargo.NoofContainers ?? 0,
+        grossWeight: Number(cargo.GrossWeight) || 0,
+        netWeight: Number(cargo.NetWeight) || 0,
+        volume: Number(cargo.Volume) || 0,
+        chargeableWeight: Number(cargo.ChargeableWeight) || 0,
+        noOfPackage: Number(cargo.PackageQty) || 0
+      })),
+      products: (route.quoteCargo || []).flatMap((cargo: any) =>
+        (cargo.quoteProduct || cargo.quoteProducts || cargo.products || []).map((product: any) => ({
+          length: Number(product.Length) || 0,
+          width: Number(product.Width) || 0,
+          height: Number(product.Height) || 0,
+          packageQty: Number(product.ExternalQty) || 0
+        }))
+      ),
+      weightUom: resolveUomCode(lookups?.weightUnitList, (route.quoteCargo || [])[0]?.WeightUnitSid),
+      dimUom: resolveUomCode(
+        lookups?.measurementUnitList,
+        ((route.quoteCargo || [])[0]?.quoteProduct || [])[0]?.ProductUnit
+      )
     })),
     terms: normalizedTerms.map((term: string) => ({
       content: term

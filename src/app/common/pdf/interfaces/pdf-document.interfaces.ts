@@ -45,6 +45,7 @@ export interface QuotationPdfData extends PdfDocumentBase {
 export interface QuotationRouteData {
   departmentSid?: number;
   departmentName?: string;
+  segmentType?: string;
   polSid?: number;
   podSid?: number;
   fdpSid?: number;
@@ -52,10 +53,14 @@ export interface QuotationRouteData {
   expDate?: Date | string;
   carriers: QuotationCarrierData[];
   cargo?: PdfCargoItem[];
+  products?: Array<{ length?: number; width?: number; height?: number; packageQty?: number }>;
+  weightUom?: string;
+  dimUom?: string;
 }
 
 export interface QuotationCarrierData {
   carrierName?: string;
+  transitTime?: string;
   charges: PdfChargeItem[];
 }
 
