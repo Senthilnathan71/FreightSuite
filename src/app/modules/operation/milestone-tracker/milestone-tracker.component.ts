@@ -14,6 +14,7 @@ import { FeatherModule } from 'angular-feather';
 import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { normalizeTimezoneOffset, getOffsetMinutes } from 'src/app/common/helper';
 import { OperationService } from '../operation.service';
 import {
   MilestoneTrackerService,
@@ -352,17 +353,25 @@ export class MilestoneTrackerComponent implements OnInit {
     return [vessel, voyage].filter(Boolean).join(' / ') || '—';
   }
 
-  /** Latest MilestoneDate among the achieved milestones, or null. */
+  /**
+   * Latest MilestoneDate among the achieved milestones, or null — in the same
+   * branch-local wall-clock frame the achieved chips are displayed in and the
+   * pending date-time picker works in. Auto-captured ACTION rows (a UTC instant)
+   * are shifted by the branch offset so the pending min-bound and sequence check
+   * line up with what the user sees.
+   */
   private latestAchievedDate(): Date | null {
     let latest: Date | null = null;
     for (const m of this.completed) {
       if (!m?.MilestoneDate) {
         continue;
       }
-      const d = new Date(m.MilestoneDate);
-      if (isNaN(d.getTime())) {
+      const parsed = new Date(m.MilestoneDate);
+      if (isNaN(parsed.getTime())) {
         continue;
       }
+      const shift = this.milestoneShiftMs(m.MilestoneDate, m.AutoCaptured);
+      const d = shift ? new Date(parsed.getTime() + shift) : parsed;
       if (!latest || d.getTime() > latest.getTime()) {
         latest = d;
       }
@@ -414,20 +423,54 @@ export class MilestoneTrackerComponent implements OnInit {
   }
 
   /**
-   * Format an achieved milestone's Date & Time for display. Milestone dates are
-   * stored UTC-naive (the picker stores the picked wall-clock as UTC), so read
-   * the UTC components to show exactly what was recorded — the global formatDate
-   * pipe would shift the time by the app/branch timezone. Returns "" when empty.
+   * Format an achieved milestone's Date & Time for display. Mirrors the House Job
+   * milestone tab's handling (see milestone.component.ts), because these achieved
+   * rows come from the same job-flow API and MilestoneDate is a naive `timestamp`
+   * with three meanings:
+   *  - Auto-captured ACTION (DB `now()`): a real UTC instant → shift by the CURRENT
+   *    BRANCH's offset so the chip reads branch-local, not UTC.
+   *  - Auto-captured DATE-FIELD (@db.Date → midnight): a naive calendar date → raw.
+   *  - Manual (date-time picker): the picked wall-clock stored UTC-naive → raw.
+   * All read via getUTC* getters so output is independent of the viewer's browser TZ.
+   * `autoCaptured` omitted ⇒ treated as manual (raw, no shift). Returns "" when empty.
    */
-  formatMilestoneDateTime(value: any): string {
+  formatMilestoneDateTime(value: any, autoCaptured?: any): string {
     if (!value) {
       return '';
     }
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
+    const parsed = new Date(value);
+    if (isNaN(parsed.getTime())) {
       return '';
     }
+    const shift = this.milestoneShiftMs(value, autoCaptured);
+    const date = shift ? new Date(parsed.getTime() + shift) : parsed;
     return this.formatDateTime(date);
+  }
+
+  /** Current branch's UTC offset in ms (company-config timezone); 0 when unknown. */
+  private branchOffsetMs(): number {
+    const tz = this.appSettingService.getCurrentBranchInfo()?.timeZone;
+    return getOffsetMinutes(normalizeTimezoneOffset(tz)) * 60 * 1000;
+  }
+
+  /**
+   * ms to add to a stored MilestoneDate to reach the branch-local wall clock. Non-zero
+   * ONLY for auto-captured ACTION rows (a now() UTC instant — AutoCaptured with a
+   * non-midnight UTC time); 0 for auto DATE-FIELD rows (@db.Date → midnight) and manual
+   * rows, which are already naive wall-clock.
+   */
+  private milestoneShiftMs(value: any, autoCaptured: any): number {
+    const isAuto = autoCaptured === true || String(autoCaptured || '').trim().toUpperCase() === 'Y';
+    if (!isAuto || !value) {
+      return 0;
+    }
+    const d = new Date(value);
+    if (isNaN(d.getTime())) {
+      return 0;
+    }
+    const isMidnightUtc =
+      d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0;
+    return isMidnightUtc ? 0 : this.branchOffsetMs();
   }
 
   /** Format a date as "06 Jul 2026" from its UTC components (date only, no time). */

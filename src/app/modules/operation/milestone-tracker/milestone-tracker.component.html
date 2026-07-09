@@ -228,7 +228,7 @@
             <div class="event-card">
               <div class="event-top">
                 <strong>{{ m.MilestoneName }}</strong>
-                <time>{{ formatMilestoneDateTime(m.MilestoneDate) }}</time>
+                <time>{{ formatMilestoneDateTime(m.MilestoneDate, m.AutoCaptured) }}</time>
               </div>
               <p *ngIf="m.Remarks">{{ m.Remarks }}</p>
               <p *ngIf="!m.Remarks">Milestone completed</p>

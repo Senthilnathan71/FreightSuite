@@ -36,6 +36,9 @@ export class TermsAndConditionsComponent implements OnInit {
   editIndex: number | null = null;
 editForm: FormGroup;
 
+  /** Terms.Terms is VarChar(1000) — longer text is split across multiple terms. */
+  private readonly MAX_TERM_LENGTH = 1000;
+
   constructor(
     private activeModal: NgbActiveModal,
     private fb: FormBuilder,
@@ -74,6 +77,42 @@ editForm: FormGroup;
     this.showEmptyTemplate = this.terms.length === 0 && !this.showAddRow;
   }
 
+  /**
+   * Breaks text into chunks of at most MAX_TERM_LENGTH characters, cutting at the
+   * last full stop inside the limit so each chunk stays a complete sentence. Falls
+   * back to the last space, then to a hard cut, when no full stop is available.
+   */
+  private splitTerm(text: string): string[] {
+    const chunks: string[] = [];
+    let remaining = (text ?? '').trim();
+
+    while (remaining.length > this.MAX_TERM_LENGTH) {
+      const window = remaining.slice(0, this.MAX_TERM_LENGTH);
+      const fullStop = window.lastIndexOf('.');
+      const space = window.lastIndexOf(' ');
+
+      let cutEnd: number;
+      if (fullStop > 0) {
+        cutEnd = fullStop + 1;
+      } else if (space > 0) {
+        cutEnd = space;
+      } else {
+        cutEnd = this.MAX_TERM_LENGTH;
+      }
+
+      const chunk = remaining.slice(0, cutEnd).trim();
+      if (chunk) {
+        chunks.push(chunk);
+      }
+      remaining = remaining.slice(cutEnd).trim();
+    }
+
+    if (remaining) {
+      chunks.push(remaining);
+    }
+    return chunks;
+  }
+
   async addNewTerm() {
     if (this.addForm.invalid) {
       this.addForm.markAllAsTouched();
@@ -85,33 +124,57 @@ editForm: FormGroup;
     let currentCompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let currentBranchMasterSid = this.currentBranch?.BranchMasterSid;
     const formValue = this.addForm.value;
-    console.log(formValue);
+
+    const chunks = this.splitTerm(formValue.newTerm);
+    if (!chunks.length) {
+      this.appSettingService.showWarning('Please fill all the required fields');
+      return;
+    }
+
     const payload = {
       CompanyMasterSid : currentCompanyMasterSid,
       BranchMasterSid : currentBranchMasterSid,
       MenuMasterSid: this.MenuMasterSid,
       createdBy: currentUserEmail,
-      TandC: formValue.newTerm,
       DocumentSid: this.DocumentSid,
     };
 
+    const created: any[] = [];
     try {
-      const resp: any = await this.masterService.createTandCTransaction(payload).toPromise();
-      if (resp.status) {
-        this.appSettingService.showSuccess('New Term is successfully created');
-        this.termsUpdated.emit();
-        this.terms.push(
-          {
-            TandC: this.addForm.get('newTerm').value,
-          }
-        )
-        this.showAddRow = !this.showAddRow;
-        this.addForm.reset({ newTerm: '', IsDefaut: false });
-      } else {
-        this.appSettingService.showError('Error Creating New Terms');
+      for (const chunk of chunks) {
+        const resp: any = await this.masterService
+          .createTandCTransaction({ ...payload, TandC: chunk })
+          .toPromise();
+
+        if (!resp?.status) {
+          throw new Error(resp?.message || 'Error Creating New Terms');
+        }
+
+        created.push({
+          TandCTransactionSid: resp?.data?.TandCTransactionSid,
+          TandC: chunk,
+          Terms: chunk,
+          DocumentSid: this.DocumentSid
+        });
       }
+
+      this.appSettingService.showSuccess(
+        created.length > 1
+          ? `Term exceeded ${this.MAX_TERM_LENGTH} characters and was saved as ${created.length} terms`
+          : 'New Term is successfully created'
+      );
+      this.termsUpdated.emit();
+      this.terms.push(...created);
+      this.showAddRow = false;
+      this.addForm.reset({ newTerm: '', IsDefaut: false });
+      this.showEmptyTemplate = this.terms.length === 0 && !this.showAddRow;
     } catch (error) {
       console.error('Error Creating New Terms', error);
+      // Rows saved before the failure stay in the list so they aren't silently lost.
+      if (created.length) {
+        this.termsUpdated.emit();
+        this.terms.push(...created);
+      }
       this.appSettingService.showError('Error Creating New Terms');
     }
   }
@@ -260,7 +323,7 @@ cancelEdit() {
   this.editForm.reset();
 }
 
-updateTerm(item: any, index: number) {
+async updateTerm(item: any, index: number) {
 
   if (this.editForm.invalid) {
     this.editForm.markAllAsTouched();
@@ -269,34 +332,75 @@ updateTerm(item: any, index: number) {
 
   const formValue = this.editForm.value;
 
+  const chunks = this.splitTerm(formValue.TandC);
+  if (!chunks.length) {
+    this.editForm.markAllAsTouched();
+    return;
+  }
+
+  const [firstChunk, ...overflowChunks] = chunks;
+
   const payload = {
     TandCTransactionSid: item.TandCTransactionSid,
-    Terms: formValue.TandC,
+    Terms: firstChunk,
     DocumentSid: this.DocumentSid
   };
 
-  this.masterService.updateTerms(item.TandCTransactionSid, payload).subscribe(
-    (resp: any) => {
+  try {
+    const resp: any = await this.masterService
+      .updateTerms(item.TandCTransactionSid, payload)
+      .toPromise();
 
-      if (resp.status) {
+    if (!resp?.status) {
+      throw new Error(resp?.message || 'Error updating term');
+    }
 
-        this.appSettingService.showSuccess('Term updated successfully');
+    this.terms[index].TandC = firstChunk;
+    this.terms[index].Terms = firstChunk;
+    this.terms[index].IsDefaut = formValue.IsDefaut ? 'S' : 'N';
 
-        this.terms[index].TandC = formValue.TandC;
-this.terms[index].Terms = formValue.TandC;
-this.terms[index].IsDefaut = formValue.IsDefaut ? 'S' : 'N';
+    // Anything past the column limit becomes new terms right after this one.
+    const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+    const basePayload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid,
+      createdBy,
+      DocumentSid: this.DocumentSid
+    };
 
-        this.cancelEdit();
+    let insertAt = index;
+    for (const chunk of overflowChunks) {
+      const createResp: any = await this.masterService
+        .createTandCTransaction({ ...basePayload, TandC: chunk })
+        .toPromise();
 
-      } else {
-        this.appSettingService.showError('Error updating term');
+      if (!createResp?.status) {
+        throw new Error(createResp?.message || 'Error updating term');
       }
 
-    },
-    (error) => {
-      console.error(error);
-      this.appSettingService.showError('Error updating term');
+      this.terms.splice(++insertAt, 0, {
+        TandCTransactionSid: createResp?.data?.TandCTransactionSid,
+        TandC: chunk,
+        Terms: chunk,
+        DocumentSid: this.DocumentSid
+      });
     }
-  );
+
+    if (overflowChunks.length) {
+      this.termsUpdated.emit();
+      this.appSettingService.showSuccess(
+        `Term exceeded ${this.MAX_TERM_LENGTH} characters and was split into ${chunks.length} terms`
+      );
+    } else {
+      this.appSettingService.showSuccess('Term updated successfully');
+    }
+
+    this.cancelEdit();
+
+  } catch (error) {
+    console.error(error);
+    this.appSettingService.showError('Error updating term');
+  }
 }
 }

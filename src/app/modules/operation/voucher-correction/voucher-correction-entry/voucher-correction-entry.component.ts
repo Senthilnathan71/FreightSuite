@@ -124,6 +124,9 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
   profitCenterList: any[] = [];
   isSaving: boolean = false;
   isDirty: boolean = false;
+  // The set of detail Sno values as loaded from the server. Editing Sno is allowed
+  // only to REARRANGE rows, so on save the edited Snos must remain exactly this set.
+  private originalSnos: number[] = [];
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
   private isFormChangeSubscribed = false;
@@ -593,6 +596,11 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
     );
     const detailsFromResp = data.VoucherDetail || [];
 
+    // Snapshot the original Sno set so a save can only rearrange them, never add/drop one.
+    this.originalSnos = detailsFromResp
+      .map((det: any) => Number(det.Sno))
+      .filter((n: number) => Number.isFinite(n));
+
     detailsFromResp.forEach((det: any) => {
 
       const group = this.createDetailGroup({
@@ -652,6 +660,10 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
   createDetailGroup(data?: any): FormGroup {
     const group = this.fb.group({
       VoucherDetailSid: [{value:data?.VoucherDetailSid || null, disabled:true}],
+      // Sno stays ENABLED (every other detail control is disabled) so it can be edited
+      // for rearrangement only — validateSnoRearrangement() enforces the edited values
+      // stay a permutation of the originals (no added / missing / duplicate Sno).
+      Sno: [data?.Sno ?? null],
       ChargeMasterSid: [{value:data?.ChargeMasterSid || null,disabled:true}],
       ChargeDescription: [data?.ChargeDescription || ''],
       HSSACMasterSid: [{value:data?.HSSACMasterSid || null,disabled: true}],
@@ -686,6 +698,38 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
       YearMasterSid: [{value:data?.YearMasterSid || null,disabled: true}],
     });
     return group;
+  }
+
+  /**
+   * Sno is editable ONLY to rearrange the detail rows: the edited Sno values must be a
+   * permutation of the ones loaded from the server — every original Sno present exactly
+   * once, with nothing new added or missing. Returns an error message when the edit
+   * breaks that rule, else null. (An empty original set — no details — skips the check.)
+   */
+  private validateSnoRearrangement(rows: any[]): string | null {
+    if (!this.originalSnos.length) {
+      return null;
+    }
+
+    const current = rows.map((r) => Number(r?.Sno));
+    if (current.some((s) => !Number.isInteger(s))) {
+      return 'Each row must have a valid whole-number Sno.';
+    }
+
+    if (current.length !== this.originalSnos.length) {
+      return 'Serial numbers can only be rearranged — none may be added or removed.';
+    }
+
+    const original = [...this.originalSnos].sort((a, b) => a - b);
+    const sorted = [...current].sort((a, b) => a - b);
+    // A permutation, once sorted, is identical to the original set. Any duplicate, new,
+    // or missing Sno makes the sorted arrays diverge at some position.
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i] !== original[i]) {
+        return 'Serial numbers must stay the same set — you can only rearrange them (no new, missing, or duplicate Sno).';
+      }
+    }
+    return null;
   }
 
   onSubmit(resolve?: (value: boolean) => void) {
@@ -737,12 +781,21 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
       if (resolve) resolve(false);
       return;
     }
+
+    // Sno may only be REARRANGED — the edited set must match the originals exactly.
+    const snoError = this.validateSnoRearrangement(raw.voucherDetails || []);
+    if (snoError) {
+      this.appSettingService.showWarning(snoError);
+      if (resolve) resolve(false);
+      return;
+    }
     const YearMasterSid = Number(localStorage.getItem('current-year-id'));
 
     const voucherDetailArray = (raw.voucherDetails || []).map(
       (d: any, index: number) => {
         const detail = {
           VoucherDetailSid: d.VoucherDetailSid,
+          Sno: Number(d.Sno),
           ChargeDescription: d.ChargeDescription || '',
           Narration: d.Narration || '',
           Remarks: d.Remarks || '',

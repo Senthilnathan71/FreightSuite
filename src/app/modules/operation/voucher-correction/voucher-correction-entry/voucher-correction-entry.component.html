@@ -648,7 +648,13 @@
                                         <ng-container *ngFor="let row of details.controls; let i = index">
                                             <tr [formGroupName]="i">
                                                 @if(isInvoice || isVendorInvoice || isCreditNote || isVendorCreditNote){
-                                                    <td>{{ i + 1 }}</td>
+                                                    <td>
+                                                        <input type="number" min="1" step="1"
+                                                            formControlName="Sno"
+                                                            class="custom-input-field sm text-center highlight-field"
+                                                            style="width: 60px;"
+                                                            title="Edit to rearrange rows (Sno cannot be added or removed)" />
+                                                    </td>
                                                     @if ((isVendorInvoice || isVendorCreditNote) && !isJobBasedVendorInvoice) {
                                                     <td>
                                                         <ng-select formControlName="COAMasterSid" [items]="coaList" bindLabel="LedgerName" bindValue="COAMasterSid"
@@ -768,7 +774,13 @@
                                                         }}</span>
                                                 </td>
                                                 }@else {
-                                                    <td>{{ i + 1 }}</td>
+                                                    <td>
+                                                        <input type="number" min="1" step="1"
+                                                            formControlName="Sno"
+                                                            class="custom-input-field sm text-center highlight-field"
+                                                            style="width: 60px;"
+                                                            title="Edit to rearrange rows (Sno cannot be added or removed)" />
+                                                    </td>
                                                     <td>
                                                     <ng-select formControlName="COAMasterSid" [items]="coaList"
                                                         bindLabel="LedgerName" bindValue="COAMasterSid" appendTo="body"
