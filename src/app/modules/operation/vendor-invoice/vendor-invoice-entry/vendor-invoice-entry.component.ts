@@ -1461,6 +1461,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
       index++;
     }
 
+    // Heal stale zero amounts written by an earlier missing-exchange-rate bug so bad records
+    // self-correct on open (recalcRow forces rate 1 for a same-currency charge).
+    this.healZeroDerivedAmounts();
+
     // Populate others
     if (data.VoucherOthers && data.VoucherOthers.length > 0) {
       const others = data.VoucherOthers[0];
@@ -1749,6 +1753,88 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
   }
 
+  /** A computed amount is invalid when it is null / undefined / blank / NaN, or exactly zero.
+   *  Strict: NO tolerance — a tiny non-zero decimal (e.g. 0.0005) is treated as valid. */
+  private isBlankOrZero(v: any): boolean {
+    if (v === null || v === undefined || v === '') return true;
+    const n = parseFloat(v);
+    return isNaN(n) || n === 0;
+  }
+
+  /** True when the row has an Amount but its Local or Party amount is zero or null/blank.
+   *  Drives the red highlight on the row's ExchangeRate input. */
+  isRowAmountInvalid(index: number): boolean {
+    const row = this.details.at(index)?.getRawValue();
+    if (!row) return false;
+    const amount = parseFloat(row.Amount);
+    if (isNaN(amount) || amount <= 0) return false; // rule applies only when Amount > 0 (strict)
+    return this.isBlankOrZero(row.LocalAmount) || this.isBlankOrZero(row.PartyAmount);
+  }
+
+  /** Zero-local + zero-party guards, shared by save (onSubmit) and post (postVoucher).
+   *  Validates `rows` (defaults to the live form). A direct post writes the stored details, not the
+   *  form, so postVoucher passes the persisted rows. Returns true (and shows a toastr) on a violation. */
+  private hasDetailAmountViolation(
+    resolve?: (value: boolean) => void,
+    rows?: any[]
+  ): boolean {
+    const source = rows ?? this.details.getRawValue();
+
+    // Every charge row must have a non-zero (and non-null) local amount.
+    const zeroAmountRows: string[] = [];
+    source.forEach((row: any, i: number) => {
+      if (this.isBlankOrZero(row.LocalAmount)) {
+        zeroAmountRows.push(row.ChargeDescription || `Row ${i + 1}`);
+      }
+    });
+    if (zeroAmountRows.length > 0) {
+      this.appSettingService.showError(
+        `The following charge rows have a zero local amount:<br>${zeroAmountRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>All charges must have a non-zero local amount.`,
+        'Zero Amount — Validation Failed',
+        { closeButton: true, enableHtml: true }
+      );
+      if (resolve) resolve(false);
+      return true;
+    }
+
+    // When an amount is entered, the party amount must be greater than zero (strict, null-aware).
+    const zeroPartyRows: string[] = [];
+    source.forEach((row: any, i: number) => {
+      const amount = parseFloat(row.Amount);
+      if (isNaN(amount) || amount <= 0) return; // rule applies only when Amount > 0 (strict)
+      if (this.isBlankOrZero(row.PartyAmount)) {
+        zeroPartyRows.push(row.ChargeDescription || `Row ${i + 1}`);
+      }
+    });
+    if (zeroPartyRows.length > 0) {
+      this.appSettingService.showError(
+        `The following charge rows have an amount but a zero/blank party amount:<br>${zeroPartyRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>When an amount is entered, the party amount must be greater than zero. Please check the exchange rate.`,
+        'Zero Party Amount — Validation Failed',
+        { closeButton: true, enableHtml: true }
+      );
+      if (resolve) resolve(false);
+      return true;
+    }
+
+    return false;
+  }
+
+  /** Recompute any row whose derived Local/Party went stale (0/blank) while it still has an Amount.
+   *  recalcRow forces rate 1 for a same-currency charge, so a missing self-pair Exchange master row
+   *  (e.g. AED->AED) heals to the correct amount. Runs on edit-load AND at save, so the persisted
+   *  payload never carries a stale zero. Skipped for posted (immutable) vouchers. */
+  private healZeroDerivedAmounts(): void {
+    if (this.isPosted) return;
+    for (let i = 0; i < this.details.length; i++) {
+      const r = this.details.at(i).getRawValue();
+      const amt = parseFloat(r.Amount);
+      if (isNaN(amt) || amt <= 0) continue;
+      if (this.isBlankOrZero(r.LocalAmount) || this.isBlankOrZero(r.PartyAmount)) {
+        this.recalcRow(i);
+      }
+    }
+  }
+
   private recalcRow(index: number) {
     const row = this.details.at(index);
     if (!row) return;
@@ -1759,9 +1845,16 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const rate = toNumber(
       this.getFormattedAmount(rawValue.Rate || 0, rawValue.CurrencyMasterSid)
     );
-    const exRate = toNumber(
-      this.getFormattedExchangeRate(rawValue.ExchangeRate || 0, rawValue.CurrencyMasterSid)
-    );
+    // Same currency as company always uses rate 1 — a missing AED->AED Exchange master row must NOT
+    // collapse LocalAmount/PartyAmount to 0. Otherwise use the row's exchange rate.
+    const isSameAsCompany =
+      rawValue.CurrencyMasterSid != null &&
+      Number(rawValue.CurrencyMasterSid) === Number(this.currentCompany?.CurrencyMasterSid);
+    const exRate = isSameAsCompany
+      ? 1
+      : toNumber(
+          this.getFormattedExchangeRate(rawValue.ExchangeRate || 0, rawValue.CurrencyMasterSid)
+        );
 
     const amount = unit * rate;
     const taxableAmount = amount * exRate;
@@ -1986,6 +2079,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
     if (this.voucherActionGuard.block(blockedReason, resolve)) return;
 
+    // Refresh any row whose derived Local/Party went stale (0/blank) before validating and building
+    // the payload — a same-currency charge with no self-pair Exchange master row heals to rate 1.
+    this.healZeroDerivedAmounts();
+
     // Validate voucher date is within financial year
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
@@ -2032,23 +2129,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       }
     }
 
-    // --- Zero local amount guard ---
-    const zeroAmountRows: string[] = [];
-    for (let i = 0; i < this.details.length; i++) {
-      const row = this.details.at(i).getRawValue();
-      if (Math.abs(parseFloat(row.LocalAmount) || 0) < 0.001) {
-        zeroAmountRows.push(row.ChargeDescription || `Row ${i + 1}`);
-      }
-    }
-    if (zeroAmountRows.length > 0) {
-      this.appSettingService.showError(
-        `The following charge rows have a zero local amount:<br>${zeroAmountRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>All charges must have a non-zero local amount.`,
-        'Zero Amount — Validation Failed',
-        { closeButton: true, enableHtml: true }
-      );
-      if (resolve) resolve(false);
-      return;
-    }
+    // --- Zero/blank local & party amount guards (shared with post-time validation) ---
+    if (this.hasDetailAmountViolation(resolve)) return;
 
     // --- Zero net amount guard ---
     let totalCredit = 0;
@@ -2198,6 +2280,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       return;
     }
+
+    // Post-time amount validation — posting is immutable. A direct Post (notFromSubmit) writes the
+    // STORED details, so validate the persisted rows; the save-then-post path validates the just-saved
+    // form. Either way a zero/blank local or party amount blocks the post.
+    const rowsForPost = notFromSubmit ? (this.vendorInvoiceData?.VoucherDetail || []) : undefined;
+    if (this.hasDetailAmountViolation(undefined, rowsForPost)) return;
+
     try {
       this.isPosting = true;
       this.spinner.show();

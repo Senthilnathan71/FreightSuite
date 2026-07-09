@@ -679,6 +679,7 @@
                               <td class="text-center">
                                 <input type="text" class="custom-input-field sm text-end" formControlName="ExchangeRate"
                                   (input)="onDetailChange(i, 'ExchangeRate')" DecimalPrecision
+                                  [class.is-invalid]="isRowAmountInvalid(i)"
                                   [DecimalPrecisionBefore]="3" [DecimalPrecisionAfter]="
                                     getExchangeRateDecimalPlaces(
                                       row.get('CurrencyMasterSid')?.value

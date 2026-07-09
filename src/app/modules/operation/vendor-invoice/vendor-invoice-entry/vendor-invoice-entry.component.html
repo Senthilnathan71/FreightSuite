@@ -976,11 +976,12 @@
 
                         <!-- Exchange Rate -->
                         <td class="text-end">
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             class="custom-input-field sm text-end"
-                            formControlName="ExchangeRate" 
+                            formControlName="ExchangeRate"
                             (input)="onDetailChange(i, 'ExchangeRate')"
+                            [class.is-invalid]="isRowAmountInvalid(i)"
                             DecimalPrecision
                             [DecimalPrecisionBefore]="3"
                             [DecimalPrecisionAfter]="

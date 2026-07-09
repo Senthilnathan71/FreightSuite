@@ -1262,11 +1262,18 @@ createRateFormGroup(data?: any): FormGroup {
     const amount = Number(noOfUnit) * Number(perUnit);
 
     const CurrencyMasterSid = formGroup.get('CostCurrencyMasterSid')?.value;
-    const exchangeRate = formGroup.get('CostExchangeRate')?.getRawValue() || 1;
+    // Same currency as company must always use rate 1 (no AED->AED row in the Exchange master
+    // must NOT collapse LocalAmount to 0). Only fall back to the stored rate for other currencies.
+    const isSameAsCompany =
+      CurrencyMasterSid != null &&
+      Number(CurrencyMasterSid) === Number(this.currentCompany?.CurrencyMasterSid);
+    const exchangeRate = isSameAsCompany
+      ? 1
+      : (formGroup.get('CostExchangeRate')?.getRawValue() || 1);
 
     const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, CurrencyMasterSid);
     const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
-    
+
     let localAmount;
     if (this.formatCurrencyAmountBeforeConcludingLocal) {
       localAmount = Number(formattedAmount) * Number(formattedExchangeRate);
@@ -1313,7 +1320,14 @@ createRateFormGroup(data?: any): FormGroup {
     const amount = Number(noOfUnit) * Number(perUnit);
 
     const CurrencyMasterSid = formGroup.get('RevenueCurrencyMasterSid')?.value;
-    const exchangeRate = formGroup.get('RevenueExchangeRate')?.getRawValue() || 1;
+    // Same currency as company must always use rate 1 (no AED->AED row in the Exchange master
+    // must NOT collapse LocalAmount to 0). Only fall back to the stored rate for other currencies.
+    const isSameAsCompany =
+      CurrencyMasterSid != null &&
+      Number(CurrencyMasterSid) === Number(this.currentCompany?.CurrencyMasterSid);
+    const exchangeRate = isSameAsCompany
+      ? 1
+      : (formGroup.get('RevenueExchangeRate')?.getRawValue() || 1);
 
     const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, CurrencyMasterSid);
     const formattedAmount = this.getFormattedAmount(amount, CurrencyMasterSid);
@@ -3837,6 +3851,14 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
 
+  /** A computed amount is invalid when it is null / undefined / blank / NaN, or exactly zero.
+   *  Strict: NO tolerance — a tiny non-zero decimal (e.g. 0.0005) is treated as valid. */
+  private isBlankOrZero(v: any): boolean {
+    if (v === null || v === undefined || v === '') return true;
+    const n = parseFloat(v);
+    return isNaN(n) || n === 0;
+  }
+
   async proceedWithSelectedCharges() {
     if (this.selectedDetailCount === 0) {
       this.appSettingService.showWarning('Please select at least one charge');
@@ -3936,7 +3958,7 @@ createRateFormGroup(data?: any): FormGroup {
     for (let i = 0; i < this.details.length; i++) {
       if (!this.details.at(i).get('isSelected')?.value) continue;
       const row = this.details.at(i).getRawValue();
-      if (Math.abs(parseFloat(row.LocalAmount) || 0) < 0.001) {
+      if (this.isBlankOrZero(row.LocalAmount)) {
         const chargeSid = row.ChargeMasterSid;
         zeroAmountRows.push(this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || row.ChargeDescription || `Row ${i + 1}`);
       }
@@ -3945,6 +3967,27 @@ createRateFormGroup(data?: any): FormGroup {
       this.appSettingService.showError(
         `The following charge rows have a zero local amount:<br>${zeroAmountRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>All charges must have a non-zero local amount.`,
         'Zero Amount — Validation Failed',
+        { closeButton: true, enableHtml: true }
+      );
+      return;
+    }
+
+    // --- Zero/blank party amount guard (amount entered but party amount is zero or null) ---
+    const zeroPartyRows: string[] = [];
+    for (let i = 0; i < this.details.length; i++) {
+      if (!this.details.at(i).get('isSelected')?.value) continue;
+      const row = this.details.at(i).getRawValue();
+      const amount = parseFloat(row.Amount);
+      if (isNaN(amount) || amount <= 0) continue; // rule applies only when Amount > 0 (strict)
+      if (this.isBlankOrZero(row.PartyAmount)) {
+        const chargeSid = row.ChargeMasterSid;
+        zeroPartyRows.push(this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || row.ChargeDescription || `Row ${i + 1}`);
+      }
+    }
+    if (zeroPartyRows.length > 0) {
+      this.appSettingService.showError(
+        `The following charge rows have an amount but a zero/blank party amount:<br>${zeroPartyRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>When an amount is entered, the party amount must be greater than zero. Please check the exchange rate.`,
+        'Zero Party Amount — Validation Failed',
         { closeButton: true, enableHtml: true }
       );
       return;
