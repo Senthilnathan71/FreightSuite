@@ -486,6 +486,19 @@ function resolveUomCode(list: any[] | undefined, uomMasterSid: any): string {
   return uom?.UOMCode || uom?.UOMName || '';
 }
 
+// EnquiryCargo.WeightUnitSid stores an index into the enquiry's hardcoded M/CM/Inch list,
+// not a UOMMasterSid — so it maps through here rather than the UOM master.
+const DIMENSION_UNITS: ReadonlyArray<{ id: number; name: string }> = [
+  { id: 1, name: 'M' },
+  { id: 2, name: 'CM' },
+  { id: 3, name: 'Inch' }
+];
+
+function resolveDimensionUnit(unitSid: any): string {
+  const id = Number(unitSid);
+  return DIMENSION_UNITS.find(unit => unit.id === id)?.name || '';
+}
+
 function sumCargoField(route: any, field: string): number {
   return getRouteCargoGroups(route).reduce((sum: number, cargo: any) => sum + (Number(cargo?.[field]) || 0), 0);
 }
@@ -730,10 +743,7 @@ export function transformQuotationApiData(
         }))
       ),
       weightUom: resolveUomCode(lookups?.weightUnitList, (route.quoteCargo || [])[0]?.WeightUnitSid),
-      dimUom: resolveUomCode(
-        lookups?.measurementUnitList,
-        ((route.quoteCargo || [])[0]?.quoteProduct || [])[0]?.ProductUnit
-      )
+      dimUom: resolveDimensionUnit((route.quoteCargo || [])[0]?.WeightUnitSid)
     })),
     terms: normalizedTerms.map((term: string) => ({
       content: term
