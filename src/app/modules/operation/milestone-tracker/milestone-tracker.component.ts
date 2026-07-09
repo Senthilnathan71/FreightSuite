@@ -75,6 +75,13 @@ export class MilestoneTrackerComponent implements OnInit {
   loading = false;
   submitting = false;
 
+  // Row state is cached rather than computed per change-detection cycle: the
+  // template binds `previousMilestoneDate(i)` into an @Input, so returning a
+  // freshly-built Date on every read makes the binding look permanently changed.
+  private achievedLatest: Date | null = null;
+  private minDates: (Date | null)[] = [];
+  private rowErrors: (string | null)[] = [];
+
   constructor(
     private fb: FormBuilder,
     private appSettingService: AppSettingsService,
@@ -91,6 +98,7 @@ export class MilestoneTrackerComponent implements OnInit {
       localStorage.getItem('selected-branch'),
     );
     this.pendingForm = this.fb.array([]);
+    this.pendingForm.valueChanges.subscribe(() => this.recomputeRowState());
   }
 
   private get companyId(): number {
@@ -194,9 +202,11 @@ export class MilestoneTrackerComponent implements OnInit {
 
   private applyResult(data: any): void {
     this.header = data?.header || null;
-    this.pendingForm.clear();
+    this.pendingForm.clear({ emitEvent: false });
     this.completed = [];
     this.pendingItems = [];
+    this.minDates = [];
+    this.rowErrors = [];
     // Departments the pending list spans (both directions). Fall back to the
     // header's own department if the fetch API didn't resolve a sibling.
     this.milestoneDepartmentNames =
@@ -292,7 +302,7 @@ export class MilestoneTrackerComponent implements OnInit {
    * yet, the full master list is shown.
    */
   private buildPending(): void {
-    this.pendingForm.clear();
+    this.pendingForm.clear({ emitEvent: false });
 
     // Highest SortBy among the achieved milestones.
     const lastAchievedSortBy = this.completed.reduce((max, m) => {
@@ -318,7 +328,43 @@ export class MilestoneTrackerComponent implements OnInit {
           MilestoneDate: [item.MilestoneDate ?? null],
           Remarks: [item.Remarks || ''],
         }),
+        { emitEvent: false },
       );
+    }
+
+    this.achievedLatest = this.latestAchievedDate();
+    this.recomputeRowState();
+  }
+
+  /**
+   * Recompute each pending row's minimum date and sequence error. Called once per
+   * real change (form rebuild, or a value edit), never per change-detection cycle —
+   * the Date objects it caches must keep a stable identity between cycles or the
+   * `[minSelectableDate]` binding re-fires forever.
+   */
+  private recomputeRowState(): void {
+    const rows = this.pendingForm.controls;
+    this.minDates = [];
+    this.rowErrors = [];
+
+    // The date a row must fall strictly after: the latest of the last achieved
+    // milestone and every earlier pending row that already has a date.
+    let prev = this.achievedLatest;
+    for (let i = 0; i < rows.length; i++) {
+      this.minDates[i] = prev;
+
+      const value = rows[i].get('MilestoneDate')?.value;
+      const current = value ? new Date(value) : null;
+      const valid = !!current && !isNaN(current.getTime());
+
+      this.rowErrors[i] =
+        valid && prev && current.getTime() <= prev.getTime()
+          ? `Date & Time must be after the previous milestone (${this.formatDateTime(prev)}).`
+          : null;
+
+      if (valid && (!prev || current.getTime() > prev.getTime())) {
+        prev = current;
+      }
     }
   }
 
@@ -385,21 +431,7 @@ export class MilestoneTrackerComponent implements OnInit {
    * date. Drives the picker's minimum selectable date and the sequence check.
    */
   previousMilestoneDate(index: number): Date | null {
-    let prev = this.latestAchievedDate();
-    for (let j = 0; j < index; j++) {
-      const value = this.pendingForm.at(j).get('MilestoneDate')?.value;
-      if (!value) {
-        continue;
-      }
-      const d = new Date(value);
-      if (isNaN(d.getTime())) {
-        continue;
-      }
-      if (!prev || d.getTime() > prev.getTime()) {
-        prev = d;
-      }
-    }
-    return prev;
+    return this.minDates[index] ?? null;
   }
 
   /**
@@ -407,19 +439,7 @@ export class MilestoneTrackerComponent implements OnInit {
    * previous milestone's. Returns an error message when it isn't, else null.
    */
   rowDateError(index: number): string | null {
-    const value = this.pendingForm.at(index)?.get('MilestoneDate')?.value;
-    if (!value) {
-      return null;
-    }
-    const current = new Date(value);
-    if (isNaN(current.getTime())) {
-      return null;
-    }
-    const prev = this.previousMilestoneDate(index);
-    if (prev && current.getTime() <= prev.getTime()) {
-      return `Date & Time must be after the previous milestone (${this.formatDateTime(prev)}).`;
-    }
-    return null;
+    return this.rowErrors[index] ?? null;
   }
 
   /**
@@ -579,6 +599,9 @@ export class MilestoneTrackerComponent implements OnInit {
     this.showHousePicker = false;
     this.notFound = false;
     this.notFoundRef = '';
-    this.pendingForm?.clear();
+    this.pendingForm?.clear({ emitEvent: false });
+    this.achievedLatest = null;
+    this.minDates = [];
+    this.rowErrors = [];
   }
 }
