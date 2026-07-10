@@ -1520,6 +1520,29 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+    // Backstop for the live per-row guard (validateMatchLimits): a matched row must never exceed its own
+    // Outstanding. The live check skips ticked rows / can be edited past OS, so re-validate every row here.
+    // Round both sides to the row's currency (same as onTickMatch) so an exact full match doesn't false-trip.
+    const overMatched = this.voucherMatchings.getRawValue().find((vm) => {
+      const cur = vm.matchCurr || vm.curr;
+      const osCurr = toNumber(this.getFormattedAndPaddedAmount(toNumber(vm.osCurrAmt), cur));
+      const osLocal = toNumber(this.getFormattedAndPaddedAmount(toNumber(vm.osLocalAmt), cur));
+      const mCurr = toNumber(this.getFormattedAndPaddedAmount(toNumber(vm.matchCurrAmt), cur));
+      const mLocal = toNumber(this.getFormattedAndPaddedAmount(toNumber(vm.matchLocalAmt), cur));
+      return mCurr > osCurr || mLocal > osLocal;
+    });
+    if (overMatched) {
+      const cur = overMatched.matchCurr || overMatched.curr;
+      this.appSettingService.showError(
+        `Matched amount for ${overMatched.voucherNo} exceeds its outstanding ` +
+        `(OS ${this.getFormattedAndPaddedAmount(toNumber(overMatched.osCurrAmt), cur)}). ` +
+        `Reduce it to the outstanding amount or less before saving.`
+      );
+      if (resolve) resolve(false);
+      this.isSaving = false;
+      return;
+    }
+
     // Item 3 — with Inter Branch ON, the source tab may only match (party amount − Σ allocated to other
     // branches); each owning branch's invoices are matched in its own tab. Backstop for the live guard.
     const matchCur = this.receiptForm.get('CurrencyMasterSid')?.getRawValue();
