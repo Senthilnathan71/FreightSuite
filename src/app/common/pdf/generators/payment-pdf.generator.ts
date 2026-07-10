@@ -9,6 +9,8 @@ function toNumber(value: any): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+const RECEIPT_LINE_WIDTH = 0.5;
+
 function normalizeCurrencyCode(value: any): string {
   return String(value || '').trim().toUpperCase();
 }
@@ -278,6 +280,15 @@ function buildSignatureSection(): any {
   };
 }
 
+function buildReceiptContentDivider(): any {
+  return {
+    canvas: [
+      { type: 'line', x1: -10, y1: 0, x2: 565, y2: 0, lineWidth: RECEIPT_LINE_WIDTH, lineColor: '#000000' }
+    ],
+    margin: [0, -2, 0, 8]
+  };
+}
+
 export function generatePaymentDocument(data: PaymentPdfData): any {
   const configuredMargins = data.config?.pageMargins as number[] | undefined;
   const resolvedPageMargins = configuredMargins
@@ -306,6 +317,7 @@ export function generatePaymentDocument(data: PaymentPdfData): any {
       ]
     }),
     content: [
+      buildReceiptContentDivider(),
       buildTitle(data),
       buildInfoSection(data),
       buildDetailsTable(data),
