@@ -313,7 +313,15 @@
                     <div class="custom-form-group">
                         <input type="text" id="enquiryNo" class="form-control custom-input-field sm"
                             formControlName="enquiryNo" readonly>
-                        <label for="enquiryNo" class="input-label">Enquiry No</label>
+                        <label for="enquiryNo" class="input-label">Enquiry No
+                            <i
+                                *ngIf="rateRequestForm?.get('enquiryNo')?.value"
+                                class="fas fa-copy ms-1"
+                                style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                title="Copy Enquiry No"
+                                (click)="copyDocumentNumber('enquiryNo', 'Enquiry No', $event)"
+                            ></i>
+                        </label>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -1127,7 +1135,7 @@
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 90px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">Qty. <span
+                                                                <label for="" class="form-label mb-0">No. of Pkg <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100 dimension-x-after"
@@ -1585,7 +1593,7 @@
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 90px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">Qty <span
+                                                                <label for="" class="form-label mb-0">No. of Pkg <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100"
@@ -1785,7 +1793,7 @@
                                                                 <label class="form-label mb-0">Product</label>
                                                             </td>
                                                             <td class="bg-transparent text-light" style="width: 120px;">
-                                                                <label class="form-label mb-0">Qty <span
+                                                                <label class="form-label mb-0">No.of Pkg <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light" style="width: 160px;">
@@ -2455,7 +2463,7 @@
                     <strong>Pkg Type</strong>
                 </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
-                    <strong>Qty.</strong>
+                    <strong>No. of Pkg</strong>
                 </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
                     <strong>Gross Wt.</strong>
@@ -2477,7 +2485,7 @@
                     <strong>Chargeable Wt.</strong>
                 </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
-                    <strong>Qty.</strong>
+                    <strong>No. of Pkg</strong>
                 </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center;">
                     <strong>Wt. Unit</strong>
@@ -2485,7 +2493,7 @@
                 }
                 @if(selectedCargoMode === "ROAD"){
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
-                    <strong>Qty.</strong>
+                    <strong>No. of Pkg</strong>
                 </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
                     <strong>Gross Wt.</strong>

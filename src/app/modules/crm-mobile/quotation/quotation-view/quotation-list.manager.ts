@@ -205,6 +205,8 @@ export class QuotationListManager {
             formattedPOD: item.quoteRoute?.[0]?.PortPOD ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOD?.PortName, item.quoteRoute?.[0]?.PortPOD?.PortCode) : '',
             formattedPOL: item.quoteRoute?.[0]?.PortPOL ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOL?.PortName, item.quoteRoute?.[0]?.PortPOL?.PortCode) : '',
             QuoteDate: this.datePipe.transform(item?.QuoteDate),
+            enquiryNo: item.EnquiryHeader?.EnquiryNumber || '',
+            enquiryHeaderSid: item.EnquiryHeader?.EnquiryHeaderSid ?? item.EnquirySid ?? null,
             bookingNo: item.bookingHeader?.BookingNo || '',
             status: item.status === 'A' ? 'Active' : 'Suspended',
             approvalStatus: this.getApprovalStatusLabel(item),

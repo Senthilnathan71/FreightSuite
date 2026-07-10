@@ -309,6 +309,15 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           width: "115px"
         },
         {
+          key: 'enquiryNo',
+          label: 'Enquiry No',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          template: 'link',
+          dataType: 'string'
+        },
+        {
           key: 'CustomerName',
           label: 'Customer Name',
           sortable: true,
@@ -585,7 +594,11 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   // List Level
   onQuotationTableActionClick(event: TableEventData) {
-    if (event.column?.template === "link") {
+    if (event.column?.key === 'enquiryNo') {
+      if (event.row.enquiryHeaderSid) {
+        this.route.navigate(['crm/enquiry/entry', event.row.enquiryHeaderSid]);
+      }
+    } else if (event.column?.template === "link") {
       this.route.navigate(['operation/booking/entry', event.row.bookingHeader?.BookingHeaderSid]);
     } else if (event.action === 'view') {
       this.route.navigate(['crm/quotation/entry', event.row.QuoteHeaderSid]);
