@@ -1998,7 +1998,17 @@ private validatePanHolderType(fourthChar: string, companyType: string): { isVali
       this.selectedStatus.push('Customer');
     }
   })
-  
+
+  const allVendorFields = [
+    'Agent', 'Air Line', 'Carrier', 'CFS', 'Feeder', 'NVOCC',
+    'Overseas Agent', 'Shipping Line', 'Transporter', 'Warehouse', 'Yard'
+  ];
+  allVendorFields.forEach(field => {
+    if (this.selectedStatus.includes(field) && !this.selectedStatus.includes('Vendor')) {
+      this.selectedStatus.push('Vendor');
+    }
+  })
+
   // Fix: Properly detect if 'Air Line' is selected
   this.isAirlineSelected = this.selectedStatus.includes('Air Line');
   

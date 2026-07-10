@@ -413,6 +413,18 @@ export class EnquiryEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     })
   }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.rateRequestForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
   ngOnInit(): void {
     this.isMobile = this.appService.getDevice();
     this.initializeForm();
