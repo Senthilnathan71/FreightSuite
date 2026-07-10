@@ -2363,7 +2363,7 @@ export class VendorCreditNoteEntryComponent {
             }
           },
           error: (error) => {
-            this.appSettingService.showError('Error updating Vendor Invoice');
+            this.appSettingService.showError(error?.error?.message || 'Error updating Vendor Credit Note');
             this.isSaving = false;
             if (resolve) resolve(false);
             this.spinner.hide();
@@ -2399,7 +2399,7 @@ export class VendorCreditNoteEntryComponent {
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Error creating Vendor Invoice');
+          this.appSettingService.showError(error?.error?.message || 'Error creating Vendor Credit Note');
           if (resolve) resolve(false);
           this.spinner.hide();
         },
@@ -2484,6 +2484,7 @@ export class VendorCreditNoteEntryComponent {
       console.error('Post voucher error:', error);
       this.isSaving = false;
       this.spinner.hide();
+      this.appSettingService.showError(error?.error?.message || 'Failed to post vendor credit note. Please try again.');
       return null;
     }
   }

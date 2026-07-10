@@ -1861,7 +1861,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Failed to update payment.');
+          this.appSettingService.showError(error?.error?.message || 'Failed to update payment.');
           if (resolve) resolve(false);
           this.spinner.hide();
         },
@@ -1893,7 +1893,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Failed to create payment');
+          this.appSettingService.showError(error?.error?.message || 'Failed to create payment');
           if (resolve) resolve(false);
           this.spinner.hide();
         },
@@ -2008,6 +2008,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.spinner.hide();
       this.isSaving = false;
       console.error('Post voucher error:', error);
+      this.appSettingService.showError(error?.error?.message || 'Failed to post payment. Please try again.');
     }
   }
 

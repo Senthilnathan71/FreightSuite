@@ -1741,7 +1741,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Failed to update receipt.');
+          this.appSettingService.showError(error?.error?.message || 'Failed to update receipt.');
           if (resolve) resolve(false);
           this.spinner.hide();
         },
@@ -1773,7 +1773,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Failed to create receipt');
+          this.appSettingService.showError(error?.error?.message || 'Failed to create receipt');
           if (resolve) resolve(false);
           this.spinner.hide();
         },
@@ -1883,6 +1883,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.spinner.hide();
       this.isSaving = false;
       console.error('Post voucher error:', error);
+      this.appSettingService.showError(error?.error?.message || 'Failed to post receipt. Please try again.');
     }
   }
 

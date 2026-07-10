@@ -2588,7 +2588,7 @@ export class CreditNoteEntryComponent {
             }
           },
           error: (error) => {
-            this.appSettingService.showError('Error updating Vendor Invoice');
+            this.appSettingService.showError(error?.error?.message || 'Error updating Credit Note');
             this.isSaving = false;
             if (resolve) resolve(false);
             this.spinner.hide();
@@ -2620,7 +2620,7 @@ export class CreditNoteEntryComponent {
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Error creating Vendor Invoice');
+          this.appSettingService.showError(error?.error?.message || 'Error creating Credit Note');
           if (resolve) resolve(false);
           this.spinner.hide();
         },
@@ -2705,6 +2705,7 @@ export class CreditNoteEntryComponent {
       console.error('Post voucher error:', error);
       this.isSaving = false;
       this.spinner.hide();
+      this.appSettingService.showError(error?.error?.message || 'Failed to post credit note. Please try again.');
       return null;
     }
   }

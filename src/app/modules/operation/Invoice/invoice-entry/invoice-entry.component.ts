@@ -2948,7 +2948,7 @@ isSeaDepartment(): boolean {
           }
         },
         error: (error) => {
-          this.appSettingService.showError('Failed to update invoice');
+          this.appSettingService.showError(error?.error?.message || 'Failed to update invoice');
           this.isSaving = false;
           if (resolve) resolve(false);
           this.spinner.hide();
@@ -2980,7 +2980,7 @@ isSeaDepartment(): boolean {
         },
         error: (error) => {
           this.isSaving = false;
-          this.appSettingService.showError('Failed to create invoice');
+          this.appSettingService.showError(error?.error?.message || 'Failed to create invoice');
           if (resolve) resolve(false);
           this.spinner.hide();
         }
@@ -3069,6 +3069,7 @@ isSeaDepartment(): boolean {
       console.error('Post voucher error:', error);
       this.isSaving = false;
       this.spinner.hide();
+      this.appSettingService.showError(error?.error?.message || 'Failed to post invoice. Please try again.');
       return null;
     }
   }

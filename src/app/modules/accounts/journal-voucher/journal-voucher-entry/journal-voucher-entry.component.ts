@@ -591,7 +591,7 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
       this.spinner.hide();
       this.isSaving = false;
       console.error('Save journal voucher error', err);
-      this.appSettingService.showError('Failed to save journal voucher.');
+      this.appSettingService.showError(err?.error?.message || 'Failed to save journal voucher.');
       if (resolve) resolve(false);
     }
   });
@@ -2914,7 +2914,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
         this.spinner.hide();
         this.isSaving = false;
         console.error('Save journal voucher error', err);
-        this.appSettingService.showError('Failed to save journal voucher.');
+        this.appSettingService.showError(err?.error?.message || 'Failed to save journal voucher.');
       }
     });
   }
@@ -2989,7 +2989,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       this.spinner.hide();
       this.isSaving = false;
       console.error('Post voucher error:', error);
-      this.appSettingService.showError('Failed to post journal voucher. Please try again.');
+      this.appSettingService.showError(error?.error?.message || 'Failed to post journal voucher. Please try again.');
     }
   }
 
