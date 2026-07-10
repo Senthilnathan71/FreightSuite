@@ -1135,9 +1135,6 @@
                     [DecimalPrecisionAfter]="
                       getAmountDecimalPlaces(d.get('CurrencyMasterSid')?.value)
                     "
-                    [readonly]="
-                      isAutoPartyRow(i) && !paymentForm.get('MultiBranch')?.value
-                    "
                     (input)="calculateLocalAmount(i, true)"
                     (blur)="calculateLocalAmount(i, true)"
                   />
