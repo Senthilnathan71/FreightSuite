@@ -825,6 +825,36 @@ this.mps.init().subscribe();
     };
   }
 
+  /**
+   * After a child record is hard-deleted on the server, drop it from the
+   * unsaved-changes baseline too. Without this the baseline still holds the
+   * deleted record, so the form stays permanently `isDirty` and the unsaved-
+   * changes guard falsely warns on refresh/navigate even though the delete is
+   * already persisted. Prunes by Sid (not index) so it is pagination-proof and
+   * also clears records that live in two places (e.g. a login shown in both the
+   * branch accordion and the eLogin tab). Pending edits to other fields are
+   * preserved, so genuine unsaved changes are still tracked.
+   */
+  private pruneBaselineBySid(sidField: string, sidValue: any): void {
+    if (!this.initialFormValue || sidValue === null || sidValue === undefined) return;
+    const prune = (node: any): void => {
+      if (Array.isArray(node)) {
+        for (let i = node.length - 1; i >= 0; i--) {
+          const el = node[i];
+          if (el && typeof el === 'object' && !Array.isArray(el) && this.idsEqual(el[sidField], sidValue)) {
+            node.splice(i, 1);
+          } else {
+            prune(el);
+          }
+        }
+      } else if (node && typeof node === 'object') {
+        Object.values(node).forEach((v) => prune(v));
+      }
+    };
+    prune(this.initialFormValue);
+    this.isDirty = !this.deepEqual(this.initialFormValue, this.buildUnsavedSnapshot());
+  }
+
   private normalizeValue(value: any): any {
     if (value === null || value === undefined) return null;
     if (value instanceof Date) return value.toISOString().split('T')[0];
@@ -1283,7 +1313,8 @@ clearCustomerSearch(): void {
         next: (resp: any) => {
           this.appSettingService.showSuccess('Branch deleted successfully');
           this.branches.removeAt(branchIndex);
-          
+          this.pruneBaselineBySid('CustomerBranchSid', branchSid);
+
           // Remove from activeBranchIds
           const index = this.activeBranchIds.indexOf(branchId);
           if (index > -1) {
@@ -1343,6 +1374,7 @@ clearCustomerSearch(): void {
           next: (resp: any) => {
             this.appSettingService.showSuccess('Contact deleted successfully');
             this.getContacts(branchIndex).removeAt(contactIndex);
+            this.pruneBaselineBySid('CusBranchContactSid', contactSid);
           },
           error: (error) => {
             this.appSettingService.showError('Error deleting contact');
@@ -1366,6 +1398,7 @@ clearCustomerSearch(): void {
           next: (resp: any) => {
             this.appSettingService.showSuccess('Email deleted successfully');
             this.getEmails(branchIndex).removeAt(emailIndex);
+            this.pruneBaselineBySid('CustomerBrEmailSid', emailSid);
           },
           error: (error) => {
             this.appSettingService.showError('Error deleting email');
@@ -1389,6 +1422,7 @@ clearCustomerSearch(): void {
             this.appSettingService.showSuccess('Login deleted successfully');
             this.getLogins(branchIndex).removeAt(loginIndex);
             this.removeLoginFromCustomerLogins(loginSid);
+            this.pruneBaselineBySid('CustomerLoginSid', loginSid);
             this.cdRef.markForCheck();
           },
           error: (error) => {
@@ -2755,6 +2789,7 @@ loadCustomerSalesTeamData() {
           if (resp.status) {
             this.appSettingService.showSuccess('Customer Milestone Deleted Successfully.')
             this.cusMilestone.removeAt(actualIndex);
+            this.pruneBaselineBySid('CustomerMilestoneSid', CustomerMilestoneSid);
             this.updateCustomerMilestonePagination();
           } else {
             this.appSettingService.showError(resp.message);
@@ -2879,6 +2914,7 @@ loadCustomerSalesTeamData() {
           next: (resp: any) => {
             if (resp.status) {
               this.customerEmails.removeAt(index);
+              this.pruneBaselineBySid('CustomerBrEmailSid', emailSid);
               this.appSettingService.showSuccess('Email deleted successfully');
               this.cdRef.markForCheck();
             } else {
@@ -2966,6 +3002,7 @@ loadCustomerSalesTeamData() {
             if (resp.status) {
               this.removeLoginFromBranchForms(loginSid);
               this.customerLogins.removeAt(index);
+              this.pruneBaselineBySid('CustomerLoginSid', loginSid);
               this.appSettingService.showSuccess('Login deleted successfully');
               this.cdRef.markForCheck();
             } else {
@@ -3068,6 +3105,7 @@ getTaxIdName(): string {
         if (resp.status) {
           this.appSettingService.showSuccess('Sales Team Deleted Successfully.');
           this.cusSalesteam.removeAt(actualIndex);
+          this.pruneBaselineBySid('CustomerSalesSid', customerSalesSid);
           this.updateSalesTeamPagination();
         } else {
           this.appSettingService.showError(resp.message || 'Error deleting sales team.');
