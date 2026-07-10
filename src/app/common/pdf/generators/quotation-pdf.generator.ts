@@ -1,4 +1,5 @@
 import { QuotationPdfData, QuotationDocumentType } from '../interfaces/pdf-document.interfaces';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { formatDate, getDepartmentName, getFormattedPort } from '../helpers/pdf-formatters';
 
 export function generateQuotationDocument(
@@ -26,7 +27,7 @@ export function generateQuotationDocument(
       ]
     }),
     content: [
-      buildHeader(data),
+      buildCompanyHeader(data),
       buildTitle(title),
       buildCustomerInfo(data, isContract),
       buildGreeting(),
@@ -40,119 +41,6 @@ export function generateQuotationDocument(
       fontSize: 8,
       color: '#000'
     }
-  };
-}
-
-function buildHeader(data: QuotationPdfData): any {
-  const company: any = data.company || {};
-  const branch: any = data.branch || {};
-  const settings: any = (data as any)?.printSettings || {};
-  const logoPosition: 'left' | 'center' | 'right' = settings.logoPosition || 'left';
-  const companyPosition: 'left' | 'center' | 'right' = settings.companyPosition || 'center';
-  const companyAlignment: 'left' | 'center' | 'right' = settings.companyAlignment || 'center';
-
-  const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = buildHeaderDetailLine([
-    { value: branch?.addressLine2 || company?.addressLine2 || '' },
-    { value: branch?.cityName || company?.city || '' },
-    { label: 'Postal Code : ', value: branch?.postalCode || company?.postalCode || '' },
-    { label: 'Ph.no : ', value: branch?.phoneNumber || company?.phoneNumber || '' }
-  ]);
-
-  const companyDetails = {
-    stack: [
-      { text: (company?.companyName || 'XXXX COMPANY NAME').toUpperCase(), bold: true, fontSize: 14, alignment: companyAlignment },
-      { text: branch?.branchName || 'XXXX BRANCH NAME', bold: true, fontSize: 11, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0], noWrap: true }
-    ],
-    margin: companyPosition === 'right' ? [0, 0, 18, 0] : [0, 0, 0, 0]
-  };
-
-  return {
-    columns: [
-      {
-        width: getHeaderColumnWidth('left', logoPosition, companyPosition),
-        stack: [
-          logoPosition === 'left'
-            ? buildHeaderLogo(data.logo, 'left')
-            : { text: '' },
-          companyPosition === 'left'
-            ? companyDetails
-            : { text: '' }
-        ]
-      },
-      {
-        width: getHeaderColumnWidth('center', logoPosition, companyPosition),
-        stack: [
-          logoPosition === 'center'
-            ? buildHeaderLogo(data.logo, 'center')
-            : { text: '' },
-          companyPosition === 'center'
-            ? companyDetails
-            : { text: '' }
-        ]
-      },
-      {
-        width: getHeaderColumnWidth('right', logoPosition, companyPosition),
-        stack: [
-          logoPosition === 'right'
-            ? buildHeaderLogo(data.logo, 'right')
-            : { text: '' },
-          companyPosition === 'right'
-            ? companyDetails
-            : { text: '' }
-        ]
-      }
-    ],
-    margin: [0, 0, 0, 1]
-  };
-}
-
-function buildHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
-  return parts
-    .filter(part => !!part.value)
-    .flatMap((part, index) => [
-      ...(index > 0 ? [{ text: ', ' }] : []),
-      ...(part.label ? [{ text: part.label, bold: true }] : []),
-      { text: part.value }
-    ]);
-}
-
-function getHeaderColumnWidth(
-  column: 'left' | 'center' | 'right',
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any {
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    if (column === 'left') return 110;
-    if (column === 'right') return 300;
-    return '*';
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    if (column === 'left') return 300;
-    if (column === 'right') return 110;
-    return '*';
-  }
-
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return column === 'center' ? '*' : 110;
-  }
-
-  return '*';
-}
-
-function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
-  if (!logo) {
-    return { text: '' };
-  }
-
-  return {
-    image: logo,
-    fit: [60, 60],
-    alignment,
-    margin: alignment === 'left' ? [14, 0, 0, 0] : [4, 0, 0, 0]
   };
 }
 

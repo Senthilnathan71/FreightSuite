@@ -7,6 +7,7 @@
    */
 
   import { VendorInvoicePdfData, InvoiceChargeData, InvoiceBankDetail } from '../interfaces/pdf-document.interfaces';
+  import { buildCompanyHeader } from '../builders/pdf-header.builder';
   import { PdfTermItem } from '../interfaces/pdf-base.interface';
   import { createFooterFunction } from '../builders/pdf-footer.builder';
   import { buildTwoColumnInfo } from '../builders/pdf-table.builder';
@@ -173,7 +174,6 @@
       printData?.GST_VAT ||
       printData?.GSTVAT ||
       data.invoice?.customerGstVat ||
-      (data as any)?.companyVatNo ||
       '';
     const extraTopMarginForVatInfo = !isIndiaCompany && (isUaeCompany(data) || vatNo) ? 14 : 0;
     const billedTo = String(printData?.BilledTo || data.invoice?.customerName || '');
@@ -235,6 +235,7 @@
 
       content: [
         // { text: '', margin: [0, 10, 0, 0] },   // Spacer to push content below header
+        buildVendorInvoiceHorizontalLine(),
         buildShipmentDetails(data),
         buildChargesTable(data),
         buildTotalsSection(data),
@@ -278,143 +279,57 @@
     
   }
 
+  function buildVendorInvoiceHorizontalLine(): any {
+    return {
+      canvas: [{
+        type: 'line',
+        x1: -10,
+        y1: 0,
+        x2: 565,
+        y2: 0,
+        lineWidth: 0.4
+      }],
+      margin: [0, 0, 0, 4]
+    };
+  }
+
 
   /**
    * Build invoice header
    */
   
   function buildInvoiceHeader(data: VendorInvoicePdfData): any {
-    const company = data.company;
-    const branch = data.branch;
-    const logo = data.logo;
-    const printSettings = data.printSettings || {
-      logoPosition: 'left' as const,
-      companyPosition: 'center' as const,
-      companyAlignment: 'center' as const
-    };
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
-    const isIndiaCompany = isIndianCompany(data);
-
-    const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
-
-    const companyInfoStack: any[] = [];
-
-    if (company?.companyName) {
-      companyInfoStack.push({
-        text: String(company.companyName).toUpperCase(),
-        style: 'companyName',
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
-    const branchName = branch?.branchName || (branch as any)?.BranchName || '';
-    if (branchName) {
-      companyInfoStack.push({
-        text: branchName,
-        style: 'branchName',
-        bold: true,
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
-    const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
-    const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-    const postalCode = branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode;
-    const phone = branch?.phoneNumber || company?.phoneNumber;
-    const addressLine1 = branch?.addressLine1 || company?.addressLine1;
-    if (addressLine1) {
-      const hasMoreAddressDetails = !!(addressLine2 || cityName || postalCode || phone);
-      companyInfoStack.push({
-        text: isIndiaCompany && hasMoreAddressDetails ? `${addressLine1},` : addressLine1,
-        style: 'addressText',
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
-    const detailLine: any[] = [];
-    const appendDetail = (value: string | any[]) => {
-      if (detailLine.length) detailLine.push({ text: ', ' });
-      if (Array.isArray(value)) {
-        detailLine.push(...value);
-      } else {
-        detailLine.push({ text: value });
-      }
-    };
-
-    if (addressLine2) appendDetail(addressLine2);
-    if (cityName) appendDetail(cityName);
-    if (postalCode) appendDetail([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-    if (phone) appendDetail([{ text: 'Ph.no : ', bold: true }, { text: phone }]);
-
-    if (detailLine.length) {
-      companyInfoStack.push({
-        text: detailLine,
-        style: 'addressText',
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
-    const companyTaxNo = isIndiaCompany
-      ? data.companyGstCode || (branch as any)?.taxRegistrationNo || (company as any)?.GST_VAT || ''
-      : data.companyPan || (data as any)?.companyVatNo || (company as any)?.Pan || (company as any)?.PAN || '';
-    if (companyTaxNo) {
-      companyInfoStack.push({
-        text: `${isIndiaCompany ? 'GST No' : 'VAT No'} : ${companyTaxNo}`,
-        style: 'addressText',
-        alignment: printSettings.companyAlignment
-      });
-    }
-
-    const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
-      left: 'left',
-      center: 'center',
-      right: 'right'
-    };
-
-    const buildLogo = (slot: 'left' | 'center' | 'right'): any => ({
-      image: logo,
-      height: LOGO_HEIGHT,
-      alignment: slotAlign[slot],
-      margin: slot === 'right' ? [0, 0, 10, 0] : slot === 'left' ? [8, 0, 0, 0] : [0, 0, 0, 0]
-    });
-
-    const buildSlot = (slot: 'left' | 'center' | 'right') => {
-      const stack: any[] = [];
-
-      if (printSettings.logoPosition === slot && logo) {
-        stack.push(buildLogo(slot));
-      }
-
-      if (printSettings.companyPosition === slot) {
-        const companyMargin = slot === 'right'
-          ? (stack.length ? [0, 4, 10, 0] : [0, 0, 10, 0])
-          : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-        stack.push({ stack: companyInfoStack, margin: companyMargin });
-      }
-
-      return { stack };
-    };
-
-    const headerTable = {
-      table: {
-        widths: getVendorInvoiceHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-        body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-      },
-      layout: {
-        hLineWidth: () => 0,
-        vLineWidth: () => 0,
-        paddingLeft: () => 0,
-        paddingRight: () => 0,
-        paddingTop: () => 0,
-        paddingBottom: () => 0
-      },
-      margin: [0, 5, 0, 3]
-    };
+    const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData || {};
+    const companyVatNo =
+      (data as any)?.companyVatNo ||
+      data.companyPan ||
+      (data.company as any)?.Pan ||
+      (data.company as any)?.PAN ||
+      (data.company as any)?.GST_VAT ||
+      (data.company as any)?.VATNo ||
+      (data.company as any)?.vatNo ||
+      (data.branch as any)?.taxRegistrationNo ||
+      printData?.CompanyVATNo ||
+      printData?.CompanyVatNo ||
+      printData?.companyVatNo ||
+      printData?.CompanyGST_VAT ||
+      printData?.CompanyGSTVAT ||
+      printData?.CompanyTaxNumber ||
+      printData?.VATNo ||
+      printData?.vatNo ||
+      printData?.GST_VAT ||
+      printData?.GSTVAT ||
+      printData?.GSTNo ||
+      printData?.VatNo ||
+      printData?.TaxNumber ||
+      data.invoice?.customerGstVat ||
+      (data.invoice as any)?.GST_VAT ||
+      (data.invoice as any)?.GSTVAT ||
+      (data.invoice as any)?.VATNo ||
+      (data.invoice as any)?.VatNo ||
+      '';
 
     const bottomLine = {
       canvas: [{
@@ -428,26 +343,14 @@
       margin: [0, 0, 0, 6]
     };
 
-    return [headerTable, bottomLine];
-  }
-
-  function getVendorInvoiceHeaderWidths(
-    logoPosition: 'left' | 'center' | 'right',
-    companyPosition: 'left' | 'center' | 'right'
-  ): any[] {
-    if (companyPosition === 'center' && logoPosition !== 'center') {
-      return [110, '*', 110];
-    }
-
-    if (companyPosition === 'right' && logoPosition === 'left') {
-      return [110, '*', 300];
-    }
-
-    if (companyPosition === 'left' && logoPosition === 'right') {
-      return [300, '*', 110];
-    }
-
-    return ['33%', '34%', '33%'];
+    return [
+      buildCompanyHeader({
+        ...data,
+        companyTaxLabel: 'VAT No',
+        companyTaxValue: companyVatNo
+      }),
+      bottomLine
+    ];
   }
 
 
@@ -515,7 +418,6 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
     printData?.GST_VAT ||
     printData?.GSTVAT ||
     invoice?.customerGstVat ||
-    (data as any)?.companyVatNo ||
     '';
 
   const irnNumber =
@@ -1766,7 +1668,10 @@ function buildRemarks(remarks: string): any {
         city: company?.City || '',
         countryCode: company?.countryMaster?.countryCode || company?.CountryCode || company?.countryCode || company?.country?.countryCode || '',
         postalCode: company?.postal_code || company?.ZipCode || '',
-        phoneNumber: company?.phoneNumber || company?.Phone || ''
+        phoneNumber: company?.phoneNumber || company?.Phone || '',
+        GST_VAT: company?.GST_VAT || '',
+        Pan: company?.Pan || '',
+        PAN: company?.PAN || ''
       },
       branch: {
         branchName: branch?.branchName || '',
@@ -1856,7 +1761,7 @@ function buildRemarks(remarks: string): any {
         showIGST: false,
         showVAT: true
       },
-      companyVatNo: options?.companyVatNo || branch?.taxRegistrationNo || company?.GST_VAT || '',
+      companyVatNo: options?.companyVatNo || company?.Pan || company?.PAN || company?.GST_VAT || branch?.taxRegistrationNo || '',
       isSeaMode: options?.isSeaMode,
       isVATMode: options?.isVATMode,
       authorisedSignatory: true,
