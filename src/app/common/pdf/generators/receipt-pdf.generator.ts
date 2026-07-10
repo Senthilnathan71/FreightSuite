@@ -1,3 +1,4 @@
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
 import { ReceiptPdfData } from '../interfaces/pdf-document.interfaces';
@@ -130,127 +131,6 @@ function getHeaderLedgerDisplay(apiData: any, receiptType: 'bank' | 'cash', coaL
   return resolveLedgerName(coaList, apiData?.COAMasterSid);
 }
 
-function buildCompanyHeader(data: ReceiptPdfData): any {
-  const company = data.company;
-  const branch = data.branch;
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode || '';
-  const phone = branch?.phoneNumber || company?.phoneNumber || '';
-
-  const cityLine = buildHeaderDetailLine([
-    { value: branch?.addressLine2 || company?.addressLine2 || '' },
-    { value: city },
-    { label: 'Postal Code : ', value: postalCode },
-    { label: 'Ph.no : ', value: phone }
-  ]);
-
-  const companyInfoStack: any[] = [
-    {
-      text: (company?.companyName || '').toUpperCase(),
-      fontSize: 14,
-      bold: true,
-      alignment: printSettings.companyAlignment
-    },
-    {
-      text: branch?.branchName || '',
-      fontSize: 11,
-      bold: true,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 1, 0, 0]
-    },
-    {
-      text: branch?.addressLine1 || company?.addressLine1 || '',
-      fontSize: 9,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 1, 0, 0]
-    },
-    {
-      text: cityLine,
-      fontSize: 9,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 1, 0, 6],
-      noWrap: true
-    }
-  ];
-
-  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
-    left: 'left',
-    center: 'center',
-    right: 'right'
-  };
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [60, 60], alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin: companyMargin });
-    }
-    return { stack };
-  };
-
-  return {
-    stack: [
-      {
-        table: {
-          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-        },
-        layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? RECEIPT_LINE_WIDTH : 0),
-          vLineWidth: () => 0,
-          hLineColor: () => '#000000',
-          paddingLeft: () => 0,
-          paddingRight: () => 0,
-          paddingTop: () => 0,
-          paddingBottom: () => 6
-        },
-        margin: [0, 5, 0, 5]
-      }
-    ]
-  };
-}
-
-function buildHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
-  return parts
-    .filter(part => !!part.value)
-    .flatMap((part, index) => [
-      ...(index > 0 ? [{ text: ', ' }] : []),
-      ...(part.label ? [{ text: part.label, bold: true }] : []),
-      { text: part.value }
-    ]);
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
-}
-
 function buildTitle(data: ReceiptPdfData): any {
   const baseTitle = data.receiptType === 'bank' ? 'Bank Receipt' : 'Cash Receipt';
 
@@ -259,7 +139,7 @@ function buildTitle(data: ReceiptPdfData): any {
     alignment: 'center',
     bold: true,
     fontSize: 12,
-    margin: [0, 0, 0, 8]
+    margin: [10, 0, 0, 8]
   };
 }
 
@@ -487,16 +367,34 @@ function buildSignatureSection(_data: ReceiptPdfData): any {
   };
 }
 
+function buildReceiptHeaderDivider(): any {
+  return {
+    canvas: [
+      { type: 'line', x1: 0, y1: 0, x2: 575, y2: 0, lineWidth: RECEIPT_LINE_WIDTH, lineColor: '#000000' }
+    ],
+    margin: [0, 3, 0, 0]
+  };
+}
+
+function buildReceiptContentDivider(): any {
+  return {
+    canvas: [
+      { type: 'line', x1: -10, y1: 0, x2: 565, y2: 0, lineWidth: RECEIPT_LINE_WIDTH, lineColor: '#000000' }
+    ],
+    margin: [0, -2, 0, 8]
+  };
+}
+
 export function generateReceiptDocument(data: ReceiptPdfData): any {
   const configuredMargins = data.config?.pageMargins as number[] | undefined;
   const resolvedPageMargins = configuredMargins
     ? [
         configuredMargins[0] ?? 20,
-        Math.max(configuredMargins[1] ?? 82, 82),
+        Math.max(configuredMargins[1] ?? 84, 84),
         configuredMargins[2] ?? 20,
         configuredMargins[3] ?? 28
       ]
-    : [20, 82, 20, 28];
+    : [20, 84, 20, 28];
 
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -504,7 +402,7 @@ export function generateReceiptDocument(data: ReceiptPdfData): any {
     pageMargins: resolvedPageMargins,
     header: () => ({
       stack: [buildCompanyHeader(data)],
-      margin: [10, 10, 10, 0]
+      margin: [10, 12, 10, 0]
     }),
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
@@ -515,6 +413,7 @@ export function generateReceiptDocument(data: ReceiptPdfData): any {
       ]
     }),
     content: [
+      buildReceiptContentDivider(),
       buildTitle(data),
       buildInfoSection(data),
       buildDetailsTable(data),

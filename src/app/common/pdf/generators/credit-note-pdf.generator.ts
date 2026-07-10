@@ -1,5 +1,6 @@
 import { CreditBankDetail, CreditChargeData, CreditNotePdfData } from "../interfaces/pdf-document.interfaces";
 import { PdfTermItem } from '../interfaces/pdf-base.interface';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { buildTwoColumnInfo } from '../builders/pdf-table.builder';
 import { buildTitle, buildSectionTitle, buildDivider, } from '../builders/pdf-section.builder';
@@ -246,116 +247,8 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   */
 
 function buildCreditNoteHeader(data: CreditNotePdfData): any {
-  const company = data.company;
-  const branch = data.branch;
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
-  const isIndiaCompany = isIndianCompany(data);
-
-  const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
-
-  const logoColumn = logo
-    ? { image: logo, height: LOGO_HEIGHT, alignment: printSettings.logoPosition }
-    : { text: '', width: 1 };
-
-  const companyInfoStack: any[] = [];
-  const companyAlignment = printSettings.companyAlignment;
-
-  if (company?.companyName) {
-    companyInfoStack.push({
-      text: company.companyName.toUpperCase(),
-      style: 'companyName',
-      alignment: companyAlignment,
-      margin: [0, 0, 0, 6]
-    });
-  }
-
-  const branchName = branch?.branchName || (branch as any)?.BranchName || '';
-  if (branchName) {
-    companyInfoStack.push({
-      text: branchName,
-      style: 'branchName',
-      bold: true,
-      alignment: companyAlignment,
-      margin: [0, 0, 0, 4]
-    });
-  }
-
-  const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-  const postalCode = branch?.postalCode || company?.postalCode;
-  const phone = branch?.phoneNumber || company?.phoneNumber;
-  const addressLine1 = branch?.addressLine1 || company?.addressLine1;
-  if (addressLine1) {
-    const hasMoreAddressDetails = !!(addressLine2 || cityName || postalCode || phone);
-    companyInfoStack.push({
-      text: isIndiaCompany && hasMoreAddressDetails ? `${addressLine1},` : addressLine1,
-      style: 'addressText',
-      alignment: companyAlignment,
-      margin: [0, 0, 0, 6]
-    });
-  }
-
-  const cityLine = buildCreditNoteHeaderDetailLine([
-    { value: addressLine2 || '' },
-    { value: cityName || '' },
-    { label: 'Postal Code : ', value: postalCode || '' },
-    { label: 'Ph.no : ', value: phone || '' }
-  ]);
-  if (cityLine.length) {
-    companyInfoStack.push({
-      text: cityLine,
-      style: 'addressText',
-      alignment: companyAlignment,
-      margin: [0, 0, 0, 6]
-    });
-  }
-
-  const companyTaxNo = isIndiaCompany
-    ? data.companyGstCode || (branch as any)?.taxRegistrationNo || (company as any)?.GST_VAT || ''
-    : data.companyPan || (data as any)?.companyVatNo || (company as any)?.Pan || (company as any)?.PAN || '';
-  if (companyTaxNo) {
-    companyInfoStack.push({
-      text: `${isIndiaCompany ? 'GST No' : 'VAT No'} : ${companyTaxNo}`,
-      style: 'addressText',
-      alignment: companyAlignment
-    });
-  }
-
-  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
-    left: 'left',
-    center: 'center',
-    right: 'right'
-  };
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot) {
-      stack.push(logoColumn);
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, alignment: slotAlign[slot], margin: companyMargin });
-    }
-    return { stack };
-  };
-
-  const headerTable = {
-    table: {
-      widths: getCreditNoteHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-    },
-    layout: 'noBorders',
-    margin: [0, 5, 0, 3]
-  };
 
   const bottomLine = {
     canvas: [{
@@ -369,36 +262,7 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     margin: [0, 0, 0, 6]
   };
 
-  return [headerTable, bottomLine];
-}
-
-function buildCreditNoteHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
-  return parts
-    .filter(part => !!part.value)
-    .flatMap((part, index) => [
-      ...(index > 0 ? [{ text: ', ' }] : []),
-      ...(part.label ? [{ text: part.label, bold: true }] : []),
-      { text: part.value }
-    ]);
-}
-
-function getCreditNoteHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
+  return [buildCompanyHeader(data), bottomLine];
 }
 
 /**

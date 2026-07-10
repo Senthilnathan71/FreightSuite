@@ -1,3 +1,4 @@
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
 import { PaymentPdfData } from '../interfaces/pdf-document.interfaces';
@@ -69,104 +70,6 @@ function formatCurrencyAmount(data: PaymentPdfData, value: any, currencyCode?: s
 
 function formatPaymentCurrencyAmount(data: PaymentPdfData, value: any): string {
   return formatCurrencyAmount(data, value, data.payment?.currencyCode || '');
-}
-
-function buildCompanyHeader(data: PaymentPdfData): any {
-  const company = data.company;
-  const branch = data.branch;
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode || '';
-  const phone = branch?.phoneNumber || company?.phoneNumber || '';
-
-  const cityLine: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (cityLine.length) cityLine.push({ text: ', ' });
-    if (Array.isArray(text)) {
-      cityLine.push(...text);
-    } else {
-      cityLine.push({ text });
-    }
-  };
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-
-  if (addressLine2) appendText(addressLine2);
-  if (city) appendText(city);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
-
-  const companyInfoStack: any[] = [
-    { text: (company?.companyName || '').toUpperCase(), fontSize: 14, bold: true, alignment: printSettings.companyAlignment },
-    { text: branch?.branchName || '', fontSize: 11, bold: true, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: branch?.addressLine1 || company?.addressLine1 || '', fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: cityLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 2, 0, 4] }
-  ];
-
-  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
-    left: 'left',
-    center: 'center',
-    right: 'right'
-  };
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [60, 60], alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin: companyMargin });
-    }
-    return { stack };
-  };
-
-  return {
-    stack: [
-      {
-        table: {
-          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-        },
-        layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0.25 : 0),
-          vLineWidth: () => 0,
-          hLineColor: () => '#000000',
-          paddingLeft: () => 0,
-          paddingRight: () => 0,
-          paddingTop: () => 0,
-          paddingBottom: () => 8
-        },
-        margin: [0, 3, 0, 2]
-      }
-    ]
-  };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: PaymentPdfData): any {

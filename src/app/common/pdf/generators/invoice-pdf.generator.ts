@@ -8,6 +8,7 @@
 
   import { InvoicePdfData, InvoiceChargeData, InvoiceBankDetail } from '../interfaces/pdf-document.interfaces';
   import { PdfTermItem } from '../interfaces/pdf-base.interface';
+  import { buildCompanyHeader } from '../builders/pdf-header.builder';
   import { buildTwoColumnInfo } from '../builders/pdf-table.builder';
   import {
     buildTitle,
@@ -148,22 +149,6 @@
       .join(', ');
   }
 
-  function buildPdfLogoColumn(logo: string | null | undefined, height: number): any {
-    if (!logo || logo === 'none') {
-      return { text: '', width: 1 };
-    }
-
-    const fit: [number, number] = [105, height];
-
-    if (logo.startsWith('data:image/svg+xml')) {
-      const svgPayload = logo.split(',')[1] || '';
-      const isBase64 = logo.includes(';base64,');
-      const svg = isBase64 ? atob(svgPayload) : decodeURIComponent(svgPayload);
-      return { svg, fit, alignment: 'left' as const };
-    }
-
-    return { image: logo, fit, alignment: 'left' as const };
-  }
   /**
    * Generate invoice PDF document definition
    */
@@ -182,7 +167,7 @@
       '';
     const estimatedBillingAddressLines = Math.ceil(String(billingAddressForHeader).length / 58);
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
-    const baseTopMargin = 138;
+    const baseTopMargin = 128;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIRNLine = isIndiaInvoice ? 14 : 0;
     const extraTopMarginForCustomerTaxLine = Math.min(
@@ -308,139 +293,14 @@
   function buildInvoiceHeader(data: InvoicePdfData): any {
     const company = data.company;
     const branch = data.branch;
-    const logo = data.logo;
-    const printSettings = data.printSettings || {
-      logoPosition: 'left' as const,
-      companyPosition: 'center' as const,
-      companyAlignment: 'center' as const
-    };
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
-
-    const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
-
-    const companyInfoStack: any[] = [];
-
-    if (company?.companyName) {
-      companyInfoStack.push({
-        text: String(company.companyName).toUpperCase(),
-        style: 'companyName',
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
-    const branchName = branch?.branchName || (branch as any)?.BranchName || '';
-    if (branchName) {
-      companyInfoStack.push({
-        text: branchName,
-        style: 'branchName',
-        bold: true,
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
-    const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
-    const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-    const postalCode = branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode;
-    const phone = branch?.phoneNumber || company?.phoneNumber;
     const companyCountryCode = String((data as any)?.companyCountryCode || company?.countryCode || branch?.countryCode || '').toLowerCase();
-    const addressLine1 = branch?.addressLine1 || company?.addressLine1;
-    if (addressLine1) {
-      const hasMoreAddressDetails = !!(addressLine2 || cityName || postalCode || phone);
-      companyInfoStack.push({
-        text: companyCountryCode === 'in' && hasMoreAddressDetails ? `${addressLine1},` : addressLine1,
-        style: 'addressText',
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
-    const detailLine: any[] = [];
-    const appendDetail = (value: string | any[]) => {
-      if (detailLine.length) detailLine.push({ text: ', ' });
-      if (Array.isArray(value)) {
-        detailLine.push(...value);
-      } else {
-        detailLine.push({ text: value });
-      }
-    };
-
-    if (addressLine2) appendDetail(addressLine2);
-    if (cityName) appendDetail(cityName);
-    if (postalCode) appendDetail([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-    if (phone) appendDetail([{ text: 'Ph.no : ', bold: true }, { text: phone }]);
-
-    if (detailLine.length) {
-      companyInfoStack.push({
-        text: detailLine,
-        style: 'addressText',
-        alignment: printSettings.companyAlignment,
-        margin: [0, 0, 0, 2]
-      });
-    }
-
     const registrationNo = (
       companyCountryCode === 'in'
         ? data.companyGstCode || (branch as any)?.taxRegistrationNo || (company as any)?.GST_VAT
         : data.companyPan || (data as any)?.companyVatNo || (company as any)?.Pan || (company as any)?.PAN || (company as any)?.GST_VAT || (branch as any)?.taxRegistrationNo
     ) || '';
-    if (companyCountryCode !== 'in' || registrationNo) {
-      companyInfoStack.push({
-        text: `${companyCountryCode === 'in' ? 'GST No' : 'VAT No'} : ${registrationNo}`,
-        style: 'addressText',
-        alignment: printSettings.companyAlignment
-      });
-    }
-
-    const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
-      left: 'left',
-      center: 'center',
-      right: 'right'
-    };
-
-    const buildLogo = (slot: 'left' | 'center' | 'right'): any => {
-      const logoColumn = buildPdfLogoColumn(logo, LOGO_HEIGHT);
-      return {
-        ...logoColumn,
-        alignment: slotAlign[slot],
-        margin: slot === 'right' ? [0, 0, 10, 0] : slot === 'left' ? [8, 0, 0, 0] : [0, 0, 0, 0]
-      };
-    };
-
-    const buildSlot = (slot: 'left' | 'center' | 'right') => {
-      const stack: any[] = [];
-
-      if (printSettings.logoPosition === slot && logo) {
-        stack.push(buildLogo(slot));
-      }
-
-      if (printSettings.companyPosition === slot) {
-        const companyMargin = slot === 'right'
-          ? (stack.length ? [0, 4, 10, 0] : [0, 0, 10, 0])
-          : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-        stack.push({ stack: companyInfoStack, margin: companyMargin });
-      }
-
-      return { stack };
-    };
-
-    const headerTable = {
-      table: {
-        widths: getInvoiceHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-        body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-      },
-      layout: {
-        hLineWidth: () => 0,
-        vLineWidth: () => 0,
-        paddingLeft: () => 0,
-        paddingRight: () => 0,
-        paddingTop: () => 0,
-        paddingBottom: () => 0
-      },
-      margin: [0, 5, 0, 3]
-    };
 
     const bottomLine = {
       canvas: [{
@@ -454,26 +314,14 @@
       margin: [0, 0, 0, 6]
     };
 
-    return [headerTable, bottomLine];
-  }
-
-  function getInvoiceHeaderWidths(
-    logoPosition: 'left' | 'center' | 'right',
-    companyPosition: 'left' | 'center' | 'right'
-  ): any[] {
-    if (companyPosition === 'center' && logoPosition !== 'center') {
-      return [110, '*', 110];
-    }
-
-    if (companyPosition === 'right' && logoPosition === 'left') {
-      return [110, '*', 300];
-    }
-
-    if (companyPosition === 'left' && logoPosition === 'right') {
-      return [300, '*', 110];
-    }
-
-    return ['33%', '34%', '33%'];
+    return [
+      buildCompanyHeader({
+        ...data,
+        companyTaxLabel: companyCountryCode === 'in' ? 'GST No' : 'VAT No',
+        companyTaxValue: registrationNo
+      }),
+      bottomLine
+    ];
   }
 
 
@@ -1026,7 +874,6 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
 
       return withBreakableSeparators.replace(/([^\s\u200B]{14})(?=[^\s\u200B])/g, '$1\u200B');
     };
-    if (!displayDetails.length) return { text: '' };
     const compactBorderedLayout = {
       hLineWidth: () => 0.5,
       vLineWidth: () => 0.5,
@@ -1485,7 +1332,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     const taxConfig = (data.taxDisplayConfig as any) || {};
     const summaryRows = getPdfVatSummary(data);
 
-    if (!taxConfig.showVAT || summaryRows.length === 0) {
+    if (!taxConfig.showVAT) {
       return { text: '' };
     }
 
@@ -1532,7 +1379,7 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
     const taxConfig = (data.taxDisplayConfig as any) || {};
     const amountInWords = printData?.AmountInWords || data.amountInWords || '';
     const remarks = printData?.Remarks || data.invoice?.remarks || '';
-    const showVatSummary = !!taxConfig.showVAT && getPdfVatSummary(data).length > 0;
+    const showVatSummary = !!taxConfig.showVAT;
 
     if (!amountInWords && !remarks && !showVatSummary) {
       return { text: '' };
@@ -1540,28 +1387,24 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
 
     const leftStack: any[] = [];
 
-    if (amountInWords) {
-      leftStack.push({
-        columns: [
-          { width: 88, text: 'Amount In Words', style: 'labelBold', fontSize: 10 },
-          { width: 6, text: ':', alignment: 'center', fontSize: 10 },
-          { width: '*', text: softenPdfText(amountInWords), margin: [4, 0, 0, 0], noWrap: false, fontSize: 10, lineHeight: 1.15 },
-        ],
-        columnGap: 0,
-      });
-    }
+    leftStack.push({
+      columns: [
+        { width: 88, text: 'Amount In Words', style: 'labelBold', fontSize: 10 },
+        { width: 6, text: ':', alignment: 'center', fontSize: 10 },
+        { width: '*', text: softenPdfText(amountInWords), margin: [4, 0, 0, 0], noWrap: false, fontSize: 10, lineHeight: 1.15 },
+      ],
+      columnGap: 0,
+    });
 
-    if (remarks) {
-      leftStack.push({
-        columns: [
-          { width: 88, text: 'Remarks', style: 'labelBold', fontSize: 9 },
-          { width: 6, text: ':', alignment: 'center', fontSize: 8 },
-          { width: '*', text: softenPdfText(remarks), margin: [4, 0, 0, 0], noWrap: false, fontSize: 8, lineHeight: 1.15 },
-        ],
-        columnGap: 0,
-        margin: [0, 6, 0, 0],
-      });
-    }
+    leftStack.push({
+      columns: [
+        { width: 88, text: 'Remarks', style: 'labelBold', fontSize: 9 },
+        { width: 6, text: ':', alignment: 'center', fontSize: 8 },
+        { width: '*', text: softenPdfText(remarks), margin: [4, 0, 0, 0], noWrap: false, fontSize: 8, lineHeight: 1.15 },
+      ],
+      columnGap: 0,
+      margin: [0, 6, 0, 0],
+    });
 
     if (!showVatSummary) {
       return {
