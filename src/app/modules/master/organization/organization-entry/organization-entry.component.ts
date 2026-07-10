@@ -864,6 +864,31 @@ this.mps.init().subscribe();
     return login as FormGroup;
   }
 
+  private removeLoginFromBranchForms(loginSid: any): void {
+    if (!loginSid) return;
+
+    for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
+      const logins = this.getLogins(branchIndex);
+      for (let loginIndex = logins.length - 1; loginIndex >= 0; loginIndex--) {
+        const existingSid = logins.at(loginIndex).get('CustomerLoginSid')?.value;
+        if (this.idsEqual(existingSid, loginSid)) {
+          logins.removeAt(loginIndex);
+        }
+      }
+    }
+  }
+
+  private removeLoginFromCustomerLogins(loginSid: any): void {
+    if (!loginSid) return;
+
+    for (let loginIndex = this.customerLogins.length - 1; loginIndex >= 0; loginIndex--) {
+      const existingSid = this.customerLogins.at(loginIndex).get('CustomerLoginSid')?.value;
+      if (this.idsEqual(existingSid, loginSid)) {
+        this.customerLogins.removeAt(loginIndex);
+      }
+    }
+  }
+
   selectTab1(tabName: string) {
     this.selectedTab1 = tabName;
   }
@@ -1363,6 +1388,8 @@ clearCustomerSearch(): void {
           next: (resp: any) => {
             this.appSettingService.showSuccess('Login deleted successfully');
             this.getLogins(branchIndex).removeAt(loginIndex);
+            this.removeLoginFromCustomerLogins(loginSid);
+            this.cdRef.markForCheck();
           },
           error: (error) => {
             this.appSettingService.showError('Error deleting login');
@@ -2937,6 +2964,7 @@ loadCustomerSalesTeamData() {
         this.masterService.deleteCustomerLoginById(loginSid,updatedBy).subscribe({
           next: (resp: any) => {
             if (resp.status) {
+              this.removeLoginFromBranchForms(loginSid);
               this.customerLogins.removeAt(index);
               this.appSettingService.showSuccess('Login deleted successfully');
               this.cdRef.markForCheck();
