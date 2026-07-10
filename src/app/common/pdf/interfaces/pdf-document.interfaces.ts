@@ -539,6 +539,8 @@ export interface JobCardPdfData extends PdfDocumentBase {
     fpd?: string;
     serviceType?: string;
     salesPerson?: string;
+    referenceNo?: string;
+    IsServiceJob?: string;
     placeOfReceipt?: string;
     placeOfDelivery?: string;
     eta?: Date | string;

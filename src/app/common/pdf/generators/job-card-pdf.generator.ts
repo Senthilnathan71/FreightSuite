@@ -10,7 +10,7 @@ import { getPdfStyles } from '../styles/pdf-styles';
 
 export function generateJobCardDocument(data: JobCardPdfData): any {
   const isSea = (data.selectedDepartmentType || '').toUpperCase() === 'SEA';
-
+  const isServiceJob = data.jobInfo.IsServiceJob === 'Y';
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'landscape',
@@ -35,7 +35,7 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
     }),
     content: [
       buildPartySection(data),
-      buildJobInfoSection(data, isSea),
+      buildJobInfoSection(data, isSea, isServiceJob),
       buildProductsTable(data, isSea),
       buildProfitSummaryTable(data),
       buildCostRevenueTable(data),
@@ -201,7 +201,7 @@ function buildPartyCell(label: string, name?: string, address?: string): any {
   };
 }
 
-function buildJobInfoSection(data: JobCardPdfData, isSea: boolean): any {
+function buildJobInfoSection(data: JobCardPdfData, isSea: boolean, isServiceJob: boolean): any {
   const leftItems: Array<[string, string]> = [
     ['Job No.', data.jobInfo.jobNo || ''],
     [isSea ? 'HBL No.' : 'HAWB No.', data.jobInfo.houseNo || ''],
@@ -209,7 +209,8 @@ function buildJobInfoSection(data: JobCardPdfData, isSea: boolean): any {
     ['POD', data.jobInfo.pod || ''],
     ['FPD', data.jobInfo.fpd || ''],
     ...(isSea ? [['Service Type', data.jobInfo.serviceType || ''] as [string, string]] : []),
-    ['Sales Person', data.jobInfo.salesPerson || '']
+    ['Sales Person', data.jobInfo.salesPerson || ''],
+    ...(isServiceJob ? [['Reference No.', data.jobInfo.referenceNo || ''] as [string, string]] : [])
   ];
 
   const rightItems: Array<[string, string]> = [
@@ -772,6 +773,8 @@ export function transformJobCardApiData(
       fpd: getPortName(apiData?.FPD),
       serviceType: apiData?.Cargo?.[0]?.ShipmentTerms || '',
       salesPerson: getSalespersonName(apiData?.SalesmanSid),
+      referenceNo: apiData?.ShipmentNo || '',
+      IsServiceJob: apiData?.IsServiceJob || '',
       placeOfReceipt: getPortName(apiData?.POO),
       placeOfDelivery: getPortName(apiData?.FPD),
       eta: apiData?.ETA,
