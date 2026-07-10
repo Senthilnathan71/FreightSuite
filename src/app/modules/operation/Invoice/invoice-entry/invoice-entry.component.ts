@@ -1252,6 +1252,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       VoucherDate: validDate
         ? new Date(voucherDate).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0],
+      CustomsDuty: this.invoiceForm?.get('CustomsDuty')?.value,
     };
     this.operationService.getDueDate(payload).subscribe({
       next: (response: any) => {
