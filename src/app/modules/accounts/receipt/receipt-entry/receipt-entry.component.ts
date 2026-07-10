@@ -466,6 +466,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   ngOnInit(): void {
+    this.headerId = Number(this.route.snapshot.paramMap.get('id')) || null;
+
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
@@ -921,8 +923,10 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         .getAllCoaWithLedgerCategory({
           LedgerCategory: 'Ledger',
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
           filterNonJob: true,
-          VoucherType: 'RPT'
+          VoucherType: 'RPT',
+          ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
         })
         .pipe(catchError((err) => of([]))),
       costCenters: this.accountService
@@ -1543,37 +1547,41 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
-    // Item 3 — with Inter Branch ON, the source tab may only match (party amount − Σ allocated to other
-    // branches); each owning branch's invoices are matched in its own tab. Backstop for the live guard.
+    // Items 3 & 5 — the source/owning caps only exist in Multi Branch (amount-first) mode. With it
+    // OFF, matching drives the party amount (they're always equal), so there is no cap to enforce.
     const matchCur = this.receiptForm.get('CurrencyMasterSid')?.getRawValue();
-    if (toNumber(this.getFormattedAndPaddedAmount(toNumber(matchingAmt), matchCur)) > this.sourceMatchableCap) {
-      this.appSettingService.showError(
-        `Source-branch matching can't exceed ${this.getFormattedAndPaddedAmount(this.sourceMatchableCap, matchCur)} — the rest is allocated to other branches.`
-      );
-      if (resolve) resolve(false);
-      this.isSaving = false;
-      return;
-    }
-
-    // Item 5 — each owning branch's matched total must not exceed its allotted amount.
-    const vmRows5 = this.voucherMatchings.getRawValue();
-    for (const ib of this.interBranches.controls) {
-      const sid = ib.get('BranchMasterSid')?.value;
-      const allottedRaw = Number(ib.get('Amount')?.value) || 0;
-      const allotted = toNumber(this.getFormattedAndPaddedAmount(allottedRaw, matchCur));
-      const branchMatched = toNumber(
-        this.getFormattedAndPaddedAmount(
-          vmRows5.filter((vm) => vm.allotmentBranchSid === sid).reduce((s, vm) => s + (toNumber(vm.matchPartyAmt) || 0), 0),
-          matchCur,
-        ),
-      );
-      if (branchMatched > allotted) {
+    if (this.receiptForm.get('MultiBranch')?.value) {
+      // Item 3 — with Inter Branch ON, the source tab may only match (party amount − Σ allocated to other
+      // branches); each owning branch's invoices are matched in its own tab. Backstop for the live guard.
+      if (toNumber(this.getFormattedAndPaddedAmount(toNumber(matchingAmt), matchCur)) > this.sourceMatchableCap) {
         this.appSettingService.showError(
-          `Matching for ${ib.get('BranchName')?.value} (${this.getFormattedAndPaddedAmount(branchMatched, matchCur)}) cannot exceed its allotted ${this.getFormattedAndPaddedAmount(allottedRaw, matchCur)}.`
+          `Source-branch matching can't exceed ${this.getFormattedAndPaddedAmount(this.sourceMatchableCap, matchCur)} — the rest is allocated to other branches.`
         );
         if (resolve) resolve(false);
         this.isSaving = false;
         return;
+      }
+
+      // Item 5 — each owning branch's matched total must not exceed its allotted amount.
+      const vmRows5 = this.voucherMatchings.getRawValue();
+      for (const ib of this.interBranches.controls) {
+        const sid = ib.get('BranchMasterSid')?.value;
+        const allottedRaw = Number(ib.get('Amount')?.value) || 0;
+        const allotted = toNumber(this.getFormattedAndPaddedAmount(allottedRaw, matchCur));
+        const branchMatched = toNumber(
+          this.getFormattedAndPaddedAmount(
+            vmRows5.filter((vm) => vm.allotmentBranchSid === sid).reduce((s, vm) => s + (toNumber(vm.matchPartyAmt) || 0), 0),
+            matchCur,
+          ),
+        );
+        if (branchMatched > allotted) {
+          this.appSettingService.showError(
+            `Matching for ${ib.get('BranchName')?.value} (${this.getFormattedAndPaddedAmount(branchMatched, matchCur)}) cannot exceed its allotted ${this.getFormattedAndPaddedAmount(allottedRaw, matchCur)}.`
+          );
+          if (resolve) resolve(false);
+          this.isSaving = false;
+          return;
+        }
       }
     }
 
@@ -3256,6 +3264,13 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         (c) => c.currencyCode === tx.CurrencyCode
       )?.CurrencyMasterSid;
       const txCurrencySid = matchCurrencyForThisTxn || null;
+      // A saved matching reopens TICKED only when it FULLY settled the invoice (matched local ==
+      // outstanding local). Round both to the company/local currency's decimals before comparing —
+      // no epsilon (see feedback-amount-compare-no-epsilon).
+      const localCur = this.currentCompany?.CurrencyMasterSid;
+      const osLocalRounded = toNumber(this.getFormattedAndPaddedAmount(Number(tx.OutstandingLocalAmount || 0), localCur));
+      const matchLocalRounded = toNumber(this.getFormattedAndPaddedAmount(Number(tx.MatchingLocalAmount || 0), localCur));
+      const isFullyMatched = isMatchedRecord && osLocalRounded === matchLocalRounded;
       const form = this.fb.group({
         VoucherMatchingHeaderSid: [tx.VoucherMatchingHeaderSid || null],
         MatchingDetailSid: [tx.MatchingDetailSid || null],
@@ -3320,7 +3335,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         balance: [
           isMatchedRecord ? Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0) : null,
         ],
-        isTicked: [isMatchedRecord ? Math.abs(Number(tx.OutstandingLocalAmount || 0) - Number(tx.LocalAmount || 0)) < 0 : false],
+        isTicked: [isFullyMatched],
         isLimitErrorShown: [false],
         // Display-only: party-row narration shown as a hover popover on the Voucher No. cell
         narration: [{ value: tx.Narration ?? '', disabled: true }],
@@ -3414,15 +3429,20 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // Validate AFTER amounts recompute. Owning rows refresh their memo; source rows first enforce the
     // party / inter-branch total cap (priority), then fall through to the per-row OS limit. We call
     // validateMatchLimits HERE (not from the template) so the OS message can't pre-empt the
-    // party-amount message.
+    // party-amount message. Caps apply only in Multi Branch (amount-first) mode; with it OFF the
+    // matched total simply drives the read-only party/bank amount (no cap).
     const vmRow = this.voucherMatchings.at(index) as FormGroup;
-    if (vmRow.get('allotmentBranchSid')?.value) {
-      if (this.enforceOwningMatchCap(vmRow)) return; // item 5: per-branch owning cap
-      this.recomputeInterBranchMemo();
-    } else if (this.enforceSourceMatchCap(vmRow)) {
-      return;
+    if (this.receiptForm.get('MultiBranch')?.value) {
+      if (vmRow.get('allotmentBranchSid')?.value) {
+        if (this.enforceOwningMatchCap(vmRow)) return; // item 5: per-branch owning cap
+        this.recomputeInterBranchMemo();
+      } else if (this.enforceSourceMatchCap(vmRow)) {
+        return;
+      }
+    } else {
+      this.updateDetailAmountsFromMatching();
     }
-    this.validateMatchLimits(index);
+    this.validateMatchLimits(index); // per-row OS limit — both modes
   }
 
   recalculateAllMatchingPartyAmounts() {
@@ -4017,6 +4037,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     } else {
       this.interBranches.clear();
       this.removeOwningBranchMatchingRows();
+      // Back to single-branch (auto-update) mode: the party/bank Amount is now driven by matching
+      // and the field turns read-only — snap it to the current source matched total.
+      this.updateDetailAmountsFromMatching();
     }
     this.refreshDirtyState();
   }
@@ -4857,6 +4880,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const checked = event.target.checked;
     const row = this.voucherMatchings.at(index) as FormGroup;
     const isOwningRow = !!row.get('allotmentBranchSid')?.value;
+    // Multi Branch ON  → amount-first: party amount is the typed ceiling + matching is capped.
+    // Multi Branch OFF → auto-update: matching drives the (read-only) party/bank amount, no cap.
+    const mbOn = this.receiptForm.get('MultiBranch')?.value;
 
     if (!checked) {
       row.patchValue({
@@ -4867,8 +4893,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         matchPartyAmt: null,
       });
       row.get('isTicked')?.setValue(false);
-      // Amount-first: the party/bank amount is the user-entered ceiling, NOT driven by matching.
-      // Un-ticking only clears this row's allocation; owning rows still refresh their memo.
+      // OFF: matching drives the amount, so un-ticking lowers the party/bank amount too.
+      // ON (amount-first): the amount is the user-entered ceiling — leave it untouched.
+      if (!mbOn) this.updateDetailAmountsFromMatching();
       if (isOwningRow) this.recomputeInterBranchMemo();
       return;
     }
@@ -4889,11 +4916,15 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       matchLocalAmt: this.getFormattedAndPaddedAmount(osLocalAmt, currencySid),
     });
     this.calculatePartyAmount(index);
-    if (this.enforceSourceMatchCap(row)) return; // item 3: source cap (no-op for owning rows)
-    if (this.enforceOwningMatchCap(row)) return; // item 5: per-branch owning cap (no-op for source rows)
+    if (mbOn) {
+      if (this.enforceSourceMatchCap(row)) return; // item 3: source cap (no-op for owning rows)
+      if (this.enforceOwningMatchCap(row)) return; // item 5: per-branch owning cap (no-op for source rows)
+    }
     row.get('isTicked')?.setValue(checked);
-    // Amount-first: matching allocates within the user-entered party amount and must NOT overwrite it
-    // (overwriting it collapses the cap so a 2nd voucher always "exceeds"). Owning rows refresh memo.
+    // OFF: auto-fill the party/bank amount from the matched total (the old, pre-cap behaviour).
+    // ON: matching allocates within the ceiling and must NOT overwrite it (overwriting collapses
+    // the cap so a 2nd voucher always "exceeds"). Owning rows refresh their memo.
+    if (!mbOn) this.updateDetailAmountsFromMatching();
     if (isOwningRow) this.recomputeInterBranchMemo();
 
     // this.calculateLocalAmountForMatchRow(index);
