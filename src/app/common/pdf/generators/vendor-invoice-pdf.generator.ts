@@ -301,35 +301,6 @@
   function buildInvoiceHeader(data: VendorInvoicePdfData): any {
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
-    const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData || {};
-    const companyVatNo =
-      (data as any)?.companyVatNo ||
-      data.companyPan ||
-      (data.company as any)?.Pan ||
-      (data.company as any)?.PAN ||
-      (data.company as any)?.GST_VAT ||
-      (data.company as any)?.VATNo ||
-      (data.company as any)?.vatNo ||
-      (data.branch as any)?.taxRegistrationNo ||
-      printData?.CompanyVATNo ||
-      printData?.CompanyVatNo ||
-      printData?.companyVatNo ||
-      printData?.CompanyGST_VAT ||
-      printData?.CompanyGSTVAT ||
-      printData?.CompanyTaxNumber ||
-      printData?.VATNo ||
-      printData?.vatNo ||
-      printData?.GST_VAT ||
-      printData?.GSTVAT ||
-      printData?.GSTNo ||
-      printData?.VatNo ||
-      printData?.TaxNumber ||
-      data.invoice?.customerGstVat ||
-      (data.invoice as any)?.GST_VAT ||
-      (data.invoice as any)?.GSTVAT ||
-      (data.invoice as any)?.VATNo ||
-      (data.invoice as any)?.VatNo ||
-      '';
 
     const bottomLine = {
       canvas: [{
@@ -346,8 +317,7 @@
     return [
       buildCompanyHeader({
         ...data,
-        companyTaxLabel: 'VAT No',
-        companyTaxValue: companyVatNo
+        showTaxRegistration: true
       }),
       bottomLine
     ];

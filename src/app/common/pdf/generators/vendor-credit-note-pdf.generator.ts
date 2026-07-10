@@ -287,29 +287,6 @@
   function buildInvoiceHeader(data: VendorCreditNotePdfData): any {
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
-    const printData = (data as any).vendorCreditNoteData || (data as any).invoicePrintData || {};
-    const companyVatNo =
-      printData?.VATNo ||
-      printData?.vatNo ||
-      printData?.GST_VAT ||
-      printData?.GSTVAT ||
-      printData?.GSTNo ||
-      printData?.VatNo ||
-      printData?.TaxNumber ||
-      printData?.CompanyVATNo ||
-      printData?.CompanyVatNo ||
-      printData?.companyVatNo ||
-      data.invoice?.customerGstVat ||
-      (data.invoice as any)?.GST_VAT ||
-      (data.invoice as any)?.GSTVAT ||
-      (data.invoice as any)?.VATNo ||
-      (data.invoice as any)?.VatNo ||
-      (data as any)?.companyVatNo ||
-      (data.branch as any)?.taxRegistrationNo ||
-      (data.company as any)?.GST_VAT ||
-      (data.company as any)?.VATNo ||
-      (data.company as any)?.vatNo ||
-      '';
 
     const bottomLine = {
       canvas: [{
@@ -326,8 +303,7 @@
     return [
       buildCompanyHeader({
         ...data,
-        companyTaxLabel: 'VAT No',
-        companyTaxValue: companyVatNo
+        showTaxRegistration: true
       }),
       bottomLine
     ];
