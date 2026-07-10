@@ -40,6 +40,12 @@ export interface CompanyHeaderPrintSettings {
 
 export interface CompanyHeaderData extends PdfDocumentBase {
   printSettings?: CompanyHeaderPrintSettings;
+  /** Renders the GST/VAT registration line. Mirrors PrintHeaderComponent's showTaxRegistration input. */
+  showTaxRegistration?: boolean;
+  companyCountryCode?: string;
+  companyGstCode?: string;
+  companyPan?: string;
+  /** Overrides for the derived label/value. Leave unset to let the country code decide. */
   companyTaxLabel?: string;
   companyTaxValue?: string;
 }
@@ -51,6 +57,44 @@ const DEFAULT_COMPANY_HEADER_SETTINGS: CompanyHeaderPrintSettings = {
 };
 
 const COMPANY_HEADER_LOGO_HEIGHT = 58;
+
+function firstNonEmpty(...values: any[]): string {
+  for (const value of values) {
+    const text = String(value ?? '').trim();
+    if (text) return text;
+  }
+  return '';
+}
+
+function resolveCompanyCountryCode(data: CompanyHeaderData): string {
+  const company = data.company as any;
+  const branch = data.branch as any;
+  return firstNonEmpty(
+    data.companyCountryCode,
+    branch?.countryMaster?.countryCode,
+    branch?.countryCode,
+    company?.countryMaster?.countryCode,
+    company?.countryCode
+  ).toLowerCase();
+}
+
+/**
+ * Resolve the company's tax registration line the same way PrintHeaderComponent does:
+ * India shows the GST registration, everywhere else shows the VAT/PAN registration.
+ */
+function resolveTaxRegistration(data: CompanyHeaderData): { label: string; value: string } {
+  const company = data.company as any;
+  const branch = data.branch as any;
+  const isIndia = resolveCompanyCountryCode(data) === 'in';
+
+  const gstNo = firstNonEmpty(data.companyGstCode, branch?.taxRegistrationNo, company?.GST_VAT);
+  const panNo = firstNonEmpty(data.companyPan, company?.Pan, company?.PAN);
+
+  return {
+    label: firstNonEmpty(data.companyTaxLabel) || (isIndia ? 'GST No' : 'VAT No'),
+    value: firstNonEmpty(data.companyTaxValue) || (isIndia ? gstNo || panNo : panNo || gstNo)
+  };
+}
 
 function buildPdfLogoColumn(logo: string | null | undefined, width: number, height: number): any {
   if (!logo || logo === 'none') {
@@ -121,8 +165,8 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
   const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
   const postalCode = branch?.postalCode || company?.postalCode || '';
   const phone = branch?.phoneNumber || company?.phoneNumber || '';
-  const companyTaxLabel = (data.companyTaxLabel || '').trim();
-  const companyTaxValue = (data.companyTaxValue || '').trim();
+  const taxRegistration = resolveTaxRegistration(data);
+  const showTaxRegistration = data.showTaxRegistration === true && !!taxRegistration.value;
   const cityLine: any[] = [];
   const appendText = (text: string | any[]) => {
     if (cityLine.length) cityLine.push({ text: ', ' });
@@ -143,12 +187,12 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
     { text: (company?.companyName || '').toUpperCase(), fontSize: 14, bold: true, alignment: printSettings.companyAlignment },
     { text: branch?.branchName || '', fontSize: 11, bold: true, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
     { text: branch?.addressLine1 || company?.addressLine1 || '', fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: cityLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 2, 0, companyTaxValue ? 1 : 4], noWrap: true },
-    ...(companyTaxValue
+    { text: cityLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 2, 0, showTaxRegistration ? 1 : 4], noWrap: true },
+    ...(showTaxRegistration
       ? [{
           text: [
-            { text: `${companyTaxLabel || 'VAT No'} : `, bold: true },
-            { text: companyTaxValue }
+            { text: `${taxRegistration.label} : `, bold: true },
+            { text: taxRegistration.value }
           ],
           fontSize: 9,
           alignment: printSettings.companyAlignment,

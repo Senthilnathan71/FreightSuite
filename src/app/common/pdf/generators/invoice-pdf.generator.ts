@@ -291,16 +291,8 @@
    */
   
   function buildInvoiceHeader(data: InvoicePdfData): any {
-    const company = data.company;
-    const branch = data.branch;
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
-    const companyCountryCode = String((data as any)?.companyCountryCode || company?.countryCode || branch?.countryCode || '').toLowerCase();
-    const registrationNo = (
-      companyCountryCode === 'in'
-        ? data.companyGstCode || (branch as any)?.taxRegistrationNo || (company as any)?.GST_VAT
-        : data.companyPan || (data as any)?.companyVatNo || (company as any)?.Pan || (company as any)?.PAN || (company as any)?.GST_VAT || (branch as any)?.taxRegistrationNo
-    ) || '';
 
     const bottomLine = {
       canvas: [{
@@ -317,8 +309,7 @@
     return [
       buildCompanyHeader({
         ...data,
-        companyTaxLabel: companyCountryCode === 'in' ? 'GST No' : 'VAT No',
-        companyTaxValue: registrationNo
+        showTaxRegistration: true
       }),
       bottomLine
     ];

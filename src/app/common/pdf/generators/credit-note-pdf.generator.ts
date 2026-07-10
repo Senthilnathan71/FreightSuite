@@ -262,7 +262,7 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     margin: [0, 0, 0, 6]
   };
 
-  return [buildCompanyHeader(data), bottomLine];
+  return [buildCompanyHeader({ ...data, showTaxRegistration: true }), bottomLine];
 }
 
 /**
