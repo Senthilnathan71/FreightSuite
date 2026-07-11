@@ -1650,7 +1650,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const osLocal = toNumber(this.getFormattedAndPaddedAmount(toNumber(vm.osLocalAmt), cur));
       const mCurr = toNumber(this.getFormattedAndPaddedAmount(toNumber(vm.matchCurrAmt), cur));
       const mLocal = toNumber(this.getFormattedAndPaddedAmount(toNumber(vm.matchLocalAmt), cur));
-      return mCurr > osCurr || mLocal > osLocal;
+      // Only compare a matched amount to its outstanding when that amount is actually > 0 — a
+      // zero/blank matched line settles nothing (can't over-match) and must not false-trip against a
+      // negative outstanding (e.g. an advance / on-account row showing a credit balance).
+      return (mCurr > 0 && mCurr > osCurr) || (mLocal > 0 && mLocal > osLocal);
     });
     if (overMatched) {
       const cur = overMatched.matchCurr || overMatched.curr;
@@ -6290,9 +6293,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // Skip check if ticked
     if (row.get('isTicked')?.value === true) return;
 
-    // CONDITION VIOLATION
-    const violatesCurr = currAmt > osCurr;
-    const violatesLocal = localAmt > osLocal;
+    // CONDITION VIOLATION — only when the matched amount is actually > 0 (a zero/blank matched line
+    // can't over-match, and would otherwise false-trip against a negative/zero outstanding).
+    const violatesCurr = currAmt > 0 && currAmt > osCurr;
+    const violatesLocal = localAmt > 0 && localAmt > osLocal;
 
     if (violatesCurr || violatesLocal) {
       // SHOW ERROR ONLY ONCE — only the line(s) actually violated. (This runs on matchCurrAmt input
