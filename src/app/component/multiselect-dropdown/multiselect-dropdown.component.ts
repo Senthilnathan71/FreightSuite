@@ -50,6 +50,10 @@ export class MultiSelectComponent implements ControlValueAccessor, OnInit, OnCha
   @Input() placeholder: string = 'Select items';
   @Input() searchable: boolean = true;
   @Input() displayCount: number = 2;
+  // Optional secondary field rendered per option as a muted, truncated column (e.g. department),
+  // mirroring dofi-searchable-dropdown. Backward-compatible: undefined ⇒ nothing extra is rendered.
+  @Input() secondaryField?: string;
+  @Input() secondaryMaxWidth: string = '110px';
 
   @Output() searchChange = new EventEmitter<string>();
   @Output() valueChange = new EventEmitter<any[]>();
@@ -183,9 +187,12 @@ export class MultiSelectComponent implements ControlValueAccessor, OnInit, OnCha
     const searchTerm = (event.target as HTMLInputElement).value;
     this.searchChange.emit(searchTerm);
     if (this.searchable) {
+      const term = searchTerm.toLowerCase();
       this.filteredItems = searchTerm
         ? this.items.filter(item =>
-            item[this.bindLabel].toLowerCase().includes(searchTerm.toLowerCase()))
+            String(item[this.bindLabel] ?? '').toLowerCase().includes(term) ||
+            (!!this.secondaryField &&
+              String(item[this.secondaryField] ?? '').toLowerCase().includes(term)))
         : [...this.items];
     }
   }

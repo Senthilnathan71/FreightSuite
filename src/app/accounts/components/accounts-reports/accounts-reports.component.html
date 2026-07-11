@@ -75,6 +75,7 @@
       <div class="card-body py-1">
         <app-report-parameter-form
           [parameters]="filteredParameters"
+          [reportKey]="selectedReport.ReportName"
           [loading]="generatingReport"
           [module]="'accounts'"
           [companyId]="companyId"

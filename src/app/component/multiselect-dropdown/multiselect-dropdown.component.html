@@ -76,11 +76,18 @@
           (click)="$event.stopPropagation(); toggleItem(item[bindValue])"
       >
       <label class="form-check-label">{{ item[bindLabel] }}</label>
+      <span
+        *ngIf="secondaryField && item[secondaryField]"
+        class="text-muted small ms-2 text-truncate"
+        [style.max-width]="secondaryMaxWidth"
+        style="display:inline-block; vertical-align:bottom;"
+        [title]="item[secondaryField]"
+      >{{ item[secondaryField] }}</span>
     </div>
   </ng-template>
   <ng-template ng-multi-label-tmp let-items="items" let-clear="clear">
     <div class="ng-value" *ngFor="let item of items.slice(0, displayCount)">
-      <span class="ng-value-label" style="background-color: #E9E4F0;color: #333;font-weight: 600;">{{ item[bindLabel] }}</span>
+      <span class="ng-value-label" style="background-color: #E9E4F0;color: #333;font-weight: 600;">{{ item[bindLabel] }}<ng-container *ngIf="secondaryField && item[secondaryField]"> — {{ item[secondaryField] }}</ng-container></span>
       <span class="ng-value-icon" style="background-color: #E9E4F0;color: #333; font-weight: 600;" (click)="removeItem(item, $event)">×</span>
     </div>
     <div class="ng-value" *ngIf="items.length > displayCount">

@@ -124,7 +124,7 @@
 
           <!-- SINGLE SELECT DROPDOWN -->
           <ng-select
-            *ngIf="param.ParameterFieldType === 'DROPDOWN'"
+            *ngIf="resolveFieldType(param) === 'DROPDOWN'"
             class="ng-select"
             [items]="getDropdownOptions(param.ParameterName)"
             bindLabel="label"
@@ -147,12 +147,13 @@
 
           <!-- MULTI SELECT -->
           <multi-select
-            *ngIf="param.ParameterFieldType === 'DROPDOWN M'"
+            *ngIf="resolveFieldType(param) === 'DROPDOWN M'"
             [items]="getDropdownOptions(param.ParameterName)"
             [formControlName]="param.ParameterName"
             bindLabel="label"
             bindValue="value"
             [displayCount]="1"
+            [secondaryField]="getDropdownSecondaryField(param.ParameterName)"
           >
           </multi-select>
 

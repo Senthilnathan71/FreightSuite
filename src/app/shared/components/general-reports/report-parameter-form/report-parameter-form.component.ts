@@ -78,6 +78,13 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   // (currently the Salesman dropdown, shown only when the "Salesman" checkbox is ticked).
   private hiddenParams: Set<string> = new Set();
 
+  // Ledger Report only: runtime override of a parameter's rendered field type. Keyed by
+  // ParameterName. Used to flip the Subledger between single-select (DROPDOWN) and multi-select
+  // (DROPDOWN M) based on the selected Ledger's type, without changing the stored DB config.
+  fieldTypeOverride: Map<string, string> = new Map();
+  // LedgerTypes whose subledgers are charges that repeat per department → multi-select + department.
+  private readonly CHARGE_LEDGER_TYPES = ['Revenue', 'Other Revenue', 'Cost', 'Other Cost'];
+
   readonly FIELD_TYPES = {
     TEXT: 'TEXT',
     NUMBER: 'NUMBER',
@@ -178,7 +185,69 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     this.setupSalesmanCurrencyLock();
     // Ageing Report: show the Salesman dropdown only when the "Salesman" checkbox is ticked.
     this.setupSalesmanFilterVisibility();
+    // Ledger Report: flip the Subledger to multi-select + department for charge-type ledgers.
+    this.setupLedgerSubledgerMode();
     this.setupFormValueChanges();
+  }
+
+  /** True only for the Ledger Report (scopes the Subledger multi-select behaviour). */
+  private isLedgerReport(): boolean {
+    return this.reportKey?.trim().toLowerCase() === 'ledger-report';
+  }
+
+  /**
+   * The field type actually rendered for a parameter. Normally the stored DB type, but the Ledger
+   * Report overrides the Subledger between DROPDOWN and DROPDOWN M at runtime (see
+   * setupLedgerSubledgerMode). Backward-compatible: returns the stored type when no override exists.
+   */
+  resolveFieldType(param: ReportParameter): string {
+    return this.fieldTypeOverride.get(param.ParameterName) ?? param.ParameterFieldType;
+  }
+
+  /**
+   * Ledger Report only: when the selected Ledger is a charge type (Revenue / Other Revenue / Cost /
+   * Other Cost), render the Subledger as a multi-select (options carry a truncated department), so
+   * the user can pick the same charge across several departments; otherwise keep the stored single
+   * select. The existing cascade still reloads the Subledger options on Ledger change — this handler
+   * only owns the Subledger's field-type, value shape and enabled state. Must run AFTER
+   * setupCascadingListeners (which resets this.subscriptions) so its subscription survives.
+   */
+  private setupLedgerSubledgerMode(): void {
+    if (!this.isLedgerReport()) return;
+    const ledger = this.parameterForm.get('Ledger');
+    const sub = this.parameterForm.get('Subledger');
+    if (!ledger || !sub) return;
+
+    const apply = (ledgerVal: any) => {
+      const opt = (this.dropdownData.get('Ledger') || []).find((o) => o.value === ledgerVal);
+      const isCharge =
+        !!opt &&
+        this.CHARGE_LEDGER_TYPES.some(
+          (t) => t.toLowerCase() === String(opt.LedgerType ?? '').trim().toLowerCase(),
+        );
+      if (isCharge) {
+        this.fieldTypeOverride.set('Subledger', this.FIELD_TYPES.DROPDOWN_M);
+        if (!Array.isArray(sub.value)) sub.setValue([], { emitEvent: false });
+        if (ledgerVal !== null && ledgerVal !== undefined) sub.enable({ emitEvent: false });
+      } else {
+        this.fieldTypeOverride.delete('Subledger');
+        if (Array.isArray(sub.value)) sub.setValue(null, { emitEvent: false });
+      }
+    };
+
+    apply(ledger.value); // initial state
+    this.subscriptions.add(
+      ledger.valueChanges.pipe(distinctUntilChanged()).subscribe(apply),
+    );
+  }
+
+  /**
+   * Secondary display field for a multi-select option (rendered as a muted, truncated column) —
+   * auto-detected as a "department"/"dept" key. Undefined ⇒ no secondary column (e.g. Branch).
+   */
+  getDropdownSecondaryField(paramName: string): string | undefined {
+    const keys = this.getDropdownKeys(paramName);
+    return keys.find((k) => /department|dept/i.test(k));
   }
 
   /**
