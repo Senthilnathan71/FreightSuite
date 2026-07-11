@@ -178,7 +178,7 @@
       isIndiaInvoice
         ? ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
         : 0;
-    const extraTopMarginForVATLine = 0;
+    const extraTopMarginForVATLine = isIndiaInvoice && !isNonJobInvoice ? 20 : 0;
     const extraTopMarginForNonJobFields = isNonJobInvoice
       ? 24 + (printData?.InvoiceDueDate ? 12 : 0)
       : 0;

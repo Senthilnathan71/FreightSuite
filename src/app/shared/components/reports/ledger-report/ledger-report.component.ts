@@ -225,7 +225,7 @@ getSignedTotal(transactions: any[]): number {
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
           { label: 'Branch', value: this.fullData?.branchInvolved || '' },
           { label: 'Ledger', value: this.fullData?.ledgerName || '' },
-          { label: 'Subledger', value: this.fullData?.subledgerName || '' },
+          { label: 'Subledger', value: this.fullData?.subledgerName || '' , valueWidth: (this.fullData?.subledgerName?.length || 0) > 40 ? 400 : ''},
           { label: 'Voucher Type', value: this.fullData?.voucherTypeName || '' }
         ]
       },
