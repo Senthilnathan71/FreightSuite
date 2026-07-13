@@ -1714,7 +1714,7 @@
                                             <input type="text" id="text-input" formControlName="RevenueRate"
                                               placeholder="" class="custom-input-field sm text-end" DecimalPrecision
                                               [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
-                                              [disabled]="isCostRevReadOnly"
+                                              [disabled]="isPerUnitDisabled(routeIndex,carrierIndex)"
                                               (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               style="margin-top: 2px;">
                                             @if(charge.get("RevenueRate")?.touched &&
@@ -1811,7 +1811,7 @@
                                             <input type="text" id="text-input" formControlName="CostRate" placeholder=""
                                               DecimalPrecision [DecimalPrecisionBefore]="6"
                                               [DecimalPrecisionAfter]="digitsAfterDecimal"
-                                              [disabled]="isCostRevReadOnly"
+                                              [disabled]="isPerUnitDisabled(routeIndex,carrierIndex)"
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               class="custom-input-field sm  text-end" style="margin-top: 2px;">
                                             @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
