@@ -8,6 +8,7 @@ import {
   formatNumberWithCommas,
   joinNonEmpty,
 } from '../helpers/pdf-formatters';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { getPdfStyles } from '../styles/pdf-styles';
 
 const RIGHT_LABEL_WIDTH = 100;
@@ -36,7 +37,7 @@ export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
       ],
     }),
     content: [
-      buildHeader(data),
+      buildCompanyHeader(data),
       buildTitle(data),
       buildReleaseSection(data),
       buildShipmentHeading(),
@@ -58,125 +59,6 @@ export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
       color: '#000',
     },
   };
-}
-
-function buildHeader(data: DeliveryOrderPdfData): any {
-  const company: any = data.company || {};
-  const branch: any = data.branch || {};
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const,
-  };
-  const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
-  const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode || '';
-  const phoneNumber = branch?.phoneNumber || company?.phoneNumber || '';
-  const detailLine2: any[] = [
-    joinNonEmpty([addressLine2, cityName], ', '),
-  ];
-
-  if (postalCode) {
-    detailLine2.push(
-      detailLine2[0] ? ', ' : '',
-      { text: 'Postal Code : ', bold: true },
-      postalCode,
-    );
-  }
-
-  if (phoneNumber) {
-    detailLine2.push(
-      detailLine2.length > 1 || detailLine2[0] ? ', ' : '',
-      { text: 'Ph.no\u00a0:\u00a0', bold: true },
-      phoneNumber,
-    );
-  }
-
-  const companyInfoStack: any[] = [
-    {
-      text: (company?.companyName || '').toUpperCase(),
-      fontSize: 13,
-      alignment: printSettings.companyAlignment,
-    },
-    {
-      text: branch?.branchName || '',
-      fontSize: 10,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 2, 0, 0],
-    },
-    {
-      text: detailLine1,
-      fontSize: 8.5,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 2, 0, 0],
-    },
-    {
-      text: detailLine2,
-      fontSize: 8,
-      alignment: printSettings.companyAlignment,
-      noWrap: true,
-      margin: [0, 2, 0, 0],
-    },
-  ];
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({
-        image: logo,
-        fit: [70, 70],
-        alignment: slot,
-        margin: slot === 'right' ? [0, 4, 10, 4] : [10, 4, 0, 4],
-      });
-    }
-    if (printSettings.companyPosition === slot) {
-      const margin = slot === 'right'
-        ? (stack.length ? [0, 6, 16, 0] : [0, 8, 16, 0])
-        : (stack.length ? [0, 6, 0, 0] : [0, 8, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin });
-    }
-
-    return {
-      border: [false, false, false, false],
-      stack,
-    };
-  };
-
-  return {
-    table: {
-      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-      body: [
-        [
-          buildSlot('left'),
-          buildSlot('center'),
-          buildSlot('right'),
-        ],
-      ],
-    },
-    layout: 'noBorders',
-    margin: [0, 0, 0, 2],
-  };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right',
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [90, '*', 90];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [90, '*', 260];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [260, '*', 90];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: DeliveryOrderPdfData): any {
@@ -507,23 +389,23 @@ function buildChargesTable(data: DeliveryOrderPdfData): any {
   return {
     table: {
       headerRows: 1,
-      widths: ['*', 42, 42, 70, 70, 70],
+      widths: ['*', 28, 32, 82, 96, 96],
       body: [
         [
-          { text: 'Charge Description', style: 'tableHeader' },
-          { text: 'Unit', style: 'tableHeader' },
-          { text: 'Curr.', style: 'tableHeader' },
-          { text: 'Per Unit', style: 'tableHeader' },
-          { text: 'Amount', style: 'tableHeader' },
-          { text: 'Local Amount', style: 'tableHeader' },
+          buildChargeHeaderCell('Charge Description'),
+          buildChargeHeaderCell('Unit'),
+          buildChargeHeaderCell('Curr.'),
+          buildChargeHeaderCell('Per Unit'),
+          buildChargeHeaderCell('Amount'),
+          buildChargeHeaderCell('Local Amount'),
         ],
         ...data.charges.map((item) => [
           buildTextCell(item.chargeDescription),
-          buildTextCell(item.unit),
-          buildTextCell(item.currency),
-          buildNumberCell(item.perUnit, 2),
-          buildNumberCell(item.amount, 2),
-          buildNumberCell(item.localAmount, 2),
+          buildTextCell(item.unit, false, 'center'),
+          buildTextCell(item.currency, false, 'center'),
+          buildChargeNumberCell(item.perUnit),
+          buildChargeNumberCell(item.amount),
+          buildChargeNumberCell(item.localAmount),
         ]),
         [
           {
@@ -534,14 +416,22 @@ function buildChargesTable(data: DeliveryOrderPdfData): any {
           },
           {},
           {},
-          buildNumberCell(data.chargeTotals.totalPerUnit, 2, true),
-          buildNumberCell(data.chargeTotals.totalAmount, 2, true),
-          buildNumberCell(data.chargeTotals.totalLocalAmount, 2, true),
+          buildChargeNumberCell(data.chargeTotals.totalPerUnit, true),
+          buildChargeNumberCell(data.chargeTotals.totalAmount, true),
+          buildChargeNumberCell(data.chargeTotals.totalLocalAmount, true),
         ],
       ],
     },
     layout: edgeOpenTableLayout(),
     margin: [0, 0, 0, 8],
+  };
+}
+
+function buildChargeHeaderCell(text: string): any {
+  return {
+    text,
+    style: 'tableHeader',
+    noWrap: true,
   };
 }
 
@@ -663,6 +553,15 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
   };
 }
 
+function buildChargeNumberCell(value?: number, bold = false): any {
+  return {
+    text: formatNumberWithCommas(value || 0, 2),
+    style: bold ? 'chargeNumberCellBold' : 'chargeNumberCell',
+    alignment: 'right',
+    noWrap: true,
+  };
+}
+
 function topBorderLayout(): any {
   return {
     hLineWidth: (i: number, node: any) => {
@@ -709,6 +608,8 @@ function getDeliveryOrderStyles(): any {
     },
     tableCell: { fontSize: 8 },
     tableCellBold: { fontSize: 8 },
+    chargeNumberCell: { fontSize: 7 },
+    chargeNumberCellBold: { fontSize: 7, bold: true },
     termsItem: { fontSize: 8 },
   };
 }

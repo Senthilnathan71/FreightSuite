@@ -28,7 +28,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { LeadService } from '../../Services/lead.service';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
-import { catchError, forkJoin, of, Subject, Subscription, takeUntil, tap } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of, Subject, Subscription, takeUntil, tap } from 'rxjs';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
@@ -151,6 +151,7 @@ export class EnquiryEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   rateRequestData: any;
   currentMenuId: number;
   TandCList: any;
+  routeTandCMap: Record<string, any[]> = {};
   productList: any[];
   leadList: any[] = [];
   cusBranchList: any[] = [];
@@ -1426,7 +1427,8 @@ private parseFloatSafe(value: any): number {
     this.checkAuthorisedPerson(this.userData?.UserMasterSid);
   }
 
-  openPrint() {
+  async openPrint() {
+    await this.prepareRouteTermsForPrint();
     this.ngbModal.open(this.enquiryPrint, {
       size: 'xl',
       centered: true,
@@ -1636,6 +1638,7 @@ private parseFloatSafe(value: any): number {
     this.leadService.getEnquiryById(payload).subscribe((resp: any) => {
       if (resp.status) {
         this.enquiryData = resp.data;
+        this.routeTandCMap = {};
         this.patchValues(resp.data);
         this.rateRequestData = resp.data;
         this.resetUnsavedState();
@@ -2962,6 +2965,99 @@ private parseFloatSafe(value: any): number {
     return port?.PortCode ?? null;
   }
 
+  getRouteTerms(route: any): any[] {
+    const routeSid = route?.EnquiryRouteSid;
+    return routeSid ? (this.routeTandCMap[String(routeSid)] || []) : [];
+  }
+
+  getTermDisplayText(term: any): string {
+    return (term?.TandC || term?.Terms || term?.content || '').trim();
+  }
+
+  private getUniqueTerms(terms: any[], documentSid?: any): any[] {
+    const fallbackDocumentSid = documentSid ?? null;
+    return (terms || []).filter((term: any, index: number, arr: any[]) => {
+      const termText = this.getTermDisplayText(term).toLowerCase();
+      const termDocumentSid = term?.DocumentSid ?? fallbackDocumentSid;
+
+      return index === arr.findIndex((item: any) => {
+        const itemText = this.getTermDisplayText(item).toLowerCase();
+        const itemDocumentSid = item?.DocumentSid ?? fallbackDocumentSid;
+
+        return (
+          term?.TandCTransactionSid &&
+          item?.TandCTransactionSid &&
+          term.TandCTransactionSid === item.TandCTransactionSid
+        ) || (
+          termText !== '' &&
+          termText === itemText &&
+          termDocumentSid === itemDocumentSid
+        );
+      });
+    });
+  }
+
+  private buildRouteTermsConditionPayload(route: any): any {
+    return {
+      MenuMasterSid: this.currentMenuId,
+      DepartmentMasterSid: this.enquiryData?.DepartmentMasterSid,
+      POL: this.getPortCodeBySid(route?.POLSid),
+      POD: this.getPortCodeBySid(route?.PODSid),
+      Carrier: null,
+      DocumentSid: route?.EnquiryRouteSid
+    };
+  }
+
+  private async prepareRouteTermsForPrint(): Promise<void> {
+    const routes = Array.isArray(this.enquiryData?.enquiryRoute) ? this.enquiryData.enquiryRoute : [];
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId')) || this.currentMenuId;
+    this.currentCompany = this.currentCompany || this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+
+    if (!routes.length || !this.currentCompany?.CompanyMasterSid || !this.currentMenuId) {
+      this.routeTandCMap = {};
+      return;
+    }
+
+    const routeTermsEntries = await Promise.all(routes.map(async (route: any) => {
+      const routeSid = route?.EnquiryRouteSid;
+      if (!routeSid) {
+        return null;
+      }
+
+      const transactionPayload = {
+        CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+        MenuMasterSid: this.currentMenuId,
+        DocumentSid: routeSid
+      };
+
+      try {
+        const savedTermsResponse = await firstValueFrom(this.masterService.getTandC(transactionPayload));
+        const savedTerms = savedTermsResponse?.status ? (savedTermsResponse.data || []) : [];
+
+        if (!this.isTermsAndConditionsEnabled) {
+          return [String(routeSid), this.getUniqueTerms(savedTerms, routeSid)] as [string, any[]];
+        }
+
+        const defaultTermsResponse = await firstValueFrom(
+          this.masterService.getTandCByCondition(this.buildRouteTermsConditionPayload(route))
+        );
+        const defaultTerms = defaultTermsResponse?.status ? (defaultTermsResponse.data || []) : [];
+
+        return [String(routeSid), this.getUniqueTerms([...savedTerms, ...defaultTerms], routeSid)] as [string, any[]];
+      } catch (error) {
+        console.error('Error loading route terms for print:', error);
+        return [String(routeSid), []] as [string, any[]];
+      }
+    }));
+
+    this.routeTandCMap = routeTermsEntries.reduce((acc: Record<string, any[]>, entry) => {
+      if (entry) {
+        acc[entry[0]] = entry[1];
+      }
+      return acc;
+    }, {});
+  }
+
   openTandC(routeIndex: number = 0) {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -3266,6 +3362,7 @@ if (this.isTermsAndConditionsEnabled) {
 
     try {
       const logo = this.pdfMakeService.getReportLogo();
+      await this.prepareRouteTermsForPrint();
 
       this.pdfMakeService.generateEnquiryFromApi(
         this.enquiryData || this.rateRequestData,
@@ -3279,6 +3376,7 @@ if (this.isTermsAndConditionsEnabled) {
           salesmen: this.salesmanList
         },
         {
+          routeTandCMap: this.routeTandCMap,
           printSettings: this.companySettings.getPrintSettings()
         }
       );
@@ -3490,6 +3588,7 @@ if (this.isTermsAndConditionsEnabled) {
   async generatePDFBlob(): Promise<Blob | null> {
     try {
       const logo = this.pdfMakeService.getReportLogo();
+      await this.prepareRouteTermsForPrint();
 
       return await this.pdfMakeService.generateEnquiryBlobFromApi(
         this.enquiryData || this.rateRequestData,
@@ -3503,6 +3602,7 @@ if (this.isTermsAndConditionsEnabled) {
           salesmen: this.salesmanList
         },
         {
+          routeTandCMap: this.routeTandCMap,
           printSettings: this.companySettings.getPrintSettings()
         }
       );

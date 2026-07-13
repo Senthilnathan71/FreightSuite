@@ -378,11 +378,12 @@
       </div>
 
       <div
-        style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;">
-        <strong style="white-space:nowrap;min-width:155px;font-weight: bolder;">Amount in Words</strong>
-        <p style="margin:0; line-height:22px; word-break:break-word;">
-          : <strong>{{ getAmountInWords() || 'Zero' }}</strong>
-        </p>
+        style="display:grid; grid-template-columns:150px 10px minmax(0, 1fr); align-items:start; column-gap:4px; margin:10px 15px 8px 15px; line-height:22px;">
+        <strong style="font-weight:bolder; white-space:nowrap;">Amount in Words</strong>
+        <span style=" text-align:center;">:</span>
+        <span style="display:block; word-break:normal; overflow-wrap:anywhere;">
+          {{ getAmountInWords() || 'Zero' }}
+        </span>
       </div>
 
 
@@ -399,11 +400,10 @@
 
       <div style="width:100%; text-align:right; display:block; margin-top:10px; ">
         <h5 style="margin:0; padding-right:40px;">
-          FOR <strong>
+          FOR 
             {{ currentCompany?.companyName || 'Company Name' }}
             ({{ currentBranch?.branchName || 'Company Branch' }}) <br>
             (AS AGENTS ONLY)
-          </strong>
         </h5>
       </div>
 

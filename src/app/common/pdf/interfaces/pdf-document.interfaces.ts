@@ -55,6 +55,7 @@ export interface QuotationRouteData {
   carriers: QuotationCarrierData[];
   cargo?: PdfCargoItem[];
   products?: Array<{ length?: number; width?: number; height?: number; packageQty?: number }>;
+  terms?: PdfTermItem[];
   weightUom?: string;
   dimUom?: string;
 }
@@ -114,6 +115,7 @@ export interface EnquiryRouteData {
   pol?: PdfPortInfo;
   pod?: PdfPortInfo;
   fpd?: PdfPortInfo;
+  terms?: PdfTermItem[];
   cargo: EnquiryCargoData[];
 }
 
