@@ -216,6 +216,7 @@ export class PdfMakeService {
         companyPosition: 'left' | 'center' | 'right';
         companyAlignment: 'left' | 'center' | 'right';
       };
+      companyCurrencyCode?: string;
     }
   ): void {
     const pdfData = transformQuotationApiData(apiData, company, branch, userData, logo, lookups, options);
@@ -239,6 +240,7 @@ export class PdfMakeService {
         companyPosition: 'left' | 'center' | 'right';
         companyAlignment: 'left' | 'center' | 'right';
       };
+      companyCurrencyCode?: string;
     }
   ): Promise<Blob> {
     const pdfData = transformQuotationApiData(apiData, company, branch, userData, logo, lookups, options);

@@ -35,6 +35,7 @@ export interface QuotationPdfData extends PdfDocumentBase {
   };
   routes: QuotationRouteData[];
   terms: PdfTermItem[];
+  companyCurrencyCode?: string;
   currencyMaster?: any[];
   chargeUnitMaster?: any[];
   departments?: any[];

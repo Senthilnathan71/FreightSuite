@@ -157,7 +157,7 @@ function buildRouteSections(data: QuotationPdfData): any[] {
         blocks.push(buildRouteCargoTable(route, data));
       }
 
-      blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate));
+      blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate, data.companyCurrencyCode));
     });
 
     blocks.push({ text: '', margin: [0, 0, 0, 0] });
@@ -210,7 +210,7 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
   };
 }
 
-function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
+function buildChargeTable(charges: any[], showAgreedRate: boolean, companyCurrencyCode?: string): any {
   const header: any[] = [
     { text: 'Charge', bold: true, alignment: 'center' },
     { text: 'Unit', bold: true, alignment: 'center' },
@@ -223,7 +223,7 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
   header.push({ text: 'Rate', bold: true, alignment: 'center' });
   header.push({ text: 'Amt', bold: true, alignment: 'center' });
   if (showAgreedRate) {
-    header.push({ text: 'Local Amt', bold: true, alignment: 'center' });
+    header.push({ text: `Amt In ${companyCurrencyCode || ''}`.trim(), bold: true, alignment: 'center' });
   }
 
   const body: any[] = [header];
@@ -258,7 +258,7 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
   }
 
   const widths: any[] = showAgreedRate
-    ? ['34%', '10%', '8%', '8%', '10%', '10%', '10%', '10%']
+    ? ['34%', '6%', '8%', '6%', '10%', '10%', '13%', '13%']
     : ['40%', '11%', '9%', '10%', '13%', '17%'];
 
   return {
@@ -440,7 +440,7 @@ function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>)
 function buildRouteInfo(route: any, carrier: any): any {
   return buildLabeledGrid([
     { label: 'Carrier', value: carrier?.carrierName || '' },
-    { label: 'Tr. Days', value: carrier?.transitTime || '' },
+    { label: 'TT. Days', value: carrier?.transitTime || '' },
     { label: 'Valid', value: `${formatDate(route.effDate)} - ${formatDate(route.expDate)}` }
   ]);
 }
@@ -546,6 +546,7 @@ export function transformQuotationApiData(
       companyPosition: 'left' | 'center' | 'right';
       companyAlignment: 'left' | 'center' | 'right';
     };
+    companyCurrencyCode?: string;
   }
 ): QuotationPdfData {
   const quotation = apiData || {};
@@ -636,6 +637,7 @@ export function transformQuotationApiData(
     terms: normalizedTerms.map((term: string) => ({
       content: term
     })),
+    companyCurrencyCode: options?.companyCurrencyCode || '',
     currencyMaster: lookups?.currencyMaster || [],
     chargeUnitMaster: lookups?.chargeUnitMaster || [],
     departments: lookups?.departments || [],

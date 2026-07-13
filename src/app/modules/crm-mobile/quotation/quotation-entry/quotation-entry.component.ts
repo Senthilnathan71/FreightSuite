@@ -72,7 +72,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
-import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -265,7 +265,7 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   auditLogModalRef!: NgbModalRef;
 
    standardChargeLoading:boolean = false;
-
+  currentCompanyCurrency: CurrencySettings;
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
@@ -587,6 +587,7 @@ dataFromEnqPage:any;
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
     this.loadTermsAndConditionsConfig();
     this.loadCityName();
     this.mps.init().subscribe();
@@ -7342,7 +7343,8 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         measurementUnitList: this.measurementUnitList
       },
       {
-        printSettings: this.companySettings.getPrintSettings()
+        printSettings: this.companySettings.getPrintSettings(),
+        companyCurrencyCode: this.currentCompanyCurrency?.code
       }
     );
 
