@@ -6934,6 +6934,14 @@ isCarrierApprovalLocked(routeIndex: number, carrierIndex: number): boolean {
     this.isBookingLockedForRoute(routeIndex);
 }
 
+isPerUnitDisabled(routeIndex: number, carrierIndex: number): boolean {
+  if (this.isCostRevReadOnly) return true;
+
+  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+  return carrierForm?.get('authorizerStatus')?.value === 'Approved' ||
+    this.isCarrierApproved(routeIndex, carrierIndex);
+}
+
 private applyBookingLockForRoute(routeIndex: number, routeData?: any): void {
   const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
   const bookingLocked = this.hasBookingForRoute(routeIndex, routeData);
