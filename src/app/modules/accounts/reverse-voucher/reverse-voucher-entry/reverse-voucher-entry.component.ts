@@ -153,6 +153,7 @@ export class ReverseVoucherEntryComponent {
   suspendedMatchingHeaders: { VoucherMatchingHeaderSid: number; VoucherMatchingNo: string }[] = [];
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
+  private ledgerFetchHadHeaderId = false;
   bookingModeCountry: string = 'india';
   get isIndiaGST(): boolean {
     return this.currentCompanyCountryCode === 'in';
@@ -318,6 +319,7 @@ export class ReverseVoucherEntryComponent {
       this.currentCompany = null;
       this.currentBranch = null;
     }
+    this.headerId = Number(this.route.snapshot.paramMap.get('id')) || null;
     this.loadTermsAndConditionsConfig();
     this.initForm();
     this.loadVoucherPeriods();
@@ -520,6 +522,7 @@ export class ReverseVoucherEntryComponent {
     const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
     const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
 
+    this.ledgerFetchHadHeaderId = !!this.headerId;
     Promise.all([
       firstValueFrom(this.operationService.getAllCreditorWithCOAMapped(filterOption)),
       firstValueFrom(this.operationService.getAllCurrencies()),
@@ -528,7 +531,13 @@ export class ReverseVoucherEntryComponent {
       firstValueFrom(this.operationService.getAllUom()),
       firstValueFrom(this.accountService.getAllCostCenters()),
       firstValueFrom(this.accountService.getAllProfitCenters()),
-      firstValueFrom(this.accountService.getAllCoaWithLedgerCategory({LedgerCategory: 'Ledger',CompanyMasterSid})),
+      firstValueFrom(this.accountService.getAllCoaWithLedgerCategory({
+        LedgerCategory: 'Ledger',
+        CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        VoucherType: 'RJV',
+        ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
+      })),
       firstValueFrom(this.masterService.getSubledgerMasterByType({subledgerType:'Customer', CompanyMasterSid})),
       firstValueFrom(this.operationService.getAllDepartments(CompanyMasterSid)),
       firstValueFrom(this.operationService.getAllMasterJobs(filterOption))
@@ -770,6 +779,26 @@ export class ReverseVoucherEntryComponent {
     console.log('DEBUG - Final details array length:', this.details.length);
     this.validateAmount();
 
+  }
+
+  private loadLedgerDropdown(): void {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    this.accountService.getAllCoaWithLedgerCategory({
+      LedgerCategory: 'Ledger',
+      CompanyMasterSid,
+      BranchMasterSid,
+      VoucherType: 'RJV',
+      ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
+    }).subscribe({
+      next: (res: any) => {
+        this.coaList = res?.data ?? res ?? [];
+        this.ledgerFetchHadHeaderId = !!this.headerId;
+      },
+      error: (err: any) => {
+        console.error('Error re-fetching ledger dropdown:', err);
+      }
+    });
   }
 
   loadVoucherPeriods(): void {
@@ -1409,6 +1438,9 @@ export class ReverseVoucherEntryComponent {
           this.destroy$.complete();
           console.log(response.data, 'loadReverseVoucherById')
           this.reverseVoucherData = response.data;
+          if (this.reverseVoucherData?.PostStatus === 'P' && !this.ledgerFetchHadHeaderId) {
+            this.loadLedgerDropdown();
+          }
           this.populateForm(this.reverseVoucherData);
           this.applyVoucherDateConstraints();
           if (this.isReadOnly) {

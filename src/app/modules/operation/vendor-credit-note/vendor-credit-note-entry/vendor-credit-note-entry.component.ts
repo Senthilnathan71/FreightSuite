@@ -180,6 +180,7 @@ export class VendorCreditNoteEntryComponent {
 
   vendorCreditNoteForm!: FormGroup;
   headerId: number | null = null;
+  private ledgerFetchHadHeaderId = false;
   private taxMastersReady: Promise<void> = Promise.resolve();
   private _originalHSSACValues: (number | null)[] = [];
   private _previousInvoiceType: string = 'REG';
@@ -538,6 +539,8 @@ export class VendorCreditNoteEntryComponent {
       this.currentCompany = null;
       this.currentBranch = null;
     }
+    this.headerId = Number(this.route.snapshot.paramMap.get('id')) || null;
+
     const paramValue = this.route.snapshot.queryParamMap.get('isNonJob');
     this.isNonJob = paramValue === 'true';
 
@@ -941,20 +944,14 @@ export class VendorCreditNoteEntryComponent {
     // ---------- NON JOB ----------
     if (this.isNonJob && !this.nonJobSpecificDropdownFetch) {
       return forkJoin({
-        coa: this.operationService
-          .getAllCoaWithLedgerCategory({
-            LedgerCategory: 'Ledger',
-            CompanyMasterSid,
-            filterNonJob: true,
-          })
-          .pipe(catchError(() => of({ data: [] }))),
+        coa: this.fetchLedgerDropdown(),
 
         hssac: this.operationService
           .getAllHssac()
           .pipe(catchError(() => of([]))),
       }).pipe(
         tap(({ coa, hssac }) => {
-          this.coaList = coa.data || [];
+          this.applyLedgerDropdown(coa);
           this.hssacListForNonJob = hssac || [];
 
           this.nonJobSpecificDropdownFetch = true;
@@ -982,7 +979,31 @@ export class VendorCreditNoteEntryComponent {
     return of(void 0);
   }
 
-  
+  private fetchLedgerDropdown() {
+    this.ledgerFetchHadHeaderId = !!this.headerId;
+    return this.operationService
+      .getAllCoaWithLedgerCategory({
+        LedgerCategory: 'Ledger',
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        filterNonJob: true,
+        VoucherType: 'VRN',
+        ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
+      })
+      .pipe(catchError(() => of({ data: [] })));
+  }
+
+  private applyLedgerDropdown(res: any): void {
+    this.coaList = res?.data ?? res ?? [];
+  }
+
+  /** Re-fetch ONLY the ledger dropdown (not the whole handleDropdownBasedOnJob batch) — used after a
+   *  create→post transition so posted ledgers resolve via the posted/static config. */
+  private loadLedgerDropdown(): void {
+    this.fetchLedgerDropdown().subscribe((res) => this.applyLedgerDropdown(res));
+  }
+
+
   getVendorInvoiceData() {
     const invoiceNumber = this.vendorCreditNoteForm.get('ReversalVoucherNumber')?.value;
     const searchValue = String(invoiceNumber).trim();
@@ -1483,6 +1504,11 @@ export class VendorCreditNoteEntryComponent {
           this.handleDropdownBasedOnJob().subscribe({
             next: () => {
               this.patchValues(data);
+              // Posted now, but the ledger dropdown was fetched in create/draft mode (no VoucherHeaderSid)
+              // → re-fetch ONLY the ledger so posted ledgers resolve via the posted/static config.
+              if (this.isPosted && !this.ledgerFetchHadHeaderId && this.isNonJob) {
+                this.loadLedgerDropdown();
+              }
               this.applyVoucherDateConstraints();
 
               // Edit mode: datepicker keeps the full FY range. Grace/closed validation

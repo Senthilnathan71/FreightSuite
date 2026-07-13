@@ -523,6 +523,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.initializeForm();
     this.loadPaymentModes();
     this.loadDetailLookups();
+    // PMT ledger dropdown is Cash/Bank-aware — re-fetch ONLY the ledger when the Cash/Bank toggle changes.
+    this.paymentForm.get('CashOrBank')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.loadLedgerDropdown());
     this.loadVoucherPeriods();
     this.initPaymentTaxService();
 
@@ -965,16 +967,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.tdsHelper.loadTDSSets().subscribe();
     }
     forkJoin({
-      coaWithLedgerCategoryAsLedger: this.accountService
-        .getAllCoaWithLedgerCategory({
-          LedgerCategory: 'Ledger',
-          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          BranchMasterSid: this.currentBranch?.BranchMasterSid,
-          filterNonJob: false,
-          VoucherType: 'PMT',
-          ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
-        })
-        .pipe(catchError((err) => of([]))),
+      coaWithLedgerCategoryAsLedger: this.fetchLedgerDropdown(),
       costCenters: this.accountService
         .getAllCostCenters()
         .pipe(catchError((err) => of([]))),
@@ -998,8 +991,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         hssacList,
       }) => {
         this.hssacList = hssacList || [];
-        this.coaList = coaWithLedgerCategoryAsLedger.data;
-        this.rebuildFilteredCoaListForAllRows();
+        this.applyLedgerDropdown(coaWithLedgerCategoryAsLedger);
         this.costCenterList = costCenters.data;
         this.profitCenterList = profitCenters.data;
         this.deptList = depts;
@@ -1031,6 +1023,32 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
       }
     );
+  }
+
+  /** Ledger-dropdown fetch, shared by loadDetailLookups' batch AND the standalone re-fetch below. */
+  private fetchLedgerDropdown() {
+    return this.accountService
+      .getAllCoaWithLedgerCategory({
+        LedgerCategory: 'Ledger',
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        filterNonJob: false,
+        VoucherType: 'PMT',
+        CashOrBank: this.paymentForm.get('CashOrBank')?.getRawValue(),
+        ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
+      })
+      .pipe(catchError((err) => of([] as any)));
+  }
+
+  private applyLedgerDropdown(res: any): void {
+    this.coaList = res?.data ?? res ?? [];
+    this.rebuildFilteredCoaListForAllRows();
+  }
+
+  /** Re-fetch ONLY the ledger dropdown (not the whole loadDetailLookups batch) — used after a
+   *  create→post transition so posted ledgers resolve via the posted/static config. */
+  private loadLedgerDropdown(): void {
+    this.fetchLedgerDropdown().subscribe((res) => this.applyLedgerDropdown(res));
   }
 
   /**
@@ -2376,6 +2394,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     this.setInstrumentValidators(headerInfo.CashOrBank === 'C');
     this.isPosted = response.PostStatus === 'P';
+    // The initial ledger fetch runs with the DEFAULT CashOrBank ('B') before the record's real
+    // Cash/Bank mode is known, so a Cash payment's Cash-side ledger is missing from that first set;
+    // a posted voucher can likewise carry ledgers a later config narrowing dropped. Either way, if any
+    // loaded row's ledger is missing from coaList, re-fetch ONLY the ledger dropdown with the CashOrBank
+    // patched above (e.g. 'C' for a Cash payment) so those ledgers resolve — no other lookups reloaded.
+    // (loadPayment runs after loadAllLookups + the record fetch, so the initial fetch has already
+    // populated coaList — the re-fetch is strictly later and wins; it fires only when a row is missing.)
+    if ((response.VoucherDetail || []).some((d: any) => {
+      const sid = Number(d?.COAMasterSid);
+      return sid && !this.coaList.some((x: any) => Number(x.COAMasterSid) === sid);
+    })) {
+      this.loadLedgerDropdown();
+    }
     this.isReadOnly = response.PostStatus !== 'U' || response.Status !== 'A';
 
     this.detailItems.clear();

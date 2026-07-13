@@ -258,6 +258,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // others
   coaList : any[] = [];
+  private ledgerFetchHadHeaderId = false;
   subledgerListDetail : any[][] = [];
   
   // Country/Tax mode
@@ -933,11 +934,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         : this.operationService.getAllMappedChargeDebtors(filterOption).pipe(catchError(() => of({ data: [] })))
     };
     if (this.isNonJob) {
-      criticalSource.coa = this.operationService.getAllCoaWithLedgerCategory({
-        LedgerCategory: 'Ledger',
-        CompanyMasterSid: CompanyMasterSid
-        // No filterNonJob: show all Ledger COAs (both JobNoRequire Y and N)
-      }).pipe(catchError(() => of({ data: [] })));
+      criticalSource.coa = this.fetchLedgerDropdown();
     }
 
     return forkJoin(criticalSource).pipe(
@@ -946,7 +943,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
         this.subledgerList = vendors.data || [];
         this.chargeList = charges?.data || [];
         this.filteredChargeList = [...this.chargeList];
-        this.coaList = coa?.data || [];
+        this.applyLedgerDropdown(coa);
 
         // 2. Non-critical lookups start after critical resources are ready
         const otherSource: any = {
@@ -978,6 +975,29 @@ export class VendorInvoiceEntryComponent implements OnInit {
         });
       })
     );
+  }
+
+  /** Ledger-dropdown fetch, shared by loadLookups' batch AND the standalone re-fetch after post. */
+  private fetchLedgerDropdown() {
+    this.ledgerFetchHadHeaderId = !!this.headerId;
+    return this.operationService.getAllCoaWithLedgerCategory({
+      LedgerCategory: 'Ledger',
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      VoucherType: 'VIN',
+      ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
+      // No filterNonJob: show all Ledger COAs (both JobNoRequire Y and N)
+    }).pipe(catchError(() => of({ data: [] })));
+  }
+
+  private applyLedgerDropdown(res: any): void {
+    this.coaList = res?.data ?? res ?? [];
+  }
+
+  /** Re-fetch ONLY the ledger dropdown (not the whole loadLookups batch) — used after a
+   *  create→post transition so posted ledgers resolve via the posted/static config. */
+  private loadLedgerDropdown(): void {
+    this.fetchLedgerDropdown().subscribe((res) => this.applyLedgerDropdown(res));
   }
 
   loadVoucherPeriods(): void {
@@ -1300,6 +1320,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
             console.error('Error preparing Vendor Invoice edit form:', err);
             this.appSettingService.showError('Error loading Vendor Invoice');
             return;
+          }
+          // Posted now but ledger was fetched without VoucherHeaderSid (create→post transition):
+          // re-fetch ONLY the ledger so the backend resolves it via the posted/static config.
+          if (this.isNonJob && this.isPosted && !this.ledgerFetchHadHeaderId) {
+            this.loadLedgerDropdown();
           }
           if (this.isReadOnly) {
             this.details.disable({ emitEvent: false });

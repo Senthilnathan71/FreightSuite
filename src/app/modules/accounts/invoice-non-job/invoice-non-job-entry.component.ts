@@ -844,6 +844,16 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
     }, { emitEvent: false });
 
     const loadedDetails = Array.isArray(data?.VoucherDetail) ? data.VoucherDetail : [];
+    // A posted invoice can include auto-generated rows (bank / tax / party) whose ledger was not in the
+    // create-time dropdown set. If any loaded row's ledger is missing from coaList, re-fetch ONLY the
+    // ledger dropdown (with VoucherHeaderSid → posted/static config) so those ledgers resolve — without
+    // reloading the other lookups. (No redundant fetch when the list already covers every row.)
+    if (this.isPosted && loadedDetails.some((d: any) => {
+      const sid = Number(d?.COAMasterSid);
+      return sid && !this.coaList.some((x: any) => Number(x.COAMasterSid) === sid);
+    })) {
+      this.loadLedgerDropdown();
+    }
     this.details.controls.forEach((control, index) => {
       this.hssacList[index] = this.hssacListForNonJob;
       const rawDetail = loadedDetails[index];
@@ -953,24 +963,28 @@ export class InvoiceNonJobEntryComponent extends InvoiceEntryComponent {
         this.hssacListForNonJob = [];
       },
     });
+    this.loadLedgerDropdown();
+  }
+
+  private loadLedgerDropdown(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) return;
     this.nonJobOperationService.getAllCoaWithLedgerCategory({
       CompanyMasterSid: companyId,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       LedgerCategory: 'Ledger',
+      VoucherType: 'NIN',
+      ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
     }).subscribe({
       next: (resp: any) => {
         this.coaList = Array.isArray(resp?.data)
-          ? resp.data.filter((coa: any) => this.isAllowedNonJobLedger(coa))
+          ? resp.data
           : [];
       },
       error: () => {
         this.coaList = [];
       },
     });
-  }
-
-  private isAllowedNonJobLedger(coa: any): boolean {
-    const ledgerType = String(coa?.LedgerType || '').trim().toLowerCase();
-    return !['revenue', 'cost', 'other cost'].includes(ledgerType);
   }
 
   private routerNavigateToList(): void {

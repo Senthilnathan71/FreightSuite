@@ -275,8 +275,8 @@
                                  <aside class="col-md-6">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!documentForm.get('AllowedLedgerTypes')?.value">
-                                        <multi-select formControlName="AllowedLedgerTypes" [items]="modeOfledgertype" bindLabel="name"
-                                        bindValue="name" placeholder="" >
+                                        <multi-select formControlName="AllowedLedgerTypes" [items]="ledgerTypeOptions" bindLabel="name"
+                                        bindValue="name" [lockedValues]="mandatoryLedgerTypes" [displayCount]="1" (lockedAttempt)="onMandatoryLocked($event)" placeholder="" >
                                         </multi-select>
                                         <label for="text-input" class="input-label">Allowed Ledger Types <span
                                                 class="text-danger"></span></label>
@@ -329,6 +329,9 @@
 
 
                             </div>
+                            <small class="text-muted d-block mt-2" style="font-size: 0.72rem;">
+                                <i class="fas fa-info-circle me-1"></i>Ticked ledger types are shown in the ledger dropdown; unticked ones are hidden.
+                            </small>
                         </div>
                     </div>
                 </div>

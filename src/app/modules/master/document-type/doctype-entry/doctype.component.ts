@@ -128,6 +128,84 @@ currentBranch: any;
     { id: 24, name: 'Asset and Liability' },
   ];
 
+  // Mandatory floor is only for RPT/PMT/VM (kept in sync with backend MANDATORY_LEDGER_TYPE_MAP).
+  // RPT/PMT are Type-aware (Type field: Cash/Bank/Others); all other codes are configured manually.
+  private mandatoryLedgerTypeMap: Record<string, string[]> = {
+    VM: ['Sy Dr', 'Sy Cr'],
+  };
+
+  /** Mandatory types for the current code — drives <multi-select [lockedValues]> (cannot un-tick). */
+  mandatoryLedgerTypes: string[] = [];
+
+  private receiptPaymentMandatory(type: string, sy: 'Sy Dr' | 'Sy Cr'): string[] {
+    switch ((type || '').trim().toLowerCase()) {
+      case 'cash': return ['Cash', sy];
+      case 'bank': return ['Bank', sy];
+      default:     return ['Cash', 'Bank', sy]; // 'Others' / unset
+    }
+  }
+
+  getMandatoryLedgerTypesFor(code: string, type?: string): string[] {
+    if (code === 'RPT' || code === 'PMT') {
+      // On edit-load the caller passes the SAVED Type (data.Type) because the form's Type control
+      // isn't patched yet at merge time — reading it here would give the stale default and add Cash.
+      const t = type !== undefined ? type : this.documentForm?.get('Type')?.getRawValue();
+      return this.receiptPaymentMandatory(t, code === 'RPT' ? 'Sy Dr' : 'Sy Cr');
+    }
+    return this.mandatoryLedgerTypeMap[code] ?? [];
+  }
+
+  /** Seed the code's mandatory ledger types into the AllowedLedgerTypes multi-select + set the lock list. */
+  applyMandatoryLedgerTypes(code: string): void {
+    const mandatory = this.getMandatoryLedgerTypesFor(code);
+    this.mandatoryLedgerTypes = mandatory;
+    if (!mandatory.length) return;
+    const ctrl = this.documentForm.get('AllowedLedgerTypes');
+    const raw = ctrl?.value;
+    let current: string[] = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+    // RPT/PMT money+system floor is Type-dependent — drop the money/system types not in the current
+    // Type's floor (e.g. switching Others→Cash removes Bank) before re-adding the floor.
+    if (code === 'RPT' || code === 'PMT') {
+      const moneySystem = ['Cash', 'Bank', 'Sy Dr', 'Sy Cr'];
+      current = current.filter((t) => !moneySystem.includes(t) || mandatory.includes(t));
+    }
+    const merged = Array.from(new Set([...current, ...mandatory]));
+    ctrl?.setValue(merged, { emitEvent: false });
+  }
+
+  /** Toastr when the user tries to un-tick a mandatory ledger type (blocked inside <multi-select>). */
+  onMandatoryLocked(blocked: string[]): void {
+    if (!blocked?.length) return;
+    const code = this.documentForm.get('DocumentTypeCode')?.value;
+    this.appSettingService.showWarning(`${blocked.join(', ')} ${blocked.length > 1 ? 'are' : 'is'} mandatory for ${code}`);
+  }
+
+  // Restricted ledger types per code (kept in sync with backend RESTRICTED_LEDGER_TYPE_MAP): excluded
+  // from the AllowedLedgerTypes options so the admin cannot pick them (and stripped if already saved).
+  private restrictedLedgerTypeMap: Record<string, string[]> = {
+    NIN: ['Revenue', 'Cost'],
+  };
+  /** AllowedLedgerTypes options for the current code = all ledger types minus the restricted ones. */
+  ledgerTypeOptions: any[] = [...this.modeOfledgertype];
+
+  getRestrictedLedgerTypesFor(code: string): string[] {
+    return this.restrictedLedgerTypeMap[code] ?? [];
+  }
+
+  /** Exclude the code's restricted ledger types from the multi-select options + strip any already selected. */
+  applyRestrictedLedgerTypes(code: string): void {
+    const restricted = this.getRestrictedLedgerTypesFor(code);
+    this.ledgerTypeOptions = restricted.length
+      ? this.modeOfledgertype.filter((o: any) => !restricted.includes(o.name))
+      : [...this.modeOfledgertype];
+    if (!restricted.length) return;
+    const ctrl = this.documentForm.get('AllowedLedgerTypes');
+    const raw = ctrl?.value;
+    const current: string[] = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+    const cleaned = current.filter((t) => !restricted.includes(t));
+    if (cleaned.length !== current.length) ctrl?.setValue(cleaned, { emitEvent: false });
+  }
+
 	typeOptions = ['Cash', 'Bank', 'Others'];
 
 	currentMenuId: number;
@@ -236,6 +314,16 @@ hasAnyDropdownPermission(): boolean {
 		this.documentForm.get('DocumentTypeCode')?.valueChanges.subscribe((code) => {
 			this.applyTypeFieldState(code);
 			this.handleReverseVoucherPosting({ DocumentTypeCode: code });
+			this.applyMandatoryLedgerTypes(code);
+			this.applyRestrictedLedgerTypes(code);
+		});
+
+		// RPT/PMT mandatory floor is Type-aware — re-apply when the Cash/Bank/Others Type changes.
+		this.documentForm.get('Type')?.valueChanges.subscribe(() => {
+			const code = this.documentForm.get('DocumentTypeCode')?.value;
+			if (code === 'RPT' || code === 'PMT') {
+				this.applyMandatoryLedgerTypes(code);
+			}
 		});
 	}
 
@@ -309,6 +397,11 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 					const data = resp.data;
 					this.documentForm.patchValue({
 						...data,
+						// Default-add the code's mandatory ledger types while patching (saved ∪ mandatory).
+						AllowedLedgerTypes: Array.from(new Set([
+							...(Array.isArray(data.AllowedLedgerTypes) ? data.AllowedLedgerTypes : (data.AllowedLedgerTypes ? [data.AllowedLedgerTypes] : [])),
+							...this.getMandatoryLedgerTypesFor(data.DocumentTypeCode, data.Type),
+						])),
 						DocumentSeparator: String(data.DocumentSeparator).trim() || 'None',
 						CompanyFlag: data.CompanyFlag === 'Y',
 						BranchFlag: data.BranchFlag === 'Y',
@@ -321,6 +414,9 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
                     // Trigger the COA selection change to load subledgers
                     this.onCOASelected(data);
 					this.handleReverseVoucherPosting(data);
+					// AllowedLedgerTypes was merged with mandatory in the patchValue above; set the lock list too.
+					this.mandatoryLedgerTypes = this.getMandatoryLedgerTypesFor(data.DocumentTypeCode, data.Type);
+					this.applyRestrictedLedgerTypes(data.DocumentTypeCode);
 					this.applyTypeFieldState(data.DocumentTypeCode);
                     
                     // After a small delay (to allow subledgers to load), set the subledger value
@@ -736,6 +832,9 @@ openDocRef() {
 			.subscribe(() => {
 				this.isDirty = !this.deepEqual(this.initialFormValue, this.documentForm.getRawValue());
 			});
+
+		// Mandatory (locked) ledger types are enforced by <multi-select [lockedValues]>; the un-tick
+		// toastr is shown via its (lockedAttempt) output — see onMandatoryLocked().
 	}
 
 	private hasNoChangesToSave(): boolean {

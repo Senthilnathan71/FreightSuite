@@ -233,6 +233,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   editMode = false;
   voucherHeaderSid: number | null = null;
   isPosted = false;
+  private ledgerFetchHadHeaderId = false;
   todayDateInNgbStruct!: NgbDateStruct;
   isSaving = false;
   isTermsAndConditionsEnabled: boolean = true;
@@ -394,6 +395,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
       history.replaceState({}, '', location.pathname);
     }
 
+    this.voucherHeaderSid = Number(this.route.snapshot.paramMap.get('id')) || null;
     this.loadMasterData();
     this.loadVoucherPeriods();
     this.checkEditMode();
@@ -922,7 +924,10 @@ private deepEqual(obj1: any, obj2: any): boolean {
       uom: this.operationService.getAllUom(),
       coa: this.accountsService.getAllCoaWithLedgerCategory({
         LedgerCategory: 'Ledger',
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        VoucherType: 'JV',
+        ...(this.voucherHeaderSid ? { VoucherHeaderSid: this.voucherHeaderSid } : {}),
       }),
       subledger: this.maasterService.getAllSuledgermaster(),
       charges: this.accountsService.getAllCharges(this.currentCompany?.CompanyMasterSid),
@@ -943,6 +948,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
         this.profitCenterList = result.profitCenters.data;
         this.uomList = result.uom?.data || [];
         this.coaList = result.coa?.data || [];
+        this.ledgerFetchHadHeaderId = !!this.voucherHeaderSid;
         this.subledgerList = result.subledger?.data || [];
         this.chargeList = result.charges || [];
         this.customerList = result.customers || [];
@@ -1016,9 +1022,13 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   loadCOAList(): void {
+    this.ledgerFetchHadHeaderId = !!this.voucherHeaderSid;
     this.accountsService.getAllCoaWithLedgerCategory({
       LedgerCategory: 'Ledger',
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      VoucherType: 'JV',
+      ...(this.voucherHeaderSid ? { VoucherHeaderSid: this.voucherHeaderSid } : {}),
     }).subscribe({
       next: (response: any) => {
         this.coaList = response.data || [];
@@ -1095,6 +1105,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
         }
 
         this.isPosted = voucher.PostStatus === 'P';
+        if (this.isPosted && !this.ledgerFetchHadHeaderId) { this.loadCOAList(); }
 
         const voucherDate = new Date(voucher.VoucherDate);
         const voucherDateStruct: NgbDateStruct = {

@@ -54,9 +54,13 @@ export class MultiSelectComponent implements ControlValueAccessor, OnInit, OnCha
   // mirroring dofi-searchable-dropdown. Backward-compatible: undefined ⇒ nothing extra is rendered.
   @Input() secondaryField?: string;
   @Input() secondaryMaxWidth: string = '110px';
+  /** Values that cannot be un-ticked/removed (mandatory). Default [] keeps all other consumers unchanged. */
+  @Input() lockedValues: any[] = [];
 
   @Output() searchChange = new EventEmitter<string>();
   @Output() valueChange = new EventEmitter<any[]>();
+  /** Emits the locked value(s) the user tried to remove, so the consumer can warn (e.g. toastr). */
+  @Output() lockedAttempt = new EventEmitter<any[]>();
 
   filterValue: string;
   isClearFocused: boolean = false;
@@ -133,18 +137,27 @@ export class MultiSelectComponent implements ControlValueAccessor, OnInit, OnCha
     if (this.control?.disabled) {
       return;
     }
-    if (this.control) {
-      this.control.setValue(value);
-      this.onChange(value);
+    let next = value || [];
+    // A locked (mandatory) value can never be dropped — re-add any that ng-select's row click / clear-all removed.
+    const dropped = (this.lockedValues || []).filter(v => !next.includes(v));
+    if (dropped.length) {
+      next = [...next, ...dropped];
+      this.internalValue = next;
+      this.lockedAttempt.emit(dropped);
     }
-    this.valueChange.emit(value);
+    if (this.control) {
+      this.control.setValue(next);
+      this.onChange(next);
+    }
+    this.valueChange.emit(next);
   }
 
   toggleSelectAll(): void {
     if (!this.control || !this.filteredItems || this.control.disabled) return;
     const currentValue = this.control.value || [];
     if (currentValue.length === this.filteredItems.length) {
-      this.control.setValue([]);
+      // Unselect all — but keep locked (mandatory) items selected.
+      this.control.setValue(this.filteredItems.map(item => item[this.bindValue]).filter(v => this.isLocked(v)));
     } else {
       this.control.setValue(this.filteredItems.map(item => item[this.bindValue]));
     }
@@ -157,6 +170,11 @@ export class MultiSelectComponent implements ControlValueAccessor, OnInit, OnCha
   toggleItem(itemValue: any): void {
     if (!this.control || this.control.disabled) return;
     const currentValue = this.control.value || [];
+    // Mandatory (locked) item cannot be un-ticked.
+    if (this.isLocked(itemValue) && currentValue.includes(itemValue)) {
+      this.lockedAttempt.emit([itemValue]);
+      return;
+    }
     const newValue = currentValue.includes(itemValue)
       ? currentValue.filter((v: any) => v !== itemValue)
       : [...currentValue, itemValue];
@@ -171,9 +189,18 @@ export class MultiSelectComponent implements ControlValueAccessor, OnInit, OnCha
     return this.control?.value?.includes(itemValue) || false;
   }
 
+  /** A locked value is mandatory: cannot be un-ticked or removed. */
+  isLocked(itemValue: any): boolean {
+    return (this.lockedValues || []).includes(itemValue);
+  }
+
   removeItem(item: any, event: Event): void {
     if (!this.control || this.control.disabled) return;
     event.stopPropagation();
+    if (this.isLocked(item[this.bindValue])) {
+      this.lockedAttempt.emit([item[this.bindValue]]);
+      return;
+    }
     const currentValue = this.control.value || [];
     const newValue = currentValue.filter((v: any) => v !== item[this.bindValue]);
     this.control.setValue(newValue);

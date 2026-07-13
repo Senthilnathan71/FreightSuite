@@ -73,7 +73,7 @@
           class="form-check-input"
           [checked]="isSelected(item[bindValue])"
           [disabled]="control?.disabled"
-          (click)="$event.stopPropagation(); toggleItem(item[bindValue])"
+          style="pointer-events: none;"
       >
       <label class="form-check-label">{{ item[bindLabel] }}</label>
       <span

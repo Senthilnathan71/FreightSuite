@@ -498,6 +498,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.initializeForm();
     this.loadPaymentModes();
     this.loadDetailLookups();
+    // RPT ledger dropdown is Cash/Bank-aware — re-fetch ONLY the ledger when the Cash/Bank toggle changes.
+    this.receiptForm.get('CashOrBank')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.loadLedgerDropdown());
     this.loadVoucherPeriods();
 
     // React to the route id. Angular REUSES this component when navigating between two
@@ -919,16 +921,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       BranchMasterSid,
     };
     forkJoin({
-      coaWithLedgerCategoryAsLedger: this.accountService
-        .getAllCoaWithLedgerCategory({
-          LedgerCategory: 'Ledger',
-          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          BranchMasterSid: this.currentBranch?.BranchMasterSid,
-          filterNonJob: true,
-          VoucherType: 'RPT',
-          ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
-        })
-        .pipe(catchError((err) => of([]))),
+      coaWithLedgerCategoryAsLedger: this.fetchLedgerDropdown(),
       costCenters: this.accountService
         .getAllCostCenters()
         .pipe(catchError((err) => of([]))),
@@ -949,8 +942,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         depts,
         charges,
       }) => {
-        this.coaList = coaWithLedgerCategoryAsLedger.data;
-        this.rebuildFilteredCoaListForAllRows();
+        this.applyLedgerDropdown(coaWithLedgerCategoryAsLedger);
         this.costCenterList = costCenters.data;
         this.profitCenterList = profitCenters.data;
         this.deptList = depts;
@@ -958,6 +950,32 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.filterChargeByDeptForAllRow();
       }
     );
+  }
+
+  /** Ledger-dropdown fetch, shared by loadDetailLookups' batch AND the standalone re-fetch below. */
+  private fetchLedgerDropdown() {
+    return this.accountService
+      .getAllCoaWithLedgerCategory({
+        LedgerCategory: 'Ledger',
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        filterNonJob: true,
+        VoucherType: 'RPT',
+        CashOrBank: this.receiptForm.get('CashOrBank')?.getRawValue(),
+        ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
+      })
+      .pipe(catchError((err) => of([] as any)));
+  }
+
+  private applyLedgerDropdown(res: any): void {
+    this.coaList = res?.data ?? res ?? [];
+    this.rebuildFilteredCoaListForAllRows();
+  }
+
+  /** Re-fetch ONLY the ledger dropdown (not the whole loadDetailLookups batch) — used after a
+   *  create→post transition so posted ledgers resolve via the posted/static config. */
+  private loadLedgerDropdown(): void {
+    this.fetchLedgerDropdown().subscribe((res) => this.applyLedgerDropdown(res));
   }
 
   /**
@@ -2026,6 +2044,19 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.receiptForm.get('InstrumentDate')?.updateValueAndValidity();
     }
     this.isPosted = response.PostStatus === 'P';
+    // The initial ledger fetch runs with the DEFAULT CashOrBank ('B') before the record's real
+    // Cash/Bank mode is known, so a Cash receipt's Cash-side ledger is missing from that first set;
+    // a posted voucher can likewise carry ledgers a later config narrowing dropped. Either way, if any
+    // loaded row's ledger is missing from coaList, re-fetch ONLY the ledger dropdown with the CashOrBank
+    // patched above (e.g. 'C' for a Cash receipt) so those ledgers resolve — no other lookups reloaded.
+    // (loadReceipt runs after loadAllLookups + the record fetch, so the initial fetch has already
+    // populated coaList — the re-fetch is strictly later and wins; it fires only when a row is missing.)
+    if ((response.VoucherDetail || []).some((d: any) => {
+      const sid = Number(d?.COAMasterSid);
+      return sid && !this.coaList.some((x: any) => Number(x.COAMasterSid) === sid);
+    })) {
+      this.loadLedgerDropdown();
+    }
     this.isReadOnly = response.PostStatus !== 'U' || response.Status !== 'A';
 
     this.detailItems.clear();
