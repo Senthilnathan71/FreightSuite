@@ -32,7 +32,6 @@ export function generateQuotationDocument(
       buildCustomerInfo(data, isContract),
       buildGreeting(),
       ...buildRouteSections(data),
-      buildTermsSection(data),
       buildClosingMessage(),
       buildSignature(data)
     ],
@@ -160,6 +159,7 @@ function buildRouteSections(data: QuotationPdfData): any[] {
       blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate, data.companyCurrencyCode));
     });
 
+    blocks.push(buildRouteTermsSection(route.terms || []));
     blocks.push({ text: '', margin: [0, 0, 0, 0] });
   });
 
@@ -305,6 +305,21 @@ function buildTermsSection(data: QuotationPdfData): any {
     stack: [
       { text: 'Terms and Conditions', bold: true, fontSize: 8, margin: [10, 10, 0, 2] },
       { ul: termValues, fontSize: 7, margin: [12, 0, 0, 10], lineHeight: 1.4 }
+    ]
+  };
+}
+
+function buildRouteTermsSection(terms: any[]): any {
+  const termValues = getUniqueTerms(terms || []);
+
+  if (termValues.length === 0) {
+    return { text: '', margin: [0, 0, 0, 0] };
+  }
+
+  return {
+    stack: [
+      { text: 'Terms and Conditions', bold: true, fontSize: 8, margin: [10, 6, 0, 2] },
+      { ul: termValues, fontSize: 7, margin: [12, 0, 0, 6], lineHeight: 1.4 }
     ]
   };
 }
@@ -541,6 +556,7 @@ export function transformQuotationApiData(
     measurementUnitList?: any[];
   },
   options?: {
+    routeTandCMap?: Record<string, any[]>;
     printSettings?: {
       logoPosition: 'left' | 'center' | 'right';
       companyPosition: 'left' | 'center' | 'right';
@@ -622,6 +638,9 @@ export function transformQuotationApiData(
         volume: Number(cargo.Volume) || 0,
         chargeableWeight: Number(cargo.ChargeableWeight) || 0,
         noOfPackage: Number(cargo.PackageQty) || 0
+      })),
+      terms: (options?.routeTandCMap?.[String(route.QuoteRouteSid)] || []).map((term: any) => ({
+        content: getTermText(term)
       })),
       products: (route.quoteCargo || []).flatMap((cargo: any) =>
         (cargo.quoteProduct || cargo.quoteProducts || cargo.products || []).map((product: any) => ({

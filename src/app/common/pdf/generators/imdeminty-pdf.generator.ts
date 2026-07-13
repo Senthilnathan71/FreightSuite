@@ -1,4 +1,5 @@
 import { createFooterFunction } from '../builders/pdf-footer.builder';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { formatDate } from '../helpers/pdf-formatters';
 import { ImdemintyPdfData } from '../interfaces/pdf-document.interfaces';
 import { PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS, getPdfStyles } from '../styles/pdf-styles';
@@ -7,80 +8,9 @@ const INDEMNITY_BODY =
   'We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor & client and any sums demanded by you for the defense of any proceeding brought against you by reason of the delivery aforesaid...';
 
 function buildImdemintyHeader(data: ImdemintyPdfData): any {
-  const company = data.company;
-  const branch = data.branch;
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const companyName = (company?.companyName || '').toUpperCase();
-  const branchName = branch?.branchName || '';
-  const addressLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
-  const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode || '';
-  const phone = branch?.phoneNumber || company?.phoneNumber || '';
-
-  const lineTwoParts: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (lineTwoParts.length) lineTwoParts.push({ text: ', ' });
-    if (Array.isArray(text)) {
-      lineTwoParts.push(...text);
-    } else {
-      lineTwoParts.push({ text });
-    }
-  };
-
-  if (addressLine2) appendText(addressLine2);
-  if (cityName) appendText(cityName);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
-
-  const companyInfoStack: any[] = [
-    companyName
-      ? { text: companyName, style: 'companyName', fontSize: 14, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
-      : { text: '' },
-    branchName
-      ? { text: branchName, style: 'branchName', fontSize: 10, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
-      : { text: '' },
-    addressLine1
-      ? { text: addressLine1, style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
-      : { text: '' },
-    lineTwoParts.length
-      ? { text: lineTwoParts, style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment }
-      : { text: '' }
-  ];
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [70, 70], alignment: slot, margin: slot === 'right' ? [0, 6, 10, 6] : [10, 6, 0, 6] });
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin: companyMargin });
-    }
-
-    return { stack };
-  };
-
-  const headerContent = {
-    table: {
-      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-    },
-    layout: 'noBorders',
-    margin: [6, 0, 6, 4]
-  };
-
   return {
     stack: [
-      headerContent,
+      buildCompanyHeader(data),
       {
         table: {
           widths: ['*'],
@@ -111,7 +41,7 @@ export function generateImdemintyDocument(data: ImdemintyPdfData): any {
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: 'portrait',
-    pageMargins: data.config?.pageMargins || [20, 78, 20, 32],
+    pageMargins: data.config?.pageMargins || [20, 108, 20, 32],
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
         {
@@ -151,50 +81,30 @@ function buildIndemnityPage(data: ImdemintyPdfData, containerNo: string, isLast:
 
 function buildTitle(): any {
   return {
-    stack: [
-      {
-        canvas: [
-          {
-            type: 'line',
-            x1: 0,
-            y1: 0,
-            x2: 555,
-            y2: 0,
-            lineWidth: 0.25,
-            lineColor: '#000000'
-          }
-        ],
-        margin: [0, 0, 0, 6]
-      },
-      {
-        text: 'LETTER OF INDEMNITY',
-        style: 'documentTitle',
-        fontSize: 13,
-        alignment: 'center',
-        bold: true
-      }
-    ],
+    table: {
+      widths: ['*'],
+      body: [[
+        {
+          text: 'LETTER OF INDEMNITY',
+          style: 'documentTitle',
+          fontSize: 13,
+          alignment: 'center',
+          bold: true,
+          margin: [0, 4, 0, 4]
+        }
+      ]]
+    },
+    layout: {
+      hLineWidth: (i: number) => (i === 0 ? 0.25 : 0),
+      vLineWidth: () => 0,
+      hLineColor: () => '#000000',
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0
+    },
     margin: [0, 0, 0, 10]
   };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildGreeting(): any {

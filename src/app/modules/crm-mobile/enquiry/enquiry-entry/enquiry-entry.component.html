@@ -2661,6 +2661,23 @@
     </table>
 </div>
 
+                        @if (getRouteTerms(route).length) {
+                        <div style="margin-top: 8px; font-size: 14px; padding: 0 15px 6px 15px;">
+                            <div style="font-weight:bolder; margin-bottom: 3px;">
+                                <strong>Terms and Conditions</strong>
+                            </div>
+                            <ul style="margin: 0; padding-left: 1.2rem;">
+                                @for(term of getRouteTerms(route); track term){
+                                <li>{{ getTermDisplayText(term) }}</li>
+                                }
+                            </ul>
+                        </div>
+                        }
+
+                        @if (routeIndex < (enquiryData?.enquiryRoute?.length || 0) - 1) {
+                        <div style="border-top: 1px solid #000;"></div>
+                        }
+
                     </div>
                 </ng-container>
 
@@ -2681,16 +2698,6 @@
                     </div>
                 </div>
 
-
-                <!-- Terms & Conditions -->
-                <!-- <div style="margin-top: 1rem;font-size: 16px;padding-left: 15px;">
-      <h5 style=" margin-bottom: 0.5rem;"><strong>Terms and Conditions</strong></h5>
-      <ul style="margin-top: 0; padding-left: 1.2rem;">
-        @for(term of TandCList; track term){
-          <li>{{ term.TandC }}</li>
-        }
-      </ul>
-    </div> -->
 
                 <!-- Footer -->
                 <app-print-footer></app-print-footer>

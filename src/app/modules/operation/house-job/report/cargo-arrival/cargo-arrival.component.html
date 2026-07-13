@@ -703,12 +703,12 @@
             @if(withOrWithoutCharge){
 
             <div
-                style="display:flex; flex-wrap:wrap; align-items:flex-start; padding-top:10px; gap:6px; margin:8px 0; padding-left:20px;font-weight: bolder;">
-                <strong style="white-space:nowrap;min-width:175px;font-weight: bolder;">Amount in Words </strong>
-
-                <p style="margin:0; line-height:22px; word-break:break-word;">
-                    : <strong>{{ getAmountInWords() }}</strong>
-                </p>
+                style="display:grid; grid-template-columns:155px 10px minmax(0, 1fr); align-items:start; column-gap:4px; margin:10px 20px 8px 20px; line-height:22px;">
+                <strong style="white-space:nowrap;font-weight:bolder;">Amount in Words</strong>
+                <span style="font-weight:bolder; text-align:center;">:</span>
+                <strong style="display:block; word-break:normal; overflow-wrap:anywhere;">
+                    {{ getAmountInWords() }}
+                </strong>
             </div>
             
             }

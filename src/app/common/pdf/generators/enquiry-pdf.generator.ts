@@ -181,9 +181,39 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
 
     content.push(buildRoutePortSummary(route, routeIndex === 0));
     content.push(buildEnquiryCargoTable(cargoData, data.fclLcl));
+    content.push(buildRouteTermsSection(route.terms || []));
   });
 
   return content;
+}
+
+function getTermDisplayText(term: any): string {
+  return (term?.content || term?.TandC || term?.Terms || '').trim();
+}
+
+function buildRouteTermsSection(terms: any[]): any {
+  const termValues = (terms || [])
+    .map(term => getTermDisplayText(term))
+    .filter(Boolean);
+
+  if (termValues.length === 0) {
+    return { text: '', margin: [0, 0, 0, 0] };
+  }
+
+  return {
+    stack: [
+      { text: 'Terms and Conditions', bold: true, fontSize: 9, margin: [0, 3, 0, 2] },
+      {
+        ul: termValues.map(term => ({
+          text: term,
+          fontSize: 8,
+          margin: [0, 1, 0, 1]
+        })),
+        margin: [10, 0, 0, 4]
+      }
+    ],
+    margin: [5, 0, 5, 2]
+  };
 }
 
 function buildEnquiryCargoTable(cargo: any[], fclLcl: 'FCL' | 'LCL' | 'AIR'): any {
@@ -328,6 +358,7 @@ export function transformEnquiryApiData(
     salesmen?: any[];
   },
   options?: {
+    routeTandCMap?: Record<string, any[]>;
     printSettings?: {
       logoPosition: 'left' | 'center' | 'right';
       companyPosition: 'left' | 'center' | 'right';
@@ -432,6 +463,9 @@ export function transformEnquiryApiData(
       pol: getPortInfo(route.POLSid),
       pod: getPortInfo(route.PODSid),
       fpd: getPortInfo(route.FDPSid || route.FDCSid),
+      terms: (options?.routeTandCMap?.[String(route.EnquiryRouteSid)] || []).map((term: any) => ({
+        content: getTermDisplayText(term)
+      })),
       cargo: (route.enquiryCargo || []).map((cargo: any) => ({
         cargoType: cargo.CargoType || '',
         cargoDescription: cargo.CargoDescription || '',

@@ -239,6 +239,7 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     private initialFormValue: any = null;
     isTermsAndConditionsEnabled: boolean = true;
     printTermsList: any[] = [];
+    routeTandCMap: Record<string, any[]> = {};
 
   // PDF caching properties for performance optimization
   private cachedPdfBlob: Blob | null = null;
@@ -7121,8 +7122,8 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     }
   }
 
-  reportAndEmailModel(content: TemplateRef<any>) {
-    this.prepareTermsForPrint();
+  async reportAndEmailModel(content: TemplateRef<any>) {
+    await this.prepareTermsForPrint();
     this.ngbModal.open(content, {
       size: 'xl',
       scrollable: true,
@@ -7351,6 +7352,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         measurementUnitList: this.measurementUnitList
       },
       {
+        routeTandCMap: this.routeTandCMap,
         printSettings: this.companySettings.getPrintSettings(),
         companyCurrencyCode: this.currentCompanyCurrency?.code
       }
@@ -7360,13 +7362,14 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     return generateQuotationDocument(pdfData, documentType as any);
   }
 
-  private getTermDisplayText(term: any): string {
+  getTermDisplayText(term: any): string {
     return (term?.TandC || term?.Terms || term?.content || '').trim();
   }
 
-  private isSameTerm(a: any, b: any): boolean {
+  private isSameTerm(a: any, b: any, documentSid?: any): boolean {
     const aText = this.getTermDisplayText(a).toLowerCase();
     const bText = this.getTermDisplayText(b).toLowerCase();
+    const fallbackDocumentSid = documentSid ?? this.getTermsDocumentSid();
 
     return (
       (a?.TandCTransactionSid &&
@@ -7374,22 +7377,27 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         a.TandCTransactionSid === b.TandCTransactionSid) ||
       (aText !== '' &&
         aText === bText &&
-        (a?.DocumentSid ?? this.getTermsDocumentSid()) ===
-          (b?.DocumentSid ?? this.getTermsDocumentSid()))
+        (a?.DocumentSid ?? fallbackDocumentSid) ===
+          (b?.DocumentSid ?? fallbackDocumentSid))
     );
   }
 
-  private getUniqueTerms(terms: any[]): any[] {
+  private getUniqueTerms(terms: any[], documentSid?: any): any[] {
     return (terms || []).filter((item: any, index: number, arr: any[]) => {
       const text = this.getTermDisplayText(item);
       if (!text) return false;
 
-      return index === arr.findIndex((existing: any) => this.isSameTerm(existing, item));
+      return index === arr.findIndex((existing: any) => this.isSameTerm(existing, item, documentSid));
     });
   }
 
   private getTermsDocumentSid(route?: any): number | null {
     return route?.QuoteRouteSid ?? this.quotationData?.quoteRoute?.[0]?.QuoteRouteSid ?? this.QuoteHeaderSid ?? null;
+  }
+
+  getRouteTerms(route: any): any[] {
+    const routeSid = this.getTermsDocumentSid(route);
+    return routeSid ? (this.routeTandCMap[String(routeSid)] || []) : [];
   }
 
   private buildTermsConditionPayload(route: any) {
@@ -7404,47 +7412,61 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
   }
 
   private async prepareTermsForPrint(): Promise<any[]> {
-    if (!this.quotationData || !this.currentCompany?.CompanyMasterSid || !this.currentMenuId) {
+    const routes = Array.isArray(this.quotationData?.quoteRoute)
+      ? this.quotationData.quoteRoute
+      : (Array.isArray(this.selectedItem?.quoteRoute) ? this.selectedItem.quoteRoute : []);
+
+    if ((!this.quotationData && !this.selectedItem) || !this.currentCompany?.CompanyMasterSid || !this.currentMenuId) {
+      this.routeTandCMap = {};
       this.printTermsList = this.getUniqueTerms(
         this.selectedItem?.terms?.length ? this.selectedItem.terms : this.TandCList
       );
       return this.printTermsList;
     }
 
-    const transactionPayload = {
-      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
-      MenuMasterSid: this.currentMenuId,
-      DocumentSid: this.getTermsDocumentSid()
-    };
-
     try {
-      const savedTermsResponse = await firstValueFrom(this.masterService.getTandC(transactionPayload));
-      const savedTerms = savedTermsResponse?.status ? (savedTermsResponse.data || []) : [];
+      const routeTermsEntries = await Promise.all(routes.map(async (route: any) => {
+        const routeSid = this.getTermsDocumentSid(route);
+        if (!routeSid) {
+          return null;
+        }
 
-      if (!this.isTermsAndConditionsEnabled) {
-        this.printTermsList = this.getUniqueTerms(savedTerms);
-        this.TandCList = this.printTermsList;
-        return this.printTermsList;
-      }
+        const transactionPayload = {
+          CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+          MenuMasterSid: this.currentMenuId,
+          DocumentSid: routeSid
+        };
 
-      const routes = Array.isArray(this.quotationData?.quoteRoute) ? this.quotationData.quoteRoute : [];
-      const defaultRequests = routes.map((route: any) =>
-        firstValueFrom(this.masterService.getTandCByCondition(this.buildTermsConditionPayload(route)))
-          .then((resp: any) => (resp?.status ? (resp.data || []) : []))
-          .catch(() => [])
-      );
+        const savedTermsResponse = await firstValueFrom(this.masterService.getTandC(transactionPayload));
+        const savedTerms = savedTermsResponse?.status ? (savedTermsResponse.data || []) : [];
 
-      const defaultTermsByRoute = await Promise.all(defaultRequests);
-      const combinedTerms = this.getUniqueTerms([
-        ...savedTerms,
-        ...defaultTermsByRoute.flat()
-      ]);
+        if (!this.isTermsAndConditionsEnabled) {
+          return [String(routeSid), this.getUniqueTerms(savedTerms, routeSid)] as [string, any[]];
+        }
+
+        const defaultTermsResponse = await firstValueFrom(
+          this.masterService.getTandCByCondition(this.buildTermsConditionPayload(route))
+        ).catch(() => null);
+        const defaultTerms = defaultTermsResponse?.status ? (defaultTermsResponse.data || []) : [];
+
+        return [String(routeSid), this.getUniqueTerms([...savedTerms, ...defaultTerms], routeSid)] as [string, any[]];
+      }));
+
+      this.routeTandCMap = routeTermsEntries.reduce((acc: Record<string, any[]>, entry) => {
+        if (entry) {
+          acc[entry[0]] = entry[1];
+        }
+        return acc;
+      }, {});
+
+      const combinedTerms = this.getUniqueTerms(Object.values(this.routeTandCMap).flat());
 
       this.printTermsList = combinedTerms;
       this.TandCList = combinedTerms;
       return combinedTerms;
     } catch (error) {
       console.error('Error preparing terms for print:', error);
+      this.routeTandCMap = {};
       this.printTermsList = this.getUniqueTerms(
         this.selectedItem?.terms?.length ? this.selectedItem.terms : this.TandCList
       );

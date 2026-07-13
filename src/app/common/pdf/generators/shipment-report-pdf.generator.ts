@@ -5,6 +5,7 @@ import {
   ShipmentReportPdfData
 } from '../interfaces/pdf-document.interfaces';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { getPdfStyles } from '../styles/pdf-styles';
 
 export function generateShipmentReportDocument(data: ShipmentReportPdfData): any {
@@ -17,7 +18,7 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
     header: (_currentPage: number, _pageCount: number, pageSize: any) => ({
       margin: [15, 14, 15, 0],
       stack: [
-        buildHeader(data),
+        buildCompanyHeader(data),
         {
           canvas: [
             {
@@ -62,102 +63,6 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
       fontSize: 10,
       color: '#000'
     }
-  };
-}
-
-function buildHeader(data: ShipmentReportPdfData): any {
-  const company: any = data.company || {};
-  const branch: any = data.branch || {};
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
-  const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode || '';
-  const phoneNumber = branch?.phoneNumber || company?.phoneNumber || '';
-  const detailLine2: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (detailLine2.length) detailLine2.push({ text: ', ' });
-    if (Array.isArray(text)) {
-      detailLine2.push(...text);
-    } else {
-      detailLine2.push({ text });
-    }
-  };
-
-  if (addressLine2) appendText(addressLine2);
-  if (cityName) appendText(cityName);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phoneNumber) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phoneNumber }]);
-
-  const companyDetails = {
-    stack: [
-      { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: printSettings.companyAlignment },
-      { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine1, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine2, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] }
-    ],
-    margin: [0, 0, 0, 0]
-  };
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot) {
-      stack.push(buildHeaderLogo(data.logo, slot));
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyDetails.stack, margin: companyMargin });
-    }
-
-    return { stack };
-  };
-
-  return {
-    table: {
-      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-    },
-    layout: 'noBorders',
-    margin: [0, 0, 0, 2]
-  };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
-}
-
-function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
-  if (!logo) {
-    return { text: '' };
-  }
-
-  return {
-    image: logo,
-    fit: [50, 50],
-    alignment,
-    margin: [4, 6, 0, 0]
   };
 }
 
@@ -342,7 +247,7 @@ function buildChargesTable(data: ShipmentReportPdfData): any {
       headerRows: 2,
       keepWithHeaderRows: 2,
       dontBreakRows: true,
-      widths: ['*', 60, 60, 55, 60, 60, 55],
+      widths: [195, 98, 88, 98, 95, 85, 95],
       body: [
         [
           { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
@@ -365,12 +270,12 @@ function buildChargesTable(data: ShipmentReportPdfData): any {
         ...data.charges.map((item) => buildChargeRow(item)),
         [
           { text: 'Total', style: 'tableCellBold', alignment: 'right' },
-          buildNumberCell(data.chargeTotals.totalLocalRevenue, 2, true),
-          buildNumberCell(data.chargeTotals.totalLocalExpense, 2, true),
-          buildNumberCell(data.chargeTotals.totalLocalGP, 2, true),
-          buildNumberCell(data.chargeTotals.totalActualLocalRevenue, 2, true),
-          buildNumberCell(data.chargeTotals.totalActualLocalExpense, 2, true),
-          buildNumberCell(data.chargeTotals.totalActualLocalGP, 2, true)
+          buildAmountCell(data.chargeTotals.totalLocalRevenue, true),
+          buildAmountCell(data.chargeTotals.totalLocalExpense, true),
+          buildAmountCell(data.chargeTotals.totalLocalGP, true),
+          buildAmountCell(data.chargeTotals.totalActualLocalRevenue, true),
+          buildAmountCell(data.chargeTotals.totalActualLocalExpense, true),
+          buildAmountCell(data.chargeTotals.totalActualLocalGP, true)
         ]
       ]
     },
@@ -382,12 +287,12 @@ function buildChargesTable(data: ShipmentReportPdfData): any {
 function buildChargeRow(item: ShipmentChargePdfRow): any[] {
   return [
     buildTextCell(item.chargeName),
-    buildNumberCell(item.localRevenue, 2),
-    buildNumberCell(item.localExpense, 2),
-    buildNumberCell(item.localGP, 2),
-    buildNumberCell(item.actualLocalRevenue, 2),
-    buildNumberCell(item.actualLocalExpense, 2),
-    buildNumberCell(item.actualLocalGP, 2)
+    buildAmountCell(item.localRevenue),
+    buildAmountCell(item.localExpense),
+    buildAmountCell(item.localGP),
+    buildAmountCell(item.actualLocalRevenue),
+    buildAmountCell(item.actualLocalExpense),
+    buildAmountCell(item.actualLocalGP)
   ];
 }
 
@@ -417,7 +322,7 @@ function buildPartyAmountTable(
           headerRows: 1,
           keepWithHeaderRows: 1,
           dontBreakRows: true,
-          widths: ['*', 70],
+          widths: ['*', 115],
           body: [
             [
               { text: label, style: 'tableHeader' },
@@ -425,11 +330,11 @@ function buildPartyAmountTable(
             ],
             ...items.map((item) => [
               buildTextCell(item.customerName, true),
-              buildNumberCell(item.amount, 2, true)
+              buildAmountCell(item.amount, true)
             ]),
             [
               { text: 'Total', style: 'tableCellBold', alignment: 'right' },
-              buildNumberCell(total, 2, true)
+              buildAmountCell(total, true)
             ]
           ]
         },
@@ -455,6 +360,15 @@ function buildNumberCell(value?: number, decimals = 2, bold = false): any {
   };
 }
 
+function buildAmountCell(value?: number, bold = false): any {
+  return {
+    text: formatNumberWithCommas(value || 0, 2),
+    style: bold ? 'amountCellBold' : 'amountCell',
+    alignment: 'right',
+    noWrap: true
+  };
+}
+
 function borderedLayout(): any {
   return {
     hLineWidth: () => 0.25,
@@ -463,8 +377,8 @@ function borderedLayout(): any {
     vLineColor: () => '#000',
     paddingTop: () => 3,
     paddingBottom: () => 3,
-    paddingLeft: () => 4,
-    paddingRight: () => 4
+    paddingLeft: () => 3,
+    paddingRight: () => 3
   };
 }
 
@@ -476,7 +390,9 @@ function getShipmentStyles(): any {
     valueText: { fontSize: 8 },
     tableHeader: { fontSize: 8, bold: true, alignment: 'center' },
     tableCell: { fontSize: 8 },
-    tableCellBold: { fontSize: 8, bold: true }
+    tableCellBold: { fontSize: 8, bold: true },
+    amountCell: { fontSize: 6.5 },
+    amountCellBold: { fontSize: 6.5, bold: true }
   };
 }
 

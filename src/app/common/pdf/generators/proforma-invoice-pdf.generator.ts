@@ -10,7 +10,7 @@ const LOGO_FIT: [number, number] = [110, LOGO_HEIGHT_PT];
 export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
   const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
-  const topMargin = 190 + (isIndiaInvoice && printData.GSTCode ? 12 : 0);
+  const topMargin = 166 + (isIndiaInvoice && printData.GSTCode ? 12 : 0);
 
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -271,7 +271,7 @@ function buildBillingInfo(data: InvoicePdfData): any {
           { width: '50%', stack: rightStack }
         ],
         columnGap: 0,
-        margin: [20, 14, 20, 34]
+        margin: [20, 8, 20, 10]
       },
     ],
     margin: [-10, 0, -10, 0]

@@ -281,6 +281,7 @@ export class PdfMakeService {
     logo?: string,
     lookups?: any,
     options?: {
+      routeTandCMap?: Record<string, any[]>;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
@@ -303,6 +304,7 @@ export class PdfMakeService {
     logo?: string,
     lookups?: any,
     options?: {
+      routeTandCMap?: Record<string, any[]>;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
