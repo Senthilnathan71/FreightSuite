@@ -95,6 +95,10 @@ import {
   transformComprehensiveManagementReportData
 } from './generators/comprehensive-management-report-pdf.generator';
 import {
+  generateOutturnReportDocument,
+  transformOutturnReportData
+} from './generators/outturn-report-pdf.generator';
+import {
   generateBalanceSheetReportDocument,
   transformBalanceSheetReportData
 } from './generators/balance-sheet-report-pdf.generator';
@@ -524,6 +528,43 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformComprehensiveManagementReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
     const docDefinition = generateComprehensiveManagementReportDocument(pdfData);
+    return this.getBlob(docDefinition);
+  }
+
+  generateOutturnReport(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    },
+    filename = 'Outturn-Report'
+  ): void {
+    const pdfData = transformOutturnReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
+    const docDefinition = generateOutturnReportDocument(pdfData);
+    this.download(docDefinition, filename);
+  }
+
+  async generateOutturnReportBlob(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    printSettings?: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    }
+  ): Promise<Blob> {
+    const pdfData = transformOutturnReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation, printSettings);
+    const docDefinition = generateOutturnReportDocument(pdfData);
     return this.getBlob(docDefinition);
   }
 

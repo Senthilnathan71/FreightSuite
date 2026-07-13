@@ -26,6 +26,10 @@ export {
   transformComprehensiveManagementReportData
 } from './generators/comprehensive-management-report-pdf.generator';
 export {
+  generateOutturnReportDocument,
+  transformOutturnReportData
+} from './generators/outturn-report-pdf.generator';
+export {
   generateBalanceSheetReportDocument,
   transformBalanceSheetReportData
 } from './generators/balance-sheet-report-pdf.generator';

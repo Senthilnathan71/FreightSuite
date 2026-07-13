@@ -320,6 +320,28 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         return;
       }
 
+      if (this.reportId === 'outturn') {
+        const company = this.appSettingsService.getCurrentCompanyInfo();
+        const branch = this.appSettingsService.getCurrentBranchInfo();
+        const userData = this.appSettingsService.getDecryptedUserProfile();
+        const logo = this.pdfMakeService.getReportLogo();
+        const printSettings = this.companySettings.getPrintSettings();
+
+        this.pdfMakeService.generateOutturnReport(
+          this.buildInjectedReportData(),
+          company,
+          branch,
+          userData,
+          logo,
+          this.reportConfig?.pdfOrientation || 'landscape',
+          printSettings,
+          filename
+        );
+        this.appSettingsService.showSuccess('PDF downloaded successfully!');
+        this.spinner.hide();
+        return;
+      }
+
       if (this.reportId === 'balance-sheet') {
         const company = this.appSettingsService.getCurrentCompanyInfo();
         const branch = this.appSettingsService.getCurrentBranchInfo();
@@ -474,6 +496,22 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
           const printSettings = this.companySettings.getPrintSettings();
 
           pdfBlob = await this.pdfMakeService.generateComprehensiveManagementReportBlob(
+            this.buildInjectedReportData(),
+            company,
+            branch,
+            userData,
+            logo,
+            this.reportConfig?.pdfOrientation || 'landscape',
+            printSettings
+          );
+        } else if (this.reportId === 'outturn') {
+          const company = this.appSettingsService.getCurrentCompanyInfo();
+          const branch = this.appSettingsService.getCurrentBranchInfo();
+          const userData = this.appSettingsService.getDecryptedUserProfile();
+          const logo = this.pdfMakeService.getReportLogo();
+          const printSettings = this.companySettings.getPrintSettings();
+
+          pdfBlob = await this.pdfMakeService.generateOutturnReportBlob(
             this.buildInjectedReportData(),
             company,
             branch,
