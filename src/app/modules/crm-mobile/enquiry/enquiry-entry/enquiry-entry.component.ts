@@ -623,12 +623,24 @@ export class EnquiryEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     if (!UserMasterSid || !this.currentMenuId) {
       return;
     }
-    const payload = {
+    // Enquiry authorities are department-based (authority-entry: only credit/payment request
+    // are menu-only). Scope the check to this enquiry's department so canAuthorize and
+    // totalNumberOfAuthorizers resolve for the correct department — otherwise an enquiry whose
+    // department is outside the authority rule would wrongly be treated as needing approval.
+    const departmentMasterSid =
+      this.rateRequestForm?.get('DepartmentMasterSid')?.value ??
+      this.enquiryData?.DepartmentMasterSid ??
+      this.quotationDepartmentId ??
+      null;
+    const payload: any = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       MenuMasterSid: this.currentMenuId,
       UserMasterSid: UserMasterSid,
       DocumentSid: this.EnquiryHeaderSid
+    }
+    if (departmentMasterSid) {
+      payload.DepartmentMasterSid = Number(departmentMasterSid);
     }
     this.leadService.isUserAuthorizer(payload).subscribe(
       (resp: any) => {
@@ -645,7 +657,9 @@ export class EnquiryEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
           totalNumberOfAuthorizers: data?.totalNumberOfAuthorizers || 0
         }
         const authorizerStatusControl = this.rateRequestForm.get('authorizerStatus');
-        if (this.isAuthorizedUser && !this.isApproved) {
+        // Authorizer Status is only shown/approvable in edit mode. A new enquiry starts Pending
+        // and is approved later, so never require it on create (the field is hidden there).
+        if (this.isEditMode && this.isAuthorizedUser && !this.isApproved) {
           authorizerStatusControl?.setValidators([this.statusRequiredValidator]);
         } else {
           authorizerStatusControl?.clearValidators();
@@ -1406,6 +1420,10 @@ private parseFloatSafe(value: any): number {
     });
 
     this.routes.controls.forEach((_, routeIndex: number) => this.refreshRoutePortFilters(routeIndex));
+
+    // Re-evaluate department-scoped authority for the newly selected department, so the
+    // auto-approve-on-save logic (totalNumberOfAuthorizers === 0) reflects this department.
+    this.checkAuthorisedPerson(this.userData?.UserMasterSid);
   }
 
   openPrint() {
@@ -1621,6 +1639,8 @@ private parseFloatSafe(value: any): number {
         this.patchValues(resp.data);
         this.rateRequestData = resp.data;
         this.resetUnsavedState();
+        // Department + document are now known — re-evaluate authority scoped to this enquiry.
+        this.checkAuthorisedPerson(this.userData?.UserMasterSid);
         if (this.isEditMode && resp.data.status === 'S') {
         this.rateRequestForm.disable();
         this.enquiryOtherForm.disable();
@@ -2387,6 +2407,18 @@ private parseFloatSafe(value: any): number {
 
   navigateQuotation() {
     const response = this.rateRequestData;
+
+    // An enquiry must be authorized before a quotation can be created.
+    // We gate on the enquiry's persisted authorizerStatus (loaded with the record, so no async
+    // race): the save auto-sets it to 'Approved' whenever the department has no authority rule
+    // (department-scoped totalNumberOfAuthorizers === 0), so the normal flow passes straight
+    // through, while a covered department stays 'Pending' until the enquiry is approved.
+    const approvalState = response?.authorizerStatus ?? this.authStateCache;
+    if (approvalState !== 'Approved') {
+      this.appSettingsService.showWarning('This enquiry should be authorized before creating a quotation.');
+      return;
+    }
+
     const polList = (response.enquiryRoute || []).map(route => route.POLSid);
     const podList = (response.enquiryRoute || []).map(route => route.PODSid);
 
@@ -3040,6 +3072,10 @@ if (this.isTermsAndConditionsEnabled) {
     });
     modalRef.componentInstance.menuMasterSid = MenuMasterSid;
     modalRef.componentInstance.documentSid = this.EnquiryHeaderSid;
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.DepartmentMasterSid =
+      this.rateRequestForm?.get('DepartmentMasterSid')?.value ?? this.enquiryData?.DepartmentMasterSid ?? null;
   }
 
   openEDoc() {
@@ -3700,8 +3736,8 @@ if (this.isTermsAndConditionsEnabled) {
     validationIssues.push('Contact Number: Enter a valid contact number');
   }
 
-  // Check authorizer status if applicable
-  if (this.isAuthorizedUser && !this.isApproved) {
+  // Check authorizer status if applicable (edit mode only — the field is hidden on create)
+  if (this.isEditMode && this.isAuthorizedUser && !this.isApproved) {
     if (form.get('authorizerStatus')?.invalid) {
       validationIssues.push(`${fieldLabels['authorizerStatus']} is required`);
     }

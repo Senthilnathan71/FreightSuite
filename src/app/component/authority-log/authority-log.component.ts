@@ -129,6 +129,55 @@ export class AuthorityLogComponent implements OnInit {
       .every(r => r.approvalStatus === 'Approved');
   }
 
+  /** Lower levels that still block the current user, ordered by level. */
+  private myBlockingLevels(): any[] {
+    if (this.myAuthorityLevel == null || this.isFinalAuthorizer) return [];
+    return this.approvalLogs
+      .filter(r => Number(r.approvalLevel) < Number(this.myAuthorityLevel) && r.approvalStatus !== 'Approved')
+      .sort((a, b) => Number(a.approvalLevel) - Number(b.approvalLevel));
+  }
+
+  /** Personal, human-readable status shown as a banner at the top of the modal. */
+  get myStatusBanner(): { cssClass: string; text: string } | null {
+    if (!this.allowAction) return null;
+
+    if (this.myAuthorityLevel == null || !this.canAuthorize) {
+      return { cssClass: 'alert-secondary', text: 'You are not an approver for this document. View only.' };
+    }
+
+    if (this.approvalLogs.some(r => r.approvalStatus === 'Rejected')) {
+      return { cssClass: 'alert-danger', text: 'This document has been rejected. No further action is possible.' };
+    }
+
+    const myRow = this.approvalLogs.find(r => Number(r.approvalLevel) === Number(this.myAuthorityLevel));
+    if (this.alreadyApproved || myRow?.approvalStatus === 'Approved') {
+      return { cssClass: 'alert-success', text: `You have already approved at Level ${this.myAuthorityLevel}.` };
+    }
+
+    if (myRow && this.canActOnRow(myRow)) {
+      return { cssClass: 'alert-info', text: `It's your turn — approve or reject at Level ${this.myAuthorityLevel}.` };
+    }
+
+    const blocking = this.myBlockingLevels();
+    if (blocking.length) {
+      const next = blocking[0];
+      return {
+        cssClass: 'alert-warning',
+        text: `Level ${next.approvalLevel} (${next.approvedBy}) must approve before you can act at Level ${this.myAuthorityLevel}.`
+      };
+    }
+
+    return null;
+  }
+
+  /** Inline hint for the Action column on the current user's own blocked row. */
+  rowActionHint(log: any): string {
+    if (this.myAuthorityLevel == null || Number(log.approvalLevel) !== Number(this.myAuthorityLevel)) return '';
+    if (log.approvalStatus !== 'Pending' || this.canActOnRow(log)) return '';
+    const blocking = this.myBlockingLevels();
+    return blocking.length ? `Awaiting Level ${blocking[0].approvalLevel}` : '';
+  }
+
   startAction(log: any, decision: 'Approved' | 'Rejected') {
     this.actionRowLevel = Number(log.approvalLevel);
     this.actionDecision = decision;

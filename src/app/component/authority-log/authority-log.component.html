@@ -4,7 +4,13 @@
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
   </div>
 
-  <div class="modal-body d-flex flex-row align-items-center">
+  <div class="modal-body">
+
+    <div *ngIf="myStatusBanner" class="alert py-1 px-2 mb-2 small d-flex align-items-center gap-1"
+      [ngClass]="myStatusBanner.cssClass">
+      <i class="fas fa-info-circle"></i>
+      <span>{{ myStatusBanner.text }}</span>
+    </div>
 
     <div class="table-responsive w-100" style="max-height: 300px; overflow-y: auto;">
       <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
@@ -79,7 +85,10 @@
                   <i class="fas fa-times me-1"></i>Reject
                 </button>
               </ng-container>
-              <span *ngIf="!canActOnRow(log) && actionRowLevel !== log.approvalLevel" class="text-muted">-</span>
+              <span *ngIf="!canActOnRow(log) && actionRowLevel !== log.approvalLevel"
+                class="text-muted" [class.text-warning]="rowActionHint(log)">
+                {{ rowActionHint(log) || '-' }}
+              </span>
             </td>
           </tr>
           <tr *ngIf="actionRowLevel === log.approvalLevel">

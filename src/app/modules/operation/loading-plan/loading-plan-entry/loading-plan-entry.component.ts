@@ -153,6 +153,9 @@ export class LoadingPlanEntryComponent {
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
+  // When the logged-in company's country is UAE/Dubai, POL & POD show ALL sea ports
+  // instead of splitting into company-country vs foreign ports by shipment direction.
+  isDubaiCompany: boolean = false;
   constructor(
     private fb: FormBuilder,
     private modalService: NgbModal,
@@ -196,11 +199,35 @@ export class LoadingPlanEntryComponent {
     this.branchDetails = this.appSettingsService.getCurrentBranchInfo();
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.setDubaiCompanyFlag();
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.currentMenuId = this.mps.getMenuId();
     this.mps.init().subscribe();
   }
+
+  /**
+   * Flags the logged-in company as a UAE/Dubai company. Mirrors the country
+   * detection used across the app (e.g. invoice-pdf.generator) where countryCode
+   * 'ae' — or a country name of 'uae' / 'dubai' / 'united arab emirates' — marks a
+   * UAE company. For such companies POL & POD list all sea ports.
+   */
+  private setDubaiCompanyFlag(): void {
+    const companyCountry = this.appSettingsService.getCurrentCompanyCountry();
+    const countryCode = String(companyCountry?.countryCode ?? this.currentCompany?.countryMaster?.countryCode ?? '')
+      .trim()
+      .toLowerCase();
+    const countryName = String(companyCountry?.countryName ?? this.currentCompany?.countryMaster?.countryName ?? '')
+      .trim()
+      .toLowerCase();
+
+    this.isDubaiCompany =
+      countryCode === 'ae' ||
+      countryName === 'uae' ||
+      countryName === 'dubai' ||
+      countryName === 'united arab emirates';
+  }
+
   onInitForm() {
     this.loadingPlanForm = this.fb.group({
       dept: [null, Validators.required],
@@ -467,12 +494,15 @@ export class LoadingPlanEntryComponent {
     let polPorts = [...basePorts];
     let podPorts = [...basePorts];
 
-    if (shipmentDirection === 'EXPORT') {
-      polPorts = [...companyCountryPorts];
-      podPorts = [...foreignPorts];
-    } else if (shipmentDirection === 'IMPORT') {
-      polPorts = [...foreignPorts];
-      podPorts = [...companyCountryPorts];
+    // UAE/Dubai company: show ALL sea ports in both POL and POD (no direction split).
+    if (!this.isDubaiCompany) {
+      if (shipmentDirection === 'EXPORT') {
+        polPorts = [...companyCountryPorts];
+        podPorts = [...foreignPorts];
+      } else if (shipmentDirection === 'IMPORT') {
+        polPorts = [...foreignPorts];
+        podPorts = [...companyCountryPorts];
+      }
     }
 
     const selectedPOLCode = this.selectedPOL?.PortCode ?? this.loadingPlanForm.get('pol')?.value;

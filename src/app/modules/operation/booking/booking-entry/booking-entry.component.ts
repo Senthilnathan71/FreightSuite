@@ -4329,6 +4329,9 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
   isSendingMail = false;
 
   async sendManualMail(): Promise<void> {
+    if (!(await this.isBookingConfirmationAuthorized())) {
+      return;
+    }
     this.isSendingMail = true;
     this.spinner.show();
     try {
@@ -4954,7 +4957,46 @@ getFormattedPort(code: string): string {
     }
   }
 
-  reportAndEmailModel(content: TemplateRef<any>) {
+  /**
+   * Booking Confirmation output guard (print / mail).
+   * Normal flow: when the Booking menu has no authority rule configured, output is allowed.
+   * When authorizers are configured, the booking must be fully Approved before it can be
+   * printed or mailed. Returns true when output may proceed.
+   */
+  private async isBookingConfirmationAuthorized(): Promise<boolean> {
+    const menuMasterSid = this.getCurrentBookingMenuMasterSid();
+    const documentSid = this.bookingData?.BookingHeaderSid || this.BookingHeaderSid;
+    if (!menuMasterSid || !documentSid) {
+      return true;
+    }
+    try {
+      const resp: any = await firstValueFrom(
+        this.leadService.getApprovalStatusByMenuAndDocument(
+          Number(menuMasterSid),
+          Number(documentSid),
+          this.currentCompany?.CompanyMasterSid,
+          this.currentBranch?.BranchMasterSid,
+          this.bookingData?.DepartmentMasterSid ?? this.b['DepartmentMasterSid']?.value ?? null
+        )
+      );
+      const logData: any[] = resp?.data?.logData || [];
+      // No authorizers configured for this menu -> normal flow.
+      if (logData.length === 0 || resp?.data?.status === 'Approved') {
+        return true;
+      }
+      this.appSettingService.showWarning('This booking should be authorized before print or mail.');
+      return false;
+    } catch (error) {
+      console.error('Booking authorization check failed:', error);
+      this.appSettingService.showError('Unable to verify booking authorization. Please try again.');
+      return false;
+    }
+  }
+
+  async reportAndEmailModel(content: TemplateRef<any>) {
+    if (!(await this.isBookingConfirmationAuthorized())) {
+      return;
+    }
     this.prepareTermsForPrint();
     this.modalService.open(content, {
       size: 'xl',
@@ -6295,6 +6337,9 @@ private async getBookingCustomerBranchEmailsByMenu(): Promise<string[]> {
 // Method to send email with PDF attachment
 async sendEmail(type: BookingEmailType = 'booking'): Promise<void> {
   try {
+    if (type === 'booking' && !(await this.isBookingConfirmationAuthorized())) {
+      return;
+    }
     this.spinner.show();
     
     const pdfBlob = await this.generateEmailPdfBlob(type);
