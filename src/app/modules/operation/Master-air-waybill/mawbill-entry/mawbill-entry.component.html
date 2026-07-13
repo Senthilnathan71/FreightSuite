@@ -45,6 +45,7 @@
                 </button>
             </div>
 
+
             <div class="action-group" *ngIf="!isEditMode">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
@@ -115,6 +116,11 @@
                         (click)="openDocRef()">
                         <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
                         <span class="lead-action-text">Document reference</span>
+                    </button>
+                    <button *ngIf="mps.has('authority')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+                        (click)="openAuthority()">
+                        <span class="lead-action-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="lead-action-text">Authorize</span>
                     </button>
 
                 </div>
