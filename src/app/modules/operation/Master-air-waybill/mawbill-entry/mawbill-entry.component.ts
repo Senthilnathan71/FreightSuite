@@ -27,11 +27,13 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 
 import { ToastrService } from 'ngx-toastr';
 import { OperationService } from '../../operation.service';
 import { CostEntryComponent } from '../../cost/cost -entry/cost-entry.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { PrintAuthorizationService } from 'src/app/core/services/print-authorization.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -86,6 +88,7 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     NgbAccordionModule,
     FollowUpComponent,
     EdocComponent,
+    AuthorityLogComponent,
     EmailEntryComponent,
     ContainerActivityComponent,
     CustomDatePipe,
@@ -342,6 +345,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     private operationService: OperationService,
     private toastr: ToastrService,
     private appSettingsService: AppSettingsService,
+    private printAuthService: PrintAuthorizationService,
     private cdr: ChangeDetectorRef,
     private datepipe : CustomDatePipe,
     private spinner: NgxSpinnerService,
@@ -3868,7 +3872,10 @@ onYardChange(selectedYard: any): void {
       }
   // print
 
-   reportMAWBModel(type: 'MAWB' | 'MAWBDraft') {
+   async reportMAWBModel(type: 'MAWB' | 'MAWBDraft') {
+    if (!(await this.isMawbAuthorizedToPrint())) {
+      return;
+    }
     this.selectedReport = type;
         const modalRef=this.modalService.open(MAWBComponent,{
           size: 'xl',
@@ -3970,7 +3977,42 @@ onYardChange(selectedYard: any): void {
     });
   }
 
-        reportMAWBpreprintedModel() {
+        openAuthority() {
+          const menuMasterSid = Number(this.currentMenuId || this.MenuMasterSid || sessionStorage.getItem('currentMenuId'));
+          const documentSid = this.masterAirWayData?.MasterJobSid || this.masterJobData?.MasterJobSid;
+          if (!menuMasterSid || !documentSid) {
+            this.appSettingsService.showWarning('Please save the master air waybill before viewing authorization.');
+            return;
+          }
+          const modalRef = this.modalService.open(AuthorityLogComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static'
+          });
+          modalRef.componentInstance.menuMasterSid = menuMasterSid;
+          modalRef.componentInstance.documentSid = Number(documentSid);
+          modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+          modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+          modalRef.componentInstance.DepartmentMasterSid =
+            this.masterAirWayData?.DepartmentMasterSid ?? this.masterJobData?.DepartmentMasterSid ?? null;
+          modalRef.componentInstance.allowAction = true;
+        }
+
+        private isMawbAuthorizedToPrint(): Promise<boolean> {
+          return this.printAuthService.ensureAuthorizedToPrint({
+            menuMasterSid: Number(this.currentMenuId || this.MenuMasterSid || sessionStorage.getItem('currentMenuId')),
+            documentSid: this.masterAirWayData?.MasterJobSid || this.masterJobData?.MasterJobSid,
+            companyMasterSid: this.currentCompany?.CompanyMasterSid,
+            branchMasterSid: this.currentBranch?.BranchMasterSid,
+            departmentMasterSid: this.masterAirWayData?.DepartmentMasterSid ?? this.masterJobData?.DepartmentMasterSid ?? null,
+            documentLabel: 'MAWB'
+          });
+        }
+
+        async reportMAWBpreprintedModel() {
+          if (!(await this.isMawbAuthorizedToPrint())) {
+            return;
+          }
           const modalRef = this.modalService.open(MawbPreprintComponent, {
             size: 'xl',
             scrollable: true,

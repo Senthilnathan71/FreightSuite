@@ -25,6 +25,7 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
 import { MilestoneComponent } from '../../milestone/milestone/milestone.component';
 import { CostEntryComponent } from '../../cost/cost -entry/cost-entry.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { PrintAuthorizationService } from 'src/app/core/services/print-authorization.service';
 import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { ConnectionComponent } from '../../connection/connection/connection.component';
 import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
@@ -750,6 +751,7 @@ hblModalRef?: NgbModalRef;
     private operationService: OperationService,
     private currentRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
+    private printAuthService: PrintAuthorizationService,
     private masterService: MasterService,
     private calendar : NgbCalendar,
     private exportExcelService: ExcelExportService,
@@ -6100,12 +6102,24 @@ ${this.userData['userName']}`;
   }
   
   openAuthority() {
-    if (!this.bookingData) return;
-    const modalRef = this.modalService.open(AuthorityLogComponent, { 
-      size: 'lg', 
-      centered: true, 
-      backdrop: 'static' 
-    })
+    const menuMasterSid = Number(this.housejobData?.MenuMasterSid || this.currentMenuId || this.mps.getMenuId() || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.housejobData?.HouseJobSid || this.HouseJobSid;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the house job before viewing authorization.');
+      return;
+    }
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.DepartmentMasterSid =
+      this.housejobData?.DepartmentMasterSid ?? this.houseJobForm.get('DepartmentMasterSid')?.value ?? null;
+    modalRef.componentInstance.allowAction = true;
   }
   toggleQuickForm() {
     this.isQuickFormExpanded = !this.isQuickFormExpanded;
@@ -6999,6 +7013,16 @@ ${this.userData['userName']}`;
 
 
        async reportBill(type: 'HBL' | 'HBLDraft') {
+         if (!(await this.printAuthService.ensureAuthorizedToPrint({
+           menuMasterSid: Number(this.housejobData?.MenuMasterSid || this.currentMenuId || this.mps.getMenuId() || sessionStorage.getItem('currentMenuId')),
+           documentSid: this.HouseJobSid || this.housejobData?.HouseJobSid,
+           companyMasterSid: this.currentCompany?.CompanyMasterSid,
+           branchMasterSid: this.currentBranch?.BranchMasterSid,
+           departmentMasterSid: this.housejobData?.DepartmentMasterSid ?? this.houseJobForm.get('DepartmentMasterSid')?.value ?? null,
+           documentLabel: 'HBL'
+         }))) {
+           return;
+         }
          if (type === 'HBL') {
            // For HBL (final), require posted invoice first
            if (!this.ensurePostedInvoice('HBL')) return;
@@ -7586,6 +7610,16 @@ ${this.userData['userName']}`;
       // House Air Way Bill
 
   async reportHAWB(type: 'HAWB' | 'HAWBDraft') {
+     if (!(await this.printAuthService.ensureAuthorizedToPrint({
+       menuMasterSid: Number(this.housejobData?.MenuMasterSid || this.currentMenuId || this.mps.getMenuId() || sessionStorage.getItem('currentMenuId')),
+       documentSid: this.HouseJobSid || this.housejobData?.HouseJobSid,
+       companyMasterSid: this.currentCompany?.CompanyMasterSid,
+       branchMasterSid: this.currentBranch?.BranchMasterSid,
+       departmentMasterSid: this.housejobData?.DepartmentMasterSid ?? this.houseJobForm.get('DepartmentMasterSid')?.value ?? null,
+       documentLabel: 'HAWB'
+     }))) {
+       return;
+     }
      const ok = await this.validateCreditForRelease('HAWB');
      if (!ok) return;
     this.selectedReportAir = type;

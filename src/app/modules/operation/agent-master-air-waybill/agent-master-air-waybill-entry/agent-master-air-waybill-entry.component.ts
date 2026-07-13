@@ -10,6 +10,7 @@ import { catchError, firstValueFrom, forkJoin, map, of, take, tap } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { PrintAuthorizationService } from 'src/app/core/services/print-authorization.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
@@ -615,6 +616,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     private operationService: OperationService,
     private currentRoute: ActivatedRoute,
     private appSettingService: AppSettingsService,
+    private printAuthService: PrintAuthorizationService,
     private masterService: MasterService,
     private calendar : NgbCalendar,
     private exportExcelService: ExcelExportService,
@@ -4419,12 +4421,23 @@ ${this.userData['userName']}`;
   }
   
   openAuthority() {
-    if (!this.bookingData) return;
-    const modalRef = this.modalService.open(AuthorityLogComponent, { 
-      size: 'lg', 
-      centered: true, 
-      backdrop: 'static' 
-    })
+    const menuMasterSid = Number(this.housejobData?.MenuMasterSid || this.currentMenuId || this.mps.getMenuId() || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.housejobData?.HouseJobSid || this.HouseJobSid;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the agent master air waybill before viewing authorization.');
+      return;
+    }
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.DepartmentMasterSid = this.housejobData?.DepartmentMasterSid ?? null;
+    modalRef.componentInstance.allowAction = true;
   }
   toggleQuickForm() {
     this.isQuickFormExpanded = !this.isQuickFormExpanded;
@@ -5174,7 +5187,21 @@ ${this.userData['userName']}`;
     });
   }
 
-  reportAWAB() {
+  private isAgentMawbAuthorizedToPrint(): Promise<boolean> {
+    return this.printAuthService.ensureAuthorizedToPrint({
+      menuMasterSid: Number(this.housejobData?.MenuMasterSid || this.currentMenuId || this.mps.getMenuId() || sessionStorage.getItem('currentMenuId')),
+      documentSid: this.HouseJobSid || this.housejobData?.HouseJobSid,
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid,
+      departmentMasterSid: this.housejobData?.DepartmentMasterSid ?? null,
+      documentLabel: 'Agent MAWB'
+    });
+  }
+
+  async reportAWAB() {
+    if (!(await this.isAgentMawbAuthorizedToPrint())) {
+      return;
+    }
     // this.selectedReportAir = type;
     const reportData = this.buildMawbReportData();
     if (!reportData) {
@@ -5263,7 +5290,10 @@ ${this.userData['userName']}`;
   }
 
 
-  reportAWABPreprint() {
+  async reportAWABPreprint() {
+    if (!(await this.isAgentMawbAuthorizedToPrint())) {
+      return;
+    }
     // this.selectedReportAir = type;
     const modalRef = this.modalService.open(AwbPreprintComponent, {
       size: 'xl',

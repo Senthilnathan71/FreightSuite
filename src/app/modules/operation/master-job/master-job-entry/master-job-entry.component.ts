@@ -67,6 +67,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { PrintAuthorizationService } from 'src/app/core/services/print-authorization.service';
 import { CfsOutturnComponent } from '../reports/cfs-outturn/cfs-outturn.component';
 import { AllHBLDraftComponent } from '../reports/all-hbl-draft/all-hbl-draft.component';
 import { AllHBLComponent } from '../reports/all-hbl/all-hbl.component';
@@ -406,6 +407,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     private operationService: OperationService,
     private toastr: ToastrService,
     private appSettingsService: AppSettingsService,
+    private printAuthService: PrintAuthorizationService,
     private cdr: ChangeDetectorRef,
     private datepipe: CustomDatePipe,
     private spinner: NgxSpinnerService,
@@ -5303,7 +5305,17 @@ onETDDateSelect(): void {
 
 
 
-  reportMBLBill(type: 'MBL' | 'MBLDraft') {
+  async reportMBLBill(type: 'MBL' | 'MBLDraft') {
+    if (!(await this.printAuthService.ensureAuthorizedToPrint({
+      menuMasterSid: Number(this.MenuMasterSid || sessionStorage.getItem('currentMenuId')),
+      documentSid: this.masterJobData?.MasterJobSid || this.masterJobSid,
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid,
+      departmentMasterSid: this.masterJobData?.DepartmentMasterSid ?? this.masterJobForm.get('DepartmentMasterSid')?.value ?? null,
+      documentLabel: 'MBL'
+    }))) {
+      return;
+    }
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
       // Check if containers exist and have ContainerNumber
       const hasValidContainers = this.masterJobData?.containers?.some(
