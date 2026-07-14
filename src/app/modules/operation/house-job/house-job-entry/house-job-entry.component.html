@@ -545,7 +545,7 @@
 
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isShipperFreeText']?.value">
-      <input type="text" formControlName="ShipperName" placeholder="" class="custom-input-field sm" style="width: 85%"/>
+      <input type="text" formControlName="ShipperName" placeholder="" class="custom-input-field sm" style="width: 85%" maxlength="100"/>
       <button class="btn bi bi-calendar3 swap-btn" type="button"
         (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
@@ -557,6 +557,9 @@
       @if(houseJobForm.get('ShipperName')?.hasError('required')){
       <span>Required</span>
       }
+      @if(houseJobForm.get('ShipperName')?.hasError('maxlength')){
+      <span>Shipper Name cannot exceed 100 characters</span>
+      }
     </div>
     }
   </div>
@@ -567,13 +570,16 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group" [class.filled]="!!houseJobForm.get('ShipperAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="ShipperAddress">
+                        formControlName="ShipperAddress" maxlength="300">
                       <label for="text-input" class="input-label">Shipper Address <span
                           class="text-danger">*</span></label>
                       @if(houseJobForm.get('ShipperAddress')?.touched && houseJobForm.get('ShipperAddress')?.invalid){
                       <div class="error-message">
                         @if(houseJobForm.get('ShipperAddress')?.hasError('required')){
                         <span>Required</span>
+                        }
+                        @if(houseJobForm.get('ShipperAddress')?.hasError('maxlength')){
+                        <span>Shipper Address cannot exceed 300 characters</span>
                         }
                       </div>
                       }
@@ -606,7 +612,7 @@
 
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isConsigneeFreeText']?.value">
-      <input type="text" formControlName="ConsigneeName" placeholder="" class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportLinked" />
+      <input type="text" formControlName="ConsigneeName" placeholder="" class="custom-input-field sm" style="width: 85%" maxlength="100" [readonly]="isExportToImportLinked" />
       <button class="btn bi bi-calendar3 swap-btn" type="button"
         (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)"
         [disabled]="isExportToImportLinked">
@@ -619,6 +625,9 @@
       @if(houseJobForm.get('ConsigneeName')?.hasError('required')){
       <span>Required</span>
       }
+      @if(houseJobForm.get('ConsigneeName')?.hasError('maxlength')){
+      <span>Consignee Name cannot exceed 100 characters</span>
+      }
     </div>
     }
   </div>
@@ -628,7 +637,7 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group  mt-md-1" [class.filled]="!!houseJobForm.get('ConsigneeAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="ConsigneeAddress">
+                        formControlName="ConsigneeAddress" maxlength="300">
                       <label for="text-input" class="input-label">Consignee Address <span
                           class="text-danger">*</span></label>
                       @if(houseJobForm.get('ConsigneeAddress')?.touched &&
@@ -636,6 +645,9 @@
                       <div class="error-message">
                         @if(houseJobForm.get('ConsigneeAddress')?.hasError('required')){
                         <span>Required</span>
+                        }
+                        @if(houseJobForm.get('ConsigneeAddress')?.hasError('maxlength')){
+                        <span>Consignee Address cannot exceed 300 characters</span>
                         }
                       </div>
                       }
@@ -669,7 +681,7 @@
 
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isNotifyFreeText']?.value">
-      <input type="text" formControlName="Notify" placeholder="" class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportLinked" />
+      <input type="text" formControlName="Notify" placeholder="" class="custom-input-field sm" style="width: 85%" maxlength="200" [readonly]="isExportToImportLinked" />
       <button class="btn bi bi-calendar3 swap-btn" type="button"
         (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true"
         [disabled]="isExportToImportLinked">
@@ -677,15 +689,25 @@
       </button>
     </div>
     <label for="text-input" class="input-label">Notify</label>
+    @if(houseJobForm.get('Notify')?.touched && houseJobForm.get('Notify')?.hasError('maxlength')){
+    <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
+      <span>Notify cannot exceed 200 characters</span>
+    </div>
+    }
   </div>
 </aside>
 
                   <aside class="col-md-6">
                     <div class="custom-form-group mt-md-1" [class.filled]="!!houseJobForm.get('NotifyAddress')?.value">
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                        formControlName="NotifyAddress">
+                        formControlName="NotifyAddress" maxlength="200">
                       <label for="text-input" class="input-label">Notify Address<span
                           class="text-danger"></span></label>
+                      @if(houseJobForm.get('NotifyAddress')?.touched && houseJobForm.get('NotifyAddress')?.hasError('maxlength')){
+                      <div class="error-message">
+                        <span>Notify Address cannot exceed 200 characters</span>
+                      </div>
+                      }
                     </div>
                   </aside>
 
@@ -747,13 +769,18 @@
 
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isCarrierFreeText']?.value">
-      <input type="text" formControlName="CarrierName" placeholder="" class="custom-input-field sm" style="width: 85%" />
+      <input type="text" formControlName="CarrierName" placeholder="" class="custom-input-field sm" style="width: 85%" maxlength="200" />
       <button class="btn bi bi-calendar3 pe-0 swap-btn" type="button"
         (click)="toggleInputType('CarrierName','isCarrierFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
     </div>
     <label for="text-input" class="input-label">Carrier</label>
+    @if(houseJobForm.get('CarrierName')?.touched && houseJobForm.get('CarrierName')?.hasError('maxlength')){
+    <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
+      <span>Carrier cannot exceed 200 characters</span>
+    </div>
+    }
   </div>
 </aside>
 
@@ -1483,7 +1510,7 @@
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ShipperName')?.value">
               <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyShipperFreeText')?.value">
-                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ShipperName" style="width: 85%" />
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ShipperName" style="width: 85%" maxlength="100" />
                 <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ShipperName','isProxyShipperFreeText',$event)" style="flex-shrink:0;">
                   <i class="fas fa-exchange-alt"></i>
                 </button>
@@ -1503,14 +1530,14 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ShipperAddress">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ShipperAddress" maxlength="300">
               <label class="input-label">Shipper Address</label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ConsigneeName')?.value">
               <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyConsigneeFreeText')?.value">
-                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ConsigneeName" style="width: 85%" />
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ConsigneeName" style="width: 85%" maxlength="100" />
                 <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ConsigneeName','isProxyConsigneeFreeText',$event)" style="flex-shrink:0;">
                   <i class="fas fa-exchange-alt"></i>
                 </button>
@@ -1530,7 +1557,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group">
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ConsigneeAddress">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ConsigneeAddress" maxlength="300">
               <label class="input-label">Consignee Address</label>
             </div>
           </aside>
@@ -1629,7 +1656,7 @@
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('CarrierName')?.value">
               <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyCarrierFreeText')?.value">
-                <input type="text" class="custom-input-field sm" placeholder="" formControlName="CarrierName" style="width: 85%" />
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="CarrierName" style="width: 85%" maxlength="200" />
                 <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('CarrierName','isProxyCarrierFreeText',$event)" style="flex-shrink:0;">
                   <i class="fas fa-exchange-alt"></i>
                 </button>
@@ -1761,7 +1788,7 @@
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
                         (input)="onCargoManualFieldInput($any(cargo), 'GrossWeight')"
-                        DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
+                        DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Gross Wt. <span class="text-danger">*</span></label>
                       @if (shouldShowCargoFieldError(cargo, 'GrossWeight')) {
@@ -1784,9 +1811,14 @@
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm text-end" formControlName="Volume"
                         (input)="onCargoManualFieldInput($any(cargo), 'Volume')"
-                        DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
-                        max="9999999.999">
+                        DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="decimalAfterPrecision"
+                        max="99999.999">
                       <label class="input-label">Volume(CBM)</label>
+                      @if (shouldShowCargoFieldError(cargo, 'Volume')) {
+                      <div class="error-message cargo-error-message" role="alert">
+                        <span>{{ getCargoFieldErrorMessage(cargo, 'Volume') }}</span>
+                      </div>
+                      }
                     </div>
                   </aside>
                   @if(selectedCargoMode === "AIR" || selectedCargoMode === "LCL") {
@@ -1797,6 +1829,11 @@
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Volumetric</label>
+                      @if (shouldShowCargoFieldError(cargo, 'Volumetric')) {
+                      <div class="error-message cargo-error-message" role="alert">
+                        <span>{{ getCargoFieldErrorMessage(cargo, 'Volumetric') }}</span>
+                      </div>
+                      }
                     </div>
                   </aside>
                   <aside class="col-md-2">
@@ -1806,6 +1843,11 @@
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Chargeable Wt.</label>
+                      @if (shouldShowCargoFieldError(cargo, 'ChargeableWeight')) {
+                      <div class="error-message cargo-error-message" role="alert">
+                        <span>{{ getCargoFieldErrorMessage(cargo, 'ChargeableWeight') }}</span>
+                      </div>
+                      }
                     </div>
                   </aside>
                   }
@@ -1817,14 +1859,24 @@
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Chargeable Wt.</label>
+                      @if (shouldShowCargoFieldError(cargo, 'ChargeableWeight')) {
+                      <div class="error-message cargo-error-message" role="alert">
+                        <span>{{ getCargoFieldErrorMessage(cargo, 'ChargeableWeight') }}</span>
+                      </div>
+                      }
                     </div>
                   </aside>
                   }
                   <aside class="col-md-2">
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm text-end" formControlName="NoOfPackage"
-                        DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0" max="9999999.999">
+                        DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="0" max="99999999">
                       <label class="input-label">No of Pkg</label>
+                      @if (shouldShowCargoFieldError(cargo, 'NoOfPackage')) {
+                      <div class="error-message cargo-error-message" role="alert">
+                        <span>{{ getCargoFieldErrorMessage(cargo, 'NoOfPackage') }}</span>
+                      </div>
+                      }
                     </div>
                   </aside>
                   @if(selectedDepartmentType === "SEA"){
@@ -2001,6 +2053,9 @@
                           </td>
                           <td>
                             <input type="text" formControlName="ExternlQty" class="custom-input-field sm text-end" [onlyNumbers] >
+                            @if (shouldShowProductFieldError(product, 'ExternlQty')) {
+                            <div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'ExternlQty') }}</div>
+                            }
                           </td>
                           @if(usesDimensionalCargoFields()){
                             <td>
@@ -2008,18 +2063,18 @@
                                 class="ng-select" placeholder="" appendTo="body">
                               </ng-select>
                             </td>
-                            <td><input type="text" formControlName="Length" class="custom-input-field sm text-end"DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Width" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Height" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volumetric', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"> </td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Length" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2">@if (shouldShowProductFieldError(product, 'Length')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Length') }}</div>}</td>
+                            <td><input type="text" formControlName="Width" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2">@if (shouldShowProductFieldError(product, 'Width')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Width') }}</div>}</td>
+                            <td><input type="text" formControlName="Height" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2">@if (shouldShowProductFieldError(product, 'Height')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Height') }}</div>}</td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volumetric', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'Volumetric')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Volumetric') }}</div>}</td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'Volume')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Volume') }}</div>}</td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'GrossWeight')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'GrossWeight') }}</div>}</td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"></td>
                           }
                           @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'GrossWeight')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'GrossWeight') }}</div>}</td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'Volume')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Volume') }}</div>}</td>
                           }
                           <td>
                             <div class="d-flex align-items-center" >
@@ -2151,7 +2206,7 @@
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
-                formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
+                formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                 max="9999999.999">
               <label for="text-input" class="input-label">
                 Gross Weight <span class="text-danger">*</span>
@@ -2189,7 +2244,7 @@
               cargoForm.get('NetWeight')?.invalid) {
               <div class="error-message">
                 @if (cargoForm.get('NetWeight')?.errors?.['max']) {
-                <span>Net Weight cannot exceed 9,999,999.999</span>
+                <span>Volumetric Weight must be 9,999,999.999 or less</span>
                 } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                 <!-- } @else if (cargoForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
@@ -2202,17 +2257,17 @@
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
-                max="9999999.999">
+                formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="decimalAfterPrecision"
+                max="99999.999">
               <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
               <!-- Validation Messages -->
               @if ((cargoForm.get('Volume')?.touched || cargoForm.get('Volume')?.dirty) &&
               cargoForm.get('Volume')?.invalid) {
               <div class="error-message">
                 @if (cargoForm.get('Volume')?.errors?.['max']) {
-                <span>Net Weight cannot exceed 9,999,999.999</span>
+                <span>Volume (CBM) cannot exceed 99,999.999</span>
                 } @else if (cargoForm.get('Volume')?.errors?.['decimalPrecision']) {
-                <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+                <small>Allowed: 5 Digits before and 3 digits after decimal point</small>
                 }
               </div>
               }
@@ -2230,7 +2285,7 @@
               cargoForm.get('Volumetric')?.invalid) {
               <div class="error-message">
                 @if (cargoForm.get('Volumetric')?.errors?.['max']) {
-                <span>Net Weight cannot exceed 9,999,999.999</span>
+                <span>Chargeable Weight must be 9,999,999.999 or less</span>
                 } @else if (cargoForm.get('Volumetric')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                 }
@@ -2271,8 +2326,8 @@
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
-                formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
-                max="9999999.999">
+                formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="0"
+                max="99999999">
               <label for="text-input" class="input-label">No of Pkg<span class="text-danger"></span></label>
               <!-- Validation Messages -->
               @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
@@ -2606,22 +2661,22 @@
                   </td>
                   <td>
                     <input type="text" id="text-input" formControlName="Length" placeholder="" DecimalPrecision
-                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       class="custom-input-field sm text-end">
                   </td>
                   <td>
                     <input type="text" id="text-input" formControlName="Width" placeholder="" DecimalPrecision
-                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       class="custom-input-field sm text-end">
                   </td>
                   <td>
                     <input type="text" id="text-input" formControlName="Height" placeholder="" DecimalPrecision
-                      [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       class="custom-input-field sm text-end">
                   </td>
                   <td>
                     <input type="text" id="text-input" formControlName="Volumetric" placeholder="" DecimalPrecision
-                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('Volumetric')?.invalid && (product.get('Volumetric')?.touched || product.get('Volumetric')?.dirty)">
                     @if (shouldShowProductFieldError(product, 'Volumetric')) {
@@ -2632,7 +2687,7 @@
                   </td>
                   <td>
                     <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
-                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('Volume')?.invalid && (product.get('Volume')?.touched || product.get('Volume')?.dirty)">
                     @if (shouldShowProductFieldError(product, 'Volume')) {
@@ -2643,7 +2698,7 @@
                   </td>
                   <td>
               
-                    <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="8"
+                    <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                       [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder=""
                       class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('GrossWeight')?.invalid && (product.get('GrossWeight')?.touched || product.get('GrossWeight')?.dirty)">
@@ -2655,7 +2710,7 @@
               
                   </td>
                   <td>
-                    <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="8"
+                    <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                       [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder=""
                       class="custom-input-field sm text-end">
                   </td>
@@ -2663,19 +2718,19 @@
                   @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
                   <td>
               
-                    <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="8"
+                    <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                       [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder=""
                       class="custom-input-field sm text-end">
               
                   </td>
                   <td>
-                    <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="8"
+                    <input type="text" id="text-input" formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                       [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder=""
                       class="custom-input-field sm text-end">
                   </td>
                   <td >
                     <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
-                      [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                      [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('Volume')?.invalid && (product.get('Volume')?.touched || product.get('Volume')?.dirty)">
                     @if (shouldShowProductFieldError(product, 'Volume')) {
@@ -3607,7 +3662,7 @@
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end" formControlName="Volumetric"
             (input)="onProductManualFieldInput(productForm, 'Volumetric')"
-            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+            DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="digitsAfterDecimal"
             max="9999999.999">
           <label for="text-input" class="input-label">Volumetric <span class="text-danger">*</span></label>
           @if (shouldShowProductFieldError(productForm, 'Volumetric')) {
@@ -3622,7 +3677,7 @@
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end" formControlName="Volume"
             (input)="onProductManualFieldInput(productForm, 'Volume')"
-            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
+            DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="digitsAfterDecimal"
             max="9999999.999">
           <label for="text-input" class="input-label">Volume <span class="text-danger">*</span></label>
           @if (shouldShowProductFieldError(productForm, 'Volume')) {

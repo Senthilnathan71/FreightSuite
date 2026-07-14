@@ -211,6 +211,12 @@
                     class="custom-input-field sm text-end"
                     (change)="calculateCostAmount(i); calculateRevenueAmount(i)"
                     [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="3">
+                  @if ((row.get('NoOfUnit')?.dirty || row.get('NoOfUnit')?.touched) && row.get('NoOfUnit')?.hasError('max')) {
+                  <div class="error-message" role="alert">No. of Unit must be 999,999.999 or less</div>
+                  }
+                  @if ((row.get('NoOfUnit')?.dirty || row.get('NoOfUnit')?.touched) && row.get('NoOfUnit')?.hasError('decimalPrecision')) {
+                  <div class="error-message" role="alert">No. of Unit has too many digits or decimal places</div>
+                  }
                 </div>
               </td>
             </tr>
@@ -280,31 +286,47 @@
                   <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRevenueRateFields(i)" DecimalPrecision
-                      [DecimalPrecisionBefore]="4"
-                      [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
+                      [DecimalPrecisionBefore]="3" [DecimalPrecisionAfter]="3">
+                    @if ((row.get('RevenueExchangeRate')?.dirty || row.get('RevenueExchangeRate')?.touched) && row.get('RevenueExchangeRate')?.hasError('max')) {
+                    <div class="error-message" role="alert">Revenue Exchange Rate must be 999.999 or less</div>
+                    }
+                    @if ((row.get('RevenueExchangeRate')?.dirty || row.get('RevenueExchangeRate')?.touched) && row.get('RevenueExchangeRate')?.hasError('decimalPrecision')) {
+                    <div class="error-message" role="alert">Revenue Exchange Rate allows up to 3 decimal places</div>
+                    }
                   </div>
                 </td>
                 <td class="text-end" [hidden]="hidesRevenue">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <input type="text" id="text-input" formControlName="RevenueRate" class="custom-input-field sm text-end"
-                      (change)="calculateRevenueAmount(i)" [disabled]="!canEditRevenueRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
+                      (change)="calculateRevenueAmount(i)" [disabled]="!canEditRevenueRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="8"
+                      [DecimalPrecisionAfter]="3">
+                    @if ((row.get('RevenueRate')?.dirty || row.get('RevenueRate')?.touched) && row.get('RevenueRate')?.hasError('max')) {
+                    <div class="error-message" role="alert">Revenue Per Unit must be 99,999,999.999 or less</div>
+                    }
+                    @if ((row.get('RevenueRate')?.dirty || row.get('RevenueRate')?.touched) && row.get('RevenueRate')?.hasError('decimalPrecision')) {
+                    <div class="error-message" role="alert">Revenue Per Unit has too many digits or decimal places</div>
+                    }
                   </div>
                 </td>
                 <td class="text-end" [hidden]="hidesRevenue">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRevenueRateFields(i)" DecimalPrecision
-                      [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)" readonly>
+                      [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3" readonly>
+                    @if (row.get('RevenueAmount')?.hasError('max')) {
+                    <div class="error-message" role="alert">Revenue Amount is too large. Reduce No. of Unit or Revenue Per Unit</div>
+                    }
                   </div>
                 </td>
 
                 <td class="text-end" [hidden]="hidesRevenue">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
-                      [value]="row.get('RevenueLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)" readonly>
+                      formControlName="RevenueLocalAmount" DecimalPrecision [DecimalPrecisionBefore]="12"
+                      [DecimalPrecisionAfter]="3" readonly>
+                    @if (row.get('RevenueLocalAmount')?.hasError('max')) {
+                    <div class="error-message" role="alert">Revenue Local Amount is too large. Reduce Revenue Amount or Exchange Rate</div>
+                    }
                   </div>
                 </td>
                 <td [hidden]="hidesRevenue">
@@ -363,31 +385,49 @@
                 <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="CostExchangeRate" class="custom-input-field sm text-end"
-                      (change)="calculateCostLocalAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="4"
-                      [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
+                      (change)="calculateCostLocalAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="3"
+                      [DecimalPrecisionAfter]="3">
+                    @if ((row.get('CostExchangeRate')?.dirty || row.get('CostExchangeRate')?.touched) && row.get('CostExchangeRate')?.hasError('max')) {
+                    <div class="error-message" role="alert">Cost Exchange Rate must be 999.999 or less</div>
+                    }
+                    @if ((row.get('CostExchangeRate')?.dirty || row.get('CostExchangeRate')?.touched) && row.get('CostExchangeRate')?.hasError('decimalPrecision')) {
+                    <div class="error-message" role="alert">Cost Exchange Rate allows up to 3 decimal places</div>
+                    }
                   </div>
                 </td>
 
                 <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="CostRate" class="custom-input-field sm text-end"
-                      (change)="calculateCostAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
+                      (change)="calculateCostAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="8"
+                      [DecimalPrecisionAfter]="3">
+                    @if ((row.get('CostRate')?.dirty || row.get('CostRate')?.touched) && row.get('CostRate')?.hasError('max')) {
+                    <div class="error-message" role="alert">Cost Per Unit must be 99,999,999.999 or less</div>
+                    }
+                    @if ((row.get('CostRate')?.dirty || row.get('CostRate')?.touched) && row.get('CostRate')?.hasError('decimalPrecision')) {
+                    <div class="error-message" role="alert">Cost Per Unit has too many digits or decimal places</div>
+                    }
                   </div>
                 </td>
                 <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="CostAmount" class="custom-input-field sm text-end"
-                      (change)="calculateCostLocalAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)" readonly>
+                      (change)="calculateCostLocalAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="12"
+                      [DecimalPrecisionAfter]="3" readonly>
+                    @if (row.get('CostAmount')?.hasError('max')) {
+                    <div class="error-message" role="alert">Cost Amount is too large. Reduce No. of Unit or Cost Per Unit</div>
+                    }
                   </div>
                 </td>
 
                 <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
-                      [value]="row.get('CostLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)" readonly>
+                      formControlName="CostLocalAmount" DecimalPrecision [DecimalPrecisionBefore]="12"
+                      [DecimalPrecisionAfter]="3" readonly>
+                    @if (row.get('CostLocalAmount')?.hasError('max')) {
+                    <div class="error-message" role="alert">Cost Local Amount is too large. Reduce Cost Amount or Exchange Rate</div>
+                    }
                   </div>
                 </td>
                 <td [hidden]="hidesCost">

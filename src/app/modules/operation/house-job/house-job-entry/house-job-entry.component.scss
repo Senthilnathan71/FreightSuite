@@ -15,6 +15,29 @@
   }
 }
 
+// Validation inside the horizontally scrollable product grid must participate in
+// the table-cell layout. The shared error style is positioned for normal forms
+// and otherwise places every row error at the edge of the scrolling container.
+:host .custom-accordion-quotation table td > .error-message {
+  position: static !important;
+  inset: auto !important;
+  display: block;
+  width: 100%;
+  min-width: 90px;
+  margin-top: 3px;
+  color: #dc3545;
+  font-size: 10px;
+  line-height: 1.15;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+:host .custom-accordion-quotation table td {
+  vertical-align: top;
+}
+
 :host .btn:disabled,
 :host .btn.disabled,
 :host .table-action-btn:disabled,
