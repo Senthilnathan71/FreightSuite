@@ -974,17 +974,17 @@ private setupMBLDateListener(): void {
       CustomerName: [''],
       CustomerAddress: [null, [Validators.required]],
       SalesmanSid: [null],
-      ShipperName: [null, [Validators.required]],
-      ShipperAddress: ['', [Validators.required]],
-      ConsigneeName: [null, [Validators.required]],
-      ConsigneeAddress: ['', [Validators.required]],
-      Notify: [null],
-      NotifyAddress: [''],
+      ShipperName: [null, [Validators.required, Validators.maxLength(100)]],
+      ShipperAddress: ['', [Validators.required, Validators.maxLength(300)]],
+      ConsigneeName: [null, [Validators.required, Validators.maxLength(100)]],
+      ConsigneeAddress: ['', [Validators.required, Validators.maxLength(300)]],
+      Notify: [null, [Validators.maxLength(200)]],
+      NotifyAddress: ['', [Validators.maxLength(200)]],
       DestinationAgent : [null],
       AgentName : [''],
       AgentAddress: [''],
       CarrierSid : [null],
-      CarrierName: [null],
+      CarrierName: [null, [Validators.maxLength(200)]],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [''],
       HBLDate: [{value : defaultHBLDate, disabled: true}],
@@ -1086,16 +1086,16 @@ private setupMBLDateListener(): void {
       CargoType: [data?.CargoType || 'General', Validators.required],
       ContainerType: [data?.ContainerType || null, isFclMode ? [Validators.required] : []],
       NoofContainers: [data?.NoofContainers ?? '', this.getNoofContainersValidators()],
-      GrossWeight: [data?.GrossWeight ?? '', [Validators.required, Validators.min(0.001)]],
-      NetWeight: [data?.NetWeight ?? ''],
-      Volume: [data?.Volume ?? ''],
-      Volumetric: [data?.Volumetric ?? ''],
-      ChargeableWeight: [data?.ChargeableWeight ?? ''],
+      GrossWeight: [data?.GrossWeight ?? '', [Validators.required, Validators.min(0.001), Validators.max(9999999.999)]],
+      NetWeight: [data?.NetWeight ?? '', [Validators.max(9999999.999)]],
+      Volume: [data?.Volume ?? '', [Validators.max(99999.999)]],
+      Volumetric: [data?.Volumetric ?? '', [Validators.max(9999999.999)]],
+      ChargeableWeight: [data?.ChargeableWeight ?? '', [Validators.max(9999999.999)]],
       isGrossWeightManualOverride: [data?.isGrossWeightManualOverride ?? false],
       isVolumeManualOverride: [data?.isVolumeManualOverride ?? false],
       isVolumetricManualOverride: [data?.isVolumetricManualOverride ?? false],
       isChargeableWeightManualOverride: [data?.isChargeableWeightManualOverride ?? false],
-      NoOfPackage: [data?.NoOfPackage ?? ''],
+      NoOfPackage: [data?.NoOfPackage ?? '', [Validators.max(99999999)]],
       ShipmentTerms: [data?.ShipmentTerms || null],
       MovementType: [data?.MovementType || null],
       FreightTerms: [data?.FreightTerms || null],
@@ -1372,11 +1372,11 @@ shouldCalculateVolume(): boolean {
       ShippingBillNo: [''],
       ShippingBillDate: [null],
       ExternaPkg: [null,[Validators.required]],
-      ExternlQty: ['', [Validators.required]],
-      GrossWeight: ['', [Validators.required]],
-      NetWeight: ['', [Validators.min(0)]],
-      Volume: ['', this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]],
-      Volumetric: ['',isAirOrLCL ? [Validators.required] : []],
+      ExternlQty: ['', [Validators.required, Validators.max(99999999)]],
+      GrossWeight: ['', [Validators.required, Validators.max(9999999.999)]],
+      NetWeight: ['', [Validators.min(0), Validators.max(9999999.999)]],
+      Volume: ['', this.isSurfaceCargoMode() ? [Validators.max(99999.999)] : [Validators.required, Validators.min(0.001), Validators.max(99999.999)]],
+      Volumetric: ['', isAirOrLCL ? [Validators.required, Validators.max(9999999.999)] : [Validators.max(9999999.999)]],
       isGrossWeightManualOverride: [false],
       isVolumeManualOverride: [false],
       isVolumetricManualOverride: [false],
@@ -1385,9 +1385,9 @@ shouldCalculateVolume(): boolean {
       UnNo: [''],
       PkgGroup: [''],
       ProductDescription: [''],
-      Length: [''],
-      Width: [''],
-      Height: [''],
+      Length: ['', [Validators.max(999999.99)]],
+      Width: ['', [Validators.max(999999.99)]],
+      Height: ['', [Validators.max(999999.99)]],
       HSCode: [''],
       UomMasterSid: [2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate : [null],
@@ -1615,17 +1615,17 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       CustomerAddress: [null],
       AgentName: [null],
       AgentAddress: [null],
-      ShipperName: [null],
-      ShipperAddress: [null],
-      ConsigneeName: [null],
-      ConsigneeAddress: [null],
+      ShipperName: [null, [Validators.maxLength(100)]],
+      ShipperAddress: [null, [Validators.maxLength(300)]],
+      ConsigneeName: [null, [Validators.maxLength(100)]],
+      ConsigneeAddress: [null, [Validators.maxLength(300)]],
       ProxyVesselName: [null],
       ProxyVoyageNo: [null],
       POO: [null],
       ProxyPOL: [null],
       ProxyPOD: [null],
       FPD: [null],
-      CarrierName: [null],
+      CarrierName: [null, [Validators.maxLength(200)]],
       isProxyCustomerFreeText: [false],
       isProxyAgentFreeText: [false],
       isProxyShipperFreeText: [false],
@@ -1751,11 +1751,11 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ShippingBillNo: [data?.ShippingBillNo || ''],
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
-      ExternlQty: [data?.ExternlQty || '', [Validators.required]],
-      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required, Validators.min(0.001)]],
-      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
-      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', this.isSurfaceCargoMode() ? [] : [Validators.required, Validators.min(0.001)]],
-      Volumetric: [data?.Volumetric || '', isAirOrLCL ? [Validators.required, Validators.min(0.001)] : []],
+      ExternlQty: [data?.ExternlQty || '', [Validators.required, Validators.max(99999999)]],
+      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required, Validators.min(0.001), Validators.max(9999999.999)]],
+      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0), Validators.max(9999999.999)]],
+      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', this.isSurfaceCargoMode() ? [Validators.max(99999.999)] : [Validators.required, Validators.min(0.001), Validators.max(99999.999)]],
+      Volumetric: [data?.Volumetric || '', isAirOrLCL ? [Validators.required, Validators.min(0.001), Validators.max(9999999.999)] : [Validators.max(9999999.999)]],
       isGrossWeightManualOverride: [data?.isGrossWeightManualOverride ?? false],
       isVolumeManualOverride: [data?.isVolumeManualOverride ?? false],
       isVolumetricManualOverride: [data?.isVolumetricManualOverride ?? false],
@@ -1764,9 +1764,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       UnNo : [data?.UnNo || ''],
       PkgGroup : [data?.PkgGroup || ''],
       ProductDescription: [data?.ProductDescription || data?.CommodityDescription || ''],
-      Length: [data?.Length || ''],
-      Width: [data?.Width || ''],
-      Height: [data?.Height || ''],
+      Length: [data?.Length || '', [Validators.max(999999.99)]],
+      Width: [data?.Width || '', [Validators.max(999999.99)]],
+      Height: [data?.Height || '', [Validators.max(999999.99)]],
       HSCode : [data?.HSCode || ''],
       UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate : [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null],
@@ -3261,6 +3261,8 @@ private applyExportToImportFieldLocks(): void {
     'Volume': 'CBM',
     'UomMasterSid': 'UOM',
     'Volumetric': 'Volumetric',
+    'ChargeableWeight': 'Chargeable Weight',
+    'NoOfPackage': 'No of Pkg',
     'Length': 'Length',
     'Width': 'Width',
     'Height': 'Height'
@@ -3306,11 +3308,22 @@ private applyExportToImportFieldLocks(): void {
     }
 
     if (control.errors['max']) {
-      return `${label} is too large`;
+      const maxDigitHints: Record<string, string> = {
+        ExternlQty: '99,999,999',
+        GrossWeight: '9,999,999.999',
+        NetWeight: '9,999,999.999',
+        Volume: '99,999.999',
+        Volumetric: '9,999,999.999',
+        Length: '999,999.99',
+        Width: '999,999.99',
+        Height: '999,999.99'
+      };
+      const hint = maxDigitHints[fieldName];
+      return hint ? `${label} must be ${hint} or less` : `${label} is too large`;
     }
 
     if (control.errors['decimalPrecision']) {
-      return `${label} has invalid decimal precision`;
+      return `${label} has too many digits or decimal places`;
     }
 
     if (control.errors['grossLessThanNet']) {
@@ -3347,11 +3360,20 @@ private applyExportToImportFieldLocks(): void {
     }
 
     if (control.errors['max']) {
-      return `${label} is too large`;
+      const maxDigitHints: Record<string, string> = {
+        GrossWeight: '9,999,999.999',
+        NetWeight: '9,999,999.999',
+        Volume: '99,999.999',
+        Volumetric: '9,999,999.999',
+        ChargeableWeight: '9,999,999.999',
+        NoOfPackage: '99,999,999'
+      };
+      const hint = maxDigitHints[fieldName];
+      return hint ? `${label} must be ${hint} or less` : `${label} is too large`;
     }
 
     if (control.errors['decimalPrecision']) {
-      return `${label} has invalid decimal precision`;
+      return `${label} has too many digits or decimal places`;
     }
 
     if (control.errors['grossLessThanNet']) {

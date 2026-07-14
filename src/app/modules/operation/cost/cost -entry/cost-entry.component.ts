@@ -6,6 +6,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { PrintAuthorizationService } from 'src/app/core/services/print-authorization.service';
 import { catchError, firstValueFrom, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -191,6 +192,12 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   }
 
   @Input() screenName: 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'| 'Agent Master Air Waybill';
+  /**
+   * Opt-in: require the parent document to be Approved before Payment Request / Generate Voucher.
+   * Only Service Job passes this today (it sends screenName as House Job / House Air Waybill,
+   * so it cannot be distinguished by screenName).
+   */
+  @Input() requireAuthorization = false;
   private _costRevenueAccess: string = 'NONE';
   @Input()
   set costRevenueAccess(value: string) {
@@ -476,6 +483,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
+    private printAuthService: PrintAuthorizationService,
     private excelExportService: ExcelExportService,
     private route: ActivatedRoute,
     private currencyConfigService : CurrencyConfigurationService,
@@ -740,6 +748,20 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       { key: 'NoOfUnit', label: 'No of Units' }
     ];
 
+    const numericFieldMap = [
+      { key: 'NoOfUnit', label: 'No. of Unit', max: '999,999.999' },
+      { key: 'RevenueNumberOfUnit', label: 'Revenue No. of Unit', max: '999,999.999' },
+      { key: 'CostNumberOfUnit', label: 'Cost No. of Unit', max: '999,999.999' },
+      { key: 'RevenueExchangeRate', label: 'Revenue Exchange Rate', max: '999.999' },
+      { key: 'CostExchangeRate', label: 'Cost Exchange Rate', max: '999.999' },
+      { key: 'RevenueRate', label: 'Revenue Per Unit', max: '99,999,999.999' },
+      { key: 'CostRate', label: 'Cost Per Unit', max: '99,999,999.999' },
+      { key: 'RevenueAmount', label: 'Revenue Amount', max: '999,999,999,999.999' },
+      { key: 'RevenueLocalAmount', label: 'Revenue Local Amount', max: '999,999,999,999.999' },
+      { key: 'CostAmount', label: 'Cost Amount', max: '999,999,999,999.999' },
+      { key: 'CostLocalAmount', label: 'Cost Local Amount', max: '999,999,999,999.999' }
+    ];
+
     for (let rateIndex = 0; rateIndex < this.rateFormArray.length; rateIndex++) {
       const rate = this.rateFormArray.at(rateIndex) as FormGroup;
 
@@ -751,6 +773,20 @@ export class CostEntryComponent implements OnInit, OnDestroy {
         if (value === null || value === undefined || value === '') {
           errorMessages.push(
             `[SNo: ${rateIndex + 1}] ${field.label} is required.`
+          );
+        }
+      }
+
+
+      for (const field of numericFieldMap) {
+        const control = rate.get(field.key);
+        if (control?.hasError('max')) {
+          errorMessages.push(
+            `[SNo: ${rateIndex + 1}] ${field.label} must be ${field.max} or less.`
+          );
+        } else if (control?.hasError('decimalPrecision')) {
+          errorMessages.push(
+            `[SNo: ${rateIndex + 1}] ${field.label} has too many digits or decimal places.`
           );
         }
       }
@@ -845,28 +881,33 @@ createRateFormGroup(data?: any): FormGroup {
 
     NoOfUnit: [
       (data?.NoOfUnit || data?.RevenueNumberOfUnit || data?.CostNumberOfUnit) ?? '',
-      [ Validators.required , greaterThanZero()]
+      [Validators.required, greaterThanZero(), Validators.max(999999.999)]
     ],
     RevenueNumberOfUnit: [
-      (data?.RevenueNumberOfUnit || data?.NoOfUnit) ?? ''
+      (data?.RevenueNumberOfUnit || data?.NoOfUnit) ?? '',
+      [Validators.max(999999.999)]
     ],
-    CostNumberOfUnit: [(data?.CostNumberOfUnit || data?.NoOfUnit) ?? ''],
+    CostNumberOfUnit: [(data?.CostNumberOfUnit || data?.NoOfUnit) ?? '', [Validators.max(999999.999)]],
     
     // Revenue Fields (disabled only when from quotation AND revenue side has a value)
     RevenueCurrencyMasterSid: [
       data?.RevenueCurrencyMasterSid ?? null
     ],
     RevenueExchangeRate: [
-      data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate) : ''
+      data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate) : '',
+      [Validators.max(999.999)]
     ],
     RevenueRate: [
-      data?.RevenueRate != null ? Number(data.RevenueRate) : ''
+      data?.RevenueRate != null ? Number(data.RevenueRate) : '',
+      [Validators.max(99999999.999)]
     ],
     RevenueAmount: [
-      data?.RevenueAmount != null ? Number(data.RevenueAmount) : ''
+      data?.RevenueAmount != null ? Number(data.RevenueAmount) : '',
+      [Validators.max(999999999999.999)]
     ],
     RevenueLocalAmount: [
-      data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount) : ''
+      data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount) : '',
+      [Validators.max(999999999999.999)]
     ],
     RevenueDrCr: [
       data?.RevenueDrCr ?? 'C'
@@ -888,10 +929,10 @@ createRateFormGroup(data?: any): FormGroup {
 
     // Cost Related Fields (disabled when from quotation AND cost side has a value)
     CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
-    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate) : ''],
-    CostRate: [data?.CostRate != null ? Number(data.CostRate) : ''],
-    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount) : ''],
-    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : ''],
+    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate) : '', [Validators.max(999.999)]],
+    CostRate: [data?.CostRate != null ? Number(data.CostRate) : '', [Validators.max(99999999.999)]],
+    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount) : '', [Validators.max(999999999999.999)]],
+    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : '', [Validators.max(999999999999.999)]],
     CostDrCr: [data?.CostDrCr ?? 'D'],
     CostAgentMasterSid: [data?.CostAgentMasterSid ?? null],
     CostAgentBranchSid: [data?.CostAgentBranchSid ?? null],
@@ -2945,7 +2986,31 @@ createRateFormGroup(data?: any): FormGroup {
     return String(row.get('CostVoucherType')?.value?.DocumentTypeCode || '');
   }
 
-  openVoucherTypeModal() {
+  /**
+   * Authorize-before-action guard (opt-in via requireAuthorization; Service Job only).
+   * Normal flow: if the job's department has no authority rule, the action proceeds.
+   */
+  private ensureAuthorizedForAction(action: 'payment request' | 'voucher'): Promise<boolean> {
+    if (!this.requireAuthorization) {
+      return Promise.resolve(true);
+    }
+    const label = action === 'payment request'
+      ? 'This job must be authorized before a payment request can be created.'
+      : 'This job must be authorized before a voucher can be generated.';
+    return this.printAuthService.ensureAuthorized({
+      menuMasterSid: Number(this.currentMenuId || sessionStorage.getItem('currentMenuId')),
+      documentSid: this.getParentSid(),
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid,
+      departmentMasterSid: this.parentFormValue?.DepartmentMasterSid ?? null,
+      warningMessage: label
+    });
+  }
+
+  async openVoucherTypeModal() {
+     if (!(await this.ensureAuthorizedForAction('voucher'))) {
+        return;
+     }
      if (!this.isVoucherGenerationAllowed()) {
         const status = this.parentFormValue?.status;
         this.appSettingService.showWarning(`Cannot generate voucher. Booking status is '${status || 'Invalid'}'`);
@@ -2966,6 +3031,9 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   async openPaymentRequest() {
+    if (!(await this.ensureAuthorizedForAction('payment request'))) {
+      return;
+    }
     if (!this.isVoucherGenerationAllowed()) {
       const status = this.parentFormValue?.status;
       this.appSettingService.showWarning(`Cannot create payment request. Booking status is '${status || 'Invalid'}'`);
