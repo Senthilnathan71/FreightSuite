@@ -180,7 +180,6 @@ export class VendorCreditNoteEntryComponent {
 
   vendorCreditNoteForm!: FormGroup;
   headerId: number | null = null;
-  private ledgerFetchHadHeaderId = false;
   private taxMastersReady: Promise<void> = Promise.resolve();
   private _originalHSSACValues: (number | null)[] = [];
   private _previousInvoiceType: string = 'REG';
@@ -980,15 +979,16 @@ export class VendorCreditNoteEntryComponent {
   }
 
   private fetchLedgerDropdown() {
-    this.ledgerFetchHadHeaderId = !!this.headerId;
     return this.operationService
       .getAllCoaWithLedgerCategory({
         LedgerCategory: 'Ledger',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
-        filterNonJob: true,
         VoucherType: 'VRN',
         ...(this.headerId ? { VoucherHeaderSid: this.headerId } : {}),
+        // No filterNonJob: show all Ledger COAs (both JobNoRequire Y and N). filterNonJob adds a
+        // JobNoRequire:'N' filter that would exclude an auto-generated Tax/party row's ledger when
+        // it is job-required, leaving that row's ledger blank on a posted credit note (mirrors VIN).
       })
       .pipe(catchError(() => of({ data: [] })));
   }
@@ -1000,7 +1000,37 @@ export class VendorCreditNoteEntryComponent {
   /** Re-fetch ONLY the ledger dropdown (not the whole handleDropdownBasedOnJob batch) — used after a
    *  create→post transition so posted ledgers resolve via the posted/static config. */
   private loadLedgerDropdown(): void {
-    this.fetchLedgerDropdown().subscribe((res) => this.applyLedgerDropdown(res));
+    this.fetchLedgerDropdown().subscribe((res) => {
+      this.applyLedgerDropdown(res);
+      // The subledger list is loaded per row during patch — but only for rows whose ledger was in
+      // the create/draft coaList. A row whose ledger appears ONLY in the re-fetched dropdown (e.g.
+      // the auto-generated Tax Row after post) had no subledger list loaded, so populate it now.
+      this.refreshRowSubledgersAfterLedgerRefetch();
+    });
+  }
+
+  /** For each Non-Job detail row whose subledger list is still empty, resolve its COA against the
+   *  now-complete coaList and load its subledger options so the LedgerMasterSid dropdown can render
+   *  its saved value. Non-Job ledger/subledger controls stay disabled here (edit-load already
+   *  disables them for non-job rows), so this only fills the option list for display. */
+  private refreshRowSubledgersAfterLedgerRefetch(): void {
+    if (!this.isNonJob) return;
+    this.details.controls.forEach((ctrl, index) => {
+      if (this.subledgerListDetail[index]?.length) return; // already loaded during patch
+      const coaSid = ctrl.get('COAMasterSid')?.value;
+      if (!coaSid) return;
+      const selectedCOA = this.coaList.find((coa) => coa.COAMasterSid === coaSid);
+      if (!selectedCOA || selectedCOA.SubledgerName !== 'Y') return;
+      this.operationService
+        .getAllSubledgerByCOA({
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          COAMasterSid: selectedCOA.COAMasterSid,
+        })
+        .subscribe({
+          next: (resp: any) => { this.subledgerListDetail[index] = resp?.data || []; },
+          error: () => { this.subledgerListDetail[index] = []; },
+        });
+    });
   }
 
 
@@ -1504,9 +1534,13 @@ export class VendorCreditNoteEntryComponent {
           this.handleDropdownBasedOnJob().subscribe({
             next: () => {
               this.patchValues(data);
-              // Posted now, but the ledger dropdown was fetched in create/draft mode (no VoucherHeaderSid)
-              // → re-fetch ONLY the ledger so posted ledgers resolve via the posted/static config.
-              if (this.isPosted && !this.ledgerFetchHadHeaderId && this.isNonJob) {
+              // Flow-agnostic guard: if any loaded detail row's ledger (e.g. the auto-generated
+              // Tax Row created on post) is missing from coaList — fetched with the new/draft config
+              // that lacks that ledger type — re-fetch ONLY the ledger so the row's ledger renders.
+              if (this.isNonJob && (this.vendorCreditNoteData?.VoucherDetail || []).some((d: any) => {
+                const sid = Number(d?.COAMasterSid);
+                return sid && !this.coaList.some((x: any) => Number(x.COAMasterSid) === sid);
+              })) {
                 this.loadLedgerDropdown();
               }
               this.applyVoucherDateConstraints();

@@ -153,7 +153,6 @@ export class ReverseVoucherEntryComponent {
   suspendedMatchingHeaders: { VoucherMatchingHeaderSid: number; VoucherMatchingNo: string }[] = [];
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
-  private ledgerFetchHadHeaderId = false;
   bookingModeCountry: string = 'india';
   get isIndiaGST(): boolean {
     return this.currentCompanyCountryCode === 'in';
@@ -522,7 +521,6 @@ export class ReverseVoucherEntryComponent {
     const company = companyRaw ? this.appSettingService.decrypt(companyRaw) : null;
     const filterOption = { CompanyMasterSid: company?.CompanyMasterSid, BranchMasterSid: company?.BranchMasterSid };
 
-    this.ledgerFetchHadHeaderId = !!this.headerId;
     Promise.all([
       firstValueFrom(this.operationService.getAllCreditorWithCOAMapped(filterOption)),
       firstValueFrom(this.operationService.getAllCurrencies()),
@@ -793,7 +791,6 @@ export class ReverseVoucherEntryComponent {
     }).subscribe({
       next: (res: any) => {
         this.coaList = res?.data ?? res ?? [];
-        this.ledgerFetchHadHeaderId = !!this.headerId;
       },
       error: (err: any) => {
         console.error('Error re-fetching ledger dropdown:', err);
@@ -1438,7 +1435,13 @@ export class ReverseVoucherEntryComponent {
           this.destroy$.complete();
           console.log(response.data, 'loadReverseVoucherById')
           this.reverseVoucherData = response.data;
-          if (this.reverseVoucherData?.PostStatus === 'P' && !this.ledgerFetchHadHeaderId) {
+          // Flow-agnostic guard: if any loaded detail row's ledger is missing from coaList — because
+          // it was fetched with a new/draft config that lacks that ledger type — re-fetch ONLY the
+          // ledger so the reversed rows resolve their ledger via the header-scoped config.
+          if ((this.reverseVoucherData?.VoucherDetail || []).some((d: any) => {
+            const sid = Number(d?.COAMasterSid);
+            return sid && !this.coaList.some((x: any) => Number(x.COAMasterSid) === sid);
+          })) {
             this.loadLedgerDropdown();
           }
           this.populateForm(this.reverseVoucherData);

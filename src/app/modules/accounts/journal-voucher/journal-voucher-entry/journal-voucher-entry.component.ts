@@ -233,7 +233,6 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   editMode = false;
   voucherHeaderSid: number | null = null;
   isPosted = false;
-  private ledgerFetchHadHeaderId = false;
   todayDateInNgbStruct!: NgbDateStruct;
   isSaving = false;
   isTermsAndConditionsEnabled: boolean = true;
@@ -948,7 +947,6 @@ private deepEqual(obj1: any, obj2: any): boolean {
         this.profitCenterList = result.profitCenters.data;
         this.uomList = result.uom?.data || [];
         this.coaList = result.coa?.data || [];
-        this.ledgerFetchHadHeaderId = !!this.voucherHeaderSid;
         this.subledgerList = result.subledger?.data || [];
         this.chargeList = result.charges || [];
         this.customerList = result.customers || [];
@@ -1022,7 +1020,6 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   loadCOAList(): void {
-    this.ledgerFetchHadHeaderId = !!this.voucherHeaderSid;
     this.accountsService.getAllCoaWithLedgerCategory({
       LedgerCategory: 'Ledger',
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -1105,7 +1102,13 @@ private deepEqual(obj1: any, obj2: any): boolean {
         }
 
         this.isPosted = voucher.PostStatus === 'P';
-        if (this.isPosted && !this.ledgerFetchHadHeaderId) { this.loadCOAList(); }
+        // Flow-agnostic guard: if any loaded detail row's ledger is missing from coaList — because
+        // it was fetched with a new/draft config that no longer includes that ledger type — re-fetch
+        // ONLY the ledger so posted/draft rows resolve their ledger via the header-scoped config.
+        if ((this.voucherData?.VoucherDetail || []).some((d: any) => {
+          const sid = Number(d?.COAMasterSid);
+          return sid && !this.coaList.some((x: any) => Number(x.COAMasterSid) === sid);
+        })) { this.loadCOAList(); }
 
         const voucherDate = new Date(voucher.VoucherDate);
         const voucherDateStruct: NgbDateStruct = {

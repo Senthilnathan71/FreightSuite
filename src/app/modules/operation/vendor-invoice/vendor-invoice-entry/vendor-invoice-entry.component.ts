@@ -258,7 +258,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // others
   coaList : any[] = [];
-  private ledgerFetchHadHeaderId = false;
   subledgerListDetail : any[][] = [];
   
   // Country/Tax mode
@@ -979,7 +978,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   /** Ledger-dropdown fetch, shared by loadLookups' batch AND the standalone re-fetch after post. */
   private fetchLedgerDropdown() {
-    this.ledgerFetchHadHeaderId = !!this.headerId;
     return this.operationService.getAllCoaWithLedgerCategory({
       LedgerCategory: 'Ledger',
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -997,7 +995,38 @@ export class VendorInvoiceEntryComponent implements OnInit {
   /** Re-fetch ONLY the ledger dropdown (not the whole loadLookups batch) — used after a
    *  create→post transition so posted ledgers resolve via the posted/static config. */
   private loadLedgerDropdown(): void {
-    this.fetchLedgerDropdown().subscribe((res) => this.applyLedgerDropdown(res));
+    this.fetchLedgerDropdown().subscribe((res) => {
+      this.applyLedgerDropdown(res);
+      // The subledger list is loaded per row during patch — but only for rows whose ledger was in
+      // the create/draft coaList. A row whose ledger appears ONLY in the re-fetched dropdown (e.g.
+      // the auto-generated Tax Row after post) had no subledger list loaded, so populate it now.
+      this.refreshRowSubledgersAfterLedgerRefetch();
+    });
+  }
+
+  /** For each Non-Job detail row whose subledger list is still empty, resolve its COA against the
+   *  now-complete coaList and (re)load its subledger options so the LedgerMasterSid dropdown can
+   *  render its saved value. Preserves the row's enabled/disabled state — never re-enables a
+   *  control on a posted/read-only voucher (the form is already disabled by the time this runs). */
+  private refreshRowSubledgersAfterLedgerRefetch(): void {
+    if (!this.isNonJob) return;
+    this.details.controls.forEach((ctrl, index) => {
+      if (this.subledgerListDetail[index]?.length) return; // already loaded during patch
+      const coaSid = ctrl.get('COAMasterSid')?.value;
+      if (!coaSid) return;
+      const selectedCOA = this.coaList.find(coa => coa.COAMasterSid === coaSid);
+      if (!selectedCOA || selectedCOA.SubledgerName !== 'Y') return;
+      if (!this.isReadOnly) {
+        ctrl.get('LedgerMasterSid')?.enable({ emitEvent: false });
+      }
+      this.operationService.getAllSubledgerByCOA({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        COAMasterSid: selectedCOA.COAMasterSid,
+      }).subscribe({
+        next: (resp: any) => { this.subledgerListDetail[index] = resp?.data || []; },
+        error: () => { this.subledgerListDetail[index] = []; },
+      });
+    });
   }
 
   loadVoucherPeriods(): void {
@@ -1321,9 +1350,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
             this.appSettingService.showError('Error loading Vendor Invoice');
             return;
           }
-          // Posted now but ledger was fetched without VoucherHeaderSid (create→post transition):
-          // re-fetch ONLY the ledger so the backend resolves it via the posted/static config.
-          if (this.isNonJob && this.isPosted && !this.ledgerFetchHadHeaderId) {
+          // Flow-agnostic guard: if any loaded detail row's ledger (e.g. the auto-generated
+          // Tax Row created on post) is missing from coaList — because it was fetched with the
+          // new/draft config that doesn't include that ledger type — re-fetch ONLY the ledger so
+          // the backend resolves it via the posted/static config and the row's ledger renders.
+          if (this.isNonJob && (this.vendorInvoiceData?.VoucherDetail || []).some((d: any) => {
+            const sid = Number(d?.COAMasterSid);
+            return sid && !this.coaList.some((x: any) => Number(x.COAMasterSid) === sid);
+          })) {
             this.loadLedgerDropdown();
           }
           if (this.isReadOnly) {
