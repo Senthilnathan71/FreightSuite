@@ -73,6 +73,8 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
+import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -507,6 +509,7 @@ dataFromEnqPage:any;
     public voiceRecognitionService: VoiceRecognitionService,
     private voiceParserService: VoiceParserService,
     private companySettings: CompanySettingsManagerService,
+    private currencyConfigService : CurrencyConfigurationService,
   ) {
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -2797,6 +2800,7 @@ private syncApprovedByControlState(): void {
         ...c,
         countryName: c?.countryMaster?.countryName || ''
       }));
+      this.currencyConfigService.initializeConfigurations(this.currencyMaster);
       this.chargeUnitMaster = chargeUnits.data || [];
       this.measurementUnitList = measurementUnits.data || [];
       this.weightUnitList = weightUnits.data || [];
@@ -4461,17 +4465,19 @@ isRateLockDisabled(): boolean {
     const qty = Number(chargeCtrl.get('Qty')?.value);
     const revenueRate = Number(chargeCtrl.get('RevenueRate')?.value);
     const revExRate = Number(chargeCtrl.get('RevenueExchangeRate')?.value);
+    const revenueCurrency = chargeCtrl.get('RevenueCurrencyMasterSid')?.getRawValue();
+    const companyCurrency = this.currentCompanyCurrency.currencyMasterSid;
     if (qty && revenueRate) {
-      chargeCtrl.get('RevenueAmount')?.setValue((qty * revenueRate).toFixed(this.digitsAfterDecimal));
+      chargeCtrl.get('RevenueAmount')?.setValue((qty * revenueRate).toFixed(this.getAmountDecimalPlaces(revenueCurrency)));
     } else {
-      chargeCtrl.get('RevenueAmount')?.setValue((0).toFixed(this.digitsAfterDecimal));
+      chargeCtrl.get('RevenueAmount')?.setValue((0).toFixed(this.getAmountDecimalPlaces(revenueCurrency)));
     }
 
     if (qty && revenueRate && revExRate) {
-      chargeCtrl.get('RevenueLocalAmount')?.setValue((qty * revenueRate * revExRate).toFixed(this.digitsAfterDecimal));
+      chargeCtrl.get('RevenueLocalAmount')?.setValue((qty * revenueRate * revExRate).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
       this.blurRevenueLocalInput(routeIndex, carrierIndex, chargeIndex);
     } else {
-      chargeCtrl.get('RevenueLocalAmount')?.setValue((0).toFixed(this.digitsAfterDecimal));
+      chargeCtrl.get('RevenueLocalAmount')?.setValue((0).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
     }
   }
 
@@ -4490,19 +4496,21 @@ isRateLockDisabled(): boolean {
 
   calculateCostTotalAmount(routeIndex: number,carrierIndex:number, chargeIndex: number) {
     const chargeCtrl = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
-    const qty = chargeCtrl.get('Qty')?.value;
-    const costRate = chargeCtrl.get('CostRate')?.value;
-    const costExRate = chargeCtrl.get('CostExchangeRate')?.value;
+    const qty = Number(chargeCtrl.get('Qty')?.value);
+    const costRate = Number(chargeCtrl.get('CostRate')?.value);
+    const costExRate = Number(chargeCtrl.get('CostExchangeRate')?.value);
+    const costCurrency = chargeCtrl.get('CostCurrencyMasterSid')?.getRawValue();
+    const companyCurrency = this.currentCompanyCurrency.currencyMasterSid;
     if(qty && costRate){
-      chargeCtrl.get('CostAmount')?.setValue(qty * costRate);
+      chargeCtrl.get('CostAmount')?.setValue((qty * costRate).toFixed(this.getAmountDecimalPlaces(costCurrency)));
     } else {
-      chargeCtrl.get('CostAmount')?.setValue('0');
+      chargeCtrl.get('CostAmount')?.setValue((0).toFixed(this.getAmountDecimalPlaces(costCurrency)));
     }
 
     if (qty && costRate && costExRate) {
-      chargeCtrl.get('CostLocalAmount')?.setValue(qty * costRate * costExRate);
+      chargeCtrl.get('CostLocalAmount')?.setValue((qty * costRate * costExRate).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
     } else {
-      chargeCtrl.get('CostLocalAmount')?.setValue('0');
+      chargeCtrl.get('CostLocalAmount')?.setValue((0).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
     }
   }
 
@@ -9161,7 +9169,36 @@ openStandardCharges(routeIndex: number, carrierIndex: number) {
     this.appSettingService.showSuccess("Standard Charges Applied Successfully ✅");
   }
 
+  // Decimal
+  // digitsInfo string for the `number` pipe, e.g. AED -> '1.2-2', VND -> '1.3-3'
+  public getAmountDigitsInfo(CurrencyMasterSid: number): string {
+    const decimals = this.getAmountDecimalPlaces(CurrencyMasterSid);
+    return `1.${decimals}-${decimals}`;
+  }
 
+  public getExchangeRateDigitsInfo(CurrencyMasterSid: number): string {
+    const decimals = this.getExchangeRateDecimalPlaces(CurrencyMasterSid);
+    return `1.${decimals}-${decimals}`;
+  }
+
+  public getAmountDecimalPlaces(CurrencyMasterSid: number): number {
+    const currency = this.currencyMaster.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    if (currency) {
+      const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+      return config?.amountDecimal ?? 2;
+    }
+    return 2;
+  }
+
+   public getExchangeRateDecimalPlaces(CurrencyMasterSid: number): number {
+    if(!this.currencyMaster || this.currencyMaster.length === 0) return 4;
+    const currency = this.currencyMaster.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);
+    if (currency) {
+      const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
+      return config?.exchangeDecimal?? 4;
+    }
+    return 4;
+  }
 }
 
 

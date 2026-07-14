@@ -156,7 +156,7 @@ function buildRouteSections(data: QuotationPdfData): any[] {
         blocks.push(buildRouteCargoTable(route, data));
       }
 
-      blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate, data.companyCurrencyCode));
+      blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate, data.companyCurrencyCode, data.currencyMaster));
     });
 
     blocks.push(buildRouteTermsSection(route.terms || []));
@@ -210,7 +210,9 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
   };
 }
 
-function buildChargeTable(charges: any[], showAgreedRate: boolean, companyCurrencyCode?: string): any {
+function buildChargeTable(charges: any[], showAgreedRate: boolean, companyCurrencyCode?: string, currencyMaster?: any[]): any {
+  const companyDecimals = getAmountDecimals(companyCurrencyCode, currencyMaster);
+
   const header: any[] = [
     { text: 'Charge', bold: true, alignment: 'center' },
     { text: 'Unit', bold: true, alignment: 'center' },
@@ -228,6 +230,7 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean, companyCurren
 
   const body: any[] = [header];
   (charges || []).forEach((charge: any) => {
+    const chargeDecimals = getAmountDecimals(charge?.currency, currencyMaster);
     const row: any[] = [
       { text: charge?.chargeName || '', alignment: 'left' },
       { text: charge?.unit || '', alignment: 'center' },
@@ -235,12 +238,15 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean, companyCurren
       { text: charge?.currency || '', alignment: 'center' }
     ];
     if (showAgreedRate) {
-      row.push({ text: formatNumeric(charge?.exchangeRate, 3), alignment: 'right' });
+      row.push({
+        text: formatNumeric(charge?.exchangeRate, getExchangeRateDecimals(charge?.currency, currencyMaster)),
+        alignment: 'right'
+      });
     }
-    row.push({ text: formatNumeric(charge?.rate, 3), alignment: 'right' });
-    row.push({ text: formatNumeric(charge?.amount, 3), alignment: 'right' });
+    row.push({ text: formatNumeric(charge?.rate, chargeDecimals), alignment: 'right' });
+    row.push({ text: formatNumeric(charge?.amount, chargeDecimals), alignment: 'right' });
     if (showAgreedRate) {
-      row.push({ text: formatNumeric(charge?.localAmount, 3), alignment: 'right' });
+      row.push({ text: formatNumeric(charge?.localAmount, companyDecimals), alignment: 'right' });
     }
     body.push(row);
   });
@@ -253,7 +259,7 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean, companyCurren
     body.push([
       { text: 'Total', bold: true, alignment: 'right', colSpan: 7 },
       {}, {}, {}, {}, {}, {},
-      { text: formatNumeric(totalLocalAmount, 3), bold: true, alignment: 'right' }
+      { text: formatNumeric(totalLocalAmount, companyDecimals), bold: true, alignment: 'right' }
     ]);
   }
 
@@ -365,6 +371,20 @@ function buildFooter(data: QuotationPdfData, currentPage: number, pageCount: num
       { text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`, alignment: 'right', width: '30%', fontSize: 7 }
     ]
   };
+}
+
+// Decimal places for an amount, taken from the currency master. Falls back to 2.
+function getAmountDecimals(currencyCode: string | undefined, currencyMaster: any[] | undefined): number {
+  const currency = (currencyMaster || []).find((c: any) => c?.currencyCode === currencyCode);
+  const decimals = Number(currency?.amountDecimal);
+  return Number.isFinite(decimals) ? decimals : 2;
+}
+
+// Decimal places for an exchange rate, taken from the currency master. Falls back to 4.
+function getExchangeRateDecimals(currencyCode: string | undefined, currencyMaster: any[] | undefined): number {
+  const currency = (currencyMaster || []).find((c: any) => c?.currencyCode === currencyCode);
+  const decimals = Number(currency?.exchangeDecimal);
+  return Number.isFinite(decimals) ? decimals : 4;
 }
 
 function formatNumeric(value: any, precision: number = 0): string {
