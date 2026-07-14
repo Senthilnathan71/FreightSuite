@@ -6,6 +6,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { PrintAuthorizationService } from 'src/app/core/services/print-authorization.service';
 import { catchError, firstValueFrom, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -191,6 +192,12 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   }
 
   @Input() screenName: 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'| 'Agent Master Air Waybill';
+  /**
+   * Opt-in: require the parent document to be Approved before Payment Request / Generate Voucher.
+   * Only Service Job passes this today (it sends screenName as House Job / House Air Waybill,
+   * so it cannot be distinguished by screenName).
+   */
+  @Input() requireAuthorization = false;
   private _costRevenueAccess: string = 'NONE';
   @Input()
   set costRevenueAccess(value: string) {
@@ -476,6 +483,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
+    private printAuthService: PrintAuthorizationService,
     private excelExportService: ExcelExportService,
     private route: ActivatedRoute,
     private currencyConfigService : CurrencyConfigurationService,
@@ -2978,7 +2986,31 @@ createRateFormGroup(data?: any): FormGroup {
     return String(row.get('CostVoucherType')?.value?.DocumentTypeCode || '');
   }
 
-  openVoucherTypeModal() {
+  /**
+   * Authorize-before-action guard (opt-in via requireAuthorization; Service Job only).
+   * Normal flow: if the job's department has no authority rule, the action proceeds.
+   */
+  private ensureAuthorizedForAction(action: 'payment request' | 'voucher'): Promise<boolean> {
+    if (!this.requireAuthorization) {
+      return Promise.resolve(true);
+    }
+    const label = action === 'payment request'
+      ? 'This job must be authorized before a payment request can be created.'
+      : 'This job must be authorized before a voucher can be generated.';
+    return this.printAuthService.ensureAuthorized({
+      menuMasterSid: Number(this.currentMenuId || sessionStorage.getItem('currentMenuId')),
+      documentSid: this.getParentSid(),
+      companyMasterSid: this.currentCompany?.CompanyMasterSid,
+      branchMasterSid: this.currentBranch?.BranchMasterSid,
+      departmentMasterSid: this.parentFormValue?.DepartmentMasterSid ?? null,
+      warningMessage: label
+    });
+  }
+
+  async openVoucherTypeModal() {
+     if (!(await this.ensureAuthorizedForAction('voucher'))) {
+        return;
+     }
      if (!this.isVoucherGenerationAllowed()) {
         const status = this.parentFormValue?.status;
         this.appSettingService.showWarning(`Cannot generate voucher. Booking status is '${status || 'Invalid'}'`);
@@ -2999,6 +3031,9 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   async openPaymentRequest() {
+    if (!(await this.ensureAuthorizedForAction('payment request'))) {
+      return;
+    }
     if (!this.isVoucherGenerationAllowed()) {
       const status = this.parentFormValue?.status;
       this.appSettingService.showWarning(`Cannot create payment request. Booking status is '${status || 'Invalid'}'`);

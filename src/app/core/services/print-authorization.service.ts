@@ -15,6 +15,53 @@ export class PrintAuthorizationService {
   ) {}
 
   /**
+   * Department-scoped authorization check before a guarded action (e.g. Service Job payment
+   * request / voucher generation). Normal flow: when the menu has no authority rule for the
+   * document's department there are no authorizers, so the action is allowed. When a rule
+   * applies, the document must be fully Approved.
+   * Returns true when the action may proceed; shows a warning and returns false otherwise.
+   */
+  async ensureAuthorized(params: {
+    menuMasterSid: number | null | undefined;
+    documentSid: number | null | undefined;
+    companyMasterSid?: number;
+    branchMasterSid?: number;
+    departmentMasterSid?: number | null;
+    warningMessage?: string;
+  }): Promise<boolean> {
+    const menuMasterSid = Number(params.menuMasterSid);
+    const documentSid = Number(params.documentSid);
+    // Nothing to gate (e.g. an unsaved record) — existing save/dirty guards already cover this.
+    if (!menuMasterSid || !documentSid) {
+      return true;
+    }
+    try {
+      const resp: any = await firstValueFrom(
+        this.leadService.getApprovalStatusByMenuAndDocument(
+          menuMasterSid,
+          documentSid,
+          params.companyMasterSid,
+          params.branchMasterSid,
+          params.departmentMasterSid ?? undefined,
+        ),
+      );
+      const logData: any[] = resp?.data?.logData || [];
+      // No authorizers configured for this menu + department -> normal flow.
+      if (logData.length === 0 || resp?.data?.status === 'Approved') {
+        return true;
+      }
+      this.appSettingsService.showWarning(
+        params.warningMessage || 'This document must be authorized before this action.',
+      );
+      return false;
+    } catch (error) {
+      console.error('Authorization check failed:', error);
+      this.appSettingsService.showError('Unable to verify authorization. Please try again.');
+      return false;
+    }
+  }
+
+  /**
    * Department-scoped authorization check before printing a bill.
    * Normal flow: when the menu has no authority rule for the document's department there are no
    * authorizers, so printing is allowed. When a rule applies, the document must be fully Approved.

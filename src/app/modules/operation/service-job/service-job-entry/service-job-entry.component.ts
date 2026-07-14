@@ -1852,15 +1852,24 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   }
 
     openAuthority() {
-    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
-    if (!MenuMasterSid) return;
-   const modalRef = this.modalService.open(AuthorityLogComponent, { 
-    size: 'lg', 
-    centered: true, 
-    backdrop: 'static' 
+    const menuMasterSid = Number(this.MenuMasterSid || this.currentMenuId || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.HouseJobSid || this.serviceJobData?.HouseJobSid;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the service job before viewing authorization.');
+      return;
+    }
+   const modalRef = this.modalService.open(AuthorityLogComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
   });
-    modalRef.componentInstance.menuMasterSid = MenuMasterSid;
-    modalRef.componentInstance.documentSid = this.HouseJobSid;
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.DepartmentMasterSid =
+      this.serviceJobData?.DepartmentMasterSid ?? this.b['DepartmentMasterSid']?.value ?? null;
+    modalRef.componentInstance.allowAction = true;
   }
   toggleQuickForm() {
     this.isQuickFormExpanded = !this.isQuickFormExpanded;
