@@ -1730,7 +1730,7 @@
                                             id="text-input" formControlName="RevenueExchangeRate" placeholder=""
                                             (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             class="form-control custom-input-field sm  text-end" DecimalPrecision
-                                            [disabled]="isCostRevReadOnly"
+                                            [disabled]="isExchangeRateDisabled(routeIndex,carrierIndex)"
                                             [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal"
                                             style="margin-top: 2px;">
 
@@ -1825,7 +1825,7 @@
                                             (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             placeholder="" class="form-control custom-input-field sm  text-end"
                                             DecimalPrecision [DecimalPrecisionBefore]="4"
-                                            [disabled]="isCostRevReadOnly"
+                                            [disabled]="isExchangeRateDisabled(routeIndex,carrierIndex)"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>

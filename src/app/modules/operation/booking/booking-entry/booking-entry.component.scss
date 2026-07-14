@@ -115,6 +115,25 @@
   }
 }
 
+// _compact-form.scss pins .error-message to `bottom: 0` inside .custom-form-group, which lands a
+// full-length message on top of the input instead of under it. Let it flow below the field.
+.compact-form .custom-form-group {
+  .error-message {
+    position: static !important;
+    top: auto !important;
+    bottom: auto !important;
+    right: auto !important;
+    display: block;
+    width: 100%;
+    margin-top: 2px;
+    text-align: left;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 .dimension-x-after {
   position: relative;
 

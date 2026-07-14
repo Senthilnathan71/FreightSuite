@@ -330,7 +330,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
     }
 
     override trackBy(index: number, item: any): number {
-        return item.ProductMasterSid || index;
+        return item.ProductMasterSId || index;
     }
 
 
@@ -351,7 +351,7 @@ export class ProductListComponent extends BaseListComponent implements OnInit {
     }
 
     deleteBy(row: any) {
-        this.deleteProductById(row.ProductMasterSid)
+        this.deleteProductById(row.ProductMasterSId)
     }
 
     onTableRowClick(row: any): void {

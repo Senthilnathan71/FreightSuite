@@ -954,18 +954,18 @@ subscribeToFormChanges() {
       CustomerAddress: [null, [Validators.required]],
       SalesmanSid: [null],
       isShipperFreeText: [false],
-      ShipperName: [null, [Validators.required]],
-      ShipperAddress: ['', [Validators.required]],
+      ShipperName: [null, [Validators.required, Validators.maxLength(100)]],
+      ShipperAddress: ['', [Validators.required, Validators.maxLength(300)]],
       isConsigneeFreeText: [false],
-      ConsigneeName: [null],
-      ConsigneeAddress: [null],
+      ConsigneeName: [null, [Validators.maxLength(100)]],
+      ConsigneeAddress: [null, [Validators.maxLength(300)]],
       isNotifyFreeText: [false],
-      Notify: [null],
-      NotifyAddress: [''],
+      Notify: [null, [Validators.maxLength(200)]],
+      NotifyAddress: ['', [Validators.maxLength(200)]],
       DestinationAgent: [null],
       AgentAddress: [''],
       isCarrierFreeText: [false],
-      CarrierName: [null],
+      CarrierName: [null, [Validators.maxLength(200)]],
       QuotationHeaderSid: [{ value: '', disabled: true }],
       HBLNo: [{ value: '', disabled: true }],
       HouseJobSid:[null],
@@ -973,12 +973,12 @@ subscribeToFormChanges() {
       MBLDate: [{ value: '', disabled: true }],
       status: ['Active'],
 
-      VesselName: [null],
+      VesselName: [null, [Validators.maxLength(100)]],
       isVesselFreeText: [false],
       isVoyageFreeText: [false],
       VoyageMasterSid: [null],
       JobType: [{ value: '', disabled: false }],
-      VoyageNo: [ null],
+      VoyageNo: [ null, [Validators.maxLength(10)]],
       ETA: [null],
       ETD: [null],
       PortCutoffDate: [null],
@@ -1749,10 +1749,12 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       String(department?.departmentType ?? '').toUpperCase() === 'AIR' &&
       String(department?.ExportImport ?? '').toUpperCase() === 'EXPORT';
 
+    // maxLength must be re-applied in both branches — setValidators/clearValidators replace the
+    // whole list, so it would otherwise be dropped whenever the department changes.
     if (isAirExport && this.isMawbStockAllocationEnabled) {
-      carrierControl.setValidators([Validators.required]);
+      carrierControl.setValidators([Validators.required, Validators.maxLength(200)]);
     } else {
-      carrierControl.clearValidators();
+      carrierControl.setValidators([Validators.maxLength(200)]);
     }
 
     carrierControl.updateValueAndValidity({ emitEvent: false });
