@@ -389,6 +389,14 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             dataType: 'string'
           },
           {
+            key: 'VendorName',
+            label: 'Vendor Name',
+            sortable: true,
+            filterable: true,
+            visible: true,
+            dataType: 'string',
+          },
+          {
         key: 'PostStatusLabel',
         label: 'Posted Status',
         sortable: true,
@@ -569,6 +577,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             { key: 'VoucherNumber', label: 'Reverse Voucher No' },
             { key: 'reversalVoucherNumber', label: 'Voucher No' },
             { key: 'VoucherDate', label: 'Voucher Date' },
+            { key: 'VendorName', label: 'Vendor Name' },
             { key: 'PostStatusLabel', label: 'Posted Status' },
             { key: 'Status', label: 'Status' }
           ],
