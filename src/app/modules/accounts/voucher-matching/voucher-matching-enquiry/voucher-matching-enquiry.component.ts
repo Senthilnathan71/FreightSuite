@@ -358,7 +358,7 @@ export class VoucherMatchingEnquiryComponent implements OnInit {
         sparkline: { enabled: false },
         animations: { enabled: true, speed: 600 },
       },
-      colors: ['#1769d4'],
+      colors: ['#16a34a'],
       plotOptions: {
         bar: {
           horizontal: true,

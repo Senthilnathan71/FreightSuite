@@ -20,8 +20,7 @@
         <div class="d-flex flex-wrap align-items-center justify-content-end gap-1">
           <button
             type="button"
-            class="btn btn-sm dofi-min-w-80 dofi-max-w-80"
-            style="height: 34px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1.5px solid #7c8a9c; color: #fff; background: #7c8a9c;"
+            class="btn btn-sm btn btn-secondary dofi-min-w-70 dofi-max-w-80"
             (click)="back()">
             <i class="fas fa-chevron-left me-1"></i>Back
           </button>
@@ -32,17 +31,17 @@
     <div class="card mb-1 shadow-sm" style="border: 1px solid #dbe4ee; border-left: 4px solid #1769d4; border-radius: 10px; overflow: hidden;">
       <div class="card-body p-0">
         <div class="d-flex align-items-stretch flex-wrap">
-          <div class="d-flex align-items-center gap-2 px-3 py-2" style="min-width: 260px; border-right: 1px solid #e2e8f0; background: #f8fbff;">
-            <div class="d-flex align-items-center justify-content-center rounded" style="width: 38px; height: 38px; background: #e7f1ff; color: #1769d4;">
+          <div class="d-flex align-items-center gap-2 px-2 py-1" style="min-width: 220px; border-right: 1px solid #d7eee8; background: #f2fffb;">
+            <div class="d-flex align-items-center justify-content-center rounded" style="width: 32px; height: 32px; background: #dcf7f0; color: #0f8b76;">
               <i class="fas fa-file-invoice-dollar"></i>
             </div>
             <div>
-              <div class="fw-bold text-primary" style="font-size: 14px;">Search Voucher</div>
-              <div class="text-muted" style="font-size: 11px;">Voucher Number</div>
+              <div class="fw-bold" style="font-size: 13px; line-height: 1.15; color: #0f8b76;">Search Voucher</div>
+              <div class="text-muted" style="font-size: 10px;">Voucher Number</div>
             </div>
           </div>
 
-          <div class="flex-grow-1 d-flex align-items-center gap-3 px-3 py-2" style="min-width: 420px;">
+          <div class="flex-grow-1 d-flex align-items-center gap-2 px-2 py-1" style="min-width: 360px;">
             <label class="text-muted mb-0" style="font-size: 12px; white-space: nowrap;">Voucher No.</label>
             <input
               type="text"
@@ -52,13 +51,12 @@
               [disabled]="isLoading"
               autocomplete="off"
               placeholder="Enter voucher number..."
-              style="font-size: 16px; border-color: #cfd8e3 !important; background: transparent;"
+              style="height: 32px; font-size: 14px; border-color: #cfd8e3 !important; background: transparent;"
             />
             <div class="d-flex gap-1">
               <button
                 type="button"
-                class="btn btn-sm dofi-min-w-100"
-                style="height: 38px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; color: #fff; background: linear-gradient(135deg, #15395c, #1769d4); box-shadow: 0 3px 10px rgba(23,105,212,.28);"
+                class="btn btn-sm btn btn-info dofi-min-w-70"
                 (click)="search()"
                 [disabled]="isLoading">
                 <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
@@ -66,8 +64,7 @@
               </button>
               <button
                 type="button"
-                class="btn btn-sm dofi-min-w-80"
-                style="height: 38px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1.5px solid #d7dde6; color: #64748b; background: #eef1f6;"
+                class="btn btn-sm btn btn-secondary dofi-min-w-70"
                 (click)="clear()"
                 [disabled]="isLoading">
                 <i class="fas fa-undo me-1"></i>Reset
@@ -90,22 +87,26 @@
 
     <ng-container *ngIf="result as data">
       <div class="card mb-1 shadow-sm" style="border: 1px solid #c8dcf2; border-radius: 10px; overflow: hidden;">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-2 text-white" style="background: linear-gradient(120deg, #1565c8 0%, #2b8fed 62%, #36a3f5 100%);">
+        <div class="d-flex align-items-center justify-content-between px-3 py-1 text-white bg-info">
           <div class="d-flex align-items-center flex-wrap gap-2">
-            <span class="fw-bold" style="font-size: 18px; letter-spacing: .01em;">{{ data.voucherDetails?.VoucherNumber }}</span>
+            <span class="fw-bold" style="font-size: 15px; letter-spacing:.01em;">{{ data.voucherDetails?.VoucherNumber }}</span>
             <button
               type="button"
-              class="btn btn-link btn-sm p-0 text-white"
-              style="line-height: 1; font-size: 12px; opacity: .85;"
+              class="btn btn-sm p-0"
+              style="width: 24px; height: 24px; line-height: 1; font-size: 12px; border-radius: 6px; color: #0b73a8; background: #eaf6ff;"
               title="Copy voucher number"
               (click)="copyText(data.voucherDetails?.VoucherNumber)">
               <i class="fas fa-copy"></i>
             </button>
-            <span class="badge bg-light text-primary" style="font-size: 11px;">{{ data.voucherDetails?.VoucherType || '-' }}</span>
             <span
-              class="badge rounded-pill"
+              class="d-inline-flex align-items-center gap-1"
+              style="height: 20px; padding: 0 5px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #0b5f95; background: linear-gradient(135deg, #ffffff, #eaf6ff);">
+              {{ data.voucherDetails?.VoucherType || '-' }}
+            </span>
+            <span
+              class="badge rounded-pill fw-bold"
               [ngClass]="data.voucherDetails?.PostStatus === 'P' ? 'bg-success' : 'bg-warning text-dark'"
-              style="font-size: 11px;">
+              style="font-size: 12px;">
               {{ data.voucherDetails?.PostStatus === 'P' ? 'Posted' : 'Unposted' }}
             </span>
             <span class="fw-semibold">{{ data.voucherDetails?.partyName || '-' }}</span>
@@ -157,58 +158,64 @@
           </div>
         </div>
 
-        <div class="row g-0 text-white" style="background: linear-gradient(90deg, #103a5e, #15486f); font-size: 11px; font-weight: 700; letter-spacing: .03em;">
-          <div class="col-3 px-3 py-2 text-uppercase border-end" style="border-color: rgba(255,255,255,.08) !important;">Currency</div>
-          <div class="col-3 px-3 py-2 text-uppercase text-end border-end" style="border-color: rgba(255,255,255,.08) !important;">Total Amount</div>
-          <div class="col-3 px-3 py-2 text-uppercase text-end border-end" style="border-color: rgba(255,255,255,.08) !important;">Matching Amount</div>
-          <div class="col-3 px-3 py-2 text-uppercase text-end">Outstanding Amount</div>
+        <div class="row g-0 text-white bg-info" style="font-size: 11px; font-weight: 700; letter-spacing: .02em;">
+          <div class="col-3 px-2 py-1 text-uppercase border-end" style="border-color: rgba(255,255,255,.08) !important;">Currency</div>
+          <div class="col-3 px-2 py-1 text-uppercase text-end border-end" style="border-color: rgba(255,255,255,.08) !important;">Total Amount</div>
+          <div class="col-3 px-2 py-1 text-uppercase text-end border-end" style="border-color: rgba(255,255,255,.08) !important;">Matching Amount</div>
+          <div class="col-3 px-2 py-1 text-uppercase text-end">Outstanding Amount</div>
         </div>
 
-        <div class="row g-0 align-items-center" style="font-size: 13px;">
-          <div class="col-3 px-3 py-2 border-end border-bottom d-flex align-items-center gap-2">
+        <div class="row g-0 align-items-center" style="font-size: 12px;">
+          <div class="col-3 px-2 py-1 border-end border-bottom d-flex align-items-center gap-2">
             <span class="badge bg-primary" style="font-size: 11px;">{{ partyCurrencyCode }}</span>
             <span class="fw-semibold text-dark">Party Currency - {{ partyCurrencyCode }}</span>
           </div>
-          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold">{{ formatAmount(data.voucherDetails?.originalPartyAmount) }}</div>
-          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold text-primary">{{ formatAmount(totalMatchedPartyAmount) }}</div>
-          <div class="col-3 px-3 py-2 border-bottom text-end fw-semibold" [class.text-success]="outstandingPartyAmount === 0" [class.text-danger]="outstandingPartyAmount !== 0">
+          <div class="col-3 px-2 py-1 border-end border-bottom text-end fw-semibold">{{ formatAmount(data.voucherDetails?.originalPartyAmount) }}</div>
+          <div class="col-3 px-2 py-1 border-end border-bottom text-end fw-bold text-primary">{{ formatAmount(totalMatchedPartyAmount) }}</div>
+          <div class="col-3 px-2 py-1 border-bottom text-end fw-bold" [class.text-success]="outstandingPartyAmount === 0" [class.text-danger]="outstandingPartyAmount !== 0">
             {{ formatAmount(outstandingPartyAmount) }}
           </div>
         </div>
 
-        <div *ngIf="!singleCurrencySummary" class="row g-0 align-items-center" style="font-size: 13px;">
-          <div class="col-3 px-3 py-2 border-end border-bottom d-flex align-items-center gap-2">
+        <div *ngIf="!singleCurrencySummary" class="row g-0 align-items-center" style="font-size: 12px;">
+          <div class="col-3 px-2 py-1 border-end border-bottom d-flex align-items-center gap-2">
             <span class="badge bg-secondary" style="font-size: 11px;">{{ localCurrencyCode }}</span>
             <span class="fw-semibold text-dark">Local Currency - {{ localCurrencyCode }}</span>
           </div>
-          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold">{{ formatAmount(data.stats?.originalLocalAmount) }}</div>
-          <div class="col-3 px-3 py-2 border-end border-bottom text-end fw-semibold text-primary">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }}</div>
-          <div class="col-3 px-3 py-2 border-bottom text-end fw-semibold" [class.text-success]="outstandingIsZero" [class.text-danger]="!outstandingIsZero">
+          <div class="col-3 px-2 py-1 border-end border-bottom text-end fw-semibold">{{ formatAmount(data.stats?.originalLocalAmount) }}</div>
+          <div class="col-3 px-2 py-1 border-end border-bottom text-end fw-bold text-primary">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }}</div>
+          <div class="col-3 px-2 py-1 border-bottom text-end fw-bold" [class.text-success]="outstandingIsZero" [class.text-danger]="!outstandingIsZero">
             {{ formatAmount(data.stats?.outstandingLocalAmount) }}
           </div>
         </div>
 
-        <div *ngIf="data.voucherDetails?.Narration" class="px-3 py-2" style="font-size: 12px; background: #fff8e1; border-top: 1px solid #f1d98b;">
+        <div *ngIf="data.voucherDetails?.Narration" class="px-2 py-1" style="font-size: 12px; background: #fff8e1; border-top: 1px solid #f1d98b;">
           <i class="fas fa-circle-info text-warning me-1"></i>
           <span class="text-muted fw-semibold me-1">Narration:</span>
           <span>{{ data.voucherDetails?.Narration }}</span>
         </div>
       </div>
 
-      <div *ngIf="showVisualization" class="card mb-1 shadow-sm" style="border: 1px solid #cfd8e3; border-radius: 10px; overflow: hidden;">
-        <div class="card-header text-light py-2 px-3 d-flex align-items-center justify-content-between" style="background: linear-gradient(90deg, #103a5e, #15486f);">
-          <span class="fw-semibold" style="font-size: 13px;"><i class="fas fa-chart-pie text-info me-1"></i>Graphical View</span>
+      <div *ngIf="showVisualization" class="card mb-1 shadow-sm" style="border: 1px solid #b9d7ee; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 22px rgba(16,58,94,.12) !important;">
+        <div class="card-header text-light py-1 px-3 d-flex align-items-center justify-content-between bg-info">
+          <span class="d-inline-flex align-items-center gap-2 fw-semibold" style="font-size: 13px;">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 24px; height: 24px; background: rgba(56,189,248,.18); color: #38bdf8;">
+              <i class="fas fa-chart-pie"></i>
+            </span>
+            Graphical View
+          </span>
           <button
             type="button"
             class="btn btn-sm py-0 px-2 text-white"
-            style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,.12); font-size: 11px;"
+            style="width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,.16); font-size: 12px;"
             (click)="toggleVisualization()">
             <i class="fas fa-times"></i>
           </button>
         </div>
-        <div class="card-body p-3">
+        <div class="card-body p-3" style="background: linear-gradient(180deg, #f8fbff 0%, #ffffff 58%);">
           <div class="row g-3 align-items-center">
             <div class="col-auto">
+              <div class="d-flex align-items-center justify-content-center" style="width: 330px; min-height: 235px; border-radius: 10px; background: #fff; border: 1px solid #dbe6f3; box-shadow: inset 0 0 0 1px rgba(15,107,150,.04);">
               <apx-chart
                 *ngIf="settlementDonutOptions?.series"
                 [series]="settlementDonutOptions.series"
@@ -221,41 +228,42 @@
                 [tooltip]="settlementDonutOptions.tooltip"
                 [plotOptions]="settlementDonutOptions.plotOptions">
               </apx-chart>
+              </div>
             </div>
             <div class="col">
               <div class="row g-2">
                 <div class="col-md-4">
-                  <div class="border rounded px-3 py-2 bg-light">
+                  <div class="rounded px-3 py-2" style="background: #fff; border: 1px solid #cbd5e1; border-left: 4px solid #64748b; box-shadow: 0 4px 12px rgba(15,23,42,.06);">
                     <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Total {{ localCurrencyCode }}</div>
                     <div class="fw-bold" style="font-size: 17px;">{{ formatAmount(data.stats?.originalLocalAmount) }}</div>
                   </div>
                 </div>
                 <div class="col-md-4">
-                  <div class="border rounded px-3 py-2" style="background: #eefaf2;">
+                  <div class="rounded px-3 py-2" style="background: #ecfdf3; border: 1px solid #b7e7c3; border-left: 4px solid #16a34a; box-shadow: 0 4px 12px rgba(22,163,74,.10);">
                     <div class="text-success text-uppercase" style="font-size: 10px; font-weight: 700;">Matched {{ localCurrencyCode }}</div>
                     <div class="fw-bold text-success" style="font-size: 17px;">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }}</div>
                   </div>
                 </div>
                 <div class="col-md-4">
-                  <div class="border rounded px-3 py-2" style="background: #fff5f5;">
+                  <div class="rounded px-3 py-2" style="background: #fff1f2; border: 1px solid #fecdd3; border-left: 4px solid #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,.10);">
                     <div class="text-danger text-uppercase" style="font-size: 10px; font-weight: 700;">Outstanding {{ localCurrencyCode }}</div>
                     <div class="fw-bold text-danger" style="font-size: 17px;">{{ formatAmount(data.stats?.outstandingLocalAmount) }}</div>
                   </div>
                 </div>
               </div>
 
-              <div class="d-flex flex-wrap align-items-center gap-3 mt-3" style="font-size: 12px;">
-                <span class="d-inline-flex align-items-center gap-2">
+              <div class="d-flex flex-wrap align-items-center gap-2 mt-3" style="font-size: 12px;">
+                <span class="d-inline-flex align-items-center gap-2 px-2 py-1 rounded-pill" style="background: #ecfdf3; color: #14532d; border: 1px solid #bbf7d0;">
                   <span class="d-inline-block rounded-circle bg-success" style="width: 9px; height: 9px;"></span>
                   Matched <strong>{{ totalMatchedPercent }}%</strong>
                 </span>
-                <span class="d-inline-flex align-items-center gap-2">
+                <span class="d-inline-flex align-items-center gap-2 px-2 py-1 rounded-pill" style="background: #fff1f2; color: #7f1d1d; border: 1px solid #fecdd3;">
                   <span class="d-inline-block rounded-circle bg-danger" style="width: 9px; height: 9px;"></span>
                   Outstanding <strong>{{ outstandingPercent }}%</strong>
                 </span>
               </div>
 
-              <div *ngIf="insightRows.length && contributionChartOptions?.series" class="mt-3">
+              <div *ngIf="insightRows.length && contributionChartOptions?.series" class="mt-3 p-3 rounded" style="background: #fff; border: 1px solid #dbe6f3; box-shadow: 0 4px 14px rgba(15,23,42,.05);">
                 <div class="text-muted text-uppercase mb-1" style="font-size: 10px; font-weight: 700;">Amount Contribution</div>
                 <apx-chart
                   [series]="contributionChartOptions.series"
@@ -276,15 +284,20 @@
       </div>
 
       <div class="card mb-1 shadow-sm" style="border: 1px solid #cfd8e3; border-radius: 10px; overflow: hidden;">
-        <div class="card-header text-light py-2 px-3 d-flex align-items-center justify-content-between" style="background: linear-gradient(90deg, #103a5e, #15486f);">
+        <div class="card-header text-light py-1 px-3 d-flex align-items-center justify-content-between bg-info">
           <div class="d-flex align-items-center gap-2">
             <span class="fw-semibold" style="font-size: 13px;">Active Matchings</span>
             <span class="badge bg-light text-dark" style="font-size: 11px;">{{ activeMatchings.length }}</span>
           </div>
-          <div class="pe-2" style="font-size: 12px;">
-            Party <span class="fw-bold">{{ formatAmount(totalMatchedPartyAmount) }} {{ partyCurrencyCode }}</span>
-            <span class="mx-1">|</span>
-            Local <span class="fw-bold">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }} {{ localCurrencyCode }}</span>
+          <div class="d-flex align-items-center pe-2" style="font-size: 12px; overflow: hidden; border-radius: 8px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);">
+            <div class="px-2 py-1" style="border-right: 1px solid rgba(255,255,255,.24);">
+              <span class="text-uppercase d-block" style="font-size: 9px; line-height: 1; opacity: .72;">Party</span>
+              <span class="fw-bold text-white" style="line-height: 1.15;">{{ formatAmount(totalMatchedPartyAmount) }} {{ partyCurrencyCode }}</span>
+            </div>
+            <div class="px-2 py-1">
+              <span class="text-uppercase d-block" style="font-size: 9px; line-height: 1; opacity: .72;">Local</span>
+              <span class="fw-bold text-white" style="line-height: 1.15;">{{ formatAmount(data.stats?.totalMatchedLocalAmount) }} {{ localCurrencyCode }}</span>
+            </div>
           </div>
         </div>
         <div class="card-body p-0">
@@ -297,7 +310,7 @@
               <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
                   <th class="text-center" style="width: 36px;">#</th>
-                  <th style="width: 145px;">Matching No.</th>
+                  <th style="width: 165px;">Matching No.</th>
                   <th style="width: 88px;">Date</th>
                   <th style="width: 92px;">This Voucher</th>
                   <th style="min-width: 360px;">Source Vouchers</th>
@@ -310,6 +323,7 @@
                 <tr *ngFor="let m of activeMatchings; let i = index">
                   <td class="text-center text-muted">{{ i + 1 }}</td>
                   <td>
+                    <span class="d-inline-flex align-items-center" style="gap: 4px; white-space: nowrap;">
                     <span
                       class="fw-bold"
                       style="cursor: pointer; color: #103a5e; text-decoration: underline;"
@@ -319,12 +333,13 @@
                     <button
                       *ngIf="m.VoucherMatchingNo"
                       type="button"
-                      class="btn btn-link btn-sm p-0 ms-1"
-                      style="line-height: 1; font-size: 10px;"
+                      class="btn btn-sm p-0 ms-1"
+                      style="width: 20px; height: 20px; line-height: 1; font-size: 10px; border-radius: 5px; color: #0b73a8; background: #eaf6ff; border: 1px solid #b9d7ff;"
                       title="Copy matching number"
                       (click)="copyText(m.VoucherMatchingNo)">
                       <i class="fas fa-copy"></i>
                     </button>
+                    </span>
                   </td>
                   <td>{{ m.VoucherMatchingDate | formatDate }}</td>
                   <td>
@@ -351,8 +366,8 @@
                         </ng-template>
                         <button
                           type="button"
-                          class="btn btn-link btn-sm p-0"
-                          style="line-height: 1; font-size: 10px; color: #103a5e;"
+                          class="btn btn-sm p-0"
+                          style="width: 20px; height: 20px; line-height: 1; font-size: 10px; border-radius: 5px; color: #0b73a8; background: #eaf6ff; border: 1px solid #b9d7ff;"
                           title="Copy source voucher"
                           (click)="copyText(voucher.voucherNumber)">
                           <i class="fas fa-copy"></i>
@@ -385,8 +400,8 @@
                         </ng-template>
                         <button
                           type="button"
-                          class="btn btn-link btn-sm p-0"
-                          style="line-height: 1; font-size: 10px; color: #103a5e;"
+                          class="btn btn-sm p-0"
+                          style="width: 20px; height: 20px; line-height: 1; font-size: 10px; border-radius: 5px; color: #0b73a8; background: #eaf6ff; border: 1px solid #b9d7ff;"
                           title="Copy object voucher"
                           (click)="copyText(voucher.voucherNumber)">
                           <i class="fas fa-copy"></i>
@@ -464,10 +479,13 @@
     <div *ngIf="result" class="vm-visualize-action-wrap d-flex justify-content-end pe-3 pb-3 pt-2">
       <button
         type="button"
-        class="btn btn-sm shadow"
-        style="height: 42px; min-width: 128px; border-radius: 10px; font-size: 13px; font-weight: 700; border: 1.5px solid #1769d4; color: #1769d4; background: #fff;"
+        class="btn btn-sm shadow d-inline-flex align-items-center justify-content-center gap-1 btn btn-info"
+        style="font-size: 13px; font-weight: 800; color: #fff;"
         (click)="toggleVisualization()">
-        <i class="fas fa-chart-pie me-1"></i>{{ showVisualization ? 'Hide Chart' : 'Visualize' }}
+        <span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 24px; height: 24px; background: rgba(255,255,255,.18);">
+          <i class="fas fa-chart-pie"></i>
+        </span>
+        {{ showVisualization ? 'Hide Chart' : 'Visualize' }}
       </button>
     </div>
   </div>

@@ -1,5 +1,6 @@
 import { createFooterFunction } from '../builders/pdf-footer.builder';
-import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
+import { buildCompanyHeader as buildCommonCompanyHeader } from '../builders/pdf-header.builder';
+import { formatDate, formatNumberWithCommas } from '../helpers/pdf-formatters';
 import { JournalVoucherPdfData } from '../interfaces/pdf-document.interfaces';
 import { PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS, getPdfStyles } from '../styles/pdf-styles';
 
@@ -9,107 +10,38 @@ function toNumber(value: any): number {
 }
 
 function buildCompanyHeader(data: JournalVoucherPdfData): any {
-  const company = data.company;
-  const branch = data.branch;
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode || '';
-  const phone = branch?.phoneNumber || company?.phoneNumber || '';
-  const locationPrefix = joinNonEmpty([
-    branch?.addressLine2 || company?.addressLine2,
-    city
-  ], ', ');
-
-  const companyInfoStack: any[] = [
-    { text: (company?.companyName || '').toUpperCase(), fontSize: 14, bold: true, alignment: printSettings.companyAlignment },
-    { text: branch?.branchName || '', fontSize: 11, bold: true, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: branch?.addressLine1 || company?.addressLine1 || '', fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    {
-      text: [
-        { text: locationPrefix ? `${locationPrefix}${postalCode || phone ? ', ' : ''}` : '' },
-        ...(postalCode ? [{ text: 'Postal Code : ', bold: true }, { text: `${postalCode}${phone ? ', ' : ''}` }] : []),
-        ...(phone ? [{ text: 'Ph.no : ', bold: true }, { text: phone }] : [])
-      ],
-      fontSize: 9,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 2, 0, 4]
-    }
-  ];
-
-  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
-    left: 'left',
-    center: 'center',
-    right: 'right'
-  };
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [60, 60], alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin: companyMargin });
-    }
-    return { stack };
-  };
-
   return {
     stack: [
-      {
-        table: {
-          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-        },
-        layout: {
-          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 0.25 : 0),
-          vLineWidth: () => 0,
-          hLineColor: () => '#000000',
-          paddingLeft: () => 0,
-          paddingRight: () => 0,
-          paddingTop: () => 0,
-          paddingBottom: () => 14
-        },
-        margin: [0, 5, 0, 5]
-      }
+      buildCommonCompanyHeader(data),
+      { canvas: [{ type: 'line', x1: -1, y1: 0, x2: 577, y2: 0, lineWidth: 0.5, lineColor: '#000000' }] }
     ]
   };
 }
 
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
-}
-
 function buildTitle(): any {
   return {
-    text: 'Journal Voucher',
-    alignment: 'center',
-    bold: true,
-    fontSize: 12,
-    margin: [0, 8, 0, 15]
+    table: {
+      widths: ['*'],
+      body: [[
+        {
+          text: 'Journal Voucher',
+          alignment: 'center',
+          bold: true,
+          fontSize: 12,
+          margin: [0, 4, 0, 4]
+        }
+      ]]
+    },
+    layout: {
+      hLineWidth: (i: number) => (i === 0 ? 0.5 : 0),
+      vLineWidth: () => 0,
+      hLineColor: () => '#000000',
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0
+    },
+    margin: [-10, 0, -10, 15]
   };
 }
 

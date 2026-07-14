@@ -182,7 +182,7 @@ function buildJobInfoSection(info: ProofOfDeliveryJobInfo): any {
     table: {
       widths: ['50%', '50%'],
       body: [[
-        { stack: info.left.map(row => buildKeyValueRow(row.label, row.value)), border: [true, true, false, true] },
+        { stack: info.left.map(row => buildKeyValueRow(row.label, row.value)), border: [true, true, true, true] },
         { stack: info.right.map(row => buildKeyValueRow(row.label, row.value)), border: [false, true, true, true] }
       ]]
     },

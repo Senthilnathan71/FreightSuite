@@ -1,4 +1,5 @@
 import { formatDate } from '../helpers/pdf-formatters';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 
 export function generateCargoManifestDocument(data: any): any {
   const isSeaMode = data?.selectedFCLLCL === 'FCL' || data?.selectedFCLLCL === 'LCL';
@@ -317,94 +318,26 @@ function buildHouseCargoTable(data: any): any {
 }
 
 function buildHeader(data: any): any {
-  const company = data?.currentCompany || {};
-  const branch = data?.currentBranch || {};
-  const logo = data?.logo;
-  const printSettings = data?.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-  const line1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode || '';
-  const phone = branch?.phoneNumber || company?.phoneNumber || '';
-  const cityLine: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (cityLine.length) cityLine.push({ text: ', ' });
-    if (Array.isArray(text)) {
-      cityLine.push(...text);
-    } else {
-      cityLine.push({ text });
-    }
-  };
-
-  if (branch?.addressLine2 || company?.addressLine2) appendText(branch?.addressLine2 || company?.addressLine2);
-  if (city) appendText(city);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
-
-  const companyInfoStack: any[] = [
-    { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 15, alignment: printSettings.companyAlignment },
-    { text: branch?.branchName || '', bold: true, fontSize: 12, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: line1, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: cityLine, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] }
-  ];
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [72, 56], alignment: slot, margin: slot === 'right' ? [0, 0, 8, 0] : [8, 0, 0, 0] });
-    }
-    if (printSettings.companyPosition === slot) {
-      const margin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin });
-    }
-
-    return { stack };
-  };
-
   return {
     stack: [
-      {
-        table: {
-          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-          body: [[
-            buildSlot('left'),
-            buildSlot('center'),
-            buildSlot('right')
-          ]]
-        },
-        layout: 'noBorders'
-      },
+      buildCompanyHeader({
+    ...data,
+    company: data?.company || data?.currentCompany || {},
+    branch: data?.branch || data?.currentBranch || {},
+    logo: data?.logo,
+    printSettings: data?.printSettings || {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    }
+      }),
       {
         canvas: [{ type: 'line', x1: 0, y1: 0, x2: 805, y2: 0, lineWidth: 0.1 }],
-        margin: [0, 5, 0, 0]
+        margin: [0, 0, 0, 0]
       }
     ],
     margin: [0, 0, 0, 6]
   };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(title: string): any {
