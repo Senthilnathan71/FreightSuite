@@ -462,6 +462,15 @@
                       </div>
                       <label for="text-input" class="input-label">Shipper Name <span
                           class="text-danger">*</span></label>
+                      @if(bookingForm.get('ShipperName')?.touched && bookingForm.get('ShipperName')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('ShipperName')?.hasError('required')){
+                        <span>Required</span>
+                        } @else if(bookingForm.get('ShipperName')?.hasError('maxlength')){
+                        <span>Shipper Name can't exceed 100 characters</span>
+                        }
+                      </div>
+                      }
                     </div>
                   </aside>
 
@@ -478,6 +487,8 @@
                       <div class="error-message">
                         @if(bookingForm.get('ShipperAddress')?.hasError('required')){
                         <span>Required</span>
+                        } @else if(bookingForm.get('ShipperAddress')?.hasError('maxlength')){
+                        <span>Shipper Address can't exceed 300 characters</span>
                         }
                       </div>
                       }
@@ -556,6 +567,11 @@
                       </div>
                       <label for="text-input" class="input-label">Consignee Name <span
                           class="text-danger"></span></label>
+                      @if(bookingForm.get('ConsigneeName')?.touched && bookingForm.get('ConsigneeName')?.hasError('maxlength')){
+                      <div class="error-message">
+                        <span>Consignee Name can't exceed 100 characters</span>
+                      </div>
+                      }
                     </div>
                   </aside>
 
@@ -567,7 +583,11 @@
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
                           class="text-danger"></span></label>
-                      
+                      @if(bookingForm.get('ConsigneeAddress')?.touched && bookingForm.get('ConsigneeAddress')?.hasError('maxlength')){
+                      <div class="error-message">
+                        <span>Consignee Address can't exceed 300 characters</span>
+                      </div>
+                      }
                     </div>
                   </aside>
 
@@ -632,6 +652,11 @@
                         </button>
                       </div>
                       <label for="text-input" class="input-label">Notify</label>
+                      @if(bookingForm.get('Notify')?.touched && bookingForm.get('Notify')?.hasError('maxlength')){
+                      <div class="error-message">
+                        <span>Notify can't exceed 200 characters</span>
+                      </div>
+                      }
                     </div>
                   </aside>
 
@@ -641,6 +666,11 @@
                         formControlName="NotifyAddress">
                       <label for="text-input" class="input-label">Notify Address<span
                           class="text-danger"></span></label>
+                      @if(bookingForm.get('NotifyAddress')?.touched && bookingForm.get('NotifyAddress')?.hasError('maxlength')){
+                      <div class="error-message">
+                        <span>Notify Address can't exceed 200 characters</span>
+                      </div>
+                      }
                     </div>
                   </aside>
 
@@ -750,6 +780,15 @@
                         </button>
                       </div>
                       <label for="text-input" class="input-label">Carrier</label>
+                      @if(bookingForm.get('CarrierName')?.touched && bookingForm.get('CarrierName')?.invalid){
+                      <div class="error-message">
+                        @if(bookingForm.get('CarrierName')?.hasError('required')){
+                        <span>Required</span>
+                        } @else if(bookingForm.get('CarrierName')?.hasError('maxlength')){
+                        <span>Carrier can't exceed 200 characters</span>
+                        }
+                      </div>
+                      }
                     </div>
                   </aside>
 
@@ -1022,6 +1061,11 @@
 
                         <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
                       }
+                      @if(bookingForm.get('VesselName')?.touched && bookingForm.get('VesselName')?.hasError('maxlength')){
+                      <div class="error-message">
+                        <span>Vessel can't exceed 100 characters</span>
+                      </div>
+                      }
                       </div>
                     </aside>
 
@@ -1036,6 +1080,11 @@
                           <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm" />
                           <label for="text-input" class="input-label">Voy <span class="text-danger"></span></label>
     }
+                          @if(bookingForm.get('VoyageNo')?.touched && bookingForm.get('VoyageNo')?.hasError('maxlength')){
+                          <div class="error-message">
+                            <span>Voyage can't exceed 10 characters</span>
+                          </div>
+                          }
                         </div>
                     </aside>
 

@@ -6952,6 +6952,10 @@ isPerUnitDisabled(routeIndex: number, carrierIndex: number): boolean {
     this.isCarrierApproved(routeIndex, carrierIndex);
 }
 
+isExchangeRateDisabled(routeIndex: number, carrierIndex: number): boolean {
+  return this.isPerUnitDisabled(routeIndex, carrierIndex);
+}
+
 private applyBookingLockForRoute(routeIndex: number, routeData?: any): void {
   const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
   const bookingLocked = this.hasBookingForRoute(routeIndex, routeData);
@@ -7806,6 +7810,10 @@ getContainerTypeName(containerCode: string): string {
 
 
   fetchExchangeRate(routeIndex : number ,carrierIndex : number , chargeIndex : number,revenueOrCost: 'cost' | 'revenue') {
+    // An approved carrier's ex-rate is frozen: disabling the input is not enough, since a
+    // currency change would otherwise re-fetch and overwrite the rate behind the lock.
+    if (this.isExchangeRateDisabled(routeIndex, carrierIndex)) return;
+
     const chargeGroup = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;
     // Take TO currency from userData
     const currentCompanyID = this.currentCompany?.CompanyMasterSid;
