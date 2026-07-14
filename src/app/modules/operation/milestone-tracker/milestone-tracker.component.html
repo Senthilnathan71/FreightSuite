@@ -30,22 +30,6 @@
         <span class="waves"></span>
       </div>
     </div>
-
-    <div class="department-families" aria-label="Supported freight departments">
-      <div class="family-card">
-        <svg class="family-ship" viewBox="0 0 64 48" fill="none" aria-hidden="true">
-          <path d="M6 28h51L49 40H16L6 28ZM17 28V16h12v12m3 0V11h13v17M25 16V9h8v7"/>
-          <path d="M14 42c4 3 8 3 12 0 4 3 8 3 12 0 4 3 8 3 12 0"/>
-        </svg>
-        <div><strong>Sea Freight</strong><span>FCL · LCL</span></div>
-      </div>
-      <div class="family-card">
-        <svg class="family-aircraft" viewBox="0 0 64 48" fill="none" aria-hidden="true">
-          <path d="m6 25 21-4L40 5l5 1-7 15 19 3c3 1 3 3 0 4l-19 3 7 12-5 1-13-12-21-3v-4Z"/>
-        </svg>
-        <div><strong>Air Freight</strong><span>Import · Export</span></div>
-      </div>
-    </div>
   </section>
 
   <section class="search-console">
@@ -65,7 +49,7 @@
         (keyup.enter)="onSearch()"
         placeholder="Enter shipment reference"
         aria-label="Shipment reference" />
-      <button type="button" class="btn primary" (click)="onSearch()" [disabled]="searching">
+      <button type="button" class="btn btn-info" (click)="onSearch()" [disabled]="searching">
         <i-feather name="search" *ngIf="!searching"></i-feather>
         <span class="mt-loading-spinner" *ngIf="searching"></span>
         {{ searching ? 'Searching' : 'Track Shipment' }}
@@ -109,7 +93,7 @@
   </section>
 
   <ng-container *ngIf="hasResult">
-    <section class="shipment-card">
+    <section class="shipment-card mb-1">
       <div class="mode-identity">
         <span class="mode-icon">
           <i-feather [name]="isAirDepartment ? 'send' : 'anchor'"></i-feather>
@@ -132,7 +116,7 @@
       </div>
     </section>
 
-    <section class="progress-ribbon">
+    <section class="progress-ribbon mb-1">
       <div class="progress-stat achieved-stat">
         <i-feather name="check-circle"></i-feather>
         <strong>{{ completed.length }}</strong><span>Achieved</span>

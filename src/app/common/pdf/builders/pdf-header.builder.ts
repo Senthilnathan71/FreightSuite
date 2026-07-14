@@ -40,6 +40,7 @@ export interface CompanyHeaderPrintSettings {
 
 export interface CompanyHeaderData extends PdfDocumentBase {
   printSettings?: CompanyHeaderPrintSettings;
+  companyHeaderLogoHeight?: number;
   /** Renders the GST/VAT registration line. Mirrors PrintHeaderComponent's showTaxRegistration input. */
   showTaxRegistration?: boolean;
   companyCountryCode?: string;
@@ -115,7 +116,8 @@ function buildPdfLogoColumn(logo: string | null | undefined, width: number, heig
 
 function buildCompanyHeaderLogo(
   logo: string | null | undefined,
-  alignment: HeaderPosition
+  alignment: HeaderPosition,
+  height = COMPANY_HEADER_LOGO_HEIGHT
 ): any | null {
   if (!logo || logo === 'none') {
     return null;
@@ -125,10 +127,10 @@ function buildCompanyHeaderLogo(
     const svgPayload = logo.split(',')[1] || '';
     const isBase64 = logo.includes(';base64,');
     const svg = isBase64 ? atob(svgPayload) : decodeURIComponent(svgPayload);
-    return { svg, height: COMPANY_HEADER_LOGO_HEIGHT, alignment };
+    return { svg, height, alignment };
   }
 
-  return { image: logo, height: COMPANY_HEADER_LOGO_HEIGHT, alignment };
+  return { image: logo, height, alignment };
 }
 
 function getCompanyHeaderWidths(
@@ -157,6 +159,7 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
   const company = data.company;
   const branch = data.branch;
   const logo = data.logo;
+  const logoHeight = data.companyHeaderLogoHeight || COMPANY_HEADER_LOGO_HEIGHT;
   const printSettings = {
     ...DEFAULT_COMPANY_HEADER_SETTINGS,
     ...(data.printSettings || {})
@@ -211,7 +214,7 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
   const buildSlot = (slot: HeaderPosition) => {
     const stack: any[] = [];
     if (printSettings.logoPosition === slot) {
-      const logoNode = buildCompanyHeaderLogo(logo, slotAlign[slot]);
+      const logoNode = buildCompanyHeaderLogo(logo, slotAlign[slot], logoHeight);
       if (logoNode) {
         stack.push({ ...logoNode, margin: [8, 0, 15, 0] });
       }

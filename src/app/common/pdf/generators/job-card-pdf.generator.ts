@@ -6,6 +6,7 @@ import {
   JobCardProfitPdfRow
 } from '../interfaces/pdf-document.interfaces';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { getPdfStyles } from '../styles/pdf-styles';
 
 export function generateJobCardDocument(data: JobCardPdfData): any {
@@ -14,7 +15,7 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'landscape',
-    pageMargins: [15, 108, 15, 28],
+    pageMargins: [15, 116, 15, 28],
     background: (_: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',
@@ -29,11 +30,11 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
     header: () => ({
       margin: [15, 14, 15, 0],
       stack: [
-        buildHeader(data),
-        buildTitle(data)
+        buildHeader(data)
       ]
     }),
     content: [
+      buildTitle(data),
       buildPartySection(data),
       buildJobInfoSection(data, isSea, isServiceJob),
       buildProductsTable(data, isSea),
@@ -52,121 +53,28 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
 }
 
 function buildHeader(data: JobCardPdfData): any {
-  const company: any = data.company || {};
-  const branch: any = data.branch || {};
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-  const logoPosition = printSettings.logoPosition;
-  const companyPosition = printSettings.companyPosition;
-  const companyAlignment = printSettings.companyAlignment;
-  const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const detailLine2 = buildHeaderDetailLine([
-    { value: branch?.addressLine2 || company?.addressLine2 || '' },
-    { value: branch?.cityName || branch?.cityMaster?.cityName || company?.city || '' },
-    { label: 'Postal Code : ', value: branch?.postalCode || company?.postalCode || '' },
-    { label: 'Ph.no : ', value: branch?.phoneNumber || company?.phoneNumber || '' }
-  ]);
-
-  const companyDetails = {
+  return {
     stack: [
-      { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: companyAlignment },
-      { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine1, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] },
-      { text: detailLine2, fontSize: 9, alignment: companyAlignment, margin: [0, 1, 0, 0] }
-    ],
-    margin: companyPosition === 'right' ? [0, 0, 18, 0] : [0, 0, 0, 0]
-  };
-
-  return {
-    columns: [
-      {
-        width: getHeaderColumnWidth('left', logoPosition, companyPosition),
-        stack: [
-          logoPosition === 'left' ? buildHeaderLogo(data.logo, 'left') : { text: '' },
-          companyPosition === 'left' ? companyDetails : { text: '' }
-        ]
-      },
-      {
-        width: getHeaderColumnWidth('center', logoPosition, companyPosition),
-        stack: [
-          logoPosition === 'center' ? buildHeaderLogo(data.logo, 'center') : { text: '' },
-          companyPosition === 'center' ? companyDetails : { text: '' }
-        ]
-      },
-      {
-        width: getHeaderColumnWidth('right', logoPosition, companyPosition),
-        stack: [
-          logoPosition === 'right' ? buildHeaderLogo(data.logo, 'right') : { text: '' },
-          companyPosition === 'right' ? companyDetails : { text: '' }
-        ]
-      }
-    ],
-    margin: [0, 0, 0, 2]
-  };
-}
-
-function buildHeaderDetailLine(parts: Array<{ label?: string; value: string }>): any[] {
-  return parts
-    .filter(part => !!part.value)
-    .flatMap((part, index) => [
-      ...(index > 0 ? [{ text: ', ' }] : []),
-      ...(part.label ? [{ text: part.label, bold: true }] : []),
-      { text: part.value }
-    ]);
-}
-
-function getHeaderColumnWidth(
-  column: 'left' | 'center' | 'right',
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return column === 'center' ? '*' : 110;
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    if (column === 'left') return 110;
-    if (column === 'right') return 300;
-    return '*';
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    if (column === 'left') return 300;
-    if (column === 'right') return 110;
-    return '*';
-  }
-
-  return '*';
-}
-
-function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' | 'right'): any {
-  if (!logo) {
-    return { text: '' };
-  }
-
-  return {
-    image: logo,
-    fit: [50, 50],
-    alignment,
-    margin: [4, 6, 0, 0]
+      buildCompanyHeader({ ...data, companyHeaderLogoHeight: 78 }),
+      { canvas: [{ type: 'line', x1: -1, y1: 0, x2: 813, y2: 0, lineWidth: 0.25, lineColor: '#000' }] }
+    ]
   };
 }
 
 function buildTitle(data: JobCardPdfData): any {
+  const title = data.reportTitle || `Job Card / Job No - ${data.jobInfo?.jobNo || ''}`;
+
   return {
     table: {
       widths: ['*'],
-      body: [[{ text: data.reportTitle, bold: true, alignment: 'center', fontSize: 10, margin: [0, 4, 0, 4] }]]
+      body: [[{ text: title, bold: true, alignment: 'center', fontSize: 10, margin: [0, 2, 0, 3] }]]
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 ? 0.25 : 0),
+      hLineWidth: () => 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000'
     },
-    margin: [0, 0, 0, 6]
+    margin: [0, -2, 0, 5]
   };
 }
 

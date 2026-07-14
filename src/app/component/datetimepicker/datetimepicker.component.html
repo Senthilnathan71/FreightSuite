@@ -13,6 +13,7 @@
     <button
       class="btn btn"
       [ngbPopover]="calendarContent"
+      container="body"
       [disabled]="disabled"
       type="button"
     >
@@ -44,6 +45,7 @@
       <button
         class="btn btn-block btn-outline-secondary"
         [ngbPopover]="calendarContent"
+        container="body"
         type="button"
         (click)="toggleDateTimeState($event)"
       >
