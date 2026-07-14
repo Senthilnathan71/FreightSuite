@@ -5,7 +5,8 @@ import { AbstractControl, FormArray, FormGroup, ValidationErrors, ValidatorFn } 
  * 1. Inconsistent exchange rates across the entire form (same currency must have same rate)
  * 2. Foreign currencies (non-company currency) cannot have exchange rate of 1
  * 3. Exchange rates cannot be zero
- * 
+ * 4. The company currency must have an exchange rate of exactly 1
+ *
  * Usage in component:
  * this.receiptForm.setValidators(
  *   this.consistentExchangeRatesValidator(this.companyCurrencySid, this.companyCurrencyCode)
@@ -78,7 +79,7 @@ export function consistentExchangeRatesValidator(
       rateEntries.forEach(entry => {
         const currentErrors = entry.control.errors;
         if (currentErrors) {
-          const errorsToRemove = ['inconsistentRate', 'foreignCurrencyRateOne', 'exchangeRateZero'];
+          const errorsToRemove = ['inconsistentRate', 'foreignCurrencyRateOne', 'exchangeRateZero', 'companyCurrencyRateNotOne'];
           errorsToRemove.forEach(errorKey => {
             if (currentErrors[errorKey]) {
               delete currentErrors[errorKey];
@@ -111,6 +112,13 @@ export function consistentExchangeRatesValidator(
       paths: string[];
     }> = [];
 
+    const companyCurrencyRateNotOneErrors: Array<{
+      currencySid: number;
+      currencyCode?: string;
+      rates: number[];
+      paths: string[];
+    }> = [];
+
     // Process each currency
     currencyRateMap.forEach((rateEntries, currencySid) => {
       // Check if this is the company currency
@@ -133,6 +141,25 @@ export function consistentExchangeRatesValidator(
             exchangeRateZeroErrors.push({
               currencySid,
               currencyCode: entry.currencyCode,
+              paths: rateEntries.map(e => e.path)
+            });
+          }
+        }
+
+        // Rule 4: The company currency must have an exchange rate of exactly 1
+        if (isCompanyCurrency && entry.rate !== 0 && Number(entry.rate.toFixed(6)) !== 1) {
+          entry.control.setErrors({
+            ...entry.control.errors,
+            companyCurrencyRateNotOne: true
+          }, { emitEvent: false });
+          entry.control.markAsTouched({ onlySelf: true });
+
+          // Track for global error message
+          if (!companyCurrencyRateNotOneErrors.some(e => e.currencySid === currencySid)) {
+            companyCurrencyRateNotOneErrors.push({
+              currencySid,
+              currencyCode: entry.currencyCode,
+              rates: rateEntries.map(e => e.rate),
               paths: rateEntries.map(e => e.path)
             });
           }
@@ -218,6 +245,18 @@ export function consistentExchangeRatesValidator(
       };
     }
 
+    if (companyCurrencyRateNotOneErrors.length > 0) {
+      validationErrors.companyCurrencyRateNotOne = {
+        message: 'Company currency must have an exchange rate of 1',
+        conflicts: companyCurrencyRateNotOneErrors.map(e => ({
+          currencyId: e.currencySid,
+          currencyCode: e.currencyCode,
+          conflictingRates: e.rates,
+          locations: e.paths
+        }))
+      };
+    }
+
     return Object.keys(validationErrors).length > 0 ? validationErrors : null;
   };
 }
@@ -261,6 +300,18 @@ export function getExchangeRateErrorMessage(
     }
   }
 
+  // Check for company currency rate != 1 errors
+  if (errors['companyCurrencyRateNotOne']) {
+    const conflicts = errors['companyCurrencyRateNotOne'].conflicts;
+    if (conflicts && conflicts.length > 0) {
+      conflicts.forEach((conflict: any) => {
+        const currency = currencyList.find(c => c.CurrencyMasterSid === conflict.currencyId);
+        const currencyName = conflict.currencyCode || currency?.currencyCode || `Currency ${conflict.currencyId}`;
+        messages.push(`${currencyName}: Company currency must have exchange rate of 1`);
+      });
+    }
+  }
+
   // Check for inconsistent exchange rate errors
   if (errors['inconsistentExchangeRates']) {
     const conflicts = errors['inconsistentExchangeRates'].conflicts;
@@ -284,7 +335,8 @@ export function hasExchangeRateError(control: AbstractControl): boolean {
   return !!(
     control?.errors?.['inconsistentRate'] ||
     control?.errors?.['foreignCurrencyRateOne'] ||
-    control?.errors?.['exchangeRateZero']
+    control?.errors?.['exchangeRateZero'] ||
+    control?.errors?.['companyCurrencyRateNotOne']
   );
 }
 
@@ -323,6 +375,10 @@ export function getControlErrorMessage(control: AbstractControl): string | null 
 
   if (control.errors['foreignCurrencyRateOne']) {
     return 'Foreign currency cannot have exchange rate of 1';
+  }
+
+  if (control.errors['companyCurrencyRateNotOne']) {
+    return 'Company currency must have exchange rate of 1';
   }
 
   if (control.errors['inconsistentRate']) {

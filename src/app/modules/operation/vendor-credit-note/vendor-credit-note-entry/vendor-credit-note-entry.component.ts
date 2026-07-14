@@ -2345,7 +2345,8 @@ export class VendorCreditNoteEntryComponent {
       const hasExchangeRateError =
         this.vendorCreditNoteForm.errors['inconsistentExchangeRates'] ||
         this.vendorCreditNoteForm.errors['foreignCurrencyRateOne'] ||
-        this.vendorCreditNoteForm.errors['exchangeRateZero'];
+        this.vendorCreditNoteForm.errors['exchangeRateZero'] ||
+        this.vendorCreditNoteForm.errors['companyCurrencyRateNotOne'];
 
       if (hasExchangeRateError) {
         const errorMsg = getExchangeRateErrorMessage(
