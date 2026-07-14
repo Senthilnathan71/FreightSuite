@@ -2236,7 +2236,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       const hasExchangeRateError =
         this.vendorInvoiceForm.errors['inconsistentExchangeRates'] ||
         this.vendorInvoiceForm.errors['foreignCurrencyRateOne'] ||
-        this.vendorInvoiceForm.errors['exchangeRateZero'];
+        this.vendorInvoiceForm.errors['exchangeRateZero'] ||
+        this.vendorInvoiceForm.errors['companyCurrencyRateNotOne'];
 
       if (hasExchangeRateError) {
         const errorMsg = getExchangeRateErrorMessage(

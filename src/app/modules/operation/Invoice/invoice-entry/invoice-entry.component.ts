@@ -2787,7 +2787,8 @@ isSeaDepartment(): boolean {
       const hasExchangeRateError =
         this.invoiceForm.errors['inconsistentExchangeRates'] ||
         this.invoiceForm.errors['foreignCurrencyRateOne'] ||
-        this.invoiceForm.errors['exchangeRateZero'];
+        this.invoiceForm.errors['exchangeRateZero'] ||
+        this.invoiceForm.errors['companyCurrencyRateNotOne'];
 
       if (hasExchangeRateError) {
         const errorMsg = getExchangeRateErrorMessage(

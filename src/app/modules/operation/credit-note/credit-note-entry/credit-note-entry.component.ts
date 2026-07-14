@@ -2506,7 +2506,8 @@ export class CreditNoteEntryComponent {
       const hasExchangeRateError =
         this.creditNoteForm.errors['inconsistentExchangeRates'] ||
         this.creditNoteForm.errors['foreignCurrencyRateOne'] ||
-        this.creditNoteForm.errors['exchangeRateZero'];
+        this.creditNoteForm.errors['exchangeRateZero'] ||
+        this.creditNoteForm.errors['companyCurrencyRateNotOne'];
 
       if (hasExchangeRateError) {
         const errorMsg = getExchangeRateErrorMessage(

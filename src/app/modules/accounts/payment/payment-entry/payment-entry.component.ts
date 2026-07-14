@@ -620,6 +620,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   private reobserveMatchingSentinel(): void {
+    if (this.isPosted) return; // posted → the matching grid is a frozen snapshot; never re-attach
     if (this.matchingSentinel?.nativeElement) {
       this.matchingObserver?.disconnect();
       this.matchingObserver = new IntersectionObserver(
@@ -630,6 +631,20 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       );
       this.matchingObserver.observe(this.matchingSentinel.nativeElement);
     }
+  }
+
+  /**
+   * Posted → the matching grid is a frozen snapshot: detach the scroll sentinel and stop all
+   * further outstanding pagination. A late page would append fresh ENABLED rows onto the
+   * disabled form, letting matched amounts be edited on a posted voucher.
+   */
+  private freezeMatchingPagination(): void {
+    this.matchingObserver?.disconnect();
+    this.matchingCursors.forEach((c) => {
+      c.hasMore = false;
+      c.stagedMatches = undefined;
+    });
+    this.currentSearchPayload = null;
   }
 
   subscribeToFormChanges() {
@@ -1111,30 +1126,23 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         payload.VendorInvoiceNumber = form.FilterText;
       }
 
-      if(this.isEditMode && !this.isPosted && form.SearchType === 'Party' && form.CustomerBranchSid !== this.r['CustomerBranchSid']?.getRawValue() && this.hasMatchingDetails) {
-        this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this payment. \nCannot select a different one.`);
-        return;
-      }
-
-    // In create mode, if matchings already exist for a different party, confirm before proceeding
-    if (!this.isEditMode && this.voucherMatchings?.length > 0) {
+    // Create AND edit mode: if matchings already exist for a different party, confirm before
+    // proceeding (posted vouchers never reach here — the form is disabled on edit-load).
+    if (this.voucherMatchings?.length > 0) {
       const currentPartyBranchInHeader = this.r['CustomerBranchSid']?.getRawValue();
       const newPartyInSearch = form.SearchType === 'Party' ? form.CustomerBranchSid : null;
 
       // Different party (or invoice search which may resolve to a different party)
       if (newPartyInSearch !== currentPartyBranchInHeader || form.SearchType !== 'Party') {
         const confirmed = await this.confirmService.confirm(
-          'Changing the party will clear all voucher matchings. Do you want to proceed?',
+          this.getPartyChangeConfirmMessage(),
           'Change Party',
           'Clear & Proceed'
         );
         if (!confirmed) {
           return;
         }
-        this.voucherMatchings.clear();
-        this.updateDetailAmountsFromMatching();
-        // Party changed → owning outstanding is party-scoped, so drop owning tabs/rows too.
-        this.matchingCursors.clear(); // source cursor re-seeded below
+        this.clearMatchingsForPartyChange(); // source cursor re-seeded below
       }
     }
 
@@ -1192,6 +1200,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    */
   loadMatchingData(branchSid: number | null = this.activeMatchingBranchSid) {
     if (branchSid == null) return;
+    if (this.isPosted) return; // posted → nothing to fetch (posted owning matches render directly)
     const cursor = this.matchingCursors.get(branchSid);
     if (!cursor || !cursor.hasMore || this.isLoadingMatching) return;
     // Source tab needs the party/invoice/house search criteria; owning tabs build their own payload
@@ -1217,6 +1226,13 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const wasFirstPage = cursor.skip === 0;
     this.accountService.getPaymentOutstanding(payload).subscribe({
       next: (res) => {
+        // Posted mid-flight (user clicked Post while this page was loading) — drop the page:
+        // appending now would put fresh ENABLED rows onto the disabled form.
+        if (this.isPosted) {
+          this.isLoadingMatching = false;
+          this.spinner.hide();
+          return;
+        }
         const data = Array.isArray(res) ? res : [];
         if (data.length > 0) {
           if (cursor.isSource && wasFirstPage) {
@@ -1441,13 +1457,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const party = this.partyList.find(
         (p) => p.SubledgerMasterSid === res[0].LedgerMasterSid
       );
-      if (this.isEditMode &&
-        this.searchOutstandingForm.get('SearchType').getRawValue() === 'Party' &&
-        res[0].LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue()
-      ) {
-        this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this payment. \nCannot select a different one.`);
-        return;
-      }
       this.onPartyChange(party, true);
       this.searchOutstandingForm.get('CustomerBranchSid')?.disable();
       this.paymentForm.get('PartyMasterSid')?.disable();
@@ -1552,7 +1561,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const hasExchangeRateError =
         this.paymentForm.errors['inconsistentExchangeRates'] ||
         this.paymentForm.errors['foreignCurrencyRateOne'] ||
-        this.paymentForm.errors['exchangeRateZero'];
+        this.paymentForm.errors['exchangeRateZero'] ||
+        this.paymentForm.errors['companyCurrencyRateNotOne'];
 
       if (hasExchangeRateError) {
         const errorMsg = getExchangeRateErrorMessage(
@@ -2043,6 +2053,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       if (result.status) {
         this.appSettingService.showSuccess(result.message);
         this.paymentData.PostStatus = 'P';
+        // Flip posted state IMMEDIATELY (don't wait for the reload round-trip) and freeze the
+        // matching grid — sentinel detached, cursors exhausted — so no further outstanding page
+        // can land and no matched amount stays editable.
+        this.isPosted = true;
+        this.freezeMatchingPagination();
+        // Posting is immutable — lock the form right away (matched amounts included); the posted
+        // reload below re-runs the full read-only patch when it lands.
+        this.paymentForm.disable({ emitEvent: false });
         // Posting created the Source JV (JV①) + mirror JVs (JV②). Reload the inter-branch tab so their
         // voucher numbers surface on the allocation grid (getAllocations returns them once posted).
         // Strip the pre-post owning rows/cursors first so the posted reload doesn't duplicate them.
@@ -2501,6 +2519,24 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       // ledgerList is loaded by handleCOAChange in the detail loop above, so nothing to do here.
     }
 
+    // Company-currency rows must carry exchange rate 1. Edit-load skips the rate sync
+    // (addDetailRow(..., false)) so a loaded row would otherwise keep a bad saved rate with an
+    // EDITABLE input — heal it to 1 (recalc Local) and lock it, mirroring handleDetailExchangeRate.
+    // Posted records display their stored values verbatim (form is disabled below anyway).
+    if (!this.isPosted) {
+      const companyCurrencySid = this.currentCompany?.CurrencyMasterSid;
+      for (let i = 0; i < this.detailItems.length; i++) {
+        const row = this.detailItems.at(i) as FormGroup;
+        if (row.get('CurrencyMasterSid')?.getRawValue() !== companyCurrencySid) continue;
+        const exCtrl = row.get('ExchangeRate');
+        if (toNumber(exCtrl?.getRawValue()) !== 1) {
+          exCtrl?.setValue(this.getFormattedAndPaddedExchangeRate(1, companyCurrencySid), { emitEvent: false });
+          this.calculateLocalAmount(i, true);
+        }
+        exCtrl?.disable({ emitEvent: false });
+      }
+    }
+
     // Lock charge detail fields for Payment Request payments in edit mode
     if (this.isFromPaymentRequest) {
       const prLockedFields = [
@@ -2559,6 +2595,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     if (this.isReadOnly) {
+      // Posted/cancelled → the matching grid is a snapshot: stop the sentinel + pagination so a
+      // scroll can't append fresh (enabled) outstanding rows onto the disabled form.
+      this.freezeMatchingPagination();
       this.isDirty = false;
       this.initialFormValue = this.paymentForm.getRawValue();
       this.destroy$.next();
@@ -3761,6 +3800,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    */
   refreshMatchingTab(branchSid: number | null = this.activeMatchingBranchSid): void {
     if (branchSid == null || this.isLoadingMatching) return;
+    if (this.isPosted) return; // posted → frozen snapshot; a refresh would drop rows and fetch nothing
     const cursor = this.matchingCursors.get(branchSid);
     if (!cursor || cursor.isSource) return; // owning (inter-branch) tabs only
     const staged = this.voucherMatchings.controls
@@ -4452,12 +4492,39 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     });
   }
 
+  /**
+   * Confirm-dialog text for a party change. When Inter Branch allocations exist, the user must
+   * be told those are cleared too — not just the matchings.
+   */
+  private getPartyChangeConfirmMessage(): string {
+    return this.interBranches.length > 0
+      ? 'Changing the party will clear all voucher matchings AND the Inter Branch allocations. Do you want to proceed?'
+      : 'Changing the party will clear all voucher matchings. Do you want to proceed?';
+  }
+
+  /**
+   * Party changed while matchings are staged — wipe the matching state (source + owning tabs)
+   * AND the Inter Branch tab (allocations included: party change clears everything).
+   * DB rows are only removed at Save: source staging rows via the update API's kept-SID delete,
+   * owning rows + allocations via stageInterBranchIfNeeded's empty-set upsert.
+   */
+  private clearMatchingsForPartyChange(): void {
+    this.voucherMatchings.clear();
+    // Owning outstanding is party-scoped — drop owning tabs/rows too (source cursor is re-seeded
+    // by the next outstanding search).
+    this.matchingCursors.clear();
+    this.interBranches.clear();
+    this.paymentForm.get('MultiBranch')?.setValue(false, { emitEvent: false });
+    // MultiBranch now OFF → party/bank amounts follow the matched total (0 after the clear).
+    this.updateDetailAmountsFromMatching();
+  }
+
   async onPartyChange(party: any, skipConfirmation: boolean = false) {
-    // If matchings exist in create mode, confirm before clearing
+    // If matchings exist (create OR edit mode), confirm before clearing
     // skipConfirmation is true when called from patchHeaderValue (searchOutstanding already confirmed)
-    if (!skipConfirmation && !this.isEditMode && this.voucherMatchings?.length > 0) {
+    if (!skipConfirmation && !this.isPosted && this.voucherMatchings?.length > 0) {
       const confirmed = await this.confirmService.confirm(
-        'Changing the party will clear all voucher matchings. Do you want to proceed?',
+        this.getPartyChangeConfirmMessage(),
         'Change Party',
         'Clear & Proceed'
       );
@@ -4469,8 +4536,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         );
         return;
       }
-      this.voucherMatchings.clear();
-      this.updateDetailAmountsFromMatching();
+      this.clearMatchingsForPartyChange();
     }
 
     const partyCountry = String(party?.countryMaster?.countryName)
