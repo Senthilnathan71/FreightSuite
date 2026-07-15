@@ -40,6 +40,8 @@ export const VOUCHER_ROUTE_MAP: Record<string, string> = {
   'VENDOR CREDIT NOTE': '/operation/vendor-credit-note/entry',
   NIN: '/accounts/invoice-non-job/entry',
   'NON JOB INVOICE': '/accounts/invoice-non-job/entry',
+  NCN: '/accounts/credit-note-non-job/entry',
+  'CREDIT NOTE NON JOB': '/accounts/credit-note-non-job/entry',
   PRQ: '/operation/payment-request/entry',
   'PAYMENT REQUEST': '/operation/payment-request/entry',
   // NOTE: VM is keyed by VoucherMatchingHeaderSid (not VoucherHeaderSid) — pass the
@@ -60,6 +62,7 @@ export const VoucherType = {
   CREDIT_NOTE: 'CRN',
   VENDOR_CREDIT_NOTE: 'VRN',
   NON_JOB_INVOICE: 'NIN',
+  NON_JOB_CREDIT_NOTE: 'NCN',
   PAYMENT_REQUEST: 'PRQ',
   VOUCHER_MATCHING: 'VM',
 } as const;

@@ -99,6 +99,7 @@ currentBranch: any;
 		{ id : 10 , code : 'VM'},
 		{ id : 11 , code : "NIN"},
 		{ id : 12 , code : 'IJV'},
+		{ id : 13 , code : 'NCN'},
 	]
 
 	modeOfledgertype = [
@@ -184,6 +185,7 @@ currentBranch: any;
   // from the AllowedLedgerTypes options so the admin cannot pick them (and stripped if already saved).
   private restrictedLedgerTypeMap: Record<string, string[]> = {
     NIN: ['Revenue', 'Cost'],
+    NCN: ['Revenue', 'Cost'],
   };
   /** AllowedLedgerTypes options for the current code = all ledger types minus the restricted ones. */
   ledgerTypeOptions: any[] = [...this.modeOfledgertype];
@@ -673,7 +675,8 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 		const autoPostCtrl = this.documentForm.get('IsAutoPosting');
 
 		// IJV (inter-branch JV) must auto-post, like the reversal types.
-		const reverseTypes = ['CRN', 'VRN', 'RJV', 'IJV'];
+		// NCN (Credit Note Non Job) is a reversal too — auto-post like CRN.
+		const reverseTypes = ['CRN', 'NCN', 'VRN', 'RJV', 'IJV'];
 
 		if (reverseTypes.includes(code)) {
 			autoPostCtrl?.setValue('Y', { emitEvent: false });

@@ -13,6 +13,15 @@
 
 .credit-note-title-section {
   align-items: center;
+  // Longer titles (e.g. "Create Credit Note Non Job") were wrapping and colliding with the
+  // Outstanding pill. Keep the title on one line and let the pill drop below if space runs out.
+  flex-wrap: wrap;
+  column-gap: 0.75rem;
+  row-gap: 0.25rem;
+}
+
+.credit-note-title-section .page-title {
+  white-space: nowrap;
 }
 
 .credit-note-actions {

@@ -870,6 +870,48 @@ export class CreditNoteEntryComponent {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Persist / fetch SEAMS.
+  // These wrap the shared operationService so a subclass (e.g. Credit Note Non Job)
+  // can redirect saves/fetches to its own backend by overriding just these methods,
+  // WITHOUT monkey-patching the shared service (which would leak into this job
+  // credit note). Behaviour here is identical to the previous inline calls.
+  // ---------------------------------------------------------------------------
+  protected fetchSourceInvoiceByNumber(payload: any): Observable<any> {
+    return this.operationService.getInvoiceByNumber(payload);
+  }
+  protected fetchCreditNoteRecord(payload: any): Observable<any> {
+    return this.operationService.getCreditNoteById(payload);
+  }
+  protected persistCreateCreditNote(payload: any): Observable<any> {
+    return this.operationService.createCreditNote(payload);
+  }
+  protected persistUpdateCreditNote(id: number, payload: any): Observable<any> {
+    return this.operationService.updateCreditNoteById(id, payload);
+  }
+  protected persistPostVoucher(postPayload: any): Observable<any> {
+    return this.operationService.postVoucherByVoucherSid(postPayload);
+  }
+  protected navigateAfterCreate(headerId: number): void {
+    navigateToVoucherEntry(this.router, VoucherType.CREDIT_NOTE, headerId);
+  }
+  /**
+   * Hook invoked at the end of patchcreditNoteData (after the pulled source lines are
+   * pushed) so a subclass can post-process them — e.g. Credit Note Non Job populates
+   * the per-row Subledger dropdown. No-op for the job credit note.
+   */
+  protected afterSourceLinesPatched(_data: any): void {}
+
+  // ---- Non-job (Credit Note Non Job) template hooks ----
+  // The shared template branches on isNonJob: false (this job credit note) shows the
+  // Charge + Job/House/Dept columns; the Credit Note Non Job subclass sets it true to
+  // show Ledger + Subledger columns instead and overrides the ledger methods below.
+  protected isNonJob = false;
+  coaList: any[] = [];
+  subledgerListDetail: any[][] = [];
+  onCOAChange(_coa: any, _detailIndex: number, _resetSubledger: boolean = true): void {}
+  onDetailSubledgerChange(_subledger: any, _detailIndex: number): void {}
+
   getInvoiceData() {
     const invoiceNumber = this.creditNoteForm.get(
       'ReversalVoucherNumber',
@@ -889,7 +931,7 @@ export class CreditNoteEntryComponent {
     };
 
     this.spinner.show();
-    this.operationService.getInvoiceByNumber(payload).subscribe({
+    this.fetchSourceInvoiceByNumber(payload).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           const data = resp.data;
@@ -946,7 +988,7 @@ export class CreditNoteEntryComponent {
     };
 
     this.spinner.show();
-    this.operationService.getInvoiceByNumber(payload).subscribe({
+    this.fetchSourceInvoiceByNumber(payload).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           const data = resp.data;
@@ -1171,6 +1213,8 @@ export class CreditNoteEntryComponent {
       },
       header.InvoiceType as any
     );
+
+    this.afterSourceLinesPatched(data);
 
     console.info('DEBUG - After patching', this.creditNoteForm.getRawValue());
     this.spinner.hide();
@@ -1483,7 +1527,7 @@ export class CreditNoteEntryComponent {
       CompanyMasterSid,
       BranchMasterSid
     }
-    this.operationService.getCreditNoteById(payload).subscribe({
+    this.fetchCreditNoteRecord(payload).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           this.destroy$.next();
@@ -2567,8 +2611,7 @@ export class CreditNoteEntryComponent {
     this.spinner.show();
 
     if (this.isEditMode && this.headerId) {
-      this.operationService
-        .updateCreditNoteById(this.headerId, payload)
+      this.persistUpdateCreditNote(this.headerId, payload)
         .subscribe({
           next: async (resp: any) => {
             this.isSaving = false;
@@ -2597,7 +2640,7 @@ export class CreditNoteEntryComponent {
         });
     } else {
       // Create new vendor invoice
-      this.operationService.createCreditNote(payload).subscribe({
+      this.persistCreateCreditNote(payload).subscribe({
         next: async (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
@@ -2611,7 +2654,7 @@ export class CreditNoteEntryComponent {
             // }
             if (resolve) resolve(true);
             if (this.headerId) {
-              navigateToVoucherEntry(this.router, VoucherType.CREDIT_NOTE, this.headerId);
+              this.navigateAfterCreate(this.headerId);
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -2690,7 +2733,7 @@ export class CreditNoteEntryComponent {
       };
 
       const result = await firstValueFrom(
-        this.operationService.postVoucherByVoucherSid(postPayload),
+        this.persistPostVoucher(postPayload),
       );
       this.isSaving = false;
       if (result.status) {
