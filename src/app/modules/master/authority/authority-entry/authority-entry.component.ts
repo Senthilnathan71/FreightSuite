@@ -8,7 +8,7 @@ import { MasterService } from '../../master.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, forkJoin, takeUntil } from 'rxjs';
+import { Subject, catchError, forkJoin, of, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -84,8 +84,13 @@ export class AuthorityEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   isDirty: boolean = false;
   isDepartmentRequired: boolean = true;
 
-  // Menus whose authorization is MENU-ONLY (department is not required when configuring them).
-  // Matched against MenuName, case-insensitive. Quotation and all other menus stay department-based.
+  // Menus whose authorization is MENU-ONLY (department NOT required when configuring the rule).
+  // Resolved from the server (menus linked to a VoucherTypeMaster, i.e. the accounts voucher
+  // menus) rather than a hardcoded menu-name list, so renaming/adding a voucher menu can't
+  // silently break it. Every other menu stays department-based.
+  private menuOnlyMenuSids = new Set<number>();
+
+  // Legacy name-based exceptions, kept as a fallback for menus that are not voucher-backed.
   private readonly menusWithoutDepartmentRequirement = ['credit request', 'payment request'];
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
@@ -178,8 +183,11 @@ auditLogs: any[] = []; // Stores audit logs
       departments: this.masterService.getAllDepartments(CompanyMasterSid),
       menus: this.settingsService.getAllMenu(),
       users: this.masterService.getAllFfUserByCompany(CompanyMasterSid),
+      // Voucher-backed menus authorize by menu only (no department required).
+      menuOnlyMenus: this.masterService.getMenuOnlyAuthorityMenus().pipe(catchError(() => of([]))),
       // branches: this.masterService.getAllBranches()
-    }).subscribe(({ companies, departments, menus, users}) => {
+    }).subscribe(({ companies, departments, menus, users, menuOnlyMenus}) => {
+      this.menuOnlyMenuSids = new Set<number>((menuOnlyMenus || []).map((sid: any) => Number(sid)));
       this.companyResults = companies;
       if (Array.isArray(departments)) {
       this.departmentResults = departments;
@@ -199,11 +207,24 @@ auditLogs: any[] = []; // Stores audit logs
     });
   }
 
+  /**
+   * Menu is always mandatory. Department is required for department-based menus (operation:
+   * Booking, Enquiry, House Job, ...) and OPTIONAL for the menus listed in
+   * menusWithoutDepartmentRequirement (accounts vouchers, credit/payment request), which
+   * authorize per menu only.
+   */
   private updateDepartmentRequirement(): void {
-    const menuSid = this.authorityForm.get('MenuMaster')?.value;
+    const menuSid = Number(this.authorityForm.get('MenuMaster')?.value);
     const menu = this.menuResults?.find((m: any) => m.MenuMasterSid === menuSid);
     const menuName = String(menu?.MenuName || '').trim().toLowerCase();
-    const required = !this.menusWithoutDepartmentRequirement.includes(menuName);
+
+    // Menu-only when it is a voucher-backed menu (resolved from the server), or one of the
+    // legacy name-based exceptions. Otherwise the menu is department-based.
+    const isMenuOnly =
+      this.menuOnlyMenuSids.has(menuSid) ||
+      this.menusWithoutDepartmentRequirement.includes(menuName);
+
+    const required = !isMenuOnly;
     this.isDepartmentRequired = required;
 
     const deptCtrl = this.authorityForm.get('DepartmentMaster');

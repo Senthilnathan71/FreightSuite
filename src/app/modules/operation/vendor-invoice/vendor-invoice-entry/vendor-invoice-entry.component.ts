@@ -3365,8 +3365,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   // Authority Method
   openAuthority() {
-    const MenuMasterSid = sessionStorage.getItem('currentMenuId');
-    if (!MenuMasterSid) return;
+    const menuMasterSid = Number(this.currentMenuId || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.vendorInvoiceData?.VoucherHeaderSid || this.headerId;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the vendor invoice before viewing authorization.');
+      return;
+    }
 
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
@@ -3374,8 +3378,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
       backdrop: 'static'
     });
 
-    modalRef.componentInstance.menuMasterSid = Number(MenuMasterSid);
-    modalRef.componentInstance.documentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    // Menu-only authorization: do not scope the log by department.
+    modalRef.componentInstance.DepartmentMasterSid = null;
+    modalRef.componentInstance.DepartmentMaster = '';
+    modalRef.componentInstance.allowAction = true;
   }
 
   // Email Method
