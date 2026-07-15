@@ -1209,7 +1209,7 @@ ${this.userData.userName}`;
       EnquiryCargoSid: [null],
       CargoType: [null, [Validators.required]],
       ProductName: [null],
-      CargoDescription: [''],
+      CargoDescription: ['', [Validators.maxLength(100)]],
       PackageType: [null],
       PackageQty: [1],
       Qty: ['1'],
@@ -1306,6 +1306,10 @@ private calculateCargoValues(cargoForm: FormGroup): void {
       // Update CBM field
       cargoForm.get('cbm')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
       cargoForm.get('volumetric')?.setValue(volumetric > 0 ? volumetric: '', { emitEvent: false});
+      // Re-run validators on the calculated values (setValue above used
+      // emitEvent:false, so the Decimal(10,3) max check would otherwise be skipped).
+      cargoForm.get('cbm')?.updateValueAndValidity({ emitEvent: false });
+      cargoForm.get('volumetric')?.updateValueAndValidity({ emitEvent: false });
       this.setChargeableWeightByGreatest(cargoForm);
     } else {
       // For FCL: Calculate only CBM
@@ -1313,6 +1317,8 @@ private calculateCargoValues(cargoForm: FormGroup): void {
         packageQty, length, width, height, uomMasterSid, this.digitsAfterDecimal
       );
       cargoForm.get('cbm')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+      // Re-run the Decimal(10,3) max validator on the calculated CBM.
+      cargoForm.get('cbm')?.updateValueAndValidity({ emitEvent: false });
       this.setChargeableWeightByGreatest(cargoForm);
     }
   } else {
@@ -1443,7 +1449,11 @@ private parseFloatSafe(value: any): number {
         return;
       }
 
-      if (fieldName === 'GrossWeight') {
+      if (fieldName === 'CargoDescription') {
+        // Cargo Description is free text but must never exceed 100 chars,
+        // regardless of cargo mode. Keep this validator across every reset.
+        ctrl.setValidators([Validators.maxLength(100)]);
+      } else if (fieldName === 'GrossWeight') {
         ctrl.clearValidators();
       } else {
         ctrl.clearValidators();
@@ -1473,6 +1483,12 @@ private parseFloatSafe(value: any): number {
           const validators = [Validators.required];
           if (f === 'PackageQty' || f === 'volumetric') {
             validators.push(Validators.min(1));
+          }
+          if (f === 'cbm' || f === 'volumetric') {
+            // DB column is Decimal(10, 3): max 9999999.999. Manual entry is
+            // capped by the input directive, but auto-calculated values can
+            // overshoot this, so guard it here too.
+            validators.push(Validators.max(9999999.999));
           }
           ctrl.setValidators(validators);
           if (!this.isPatching && (f === 'Qty' || f === 'cbm') && !ctrl.value) {
@@ -1801,7 +1817,7 @@ private parseFloatSafe(value: any): number {
             EnquiryCargoSid: [cargo.EnquiryCargoSid || null],
             CargoType: [cargo.CargoType, Validators.required],
             ProductName: [cargo.ProductName],
-            CargoDescription: [cargo.CargoDescription],
+            CargoDescription: [cargo.CargoDescription, [Validators.maxLength(100)]],
             PackageType: [cargo.PackageType || ''],
             PackageQty: [cargo.PackageQty || ''],
             Qty: [cargo.Qty || '1'],

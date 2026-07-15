@@ -1212,6 +1212,10 @@
                                                             <td>
                                                                 <input type="text" formControlName="CargoDescription"
                                                                     class="custom-input-field sm w-100" appendTo="body">
+                                                                <div *ngIf="cargo.get('CargoDescription')?.hasError('maxlength')"
+                                                                    class="text-danger">
+                                                                    Cargo Description cannot exceed 100 characters.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <ng-select name="product" #ProductNameNg
@@ -1268,12 +1272,20 @@
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
+                                                                <div *ngIf="cargo.get('cbm')?.hasError('max')"
+                                                                    class="text-danger">
+                                                                    CBM cannot exceed 9999999.999.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="volumetric"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
+                                                                <div *ngIf="cargo.get('volumetric')?.hasError('max')"
+                                                                    class="text-danger">
+                                                                    Volumetric cannot exceed 9999999.999.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="ChargeableWeight"
@@ -1455,6 +1467,10 @@
                                                             <td>
                                                                 <input type="text" formControlName="CargoDescription"
                                                                     class="custom-input-field sm" appendTo="body">
+                                                                <div *ngIf="cargo.get('CargoDescription')?.hasError('maxlength')"
+                                                                    class="text-danger">
+                                                                    Cargo Description cannot exceed 100 characters.
+                                                                </div>
                                                             </td>
 
                                                             <td>
@@ -1534,6 +1550,10 @@
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
+                                                                <div *ngIf="cargo.get('cbm')?.hasError('max')"
+                                                                    class="text-danger">
+                                                                    CBM cannot exceed 9999999.999.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <ng-select #ShipmentTermsNg
@@ -1666,6 +1686,10 @@
                                                             <td>
                                                                 <input type="text" formControlName="CargoDescription"
                                                                     class="custom-input-field sm">
+                                                                <div *ngIf="cargo.get('CargoDescription')?.hasError('maxlength')"
+                                                                    class="text-danger">
+                                                                    Cargo Description cannot exceed 100 characters.
+                                                                </div>
                                                             </td>
 
                                                             <td>
@@ -1722,12 +1746,20 @@
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
+                                                                <div *ngIf="cargo.get('cbm')?.hasError('max')"
+                                                                    class="text-danger">
+                                                                    CBM cannot exceed 9999999.999.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="volumetric"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
+                                                                <div *ngIf="cargo.get('volumetric')?.hasError('max')"
+                                                                    class="text-danger">
+                                                                    Volumetric cannot exceed 9999999.999.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="ChargeableWeight"
@@ -1833,6 +1865,10 @@
                                                             <td>
                                                                 <input type="text" formControlName="CargoDescription"
                                                                     class="custom-input-field sm w-100">
+                                                                <div *ngIf="cargo.get('CargoDescription')?.hasError('maxlength')"
+                                                                    class="text-danger">
+                                                                    Cargo Description cannot exceed 100 characters.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <ng-select name="product" #ProductNameNg
@@ -1867,6 +1903,10 @@
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3">
+                                                                <div *ngIf="cargo.get('cbm')?.hasError('max')"
+                                                                    class="text-danger">
+                                                                    CBM cannot exceed 9999999.999.
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <input type="text" formControlName="ChargeableWeight"
