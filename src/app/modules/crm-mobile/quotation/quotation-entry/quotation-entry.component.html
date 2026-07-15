@@ -3460,7 +3460,7 @@
       </div>
 
       <div style="padding:2px; display:flex;">
-        @if(isLclStyleQuotationSegment(route)){
+        @if(shouldShowRouteCbm(route)){
           <strong style="width:80px;">CBM</strong>
           <span>: {{ getRouteCBM(route) | number:'1.3-3' }}</span>
         }
@@ -3497,7 +3497,7 @@
 </tr>
 
     <!-- Cargo Details -->
-    @if(shouldShowRouteCargoTable(route)){
+    @if(isFclQuotationSegment(route)){
       <tr>
         <td colspan="8" style="padding: 4px 22px 8px 22px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin: 0 auto; line-height: 1.1;">

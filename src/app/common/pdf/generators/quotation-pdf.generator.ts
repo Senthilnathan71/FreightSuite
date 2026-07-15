@@ -442,12 +442,6 @@ function getRoutePackageCount(route: any): number {
   return productTotal || sumCargoField(route, 'noOfPackage');
 }
 
-function isLclSegment(route: any): boolean {
-  const segment = (route?.segmentType || '').toString().toUpperCase();
-  if (segment) return segment === 'LCL';
-  return (route?.departmentName || '').toLowerCase().includes('lcl');
-}
-
 function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>): any {
   const rows: any[] = [];
   for (let i = 0; i < cells.length; i += 3) {
@@ -489,8 +483,8 @@ function buildRouteMeasurements(route: any, data: QuotationPdfData): any {
     isAirSegment(route)
       ? { label: 'Chrg Wt', value: `${formatNumeric(sumCargoField(route, 'chargeableWeight'), 3)}${weightUom}` }
       : { label: 'Net Wt', value: `${formatNumeric(sumCargoField(route, 'netWeight'), 3)}${weightUom}` },
-    // CBM only applies to LCL; keep the slot so Dims starts on the next row.
-    isLclSegment(route)
+    // CBM only applies to a Sea/LCL department; keep the slot so Dims starts on the next row.
+    shouldShowRouteCbm(route, data)
       ? { label: 'CBM', value: formatNumeric(sumCargoField(route, 'volume'), 3) }
       : null
   ];
@@ -548,8 +542,64 @@ function shouldShowContainerQuantity(route: any, data: QuotationPdfData): boolea
   return departmentName.includes('fcl');
 }
 
+function normalizeCode(value: any): string {
+  return String(value ?? '').trim().toUpperCase();
+}
+
+function getCargoModeFromSegment(segment: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+  const normalizedSegment = normalizeCode(segment);
+  if (normalizedSegment.includes('FCL')) {
+    return 'FCL';
+  }
+  if (normalizedSegment === 'AIR') {
+    return 'AIR';
+  }
+  if (normalizedSegment === 'ROAD' || normalizedSegment === 'TRANSPORT') {
+    return 'ROAD';
+  }
+  return 'LCL';
+}
+
+// Mirrors isFclQuotationSegment()/getRouteCargoMode() in quotation-entry.component.ts.
+function getRouteCargoMode(route: any, data: QuotationPdfData): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+  const department = (data.departments || []).find(
+    (dep: any) => Number(dep?.DepartmentMasterSid) === Number(route?.departmentSid)
+  );
+
+  if (department) {
+    const departmentType = normalizeCode(department?.departmentType);
+    if (departmentType === 'SEA') {
+      return normalizeCode(department?.FCLLCL) === 'FCL' ? 'FCL' : 'LCL';
+    }
+    if (departmentType === 'AIR') {
+      return 'AIR';
+    }
+    if (departmentType === 'ROAD' || departmentType === 'TRANSPORT') {
+      return normalizeCode(department?.FCLLCL) === 'LCL' ? 'LCL' : 'FCL';
+    }
+    return getCargoModeFromSegment(departmentType);
+  }
+
+  return getCargoModeFromSegment(route?.segmentType);
+}
+
 function shouldShowRouteCargoTable(route: any, data: QuotationPdfData): boolean {
-  return shouldShowContainerQuantity(route, data) && getRoutePrintCargoDetails(route, data).length > 0;
+  return getRouteCargoMode(route, data) === 'FCL';
+}
+
+// CBM applies only to a Sea department whose FCL/LCL setup is LCL.
+// Mirrors shouldShowRouteCbm() in quotation-entry.component.ts.
+function shouldShowRouteCbm(route: any, data: QuotationPdfData): boolean {
+  const department = (data.departments || []).find(
+    (dep: any) => Number(dep?.DepartmentMasterSid) === Number(route?.departmentSid)
+  );
+
+  if (!department) {
+    return false;
+  }
+
+  return normalizeCode(department?.departmentType) === 'SEA'
+    && normalizeCode(department?.FCLLCL) === 'LCL';
 }
 
 function getRoutePrintCargoTypeSummary(route: any, data: QuotationPdfData): string {

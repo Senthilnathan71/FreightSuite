@@ -7674,6 +7674,20 @@ getContainerTypeName(containerCode: string): string {
     return departmentName.includes('fcl');
   }
 
+  // CBM applies only to a Sea department whose FCL/LCL setup is LCL.
+  shouldShowRouteCbm(route: any): boolean {
+    const department = this.departments.find(
+      dep => Number(dep?.DepartmentMasterSid) === Number(route?.DepartmentMasterSid)
+    );
+
+    if (!department) {
+      return false;
+    }
+
+    return this.normalizePortText(department?.departmentType) === 'SEA'
+      && this.normalizePortText(department?.FCLLCL) === 'LCL';
+  }
+
   shouldShowRouteCargoTable(route: any): boolean {
     return this.shouldShowContainerQuantity(route) && this.getRoutePrintCargoDetails(route).length > 0;
   }
