@@ -385,7 +385,9 @@
                         <span class="milestone-loc" *ngIf="showMilestoneLocation(milestone)">
                           <i class="fas fa-map-marker-alt"></i>{{ milestone.location }}
                         </span>
-                        <span class="milestone-date"><i class="far fa-clock"></i>{{ milestoneDateTime(milestone) }}</span>
+                        <span class="milestone-date" *ngIf="milestone.eventDate">
+                          <i class="far fa-clock"></i>{{ milestoneDateTime(milestone) }}
+                        </span>
                       </div>
                       <p class="milestone-remark" *ngIf="milestone.remarks">{{ milestone.remarks }}</p>
                     </div>
