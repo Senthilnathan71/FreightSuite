@@ -1517,10 +1517,21 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     modalRef.componentInstance.screenName = 'VoucherMatching';
   }
   openAuthority() {
-    if (!this.currentMenuId) return;
+    const menuMasterSid = Number(this.currentMenuId || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.VoucherMatchingHeaderSid;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the voucher matching before viewing authorization.');
+      return;
+    }
     const modalRef = this.modalService.open(AuthorityLogComponent, { size: 'lg', centered: true, backdrop: 'static' });
-    modalRef.componentInstance.menuMasterSid = this.currentMenuId;
-    modalRef.componentInstance.documentSid = this.VoucherMatchingHeaderSid;
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    // Menu-only authorization: do not scope the log by department.
+    modalRef.componentInstance.DepartmentMasterSid = null;
+    modalRef.componentInstance.DepartmentMaster = '';
+    modalRef.componentInstance.allowAction = true;
   }
 
   openFollowup() {

@@ -2828,6 +2828,13 @@ getFieldConfiguration() {
     );
   }
 
+  /** MenuMasterSid list of menus whose authorization is menu-only (department not required). */
+  getMenuOnlyAuthorityMenus() {
+    return this.http.get<{ data: number[] }>(`authority/menu-only-menus`).pipe(
+      map((resp) => resp?.data || [])
+    );
+  }
+
   getAuthorityById(payload: any) {
     return this.http.post<{ data: any }>(`authority/fetch`,payload).pipe(
       map((resp) => {

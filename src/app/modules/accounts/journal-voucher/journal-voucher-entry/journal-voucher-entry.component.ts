@@ -17,6 +17,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
+import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { CommonService } from 'src/app/common/common.service';
@@ -3299,15 +3300,25 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   }
 
   openAuthority() {
-    if (!this.voucherData) return;
-    const modalRef = this.modalService.open(AuthorityEntryComponent, {
+    const menuMasterSid = Number(this.currentMenuId || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.voucherHeaderSid;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the journal voucher before viewing authorization.');
+      return;
+    }
+    const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static'
     });
-    modalRef.componentInstance.item = this.voucherData;
-    modalRef.componentInstance.idLabel = 'Journal Voucher Id';
-    modalRef.componentInstance.idValue = this.voucherHeaderSid;
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    // Menu-only authorization: do not scope the log by department.
+    modalRef.componentInstance.DepartmentMasterSid = null;
+    modalRef.componentInstance.DepartmentMaster = '';
+    modalRef.componentInstance.allowAction = true;
   }
 
   openEDoc() {

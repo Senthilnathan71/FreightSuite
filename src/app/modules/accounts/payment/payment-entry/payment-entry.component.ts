@@ -6207,6 +6207,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // Menu-only authorization: do not scope the log by department.
     modalRef.componentInstance.DepartmentMasterSid = null;
     modalRef.componentInstance.DepartmentMaster = '';
+    modalRef.componentInstance.allowAction = true;
   }
 
   openFollowup() {

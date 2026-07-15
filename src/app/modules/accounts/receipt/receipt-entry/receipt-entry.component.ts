@@ -4918,14 +4918,25 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   openAuthority() {
-    if (!this.currentMenuId) return;
+    const menuMasterSid = Number(this.currentMenuId || sessionStorage.getItem('currentMenuId'));
+    const documentSid = this.headerId;
+    if (!menuMasterSid || !documentSid) {
+      this.appSettingService.showWarning('Please save the receipt before viewing authorization.');
+      return;
+    }
     const modalRef = this.modalService.open(AuthorityLogComponent, {
       size: 'lg',
       centered: true,
       backdrop: 'static',
     });
-    modalRef.componentInstance.menuMasterSid = this.currentMenuId;
-    modalRef.componentInstance.documentSid = this.headerId;
+    modalRef.componentInstance.menuMasterSid = menuMasterSid;
+    modalRef.componentInstance.documentSid = Number(documentSid);
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch?.BranchMasterSid;
+    // Menu-only authorization: do not scope the log by department.
+    modalRef.componentInstance.DepartmentMasterSid = null;
+    modalRef.componentInstance.DepartmentMaster = '';
+    modalRef.componentInstance.allowAction = true;
   }
 
   openFollowup() {
