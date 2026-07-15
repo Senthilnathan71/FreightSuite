@@ -16,11 +16,11 @@
       <div class="col-md-4 d-flex pb-1 credit-note-title-section">
         <h5 class="page-title mb-0 text-info align-items-center">
           {{
-            isViewMode
+            (isViewMode
               ? "Credit Note"
               : isEditMode
                 ? "Edit Credit Note"
-                : "Create Credit Note"
+                : "Create Credit Note") + (isNonJob ? " Non Job" : "")
           }}
         </h5>
         @if (isEditMode) {
@@ -727,11 +727,28 @@
                           Sno
                         </th>
                         <th
+                          *ngIf="!isNonJob"
                           rowspan="2"
                           class="text-center bg-transparent text-light"
                           style="min-width: 120px"
                         >
                           Charge
+                        </th>
+                        <th
+                          *ngIf="isNonJob"
+                          rowspan="2"
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 200px"
+                        >
+                          Ledger
+                        </th>
+                        <th
+                          *ngIf="isNonJob"
+                          rowspan="2"
+                          class="text-center bg-transparent text-light"
+                          style="min-width: 200px"
+                        >
+                          Subledger
                         </th>
                         <th
                           rowspan="2"
@@ -748,6 +765,7 @@
                           SACCode
                         </th>
                         <th
+                          *ngIf="!isNonJob"
                           rowspan="2"
                           class="text-center bg-transparent text-light"
                           style="min-width: 70px"
@@ -828,6 +846,7 @@
                           Party Amount
                         </th>
                         <th
+                          *ngIf="!isNonJob"
                           rowspan="2"
                           class="text-center bg-transparent text-light"
                           style="min-width:240px"
@@ -835,6 +854,7 @@
                           Job No.
                         </th>
                         <th
+                          *ngIf="!isNonJob"
                           rowspan="2"
                           class="text-center bg-transparent text-light"
                           style="min-width: 240px"
@@ -842,6 +862,7 @@
                           House No.
                         </th>
                         <th
+                          *ngIf="!isNonJob"
                           rowspan="2"
                           class="text-center bg-transparent text-light"
                           style="
@@ -900,8 +921,8 @@
                             </span>
                           </td>
 
-                          <!-- Charge -->
-                          <td class="text-center">
+                          <!-- Charge (job) -->
+                          <td *ngIf="!isNonJob" class="text-center">
                             <dofi-searchable-dropdown
                               [items]="chargeList"
                               formControlName="ChargeMasterSid"
@@ -915,6 +936,32 @@
                               "
                             >
                             </dofi-searchable-dropdown>
+                          </td>
+
+                          <!-- Ledger (non-job) -->
+                          <td *ngIf="isNonJob" class="text-center">
+                            <ng-select
+                              formControlName="COAMasterSid"
+                              [items]="coaList"
+                              bindLabel="LedgerName"
+                              bindValue="COAMasterSid"
+                              appendTo="body"
+                              placeholder=""
+                              (change)="onCOAChange($event, i)"
+                            ></ng-select>
+                          </td>
+
+                          <!-- Subledger (non-job) -->
+                          <td *ngIf="isNonJob" class="text-center">
+                            <ng-select
+                              formControlName="LedgerMasterSid"
+                              [items]="subledgerListDetail[i] || []"
+                              bindLabel="SubledgerName"
+                              bindValue="SubledgerMasterSid"
+                              appendTo="body"
+                              placeholder=""
+                              (change)="onDetailSubledgerChange($event, i)"
+                            ></ng-select>
                           </td>
 
                           <!-- Description -->
@@ -945,7 +992,7 @@
                           </td>
 
                           <!-- Unit -->
-                          <td>
+                          <td *ngIf="!isNonJob">
                             <ng-select
                               [items]="uomList"
                               bindLabel="UOMCode"
@@ -1181,7 +1228,7 @@
                           </td>
 
                           <!-- MasterJobSid column -->
-                          <td  class="pt-1">
+                          <td *ngIf="!isNonJob" class="pt-1">
                             @if (isEditMode) {
                             <a
                               class="text-info fw-bold"
@@ -1213,7 +1260,7 @@
                           </td>
 
                           <!-- HouseJobSid -->
-                          <td  class="pt-1">
+                          <td *ngIf="!isNonJob" class="pt-1">
                             @if (isEditMode) {
                             <a
                               class="text-info fw-bold"
@@ -1248,7 +1295,7 @@
                             }
                           </td>
                           <!-- Department Column -->
-                          <td style="min-width: 200px">
+                          <td *ngIf="!isNonJob" style="min-width: 200px">
                             <dofi-searchable-dropdown
                               [items]="departmentList"
                               formControlName="DepartmentMasterSid"

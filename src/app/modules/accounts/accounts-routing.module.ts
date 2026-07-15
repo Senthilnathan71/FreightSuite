@@ -34,6 +34,8 @@ import { UnsavedChangesGuard } from 'src/app/core/guards/unsaved-changes.guard';
 import { AccountsCloseListComponent } from './accounts-close/accounts-close-list/accounts-close-list.component';
 import { InvoiceNonJobListComponent } from './invoice-non-job/invoice-non-job-list.component';
 import { InvoiceNonJobEntryComponent } from './invoice-non-job/invoice-non-job-entry.component';
+import { CreditNoteNonJobListComponent } from './credit-note-non-job/credit-note-non-job-list.component';
+import { CreditNoteNonJobEntryComponent } from './credit-note-non-job/credit-note-non-job-entry.component';
 
 export const AccountRoutes: Routes = [
   {
@@ -328,6 +330,43 @@ export const AccountRoutes: Routes = [
             { title: "Accounts", url: "/accounts" },
             { title: "Invoice Non Job", url: "/accounts/invoice-non-job/list" },
             { title: "Edit Invoice Non Job" },
+          ],
+        },
+      },
+      {
+        path: "credit-note-non-job/list",
+        component: CreditNoteNonJobListComponent,
+        data: {
+          title: "Credit Note Non Job",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Credit Note Non Job" },
+          ],
+        },
+      },
+      {
+        path: "credit-note-non-job/entry",
+        component: CreditNoteNonJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
+        data: {
+          title: "Create Credit Note Non Job",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Credit Note Non Job", url: "/accounts/credit-note-non-job/list" },
+            { title: "Create Credit Note Non Job" },
+          ],
+        },
+      },
+      {
+        path: "credit-note-non-job/entry/:id",
+        component: CreditNoteNonJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
+        data: {
+          title: "Edit Credit Note Non Job",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Credit Note Non Job", url: "/accounts/credit-note-non-job/list" },
+            { title: "Edit Credit Note Non Job" },
           ],
         },
       },
