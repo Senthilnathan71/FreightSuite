@@ -2,6 +2,21 @@
   display: block;
 }
 
+.compact-form .amount-decimal-field,
+.compact-form .exchange-decimal-field {
+  padding-bottom: 14px;
+
+  .custom-input-field {
+    padding-right: 16px;
+  }
+
+  .error-message {
+    right: 16px;
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
 .lead-actions-menu {
   .lead-actions-dropdown {
     min-width: 205px;

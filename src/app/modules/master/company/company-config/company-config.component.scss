@@ -236,6 +236,7 @@
   align-items: center;
   border-bottom-color: #dceaf3;
   background: #eef8fd;
+  min-height: 54px;
 }
 
 .existing-title-wrap {
@@ -247,9 +248,9 @@
 .existing-title-icon {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
   border-radius: 8px;
   color: #0b6ea8;
   background: #ffffff;
@@ -272,20 +273,22 @@
 }
 
 .existing-config-header .header-actions {
-  padding: 0.22rem;
-  border: 1px solid #cfe3ef;
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 8px 18px rgba(8, 47, 73, 0.08);
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .existing-config-header .count-pill {
   min-height: 28px;
-  padding: 0.22rem 0.75rem;
-  border-color: #082f49;
-  background: #082f49;
+  padding: 0.18rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 8px;
+  background: rgba(8, 47, 73, 0.34);
   color: #ffffff;
-  box-shadow: 0 8px 16px rgba(8, 47, 73, 0.24);
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .table-action-btn {
@@ -295,21 +298,36 @@
 
 .existing-config-header .table-action-btn {
   min-height: 28px;
-  border-radius: 999px;
-  min-width: 62px;
-  padding-inline: 0.45rem;
+  border-radius: 8px;
+  min-width: 68px;
+  padding-inline: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .existing-config-header .btn-secondary.table-action-btn {
-  background: #6c757d;
-  border-color: #6c757d;
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
 .existing-config-header .btn-secondary.table-action-btn:hover {
-  background: #5c636a;
-  border-color: #565e64;
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
+}
+
+.existing-config-header .btn-info.table-action-btn {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: #ffffff;
+  color: #075a80 !important;
+  padding-left: 0.9rem;
+  padding-right: 0.55rem;
+  box-shadow: 0 6px 14px rgba(8, 47, 73, 0.18);
+}
+
+.existing-config-header .btn-info.table-action-btn:hover {
+  background: #eef8fd !important;
+  color: #075a80 !important;
 }
 
 .table-action-btn--primary {
@@ -360,8 +378,9 @@
 }
 
 .builder-form .modern-textarea {
-  height: auto;
-  min-height: 64px;
+  height: 34px;
+  min-height: 34px;
+  resize: none;
 }
 
 .field-block {

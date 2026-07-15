@@ -116,7 +116,7 @@
           </div>
 
           <div class="field-block field-block--value"
-            [class.filled]="newConfigForm.get('ConfigType')?.value === 'boolean' || !!newConfigForm.get('ConfigurationValue')?.value">
+            [class.filled]="!!newConfigForm.get('ConfigType')?.value || !!newConfigForm.get('ConfigurationValue')?.value">
             <label class="field-label">Configuration Value</label>
 
             <div *ngIf="newConfigForm.get('ConfigType')?.value === 'boolean'" class="boolean-field">
@@ -220,14 +220,14 @@
     </section>
 
     <section class="surface-card existing-config-card">
-      <div class="surface-card__header surface-card__header--tight existing-config-header">
+      <div class="surface-card__header surface-card__header--tight existing-config-header bg-info p-1">
         <div class="existing-title-wrap">
           <span class="existing-title-icon">
             <i class="fas fa-sliders-h"></i>
           </span>
           <div>
-            <h2>Existing Configurations</h2>
-            <p>Review and update current values.</p>
+            <h2 class="text-white">Existing Configurations</h2>
+            <p class="text-white">Review and update current values.</p>
           </div>
         </div>
         <div class="header-actions">

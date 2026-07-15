@@ -423,7 +423,7 @@
                         </div> -->
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
+                            <div class="custom-form-group amount-decimal-field">
                                 <input type="text" id="amountDecimal" formControlName="amountDecimal" placeholder=""[textWithNumbers]="50"
                                     class="custom-input-field sm text-end"
                                     [class.is-invalid]="currencyForm.get('amountDecimal')?.invalid && (currencyForm.get('amountDecimal')?.touched || currencyForm.get('amountDecimal')?.dirty)" />
@@ -474,7 +474,7 @@
                         </div> -->
 
                         <aside class="col-md-4">
-                            <div class="custom-form-group">
+                            <div class="custom-form-group exchange-decimal-field">
                                 <input type="text" id="exchangeDecimal" formControlName="exchangeDecimal" [textWithNumbers]="50"
                                     placeholder="" class="custom-input-field sm text-end" [class.is-invalid]="
         currencyForm.get('exchangeDecimal')?.invalid &&
