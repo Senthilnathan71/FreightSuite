@@ -151,11 +151,11 @@
           <td *ngIf="config.actions && config.actions.length > 0" class="action-column"
             (click)="$event.stopPropagation()">
             <div class="action-buttons">
-              <button *ngFor="let action of config.actions" class="action-icon me-1" [class]="action.class"
-                [title]="action.tooltip || action.label" (click)="onActionClick(action.action, row)"
+              <button *ngFor="let action of config.actions" class="action-icon me-1" [class]="resolveActionClass(action, row)"
+                [title]="resolveActionTooltip(action, row)" (click)="onActionClick(action.action, row)"
                 [style.display]="action.condition ? (action.condition(row) ? 'inline-flex' : 'none') : 'inline-flex'"
                 [disabled]="action.state || (action.disabledCondition ? action.disabledCondition(row) : false)">
-                <i [class]="action.icon"></i>
+                <i [class]="resolveActionIcon(action, row)"></i>
               </button>
             </div>
           </td>

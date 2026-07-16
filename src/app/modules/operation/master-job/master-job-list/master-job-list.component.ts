@@ -21,6 +21,7 @@ import { catchError, forkJoin, Observable, of } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 import {
   AdvancedFilterValues,
@@ -63,6 +64,10 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   // sortDirection: string = 'desc';
   currentCompany: any;
   currentBranch: any;
+  currentUserEmail: string = '';
+  // Driven by the company config 'JobOpenorClose' (email allowlist). Controls whether the
+  // Job Close / reopen action is enabled in the list.
+  canJobClose: boolean = false;
   headerActions: HeaderAction[] = [];
   tableConfig: TableConfig;
   modalDropdownItems: DropdownMenuItem[] = [];
@@ -123,7 +128,8 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private masterService: MasterService
   ) {
     super(paginationService);
   }
@@ -134,7 +140,8 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
     this.appSettingService.getUser().subscribe((user) => {
       if (user) {
         this.userData = user;
-        
+        this.currentUserEmail = this.userData?.userEmail || this.userData?.UserEmail || this.userData?.email || '';
+        this.loadJobCloseConfig();
       }
     });
     this.MenuMasterSid = this.mps.getMenuId();
@@ -159,7 +166,44 @@ this.initializeTableConfig();
     super.ngOnInit();
   }
 
-  
+  // Reads the company config 'JobOpenorClose' (comma-separated email allowlist, same mechanism as
+  // CustomerNameUpdateUsers) and enables the Job Close / reopen action only for allowed users.
+  private loadJobCloseConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.canJobClose = false;
+      this.initializeTableConfig();
+      return;
+    }
+    this.masterService.getAllCompanyConfigsByCompanyId(companyId).subscribe({
+      next: (response: any) => {
+        const configs = response?.data ?? response ?? [];
+        const config = Array.isArray(configs)
+          ? configs.find((c: any) => c.ConfigurationName === 'JobOpenorClose')
+          : null;
+        this.applyJobCloseConfig(config);
+      },
+      error: () => {
+        this.canJobClose = false;
+        this.initializeTableConfig();
+      }
+    });
+  }
+
+  private applyJobCloseConfig(config: any): void {
+    const configValue = config?.ConfigurationValue;
+    if (configValue && typeof configValue === 'string' && this.currentUserEmail) {
+      const allowedEmails = configValue
+        .split(',')
+        .map((email: string) => email.trim().toLowerCase())
+        .filter((email: string) => email.length > 0);
+      this.canJobClose = allowedEmails.includes(this.currentUserEmail.trim().toLowerCase());
+    } else {
+      this.canJobClose = false;
+    }
+    // Rebuild the table config so the Job Close action picks up the new `state`.
+    this.initializeTableConfig();
+  }
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
@@ -584,9 +628,16 @@ openImportModal(): void {
       },
       {
         label: 'Job Close',
-        icon: 'fas fa-lock',
+        // Closed job -> green closed padlock; otherwise -> amber open padlock (reopen).
+        icon: (row: any) => row?.JobStatus === 'Closed' ? 'fas fa-lock' : 'fas fa-lock-open',
         action: 'job_close',
-        tooltip: 'job-close',
+        tooltip: (row: any) => row?.JobStatus === 'Closed' ? 'Job Closed' : 'Open',
+        class: (row: any) => row?.JobStatus === 'Closed'
+          ? 'action-icon me-1 text-success'
+          : 'action-icon me-1 text-warning',
+        // Enabled only for users allowed by the company config 'JobOpenorClose'
+        // (comma-separated email allowlist, same mechanism as CustomerNameUpdateUsers).
+        state: !this.canJobClose,
       },
       {
         label: 'Pro Rate',

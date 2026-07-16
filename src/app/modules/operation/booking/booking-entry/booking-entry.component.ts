@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { catchError, debounceTime, delay, firstValueFrom, forkJoin, of, Subject, takeUntil, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -1032,18 +1032,18 @@ subscribeToFormChanges() {
       CargoType: ['General'],
       ContainerType: [null],
       NoofContainers: [1],
-      GrossWeight: [''],
-      NetWeight: [''],
-      Volume: [''],
-      Volumetric: [''],
-      ChargeableWeight: [''],
-      NoOfPackage: [''],
+      GrossWeight: ['', [Validators.max(9999999.999)]],
+      NetWeight: ['', [Validators.max(9999999.999)]],
+      Volume: ['', [Validators.max(99999.999)]],
+      Volumetric: ['', [Validators.max(9999999.999)]],
+      ChargeableWeight: ['', [Validators.max(9999999.999)]],
+      NoOfPackage: ['', [Validators.max(99999999)]],
       ShipmentTerms: [null],
       MovementType: [null],
       FreightTerms: [null],
       ModeOfTransport: [null],
       StuffingAt: ['Dock']
-    });
+    }, { validators: this.cargoProductTotalsLimitValidator });
     this.setupCargoCalculationSubscriptions();
 }
   private setupCargoCalculationSubscriptions(): void {
@@ -1089,20 +1089,20 @@ subscribeToFormChanges() {
       ShippingBillNo: [''],
       ShippingBillDate: [null],
       ExternaPkg: [null, [Validators.required]],
-      ExternlQty: ['', [Validators.required]],
-      GrossWeight: ['', [Validators.required,Validators.min(0.001)]],
-      NetWeight: ['', [Validators.min(0)]],
-      Volumetric: ['',isDimensionalCargo ? [Validators.required] : []],
+      ExternlQty: ['', [Validators.required, Validators.max(99999999)]],
+      GrossWeight: ['', [Validators.required,Validators.min(0.001), Validators.max(9999999.999)]],
+      NetWeight: ['', [Validators.min(0), Validators.max(9999999.999)]],
+      Volumetric: ['',isDimensionalCargo ? [Validators.required, Validators.max(9999999.999)] : [Validators.max(9999999.999)]],
       Volume: ['',
-        this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]
+        this.isSurfaceCargoMode() ? [Validators.max(99999.999)] : [Validators.required,Validators.min(0.001),Validators.max(99999.999)]
       ],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
-      Length: [''],
-      Width: [''],
-      Height: [''],
+      Length: ['', [Validators.max(999999.99)]],
+      Width: ['', [Validators.max(999999.99)]],
+      Height: ['', [Validators.max(999999.99)]],
       UomMasterSid: [2,isDimensionalCargo ? [Validators.required] : []],
       CargoRecDate: [null]
     });
@@ -1362,21 +1362,21 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
         data?.ProductUnit ??
         data?.PackageType
       ), [Validators.required]],
-      ExternlQty: [data?.ExternlQty || '', [Validators.required]],
-      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
-      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
+      ExternlQty: [data?.ExternlQty || '', [Validators.required, Validators.max(99999999)]],
+      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001),Validators.max(9999999.999)]],
+      NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0), Validators.max(9999999.999)]],
       Volume: [
         Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '',
-        this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]
+        this.isSurfaceCargoMode() ? [Validators.max(99999.999)] : [Validators.required,Validators.min(0.001),Validators.max(99999.999)]
       ],
       IsHaz: [isHaz],
       ImcoClass: [{ value: data?.ImcoClass || null, disabled: !isHaz }],
       UnNo: [{ value: data?.UnNo || '', disabled: !isHaz }],
       PkgGroup: [{ value: data?.PkgGroup || '', disabled: !isHaz }],
-      Length: [data?.Length || ''],
-      Width: [data?.Width || ''],
-      Height: [data?.Height || ''],
-      Volumetric: [data?.Volumetric|| '',isDimensionalCargo ? [Validators.required] : []],
+      Length: [data?.Length || '', [Validators.max(999999.99)]],
+      Width: [data?.Width || '', [Validators.max(999999.99)]],
+      Height: [data?.Height || '', [Validators.max(999999.99)]],
+      Volumetric: [data?.Volumetric|| '',isDimensionalCargo ? [Validators.required, Validators.max(9999999.999)] : [Validators.max(9999999.999)]],
       UomMasterSid: [data?.UomMasterSid || 2,isDimensionalCargo ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
@@ -2927,6 +2927,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             errorMessages.push(`Cargo ${cargoIndex + 1}: ${this.getFieldLabel(key)} is required`);
           }
         });
+        if (cargoGroup.errors?.['cargoTotalsExceedLimit']?.length) {
+          errorMessages.push(`Cargo ${cargoIndex + 1}: ${this.getCargoTotalsLimitMessage(cargoGroup)}`);
+        }
         isValid = false;
       }
 
@@ -2975,6 +2978,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         }
       }
     });
+    if (this.cargoForm.errors?.['cargoTotalsExceedLimit']?.length) {
+      errorMessages.push(this.getCargoTotalsLimitMessage(this.cargoForm));
+    }
     isValid = false;
   }
 
@@ -4112,6 +4118,8 @@ getVesselVoyBasedOnPorts() {
       targetCargo.get('ChargeableWeight')?.enable();
       targetCargo.get('ChargeableWeight')?.setValue(0);
     }
+    // No products -> clear any stale "totals exceed limit" flag.
+    targetCargo.updateValueAndValidity({ emitEvent: false });
     return;
   }
 
@@ -4164,6 +4172,10 @@ getVesselVoyBasedOnPorts() {
   // Recalculate chargeable weight based on new totals
 
   this.calculateChargeableWeight(targetCargo);
+
+  // Re-run the group validator so the summed totals are checked against their max limits
+  // (the setValue calls above use emitEvent:false and don't trigger group validation).
+  targetCargo.updateValueAndValidity({ emitEvent: false });
 }
 
 private getCargoIndexForProductForm(productForm: FormGroup): number {
@@ -5544,25 +5556,72 @@ deepEqual(obj1: any, obj2: any): boolean {
   });
 }
 
+  // The cargo Gross/Net/CBM/Volumetric/No.of Pkg totals are auto-calculated by summing the
+  // products and are read-only, so their own Validators.max can't fire while disabled. This
+  // group-level validator sums the products and flags any total that breaches its limit, which
+  // both blocks the save (cargoGroup.invalid) and drives the "reduce these in the products"
+  // message. Works for a FormArray cargo (uses its own bookingProducts child) and for the
+  // standalone cargoForm summary (falls back to the top-level bookingProducts array).
+  public cargoProductTotalsLimitValidator = (group: AbstractControl): ValidationErrors | null => {
+    // A FormArray cargo owns its products via its own bookingProducts child (may be empty). The
+    // standalone summary cargoForm has no such child and instead summarizes the top-level array.
+    const localProducts = group.get('bookingProducts') as FormArray | null;
+    const products = localProducts ?? (group === this.cargoForm ? this.bookingProducts : null);
+
+    if (!products || products.length === 0) {
+      return null;
+    }
+
+    let grossWeight = 0, netWeight = 0, volume = 0, volumetric = 0, noOfPkg = 0;
+    products.controls.forEach((product: AbstractControl) => {
+      grossWeight += Number(product.get('GrossWeight')?.value) || 0;
+      netWeight += Number(product.get('NetWeight')?.value) || 0;
+      volume += Number(product.get('Volume')?.value) || 0;
+      volumetric += Number(product.get('Volumetric')?.value) || 0;
+      noOfPkg += Number(product.get('ExternlQty')?.value) || 0;
+    });
+
+    // Store the control keys so each field can render its own message beneath it.
+    const exceeded: string[] = [];
+    if (grossWeight > 9999999.999) exceeded.push('GrossWeight');
+    if (netWeight > 9999999.999) exceeded.push('NetWeight');
+    if (volume > 99999.999) exceeded.push('Volume');
+    if (volumetric > 9999999.999) exceeded.push('Volumetric');
+    if (noOfPkg > 99999999) exceeded.push('NoOfPackage');
+
+    return exceeded.length ? { cargoTotalsExceedLimit: exceeded } : null;
+  };
+
+  public getCargoTotalsLimitMessage(cargo: AbstractControl | null): string {
+    const keys = cargo?.errors?.['cargoTotalsExceedLimit'] as string[] | undefined;
+    if (!keys?.length) {
+      return '';
+    }
+    const labels = keys.map(key => this.getFieldLabel(key));
+    const verb = labels.length > 1 ? 'exceed' : 'exceeds';
+    const them = labels.length > 1 ? 'them' : 'it';
+    return `${labels.join(', ')} ${verb} the maximum limit — reduce ${them} in the products.`;
+  }
+
   private createBookingCargoGroup(data?: any): FormGroup {
     const cargoGroup = this.fb.group({
       BookingCargoSid: [data?.BookingCargoSid || null],
       CargoType: [data?.CargoType || 'General'],
       ContainerType: [data?.ContainerType || null],
       NoofContainers: [data?.NoofContainers ?? 1],
-      GrossWeight: [data?.GrossWeight ?? ''],
-      NetWeight: [data?.NetWeight ?? ''],
-      Volume: [data?.Volume ?? ''],
-      Volumetric: [data?.Volumetric ?? ''],
-      ChargeableWeight: [data?.ChargeableWeight ?? ''],
-      NoOfPackage: [data?.NoOfPackage ?? ''],
+      GrossWeight: [data?.GrossWeight ?? '', [Validators.max(9999999.999)]],
+      NetWeight: [data?.NetWeight ?? '', [Validators.max(9999999.999)]],
+      Volume: [data?.Volume ?? '', [Validators.max(99999.999)]],
+      Volumetric: [data?.Volumetric ?? '', [Validators.max(9999999.999)]],
+      ChargeableWeight: [data?.ChargeableWeight ?? '', [Validators.max(9999999.999)]],
+      NoOfPackage: [data?.NoOfPackage ?? '', [Validators.max(99999999)]],
       ShipmentTerms: [data?.ShipmentTerms || null],
       MovementType: [data?.MovementType || null],
       FreightTerms: [data?.FreightTerms || null],
       ModeOfTransport: [data?.ModeOfTransport || null],
       StuffingAt: [data?.StuffingAt || 'Dock'],
       bookingProducts: this.fb.array([])
-    });
+    }, { validators: this.cargoProductTotalsLimitValidator });
 
     cargoGroup.get('GrossWeight')?.valueChanges.subscribe(() => {
       this.setOrResetWeightError(cargoGroup);
@@ -7168,6 +7227,8 @@ getFieldLabel(fieldName: string): string {
     'NetWeight': 'Net Weight',
     'Volume': 'CBM',
     'Volumetric': 'Volumetric Weight',
+    'ChargeableWeight': 'Chargeable Weight',
+    'NoOfPackage': 'No. of Pkg',
     'UomMasterSid': 'UOM',
     'CargoRecDate': 'Cargo Received Date',
     'Length': 'Length',
@@ -7202,7 +7263,15 @@ private getProductValidationMessage(): string {
 
 public shouldShowProductFieldError(product: AbstractControl | null, fieldName: string): boolean {
   const control = product?.get(fieldName);
-  return !!control && control.invalid && (control.touched || control.dirty);
+  if (!control || !control.invalid) {
+    return false;
+  }
+  // Hard max-limit violations must surface even on auto-calculated fields (e.g. Volumetric)
+  // that the user never directly touches, so the reason a save is blocked is always visible.
+  if (control.errors?.['max']) {
+    return true;
+  }
+  return control.touched || control.dirty;
 }
 
 public getProductFieldErrorMessage(product: AbstractControl | null, fieldName: string): string {
@@ -7223,7 +7292,20 @@ public getProductFieldErrorMessage(product: AbstractControl | null, fieldName: s
   }
 
   if (control.errors['max']) {
-    return `${label} is too large`;
+    const maxDigitHints: Record<string, string> = {
+      ExternlQty: '99,999,999',
+      GrossWeight: '9,999,999.999',
+      NetWeight: '9,999,999.999',
+      Volume: '99,999.999',
+      Volumetric: '9,999,999.999',
+      ChargeableWeight: '9,999,999.999',
+      NoOfPackage: '99,999,999',
+      Length: '999,999.99',
+      Width: '999,999.99',
+      Height: '999,999.99'
+    };
+    const hint = maxDigitHints[fieldName];
+    return hint ? `${label} must be ${hint} or less` : `${label} is too large`;
   }
 
   if (control.errors['decimalPrecision']) {
@@ -7241,12 +7323,85 @@ public getProductFieldErrorMessage(product: AbstractControl | null, fieldName: s
   return `${label} is invalid`;
 }
 
+public isCargoTotalFieldExceeded(cargo: AbstractControl | null, fieldName: string): boolean {
+  const fields = cargo?.errors?.['cargoTotalsExceedLimit'] as string[] | undefined;
+  return !!fields?.includes(fieldName);
+}
+
+public shouldShowCargoFieldError(cargo: AbstractControl | null, fieldName: string): boolean {
+  // Auto-calculated totals (Gross/Net/CBM/Volumetric/No. of Pkg) are read-only, so their own
+  // validators can't fire; the cargo-group validator flags them instead. Show the per-field
+  // message directly beneath the field, just like the (enabled) Chargeable Weight field.
+  if (this.isCargoTotalFieldExceeded(cargo, fieldName)) {
+    return true;
+  }
+  const control = cargo?.get(fieldName);
+  if (!control || !control.invalid) {
+    return false;
+  }
+  // Surface max-limit violations even for auto-calculated cargo fields (Volumetric, Chargeable
+  // Weight) that never get marked as touched/dirty.
+  if (control.errors?.['max']) {
+    return true;
+  }
+  return control.touched || control.dirty;
+}
+
+public getCargoFieldErrorMessage(cargo: AbstractControl | null, fieldName: string): string {
+  const label = this.getFieldLabel(fieldName);
+  const maxDigitHints: Record<string, string> = {
+    GrossWeight: '9,999,999.999',
+    NetWeight: '9,999,999.999',
+    Volume: '99,999.999',
+    Volumetric: '9,999,999.999',
+    ChargeableWeight: '9,999,999.999',
+    NoOfPackage: '99,999,999'
+  };
+
+  // Auto-calculated total flagged by the cargo-group validator (field itself is read-only, so
+  // the user has to fix it at the product level).
+  if (this.isCargoTotalFieldExceeded(cargo, fieldName)) {
+    const hint = maxDigitHints[fieldName];
+    const base = hint ? `${label} must be ${hint} or less` : `${label} is too large`;
+    return `${base} — reduce in the products`;
+  }
+
+  const control = cargo?.get(fieldName);
+
+  if (!control || !control.errors) {
+    return '';
+  }
+
+  if (control.errors['required']) {
+    return `${label} is required`;
+  }
+
+  if (control.errors['min']) {
+    return `${label} must be greater than 0`;
+  }
+
+  if (control.errors['max']) {
+    const hint = maxDigitHints[fieldName];
+    return hint ? `${label} must be ${hint} or less` : `${label} is too large`;
+  }
+
+  if (control.errors['decimalPrecision']) {
+    return `${label} has invalid decimal precision`;
+  }
+
+  return `${label} is invalid`;
+}
+
 public getProductRowErrors(product: AbstractControl | null): string[] {
   const fields = [
     'ProductName',
     'ExternaPkg',
     'ExternlQty',
     'UomMasterSid',
+    'Length',
+    'Width',
+    'Height',
+    'Volumetric',
     'Volume',
     'GrossWeight',
     'NetWeight',
