@@ -189,6 +189,8 @@ hasAnyDropdownPermission(): boolean {
       SortBy: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
       AutoCapture: ['N'],
       AutomailRequire: ['N'],
+      IsCustomerSpecific: ['N'],
+      IsMandatory: ['N'],
       status: [{value: 'A', disabled: true}, Validators.required],
       Remarks: ['', Validators.maxLength(500)],
     //   CompanyMasterSid: [null],
@@ -250,6 +252,8 @@ hasAnyDropdownPermission(): boolean {
           SortBy: milestone.SortBy,
           AutoCapture: milestone.AutoCapture || 'N',
           AutomailRequire: milestone.AutomailRequire || 'N',
+          IsCustomerSpecific: milestone.IsCustomerSpecific || 'N',
+          IsMandatory: milestone.IsMandatory || 'N',
           status: milestone.status || 'A',
           Remarks: milestone.Remarks || ''
         });
@@ -348,6 +352,8 @@ hasAnyDropdownPermission(): boolean {
         SortBy: '',
         AutoCapture: 'N',
         AutomailRequire: 'N',
+        IsCustomerSpecific: 'N',
+        IsMandatory: 'N',
         status: 'A',
         Remarks: ''
       });
