@@ -447,6 +447,7 @@ clearReportLogo() {
 		this.companyForm = this.fb.group({
 			companyName: ['', [Validators.required]],
 			companyCode: ['', [Validators.required]],
+			CompanyGroup: ['', [Validators.maxLength(100)]],
 			CountryMasterSid: [null, [Validators.required]],
 			CurrencyMasterSid: [null, [Validators.required]],
 			addressLine1: ['', [Validators.required]],

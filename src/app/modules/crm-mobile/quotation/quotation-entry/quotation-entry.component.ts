@@ -2770,7 +2770,7 @@ private syncApprovedByControlState(): void {
       departments: this.leadService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
-      salesman: this.masterService.getAllFfUserByCompany(CompanyMasterSid).pipe(catchError(err => of({ data: [] }))),
+      salesman: this.masterService.getAllSalesmans(CompanyMasterSid).pipe(catchError(err => of([]))),
       masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], units: [] }))),
       currency: this.operationService.getAllCurrencies().pipe(catchError(err => of([]))),
       chargeUnits : this.leadService.getUOMsByType('C').pipe(catchError(err => of([]))),
@@ -2806,7 +2806,7 @@ private syncApprovedByControlState(): void {
       this.weightUnitList = weightUnits.data || [];
       this.packageTypes = packageTypes.data || [];
       this.incoList = incos || [];
-      this.salesmanList = salesman?.data || [];
+      this.salesmanList = salesman || [];
       this.containerTypeList = containerTypes || [],
       this.vendorSupplierList = vendors.data || [];
       this.productList = products || [];
