@@ -1443,6 +1443,11 @@
                         DecimalPrecision [DecimalPrecisionBefore]="10"
                         [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                       <label class="input-label">Gross Wt.</label>
+                      @if (shouldShowCargoFieldError(cargo, 'GrossWeight')) {
+                        <div class="error-message cargo-error-message" role="alert">
+                          <span>{{ getCargoFieldErrorMessage(cargo, 'GrossWeight') }}</span>
+                        </div>
+                      }
                     </div>
                   </aside>
                   <aside class="col-md-2">
@@ -1453,6 +1458,11 @@
                         (blur)="cargo.get('GrossWeight')?.updateValueAndValidity()"
                         (input)="cargo.get('GrossWeight')?.updateValueAndValidity()">
                       <label class="input-label">Net Wt.</label>
+                      @if (shouldShowCargoFieldError(cargo, 'NetWeight')) {
+                        <div class="error-message cargo-error-message" role="alert">
+                          <span>{{ getCargoFieldErrorMessage(cargo, 'NetWeight') }}</span>
+                        </div>
+                      }
                     </div>
                   </aside>
                   <aside class="col-md-2">
@@ -1461,6 +1471,11 @@
                         DecimalPrecision [DecimalPrecisionBefore]="7"
                         [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                       <label class="input-label">Volume(CBM)</label>
+                      @if (shouldShowCargoFieldError(cargo, 'Volume')) {
+                        <div class="error-message cargo-error-message" role="alert">
+                          <span>{{ getCargoFieldErrorMessage(cargo, 'Volume') }}</span>
+                        </div>
+                      }
                     </div>
                   </aside>
                   @if(usesDimensionalCargoFields() || isSurfaceCargoMode()) {
@@ -1471,6 +1486,11 @@
                           DecimalPrecision [DecimalPrecisionBefore]="7"
                           [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                         <label class="input-label">Volumetric</label>
+                        @if (shouldShowCargoFieldError(cargo, 'Volumetric')) {
+                          <div class="error-message cargo-error-message" role="alert">
+                            <span>{{ getCargoFieldErrorMessage(cargo, 'Volumetric') }}</span>
+                          </div>
+                        }
                       </div>
                     </aside>
                     }
@@ -1480,6 +1500,11 @@
                           DecimalPrecision [DecimalPrecisionBefore]="7"
                           [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                         <label class="input-label">Chargeable Weight</label>
+                        @if (shouldShowCargoFieldError(cargo, 'ChargeableWeight')) {
+                          <div class="error-message cargo-error-message" role="alert">
+                            <span>{{ getCargoFieldErrorMessage(cargo, 'ChargeableWeight') }}</span>
+                          </div>
+                        }
                       </div>
                     </aside>
                   }
@@ -1489,6 +1514,11 @@
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
                         max="9999999.999">
                       <label class="input-label">No. of Pkg</label>
+                      @if (shouldShowCargoFieldError(cargo, 'NoOfPackage')) {
+                        <div class="error-message cargo-error-message" role="alert">
+                          <span>{{ getCargoFieldErrorMessage(cargo, 'NoOfPackage') }}</span>
+                        </div>
+                      }
                     </div>
                   </aside>
                   <aside class="col-md-2">
@@ -1653,10 +1683,38 @@
                                 </div>
                               }
                             </td>
-                            <td><input type="text" formControlName="Length" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Width" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Height" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td>
+                              <input type="text" formControlName="Length" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2">
+                              @if (shouldShowProductFieldError(product, 'Length')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Length') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="Width" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2">
+                              @if (shouldShowProductFieldError(product, 'Width')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Width') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="Height" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2">
+                              @if (shouldShowProductFieldError(product, 'Height')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Height') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="Volumetric" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'Volumetric')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Volumetric') }}
+                                </div>
+                              }
+                            </td>
                             <td>
                               <input type="text" formControlName="Volume" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
                               @if (shouldShowProductFieldError(product, 'Volume')) {
@@ -1852,6 +1910,8 @@
               <div class="error-message">
                 @if (cargoForm.get('GrossWeight')?.errors?.['grossNotGreater']) {
                 <span>Gross Weight should be greater than Net Weight</span>
+                } @else if (cargoForm.get('GrossWeight')?.errors?.['max']) {
+                <span>Gross Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                 }
@@ -1893,7 +1953,7 @@
               cargoForm.get('Volume')?.invalid) {
               <div class="error-message">
                 @if (cargoForm.get('Volume')?.errors?.['max']) {
-                <span>Net Weight cannot exceed 9,999,999.999</span>
+                <span>Volume (CBM) cannot exceed 99,999.999</span>
                 } @else if (cargoForm.get('Volume')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                 }
@@ -1914,7 +1974,7 @@
               cargoForm.get('Volumetric')?.invalid) {
               <div class="error-message">
                 @if (cargoForm.get('Volumetric')?.errors?.['max']) {
-                <span>Net Weight cannot exceed 9,999,999.999</span>
+                <span>Volumetric cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('Volumetric')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                 }
@@ -1934,7 +1994,7 @@
               cargoForm.get('ChargeableWeight')?.invalid) {
               <div class="error-message">
                 @if (cargoForm.get('ChargeableWeight')?.errors?.['max']) {
-                <span>Net Weight cannot exceed 9,999,999.999</span>
+                <span>Chargeable Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('ChargeableWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                 }
@@ -1953,7 +2013,9 @@
               @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
               cargoForm.get('NoOfPackage')?.invalid) {
               <div class="error-message">
-                @if (cargoForm.get('NoOfPackage')?.errors?.['decimalPrecision']) {
+                @if (cargoForm.get('NoOfPackage')?.errors?.['max']) {
+                <span>No. of Pkg cannot exceed 99,999,999</span>
+                } @else if (cargoForm.get('NoOfPackage')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 10 digits Number Only</small>
                 }
               </div>
@@ -3119,7 +3181,7 @@
             @if (productForm.get('Volume')?.errors?.['required']) {
             <span>Required</span>
             } @else if (productForm.get('Volume')?.errors?.['max']) {
-            <span>CBM cannot exceed 9,999,999.999</span>
+            <span>CBM cannot exceed 99,999.999</span>
             } @else if (productForm.get('Volume')?.errors?.['decimalPrecision']) {
             <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
             }

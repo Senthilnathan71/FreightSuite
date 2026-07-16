@@ -27,7 +27,8 @@ import {
   TableFilter,
   TableSortConfig,
   ColumnVisibilityState,
-  TableData
+  TableData,
+  TableAction
 } from '../../interfaces/table.interface';
 import { CommonPaginationComponent } from '../pagination/pagination.component';
 import { PaginationConfig } from '../../interfaces/pagination.interface';
@@ -432,6 +433,20 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     this.actionClick.emit({ action, row, column });
+  }
+
+  // Resolve icon/class/tooltip that may be a static value or a per-row function.
+  resolveActionIcon(action: TableAction, row: any): string {
+    return typeof action.icon === 'function' ? action.icon(row) : action.icon;
+  }
+
+  resolveActionClass(action: TableAction, row: any): string | undefined {
+    return typeof action.class === 'function' ? action.class(row) : action.class;
+  }
+
+  resolveActionTooltip(action: TableAction, row: any): string {
+    const tooltip = typeof action.tooltip === 'function' ? action.tooltip(row) : action.tooltip;
+    return tooltip || action.label;
   }
 
   // Pagination events

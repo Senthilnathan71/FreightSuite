@@ -17,14 +17,16 @@ export interface TableColumn {
 }
 
 export interface TableAction {
-  icon: string;
+  // icon/tooltip/class may be a static value or a per-row function so a single action can render
+  // differently depending on the row (e.g. a lock vs open-lock icon based on JobStatus).
+  icon: string | ((row: any) => string);
   label: string;
   action: string;
-  tooltip?: string;
+  tooltip?: string | ((row: any) => string);
   condition?: (row: any) => boolean;
   disabledCondition?: (row: any) => boolean;
   state ?: boolean;   // Whether the action is enabled or disabled
-  class?: string;
+  class?: string | ((row: any) => string);
 }
 
 export interface TableFilter {
