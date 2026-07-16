@@ -7,6 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { catchError, forkJoin, of } from 'rxjs';
 
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanyConfigCacheService } from 'src/app/core/services/company-config-cache.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { MasterService } from '../../master.service';
 
@@ -53,6 +54,7 @@ const CONFIG_TEMPLATES: ConfigTemplate[] = [
   { configurationName: 'MilestoneCopy', displayName: 'Milestone Copy Users (to other company)', configType: 'email-array'},
   { configurationName: 'JobOpenorClose', displayName: 'Job Open or Close Users', configType: 'email-array'},
   { configurationName: 'InvoiceWithoutTax', displayName: 'Invoice Without Tax', configType: 'boolean'},
+  { configurationName: 'MilestoneAutoInsertionRequire', displayName: 'Milestone Auto Insertion Require (Auto-captured milestones)', configType: 'boolean'}
 ];
 
 @Component({
@@ -540,6 +542,7 @@ export class CompanyConfigComponent implements OnInit {
         }
 
         this.appSettingService.showSuccess('Configuration created successfully.');
+        CompanyConfigCacheService.clearCache(); // session cache: pick the new value up without re-login
         this.resetCreateForm();
         this.reloadCurrentConfigurationsIfNeeded();
       },
@@ -622,6 +625,7 @@ export class CompanyConfigComponent implements OnInit {
         }
 
         this.appSettingService.showSuccess('Configuration updated successfully.');
+        CompanyConfigCacheService.clearCache(); // session cache: pick changed values up without re-login
         this.reloadCurrentConfigurationsIfNeeded();
       },
       error: (error) => {

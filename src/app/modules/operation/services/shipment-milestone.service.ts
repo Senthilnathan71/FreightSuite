@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { getFirstValidationError, handleError, sortValidationErrors } from 'src/app/common/error-handling/payload-validation-handler';
+import { CompanyConfigCacheService } from 'src/app/core/services/company-config-cache.service';
 
 export interface ResponseData {
   status: boolean;
@@ -83,7 +84,23 @@ export interface InsertMilestoneByMasterJobPayload {
 })
 export class ShipmentMilestoneService {
 
-  constructor(private http: HttpClient) { }
+  /** Company opt-in gate for AUTO milestone insertion — same key/rule as the DB trigger
+   *  (milestone_autoinsert_enabled): row missing / blank / 'N' => OFF. */
+  private static readonly AUTO_INSERT_CONFIG = 'MilestoneAutoInsertionRequire';
+
+  constructor(
+    private http: HttpClient,
+    private configCache: CompanyConfigCacheService
+  ) { }
+
+  /** ResponseData-shaped no-op so every existing subscriber works unchanged when the gate is OFF. */
+  private skippedResponse(): ResponseData {
+    return {
+      data: null,
+      status: true,
+      message: 'Milestone auto insertion is disabled for this company'
+    };
+  }
 
   getShipmentMilestoneByShipmentNo(
     payload: FetchShipmentMilestone
@@ -159,24 +176,36 @@ export class ShipmentMilestoneService {
   }
 
   safeInsertMilestone(payload: any): Observable<ResponseData> {
-    return this.http
-      .post<ResponseData>('shipment-milestone/safe-insert', payload)
+    return this.configCache
+      .isConfigEnabled(ShipmentMilestoneService.AUTO_INSERT_CONFIG, payload?.CompanyMasterSid)
       .pipe(
-        catchError((error) => {
-          const formattedError = handleError(error);
-          return formattedError;
-        })
+        switchMap((enabled) => enabled
+          ? this.http
+            .post<ResponseData>('shipment-milestone/safe-insert', payload)
+            .pipe(
+              catchError((error) => {
+                const formattedError = handleError(error);
+                return formattedError;
+              })
+            )
+          : of(this.skippedResponse()))
       );
   }
 
   insertMilestoneByMasterJob(payload: InsertMilestoneByMasterJobPayload): Observable<ResponseData> {
-    return this.http
-      .post<ResponseData>('shipment-milestone/insert-by-master-job', payload)
+    return this.configCache
+      .isConfigEnabled(ShipmentMilestoneService.AUTO_INSERT_CONFIG, payload?.CompanyMasterSid)
       .pipe(
-        catchError((error) => {
-          const formattedError = handleError(error);
-          return formattedError;
-        })
+        switchMap((enabled) => enabled
+          ? this.http
+            .post<ResponseData>('shipment-milestone/insert-by-master-job', payload)
+            .pipe(
+              catchError((error) => {
+                const formattedError = handleError(error);
+                return formattedError;
+              })
+            )
+          : of(this.skippedResponse()))
       );
   }
 
