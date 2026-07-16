@@ -50,7 +50,8 @@ const CONFIG_TEMPLATES: ConfigTemplate[] = [
   { configurationName: 'ShowCargowithContainer', displayName: 'Show Cargo with Container(Invoice Print)', configType: 'boolean'},
   { configurationName: 'EnableReportColumnCustomization', displayName: 'Enable Report Column Customization (New report view)', configType: 'boolean'},
   { configurationName: 'TrackingMilestoneDisplayMode', displayName: 'Tracking Milestone Display Mode (Hide unused pending before latest)', configType: 'boolean'},
-  { configurationName: 'MilestoneCopy', displayName: 'Milestone Copy Users (to other company)', configType: 'email-array'}
+  { configurationName: 'MilestoneCopy', displayName: 'Milestone Copy Users (to other company)', configType: 'email-array'},
+  { configurationName: 'InvoiceWithoutTax', displayName: 'Invoice Without Tax', configType: 'boolean'},
 ];
 
 @Component({

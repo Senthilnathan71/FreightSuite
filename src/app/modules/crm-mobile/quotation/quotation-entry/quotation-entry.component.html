@@ -3466,18 +3466,20 @@
         }
       </div>
 
-     @if(getProductLenght(route) || getProductWidth(route) || getProductHeight(route)){
+     @if(getProductDimensions(route).length){
       <div style="padding:2px; display:flex;">
         <strong style="width:80px;">Dims</strong>
         <span>
           :
-          {{ getProductLenght(route) ? (getProductLenght(route)) : '-' }}
-          ×
-          {{ getProductWidth(route) ? (getProductWidth(route)) : '-' }}
-          ×
-          {{ getProductHeight(route) ? (getProductHeight(route)) : '-' }}
+          @for(dim of getProductDimensions(route); track $index){
+            {{ dim.length ? dim.length : '-' }}
+            ×
+            {{ dim.width ? dim.width : '-' }}
+            ×
+            {{ dim.height ? dim.height : '-' }}
+            {{ getDimUom(route) }}{{ !$last ? ' , ' : '' }}
+          }
         </span>
-        <span>&nbsp;{{ getDimUom(route) }}</span>
       </div>
       }
 

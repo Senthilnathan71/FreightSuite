@@ -84,6 +84,7 @@ import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/sh
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 import { VOUCHER_FIELD_LIMITS } from 'src/app/common/voucher-field-limits';
 import { InvoiceCommodityPrintComponent } from '../invoice-new/invoice-commodity-print.component';
+import { InvoiceWithoutTaxComponent } from '../invoice-without-tax/invoice-without-tax.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
 interface NgbDateStructLike {
@@ -115,6 +116,7 @@ interface NgbDateStructLike {
     ExpandTextDirective,
     RouterModule,
     InvoiceCommodityPrintComponent,
+    InvoiceWithoutTaxComponent,
     PrintHeaderComponent
   ],
   templateUrl: './invoice-entry.component.html',
@@ -298,6 +300,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   isTermsAndConditionsEnabled: boolean = true;
   isPrintAllBankEnabled: boolean = false;
   isShowCargowithContainerEnabled: boolean = false;
+  isInvoiceWithoutTaxEnabled: boolean = false;
   isUAECompany: boolean = false;
   customsDutyLabel: string = 'Customs Duty Invoice';
   private isPrintAllBankConfigLoaded: boolean = false;
@@ -540,6 +543,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     this.loadTermsAndConditionsConfig();
     this.loadPrintAllBankConfig();
     this.loadShowCommodityWithContainerConfig();
+    this.loadInvoiceWithoutTaxConfig();
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadVoucherPeriods();
@@ -3974,6 +3978,29 @@ isSeaDepartment(): boolean {
     return this.isShowCargowithContainerEnabled && this.isSeaDepartment();
   }
 
+  private loadInvoiceWithoutTaxConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isInvoiceWithoutTaxEnabled = false;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'InvoiceWithoutTax').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isInvoiceWithoutTaxEnabled = this.parseConfigBoolean(rawValue, false);
+      },
+      error: () => {
+        // Config not found / fetch failure -> fall back to the normal print flow.
+        this.isInvoiceWithoutTaxEnabled = false;
+      }
+    });
+  }
+
+  shouldUseInvoiceWithoutTaxLayout(): boolean {
+    return this.isInvoiceWithoutTaxEnabled;
+  }
+
   onCustomsDutyToggle(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     this.invoiceForm.get('CustomsDuty')?.setValue(checked ? 'Y' : 'N');
@@ -4732,6 +4759,19 @@ isSeaDepartment(): boolean {
 
   private async downloadPDFInBrowser(): Promise<void> {
     const { logo, lookups, options } = await this.getPdfGenerationContext();
+    if (this.shouldUseInvoiceWithoutTaxLayout()) {
+      this.pdfMakeService.generateInvoiceWithoutTaxFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
+      return;
+    }
+
     if (this.shouldUseCommodityPdfGenerator()) {
       this.pdfMakeService.generateCommodityInvoiceFromApi(
         this.invoiceData,
@@ -4779,6 +4819,18 @@ isSeaDepartment(): boolean {
 
   private async getDownloadPDFBlob(): Promise<Blob> {
     const { logo, lookups, options } = await this.getPdfGenerationContext();
+
+    if (this.shouldUseInvoiceWithoutTaxLayout()) {
+      return await this.pdfMakeService.generateInvoiceWithoutTaxBlobFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
+    }
 
     if (this.shouldUseCommodityPdfGenerator()) {
       return await this.pdfMakeService.generateCommodityInvoiceBlobFromApi(

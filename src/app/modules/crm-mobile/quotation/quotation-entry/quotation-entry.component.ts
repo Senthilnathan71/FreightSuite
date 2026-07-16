@@ -7621,6 +7621,17 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     return this.getRouteProducts(route).reduce((sum: number, product: any) => sum + Number(product?.Height || 0), 0);
   }
 
+
+  getProductDimensions(route: any): Array<{ length: number; width: number; height: number }> {
+    return this.getRouteProducts(route)
+      .map((product: any) => ({
+        length: Number(product?.Length || 0),
+        width: Number(product?.Width || 0),
+        height: Number(product?.Height || 0)
+      }))
+      .filter(dim => dim.length || dim.width || dim.height);
+  }
+
   getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string; grossWeight: number; netWeight: number; cbm: number }> {
     const cargoGroups = this.getRouteCargoGroups(route);
     return cargoGroups

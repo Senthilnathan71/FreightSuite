@@ -46,6 +46,7 @@ import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
 import { generateNonJobInvoiceDocument } from './generators/non-job-invoice-pdf.generator';
 import { generateCommodityInvoiceDocument, transformCommodityInvoiceApiData } from './generators/invoice-commodity-pdf.generator';
+import { generateInvoiceWithoutTaxDocument, transformInvoiceWithoutTaxApiData } from './generators/invoice-without-tax-pdf.generator';
 import { generateProformaInvoiceDocument } from './generators/proforma-invoice-pdf.generator';
 import {
   generateVendorInvoiceDocument,
@@ -950,6 +951,100 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformCommodityInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateCommodityInvoiceBlob(pdfData);
+  }
+
+  /**
+   * Generate and download Invoice Without Tax PDF
+   */
+  generateInvoiceWithoutTax(data: InvoicePdfData): void {
+    const docDefinition = generateInvoiceWithoutTaxDocument(data);
+    const filename = `Invoice_${data.invoice?.invoiceNo || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  /**
+   * Get Invoice Without Tax PDF as Blob
+   */
+  async generateInvoiceWithoutTaxBlob(data: InvoicePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateInvoiceWithoutTaxDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Invoice Without Tax PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate Invoice Without Tax from raw API data
+   */
+  generateInvoiceWithoutTaxFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): void {
+    const pdfData = transformInvoiceWithoutTaxApiData(apiData, company, branch, userData, logo, lookups, options);
+    this.generateInvoiceWithoutTax(pdfData);
+  }
+
+  /**
+   * Get Invoice Without Tax Blob from raw API data
+   */
+  async generateInvoiceWithoutTaxBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): Promise<Blob> {
+    const pdfData = transformInvoiceWithoutTaxApiData(apiData, company, branch, userData, logo, lookups, options);
+    return this.generateInvoiceWithoutTaxBlob(pdfData);
   }
 
   /**

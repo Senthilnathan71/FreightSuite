@@ -1038,6 +1038,16 @@
     </div>
 
     <div class="modal-body">
+      <ng-container *ngIf="shouldUseInvoiceWithoutTaxLayout(); else cargoOrNormalPrintTemplate">
+        <app-invoice-without-tax [invoicePrintData]="invoicePrintData" [invoiceData]="invoiceData"
+          [currentCompany]="currentCompany" [currentCompanyCountryCode]="currentCompanyCountryCode"
+          [currentCompanyCurrency]="currentCompanyCurrency" [currencyList]="currencyList"
+          [bankDetails]="bankDetails || []" [effectiveTermsAndConditions]="effectiveTermsAndConditions"
+          [userData]="userData" [currentDate]="currentDate" [departmentList]="departmentList"
+          [salesmanName]="salesmanName" [printTaxDisplayConfig]="printTaxDisplayConfig"
+          [isVATMode]="printTaxDisplayConfig.showVAT"></app-invoice-without-tax>
+      </ng-container>
+      <ng-template #cargoOrNormalPrintTemplate>
       <ng-container *ngIf="shouldUseCargoMultiPrintLayout(); else normalInvoicePrintTemplate">
         <app-invoice-commodity-print [invoicePrintData]="invoicePrintData" [invoiceData]="invoiceData"
           [currentCompany]="currentCompany" [currentBranch]="currentBranch"
@@ -2205,6 +2215,7 @@
 
           </div>
         </div>
+      </ng-template>
       </ng-template>
     </div>
 
