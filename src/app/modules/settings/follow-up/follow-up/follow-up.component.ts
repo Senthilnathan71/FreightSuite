@@ -668,12 +668,13 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     };
     this.shipmentMilestoneService.safeInsertMilestone(payload).subscribe({
       next: (resp) => {
-        if (resp.status) {
+        if (resp.status && resp.data) {
           this.appSettingService.showSuccess(resp.message);
           this.reloadMilestone.emit();
-        } else {
+        } else if (!resp.status) {
           this.appSettingService.showError(resp.message);
         }
+        // status true + no data ⇒ auto-insertion disabled for the company — silent skip, no toastr
       },
       error: (error) => this.appSettingService.showError(error.message)
     });
