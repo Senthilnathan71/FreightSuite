@@ -875,6 +875,10 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
       paddingTop: () => 1,
       paddingBottom: () => 1
     };
+    const vatForeignCurrencyBorderedLayout = {
+      ...compactBorderedLayout,
+      vLineWidth: (i: number, node: any) => (i === 0 || i === node.table.widths.length) ? 0 : 0.35
+    };
 
     /* ---------------- COLUMN COUNT ---------------- */
     const totalColumns =
@@ -1118,12 +1122,12 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
       if (taxConfig.showSGST) widths.push(...(compactMode ? [28, 48] : [34, 50]));
       if (taxConfig.showUGST) widths.push(...(compactMode ? [28, 48] : [34, 50]));
       if (taxConfig.showIGST) widths.push(...(compactMode ? [28, 48] : [34, 50]));
-      if (taxConfig.showVAT)  widths.push(...(vatForeignCurrencyMode ? [28, 52] : compactMode ? [26, 64] : [20, 68]));
+      if (taxConfig.showVAT)  widths.push(...(vatForeignCurrencyMode ? [22, 58] : compactMode ? [26, 64] : [20, 68]));
 
-      widths.push(vatForeignCurrencyMode ? 60 : taxConfig.showVAT ? 82 : compactMode ? (hasForeignCurrencyColumn ? 48 : 54) : 58); // Amt in Local Currency
+      widths.push(vatForeignCurrencyMode ? 61 : taxConfig.showVAT ? 82 : compactMode ? (hasForeignCurrencyColumn ? 48 : 54) : 58); // Amt in Local Currency
 
       if (invoiceCurr && invoiceCurr !== localCurrency) {
-        widths.push(vatForeignCurrencyMode ? 60 : compactMode ? 44 : 58); // Amt in Party Currency
+        widths.push(vatForeignCurrencyMode ? 61 : compactMode ? 44 : 58); // Amt in Party Currency
       }
     }
 
@@ -1134,7 +1138,11 @@ function buildNonJobInvoiceInfo(data: InvoicePdfData, isIndiaInvoice: boolean, c
         widths,
         body: [headerRow, ...dataRows, totalRow]
       },
-      layout: indiaTableMode || compactMode || vatForeignCurrencyMode ? compactBorderedLayout : PDF_TABLE_LAYOUTS.bordered,
+      layout: vatForeignCurrencyMode
+        ? vatForeignCurrencyBorderedLayout
+        : indiaTableMode || compactMode
+          ? compactBorderedLayout
+          : PDF_TABLE_LAYOUTS.bordered,
       margin: [-10, 0, -10, 2],
       font: 'Roboto',
       fontSize: indiaTableMode ? 7 : compactMode || vatForeignCurrencyMode ? 6 : undefined
