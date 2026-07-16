@@ -144,6 +144,9 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy, HasUnsaved
           if(this.customerForm){
             setTimeout(() => {
               this.autoSelectCurrency();
+              // Countries arrive async; the country may already be set from the
+              // login company, so re-derive the type list once they land.
+              this.refreshCompanyTypeList();
             });
           }
         })
@@ -332,7 +335,9 @@ onCountryChange(): void {
   
   // Update tax label
   this.currentTaxIdLabel = this.getTaxIdLabel();
-  
+
+  this.refreshCompanyTypeList();
+
   // Load states for India
   if (isIndia) {
     this.getStatesByCountryId();
@@ -648,14 +653,6 @@ this.mps.init().subscribe();
   }
 
 
-    // ✅ Initial data loads
-    // this.getAllCountries();
-    this.initForm();
-    this.initializePanFields();
-    this.loadAllSpfields();
-    // this.loadDepartments();
-    this.loadMenus();
-
     // ✅ Initialize tabs for both new and edit modes
    
 
@@ -787,12 +784,30 @@ this.mps.init().subscribe();
     return this.onSubmit();
   }
 
-  get filteredCompanyList() {
-  if (this.isIndianCountry()) {
-    return this.companyList;
+  /**
+   * Held as a field, never a getter. An ng-select `[items]` binding must get a
+   * stable reference: a getter that filters hands back a new array on every
+   * change-detection pass, so ng-select rebuilds its option DOM between mousedown
+   * and mouseup and the click never lands — the type looks unselectable.
+   */
+  companyTypeList: any[] = [];
+
+  private refreshCompanyTypeList(): void {
+    // isIndianCountry() resolves the country against dropdownStore.countries();
+    // until those load it answers false, which would wrongly clear a saved LTD below.
+    if (!this.dropdownStore.countries()?.length) return;
+
+    this.companyTypeList = this.isIndianCountry()
+      ? [...this.companyList]
+      : this.companyList.filter(c => c.id !== '11');
+
+    const current = this.customerForm?.get('CompanyType')?.value;
+    if (current && !this.companyTypeList.some(c => c.name === current)) {
+      this.customerForm.get('CompanyType')?.setValue('');
+    }
+
+    this.cdRef.markForCheck();
   }
-  return this.companyList.filter(c => c.id !== '11');
-}
 
   private initializeUnsavedChangesTracking(): void {
     if (!this.customerForm || this.isUnsavedTrackingInitialized) return;
@@ -2295,7 +2310,7 @@ onCompanyTypeChange(): void {
   
   // Also update PAN validation when company type changes
   const panTypeControl = this.customerForm.get('PanType');
-  if (panTypeControl?.value &&  this.customerForm.get('PanAvilable')?.value) {
+  if (panTypeControl?.value && this.customerForm.get('PanAvailable')?.value) {
     panTypeControl.updateValueAndValidity();
   }
 }
@@ -3941,10 +3956,12 @@ private deepFindMessage(value: any): string {
       CustomerAddress2: '',
       CountryMasterSid: '',
       CurrencyMasterSid: '',
-      CompanyType: { value: '', disabled: true },
+      // Values only — reset() honours a boxed {value, disabled} and would leave
+      // these controls permanently disabled. Enabled state is derived below.
+      CompanyType: '',
       PanAvailable: false,
-      PanType: { value: '', disabled: true },
-      PanName: { value: '', disabled: true },
+      PanType: '',
+      PanName: '',
       GroupName: '',
       Website: '',
       paymentType: '',
@@ -3952,7 +3969,7 @@ private deepFindMessage(value: any): string {
       AirlineCode: '',
       IsMSME: '',
       KYCSpecified: false,
-      RegistrationNo: { value: '', disabled: true },
+      RegistrationNo: '',
       Remarks: '',
       TAN:'',
       CIN:'',
@@ -3965,6 +3982,11 @@ private deepFindMessage(value: any): string {
      this.customerForm.get('CountryMasterSid')?.enable();
     this.customerForm.get('CurrencyMasterSid')?.enable();
     this.customerForm.get('CustomerName')?.enable();
+    this.customerForm.get('CompanyType')?.enable();
+    this.customerForm.get('RegistrationNo')?.enable();
+    // PanType/PanName follow PanAvailable — never reset() — so re-derive them.
+    this.updateTaxIdFieldState();
+    this.refreshCompanyTypeList();
     // Fresh form — allow currency auto-patch again (the reset above emits an empty currency).
     this.currencyManuallyCleared = false;
   }
