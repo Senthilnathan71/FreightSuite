@@ -179,6 +179,24 @@
                 }
               </div>
             </aside>
+            <!-- COMPANY GROUP -->
+            <aside class="col-md-4">
+              <div class="custom-form-group">
+                <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  formControlName="CompanyGroup" [textWithNumbers]="100">
+                <label for="text-input" class="input-label">Company Group</label>
+
+                <!--  Validation -->
+                @if(companyForm.get('CompanyGroup')?.touched && companyForm.get('CompanyGroup')?.invalid){
+                <div class="error-message">
+                  @if(companyForm.get('CompanyGroup')?.hasError('maxlength')){
+                  <span>Max 100 Characters</span>
+                  }
+                </div>
+                }
+              </div>
+            </aside>
+
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!companyForm.get('CountryMasterSid')?.value">

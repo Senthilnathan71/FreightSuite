@@ -2350,6 +2350,11 @@ get isSuspended() : boolean {
           this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
           this.housejobData = resp.data;
+          // Load the Master Job's stored roll-up totals so we can validate the projected
+          // aggregate before saving (prevents the MasterJob numeric-overflow 500).
+          if (resp.data?.MasterJobSid) {
+            this.loadMasterJobDetails(resp.data.MasterJobSid);
+          }
           this.houseJobActivityTimeline = this.buildHouseJobActivityTimeline(resp.data);
           this.minDate = undefined;
           const HBLDate = this.housejobData?.HBLDate ? new Date(this.housejobData?.HBLDate) : undefined;
@@ -2378,6 +2383,12 @@ get isSuspended() : boolean {
       }
     )
   }
+// Snapshot of the Master Job's stored roll-up totals at load time. The MasterJob aggregate
+// columns are Decimal(10,3) (weights) / Decimal(8,3) (Volume) and hold the SUM of cargo across
+// every house job under the master. We keep this to validate the projected total before saving,
+// because a DB overflow during the backend recalc surfaces only as a generic 500.
+private masterAggregateAtLoad: { GrossWeight: number; NetWeight: number; ChargeableWeight: number; Volume: number; NoOfPkg: number } | null = null;
+
 private loadMasterJobDetails(masterJobSid: number): void {
   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
   const BranchMasterSid = this.currentBranch?.BranchMasterSid;
@@ -2395,7 +2406,13 @@ private loadMasterJobDetails(masterJobSid: number): void {
         this.houseJobForm.patchValue({
           MasterJobNumber: masterJobData.MasterJobNumber
         }, { emitEvent: false });
-      
+        this.masterAggregateAtLoad = {
+          GrossWeight: Number(masterJobData.GrossWeight) || 0,
+          NetWeight: Number(masterJobData.NetWeight) || 0,
+          ChargeableWeight: Number(masterJobData.ChargeableWeight) || 0,
+          Volume: Number(masterJobData.Volume) || 0,
+          NoOfPkg: Number(masterJobData.NoOfPkg) || 0
+        };
       }
     },
     error: (error) => {
@@ -3690,6 +3707,63 @@ onCurrencyChange(event: any) {
     this.submitHouseJob();
   }
 
+  private sumCargoAggregates(cargos: any[]): { GrossWeight: number; NetWeight: number; ChargeableWeight: number; Volume: number; NoOfPkg: number } {
+    const totals = { GrossWeight: 0, NetWeight: 0, ChargeableWeight: 0, Volume: 0, NoOfPkg: 0 };
+    (cargos || []).forEach(c => {
+      totals.GrossWeight += Number(c?.GrossWeight) || 0;
+      totals.NetWeight += Number(c?.NetWeight) || 0;
+      totals.ChargeableWeight += Number(c?.ChargeableWeight) || 0;
+      totals.Volume += Number(c?.Volume) || 0;
+      totals.NoOfPkg += Number(c?.NoOfPackage) || 0;
+    });
+    return totals;
+  }
+
+  /**
+   * Guards against the MasterJob roll-up overflowing its DB columns. The backend sums cargo
+   * across every house job under the master into MasterJob.{GrossWeight,NetWeight,
+   * ChargeableWeight}=Decimal(10,3) and MasterJob.Volume=Decimal(8,3); an overflow there throws
+   * a 500. We compute the projected total = (stored master total - this house job's original
+   * cargo) + this house job's current cargo, and block the save with a clear message if any
+   * field exceeds its column limit. No per-cargo validator can catch this because it is a sum.
+   */
+  private getMasterAggregateViolations(): string[] {
+    const masterJobSid = this.houseJobForm.get('MasterJobSid')?.value;
+    if (!masterJobSid || !this.masterAggregateAtLoad) {
+      return [];
+    }
+
+    const caps: Record<string, number> = {
+      GrossWeight: 9999999.999,       // Decimal(10,3)
+      NetWeight: 9999999.999,         // Decimal(10,3)
+      ChargeableWeight: 9999999.999,  // Decimal(10,3)
+      Volume: 99999.999,              // Decimal(8,3)
+      NoOfPkg: 2147483647             // Int
+    };
+    const labels: Record<string, string> = {
+      GrossWeight: 'Gross Weight',
+      NetWeight: 'Net Weight',
+      ChargeableWeight: 'Chargeable Weight',
+      Volume: 'Volume (CBM)',
+      NoOfPkg: 'No. of Packages'
+    };
+
+    const stored = this.masterAggregateAtLoad;
+    const original = this.sumCargoAggregates(this.housejobData?.Cargo || this.housejobData?.houseJobCargo || []);
+    const current = this.sumCargoAggregates(this.houseJobCargos.getRawValue());
+
+    const violations: string[] = [];
+    Object.keys(caps).forEach(field => {
+      const others = Math.max(0, (stored as any)[field] - (original as any)[field]);
+      const projected = others + (current as any)[field];
+      if (projected > caps[field] + 1e-6) {
+        const shown = field === 'NoOfPkg' ? Math.round(projected).toString() : projected.toFixed(3);
+        violations.push(`${labels[field]} total for this Master Job (${shown}) exceeds the allowed limit of ${caps[field].toLocaleString()}`);
+      }
+    });
+    return violations;
+  }
+
   private submitHouseJob(resolve?: (value: boolean) => void) {
     if (this.isSubmitting || this.isSaving) {
       resolve?.(false);
@@ -3746,6 +3820,13 @@ onCurrencyChange(event: any) {
         ? `Please fill required fields: ${invalidFields.join(', ')}`
         : 'Please fill all required fields correctly.'
     );
+    resolve?.(false);
+    return;
+  }
+
+  const masterAggregateViolations = this.getMasterAggregateViolations();
+  if (masterAggregateViolations.length) {
+    this.appSettingService.showWarning(masterAggregateViolations.join('\n'));
     resolve?.(false);
     return;
   }

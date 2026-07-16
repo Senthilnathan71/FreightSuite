@@ -352,6 +352,34 @@
             </div>
           </aside>
 
+          @if(userForm.get('isSalesperson')?.value){
+          <aside class="col-md-4">
+            <div
+              class="custom-form-group custom-form-group-select"
+              [class.filled]="!!userForm.get('SalesCompany')?.value?.length"
+            >
+              <multi-select
+                [control]="userForm.get('SalesCompany')"
+                [items]="salesCompanyList"
+                bindLabel="companyName"
+                bindValue="CompanyMasterSid"
+                placeholder=""
+              ></multi-select>
+              <label for="" class="input-label"
+                >Sales Company <span class="text-danger">*</span></label
+              >
+              @if(userForm.get('SalesCompany')?.touched &&
+              userForm.get('SalesCompany')?.invalid){
+              <div class="error-message">
+                @if(userForm.get('SalesCompany')?.hasError('required')){
+                <div>Required</div>
+                }
+              </div>
+              }
+            </div>
+          </aside>
+          }
+
           <aside class="col-md-4">
             <div
               class="custom-form-group custom-form-group-select"

@@ -91,6 +91,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
   departmentList: any[];
   userTypeList: any[];
   companyList: any[];
+  salesCompanyList: any[] = [];
   branchList: any[];
   menuList: any[];
   roleList: any[] = [];
@@ -160,6 +161,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       DefaultDept: [''],
       DeptHead : [null],
       isSalesperson: [false],
+      SalesCompany: [[]],
       isLoginUser: [true],
       userTypeId: [, [Validators.required]],
       contactNumberCode: [DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)],
@@ -176,7 +178,44 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
     });
     this.userForm.get('DefaultDept').disable();
     this.handleLoginUserToggle();
+    this.handleSalespersonToggle();
     this.subscribeToFormChanges();
+  }
+
+  handleSalespersonToggle() {
+    this.userForm.get('isSalesperson')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        const salesCompanyCtrl = this.userForm.get('SalesCompany');
+        if (!value) {
+          // Not a salesman → clear selection and drop the required rule
+          salesCompanyCtrl?.setValue([]);
+          salesCompanyCtrl?.clearValidators();
+        } else {
+          // Salesman → SalesCompany is mandatory
+          salesCompanyCtrl?.setValidators([Validators.required]);
+        }
+        salesCompanyCtrl?.updateValueAndValidity();
+      });
+  }
+
+  /**
+   * Builds the SalesCompany dropdown options from the login company's CompanyGroup.
+   * Shows every company that shares the login company's CompanyGroup, plus the
+   * login company itself. If the login company has no group, only itself shows.
+   */
+  buildSalesCompanyOptions() {
+    const loginCompanySid = this.currentCompany?.CompanyMasterSid;
+    const loginCompany = (this.companyList || []).find(
+      (company) => company.CompanyMasterSid === loginCompanySid
+    );
+    const group = loginCompany?.CompanyGroup;
+
+    this.salesCompanyList = (this.companyList || []).filter(
+      (company) =>
+        company.CompanyMasterSid === loginCompanySid ||
+        (!!group && company.CompanyGroup === group)
+    );
   }
 
   handleLoginUserToggle() {
@@ -528,6 +567,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
             company.branchMaster.length > 0
         ));
       this.menuList = menus;
+      this.buildSalesCompanyOptions();
 
       this.currentRoute.paramMap.subscribe((param) => {
         this.UserMasterSid = +param.get('id');
@@ -575,6 +615,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
             designation: d.designation,
             isLoginUser: d.isLoginUser === 'Y',
             isSalesperson: d.isSalesperson === '1' || d.isSalesperson === 'Y',
+            SalesCompany: d.SalesCompany ?? [],
             userTypeId: d.userTypeId,
             companies: allCompanyIds,
             department: d.department ?? [],
@@ -751,6 +792,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       DefaultDept: formValue.DefaultDept,
       DeptHead : formValue.DeptHead,
       isSalesperson: formValue.isSalesperson ? '1' : '0',
+      SalesCompany: formValue.isSalesperson ? (formValue.SalesCompany || []) : [],
       userTypeId: formValue.userTypeId,
       contactNumber: this.withDialCode(formValue.contactNumber, formValue.contactNumberCode)|| null,
       CountryMasterSid: formValue.CountryMasterSid,
@@ -1023,6 +1065,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       department: [],
       DefaultDept: '',
       isSalesperson: false,
+      SalesCompany: [],
       userTypeId: null,
       contactNumberCode: DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData),
       contactNumber: null,
