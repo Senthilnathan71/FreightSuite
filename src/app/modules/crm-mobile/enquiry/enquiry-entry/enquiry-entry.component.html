@@ -21,8 +21,8 @@
                         (click)="openAuditLogs()">
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode && mps.canPrint('Enquiry', 'Print')"
-                        [disabled]="!rateRequestData || rateRequestForm?.dirty || enquiryOtherForm?.dirty || isSuspended" (click)="openPrint()">
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" appPreventMultiClick *ngIf="isEditMode && mps.canPrint('Enquiry', 'Print')"
+                        [disabled]="!rateRequestData || rateRequestForm?.dirty || enquiryOtherForm?.dirty || isSuspended" (click)="openPrint()" >
                         <i class="fas fa-print me-1"></i> Print
                     </button>
 
@@ -2048,262 +2048,7 @@
 
     <div class="modal-body">
         <div id="printContent" class="p-1">
-            <!-- <div class="print-a4">
-
-                <!-- Company Info -->
-            <!-- <div class="row">
-                    <div class="company-header">
-                        <div class="company-logo">
-                            <img src="https://app.dofi.co/assets/images/logos/xtreme-dark-icon.svg" alt="Company Logo"
-                                class="img-fluid">
-                            <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                        </div>
-                        <div class="company-info ">
-                            <h4 class="my-0">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                            <h5 class="my-0">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine1 || currentBranch?.addressLine1 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.addressLine2 || currentBranch?.addressLine2 || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;">
-                                {{ currentBranchCityName || currentBranch?.cityMaster?.cityName || currentCompany?.City
-                                || '' }}
-                            </p>
-                            <p class="my-0" style="font-size: 14px;">{{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }}</p>
-                            <p class="my-0" style="font-size: 14px;"> {{ currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-                        </div>
-                    </div>
-                </div> -->
-
-
-            <!-- Title -->
-            <!-- <h5 class="text-center fw-bold  py-2" style="margin: 0; border-top:1px solid black;">ENQUIRY</h5> -->
-
-            <!-- Enquiry Details -->
-            <!-- <div class="row ">
-                    <div class="col-12 col-md-6">
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong> Enquiry Number</strong></div>
-                            <div>: {{ enquiryData?.EnquiryNumber || '' }}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Name</strong></div>
-                            <div>: {{ enquiryData?.CustomerName || '' }}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Party Address </strong>
-                            </div>
-                            <div>: {{ enquiryData?.CustomerAddress || '' }}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Received Date </strong>
-                            </div>
-                            <div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Port Of Origin</strong></div>
-                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PORSid)}}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Port Of Loading </strong></div>
-                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.POLSid)}}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Dept</strong></div>
-                            <div>: {{ enquiryData?.ShipmentType || '' }}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Shipper Name </strong></div>
-                            <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperName|| '' }}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Shipper Address </strong></div>
-                            <div>: {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress|| '' }} </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created By </strong></div>
-                            <div>: {{ enquiryData?.createdBy || '' }}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Enquiry Created Date</strong></div>
-                            <div>: {{ (enquiryData?.EnquiryDate | formatDate) || ''}}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Contact / Number</strong></div>
-                            <div>: {{ enquiryData?.ContactPerson || '' }} / {{ enquiryData?.ContactNumber || '' }}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Expected Shipment Date</strong>
-                            </div>
-                            <div>: {{ (enquiryData?.ShipmentExpectedDate | formatDate) || ''}}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Final Destination </strong></div>
-                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.FDPSid)}}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Port of Discharge </strong></div>
-                            <div>: {{getPort(enquiryData?.enquiryRoute[0]?.PODSid)}}</div>
-                        </div>
-                        <div class="d-flex mb-1">
-                            <div style="width: 200px; white-space: nowrap;"><strong>Inco Terms</strong></div>
-                            <div>: {{ enquiryData?.IncoTerms || '' }}</div>
-                        </div>
-                    </div>
-                </div> -->
-
-            <!-- Cargo Summary -->
-            <!-- <div style="margin-top: 2rem;">
-                <p><strong>Cargo Type : </strong>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || ''
-                    }} &nbsp; / <strong>
-                        Container Type :
-                    </strong> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '' }} &nbsp; /
-                    <strong>Qty</strong>
-                    : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || '' }} &nbsp; / <strong>
-                        Gross Weight
-                    </strong>
-                    :
-                    {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' }} &nbsp; /
-                    <strong>CBM</strong> : {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' }}
-                </p>
-            </div> -->
-
-            <!-- Product Table -->
-            <!-- <div style="margin-top: 1rem;">
-                    <p style="font-weight: bold; margin-bottom: 4px;">Product Details</p>
-                    <div class="table-responsive ">
-                        <table class="table tablebordered  table-sm" style="margin: 0;">
-                            <thead>
-                                <tr>
-                                    <th>Cargo Type</th>
-
-                                    <th>Cargo Desc</th>
-
-
-                                    <th>Product Name</th>
-                                    @if(selectedCargoMode === "AIR"){
-                                    <th>Chargeable Wt</th>
-                                    <th>Length</th>
-                                    <th>Width</th>
-                                    <th>Height</th>
-                                    }
-                                    @if(selectedCargoMode === "FCL"){
-
-                                    <th>Container Type</th>
-                                    <th>No of Container</th>
-                                    }
-
-                                    @if(selectedCargoMode === "LCL"){
-                                    <th>Qty</th>
-
-                                    <th>Weight Unit</th>
-                                    <th>Gross Wt.</th>
-                                    <th>Net Weight</th>
-                                    <th>CBM</th>
-                                    }
-                                    @if(selectedCargoMode === "FCL" || selectedCargoMode==="LCL"){
-                                    <th>Pkg Type</th>
-                                    <th>Shipment Terms</th>
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoType || '' }}</td>
-                                    <th>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.CargoDescription || '' }}
-                                    </th>
-                                    <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ProductName || '' }}</td>
-                                    @if(selectedCargoMode === "AIR"){
-                                    <td class="text-end">{{
-                                        enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ChargeableWeight || '' }}
-                                    </td>
-                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.length ||
-                                        '' }}</td>
-                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.width ||
-                                        '' }}</td>
-                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.height ||
-                                        '' }}</td>
-                                    }
-                                    @if(selectedCargoMode === "FCL"){
-                                    <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ContainerType || '' }}
-                                    </td>
-                                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Qty || ''
-                                        }}</td>
-                                    }
-                                    @if(selectedCargoMode === "LCL"){
-                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageQty || '' | number:'1.2-2' }}</td>
-                    <td class="text-end">{{ getUOMCode(enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.WeightUnitSid) }}</td>
-                    <td class="text-end"> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.GrossWeight || '' | number:'1.2-2' }}</td>
-                    <td class="text-end">{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.NetWeight | number:'1.2-2' }}</td>
-                    <td class="text-end"> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.Volume || '' | number:'1.2-2' }}</td>
-                    }
-                                    @if(selectedCargoMode === "FCL" || selectedCargoMode==="LCL"){
-                                    <td> {{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.PackageType || '' }}</td>
-
-                                    <td>{{ enquiryData?.enquiryRoute?.[0]?.enquiryCargo?.[0]?.ShipmentTerms || '' }}
-                                    </td>
-                                    }
-                                </tr>
-                                @if(selectedCargoMode === "LCL"){
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td class="text-end fw-bold">Total </td>
-                                    <td class="text-end fw-bold">{{ calculateTotalPackageQty()| number:'1.2-2' }}</td>
-                                    
-                                    <td></td>
-                                    <td class="text-end fw-bold">{{ calculateTotalGrossWeight() | number:'1.2-2' }}
-                                    </td>
-                                    <td class="text-end fw-bold">{{ calculateTotalNetWeight() | number:'1.2-2' }}
-                                    </td>
-                                    <td class="text-end fw-bold">{{ calculateTotalCBM() | number:'1.2-2' }}</td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                } -->
-
-            <!-- @if(selectedFCLLCL === "FCL"){
-          <tr>
-            <td></td>
-            <td></td>
-            <td class="text-end fw-semibold">Total Containers :</td>
-            <td></td>
-            <td class="text-end fw-semibold">{{ calculateTotalQty() }}</td>
-            <td colspan="5"></td>
-          </tr>
-        } -->
-            <!-- </tbody>
-                        </table>
-                    </div>
-                </div> -->
-
-            <!-- Remarks with Bottom Space -->
-            <!-- <div style="margin-top: 1rem; margin-bottom: 3rem;">
-                    <p style="font-weight: bold;"> Remarks :</p>
-                    <div style="height: 80px; "> {{ enquiryData?.Remarks || '' }}</div>
-                </div>
-                <div>
-                    <h6 class="fw-bold">Terms and Conditions:</h6>
-                    <ul>
-                        @for(term of TandCList; track term){
-                        <li>{{ term.TandC }}</li>
-                        }
-                    </ul>
-                </div>
-
-                <footer class="text-center mb-0 px-2">
-                    <div class="d-flex justify-content-between">
-                        <div class=""><span>Printed By :</span> {{userData.userName}} </div>
-                        <span>
-                            This document is computer-generated and does not require a signature.
-                        </span>
-                        <div><span>Printed On :</span> {{ currentDate | formatDate }}</div>
-                    </div>
-                </footer>
-
-            </div> -->
-
+         
             <div style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;position: relative;font-size: 14px;">
 
             <app-print-header></app-print-header>
@@ -2523,20 +2268,21 @@
                     <strong>Product Name</strong>
                 </th>
                 @if(selectedCargoMode === "AIR"){
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 13%;">
-                    <strong>Chargeable Wt.</strong>
-                </th>
+              
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 8%;">
                     <strong>Pkg Type</strong>
                 </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
                     <strong>No. of Pkg</strong>
                 </th>
+                 <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 140px;">
+                    <strong>Dims</strong>
+                </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
                     <strong>Gross Wt.</strong>
                 </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; border-right: none; width: 10%;">
-                    <strong>CBM</strong>
+                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 13%;">
+                    <strong>Chargeable Wt.</strong>
                 </th>
                 }
                 @if(selectedCargoMode === "FCL"){
@@ -2548,14 +2294,11 @@
                 </th>
                 }
                 @if(selectedCargoMode === "LCL"){
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 13%;">
-                    <strong>Chargeable Wt.</strong>
-                </th>
                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
                     <strong>No. of Pkg</strong>
                 </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center;">
-                    <strong>Wt. Unit</strong>
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 140px;">
+                    <strong>Dims</strong>
                 </th>
                 }
                 @if(selectedCargoMode === "ROAD"){
@@ -2602,9 +2345,7 @@
                     </td>
 
                     @if (selectedCargoMode === 'AIR') {
-                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
-                        {{ cargo?.ChargeableWeight | number:'1.3-3' }}
-                    </td>
+                   
                     <td style="border:1px solid #000; padding:2px 4px; text-align:start;">
                         {{ cargo?.PackageType || '' }}
                     </td>
@@ -2612,10 +2353,14 @@
                         {{ cargo?.PackageQty || ' ' }}
                     </td>
                     <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    {{ cargo?.length || 0 }} x {{ cargo?.width || 0 }} x {{ cargo?.height || 0 }}
+                    {{ getUOMCode(cargo?.WeightUnitSid) }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
                         {{ cargo?.GrossWeight | number:'1.3-3' }}
                     </td>
-                    <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
-                        {{ cargo?.Volume | number:'1.3-3' }}
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.ChargeableWeight | number:'1.3-3' }}
                     </td>
                     }
 
@@ -2630,13 +2375,11 @@
 
                     @if (selectedCargoMode === 'LCL') {
                     <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
-                        {{ cargo?.ChargeableWeight || '' }}
-                    </td>
-                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
                         {{ cargo?.PackageQty | number:'1.2-2' }}
                     </td>
-                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
-                        {{ getUOMCode(cargo?.WeightUnitSid) }}
+                   <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    {{ cargo?.length || 0 }} x {{ cargo?.width || 0 }} x {{ cargo?.height || 0 }}
+                    {{ getUOMCode(cargo?.WeightUnitSid) }}
                     </td>
                     }
 
@@ -2671,17 +2414,18 @@
                     }
                 </tr>
             </ng-container>
+            
             <tr style="line-height: 1.2; font-weight: 600;">
                 @if (selectedCargoMode === 'AIR') {
                 <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;font-weight: bolder;">
                     Total
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;font-weight: bolder;">
                     {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
-                    {{ calculateRouteCBM(route) | number:'1.3-3' }}
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;font-weight: bolder;">
+                    {{ calculateRouteChargeableWeight(route) | number:'1.3-3' }}
                 </td>
                 }
 
@@ -2699,7 +2443,7 @@
                 }
 
                 @if (selectedCargoMode === 'LCL') {
-                <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="6"></td>
+                <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
                 <td style="border:1px solid #000; padding:2px 4px; text-align:right; font-weight: bolder;">
                     Total
                 </td>

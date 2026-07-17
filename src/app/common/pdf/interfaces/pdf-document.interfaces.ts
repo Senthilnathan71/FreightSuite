@@ -105,7 +105,7 @@ export interface EnquiryPdfData extends PdfDocumentBase {
     shipmentFreq?: string;
   };
   routes: EnquiryRouteData[];
-  fclLcl: 'FCL' | 'LCL' | 'AIR';
+  fclLcl: 'FCL' | 'LCL' | 'AIR' | 'ROAD';
   departmentName?: string;
   terms?: PdfTermItem[];
 }

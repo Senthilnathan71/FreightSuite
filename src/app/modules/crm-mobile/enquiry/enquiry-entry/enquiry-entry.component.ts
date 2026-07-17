@@ -70,6 +70,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -94,7 +95,8 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
     DialCodeDropdownComponent,
     MultiSelectComponent,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    PreventMultiClickDirective
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
@@ -3396,7 +3398,8 @@ if (this.isTermsAndConditionsEnabled) {
         {
           ports: this.ports,
           departments: this.departments,
-          salesmen: this.salesmanList
+          salesmen: this.salesmanList,
+          measurementUnits: this.measurementUnitList
         },
         {
           routeTandCMap: this.routeTandCMap,
@@ -3622,7 +3625,8 @@ if (this.isTermsAndConditionsEnabled) {
         {
           ports: this.ports,
           departments: this.departments,
-          salesmen: this.salesmanList
+          salesmen: this.salesmanList,
+          measurementUnits: this.measurementUnitList
         },
         {
           routeTandCMap: this.routeTandCMap,
@@ -3641,8 +3645,8 @@ if (this.isTermsAndConditionsEnabled) {
 
   getUOMCode(uomId: number): string {
     if (!uomId) return '';
-    const weightUnit = this.weightUnitList.find(unit => unit.UOMMasterSid === uomId);
-    return weightUnit?.UOMCode || '';
+    const weightUnit = this.measurementUnitList.find(unit => unit.id === uomId);
+    return weightUnit?.name || '';
   }
 
   // Add these methods to your EnquiryEntryComponent class
@@ -3729,6 +3733,14 @@ if (this.isTermsAndConditionsEnabled) {
     let total = 0;
     route?.enquiryCargo?.forEach((cargo: any) => {
       total += Number(cargo?.Volume) || 0;
+    });
+    return total;
+  }
+
+   calculateRouteChargeableWeight(route: any): number {
+    let total = 0;
+    route?.enquiryCargo?.forEach((cargo: any) => {
+      total += Number(cargo?.ChargeableWeight) || 0;
     });
     return total;
   }

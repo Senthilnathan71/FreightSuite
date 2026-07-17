@@ -7569,18 +7569,56 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
       .filter(dim => dim.length || dim.width || dim.height);
   }
 
-  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string; grossWeight: number; netWeight: number; cbm: number }> {
+  getRoutePrintCargoDetails(route: any): Array<{
+    cargoType: string;
+    containerType: string;
+    quantity: number | string;
+    grossWeight: number;
+    netWeight: number;
+    cbm: number;
+    chargeableWeight: number;
+    packageQuantity: number;
+    dimensions: Array<{ length: number; width: number; height: number }>;
+    dimUom: string;
+  }> {
     const cargoGroups = this.getRouteCargoGroups(route);
     return cargoGroups
-      .map((cargo: any) => ({
-        cargoType: cargo?.CargoType || '',
-        containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
-        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? '',
-        grossWeight: Number(cargo?.GrossWeight) || 0,
-        netWeight: Number(cargo?.NetWeight) || 0,
-        cbm: Number(cargo?.Volume) || 0
-      }))
-      .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
+      .map((cargo: any) => {
+        const products = this.getQuotationCargoProducts(cargo);
+        const productPackageQuantity = products
+          .reduce((sum: number, product: any) => sum + (Number(product?.ExternalQty) || 0), 0);
+        const unitSid = Number(cargo?.WeightUnitSid ?? route?.WeightUnitSid);
+
+        return {
+          cargoType: cargo?.CargoType || '',
+          containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
+          quantity: cargo?.Qty ?? cargo?.NoofContainers ?? '',
+          grossWeight: Number(cargo?.GrossWeight) || 0,
+          netWeight: Number(cargo?.NetWeight) || 0,
+          cbm: Number(cargo?.Volume) || 0,
+          chargeableWeight: Number(cargo?.ChargeableWeight) || 0,
+          packageQuantity: productPackageQuantity || Number(cargo?.PackageQty) || 0,
+          dimensions: products
+            .map((product: any) => ({
+              length: Number(product?.Length || 0),
+              width: Number(product?.Width || 0),
+              height: Number(product?.Height || 0)
+            }))
+            .filter(dim => dim.length || dim.width || dim.height),
+          dimUom: this.dimensionUnits.find(unit => unit.id === unitSid)?.name || ''
+        };
+      })
+      .filter((cargo: any) =>
+        cargo.cargoType ||
+        cargo.containerType ||
+        cargo.quantity !== '' ||
+        cargo.grossWeight ||
+        cargo.netWeight ||
+        cargo.cbm ||
+        cargo.chargeableWeight ||
+        cargo.packageQuantity ||
+        cargo.dimensions.length
+      );
   }
 
   getCarrierTotalLocalAmount(carrier: any): number {

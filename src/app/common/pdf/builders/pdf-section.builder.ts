@@ -18,7 +18,8 @@ export function buildTitle(
     lineWidth?: number;
     lineThickness?: number;
     margin?: [number, number, number, number];
-    linePadding?: number; // 👈 new option
+    linePadding?: number; // 👈 new option,
+    fontSize?:number;
   } = {}
 ): any {
 
@@ -29,7 +30,8 @@ export function buildTitle(
     lineWidth = 575,
     lineThickness = 1,
     margin = [0, 0, 0, 10],
-    linePadding = 12   // 👈 default left/right spacing
+    linePadding = 12,  // 👈 default left/right spacing
+    fontSize=7
   } = options;
 
   const stack: any[] = [];
@@ -561,21 +563,23 @@ export function buildRemarks(
     title?: string;
     margin?: [number, number, number, number];
     labelWidth?: number;
+    fontSize?:number;
   } = {}
 ): any {
   const {
     title = 'Remarks',
     margin = [0, 10, 0, 10],
-    labelWidth = 120
+    labelWidth = 120,
+    fontSize=7
   } = options;
 
   return {
     stack: [
       {
         columns: [
-          { text: title, style: 'labelBold', width: labelWidth },
+          { text: title, style: 'labelBold', width: labelWidth , fontSize},
           { text: ':', width: 6, alignment: 'right' },
-          { text: remarks || '', width: '*', style: 'labelBold' }
+          { text: remarks || '', width: '*', style: '' , fontSize}
         ],
         margin: [0, 0, 0, 3]
       }
