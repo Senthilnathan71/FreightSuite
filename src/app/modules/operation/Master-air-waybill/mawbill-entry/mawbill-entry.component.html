@@ -793,7 +793,7 @@
                                                 <label class="input-label">ETA <span class="text-danger"></span></label>
                                                 <div class="error-message"
                                                     *ngIf="masterJobForm.get('ETA')?.touched && masterJobForm.get('ETA')?.hasError('etaLessThanOrEqualEtd')">
-                                                    <span>ETA date should be greater than ETD date</span>
+                                                    <span>ETA date should not be earlier than ETD date</span>
                                                 </div>
                                             </div>
                                         </div>

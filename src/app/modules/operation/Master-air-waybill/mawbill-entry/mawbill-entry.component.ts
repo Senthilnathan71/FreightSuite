@@ -2468,7 +2468,7 @@ loadMawbStock(data: any): void {
     if (etdValue && etaValue) {
       const etdDate = new Date(etdValue);
       const etaDate = new Date(etaValue);
-      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
+      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate < etdDate) {
         this.setControlError(this.masterJobForm.get('ETA'), 'etaLessThanOrEqualEtd', true);
         this.masterJobForm.get('ETA')?.markAsTouched();
         this.showControlValidationError('ETA');
@@ -3618,7 +3618,14 @@ handleEdocChange(event: any) {
     }
 
     const etaControl = this.masterJobForm.get('ETA');
-    if (etaControl?.value) {
+    const etdValue = this.masterJobForm.get('ETD')?.value;
+    if (!etaControl?.value || !etdValue) {
+      return;
+    }
+
+    const etaDate = new Date(etaControl.value);
+    const etdDate = new Date(etdValue);
+    if (!isNaN(etaDate.getTime()) && !isNaN(etdDate.getTime()) && etaDate < etdDate) {
       etaControl.setValue(null);
     }
   }
