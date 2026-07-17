@@ -147,9 +147,9 @@ function buildRouteSections(data: QuotationPdfData): any[] {
 
       blocks.push(buildRouteInfo(route, carrier));
 
-      // FCL shows the container table instead of weight/volume measurements.
+      // FCL shows the container table instead of the per-product cargo table.
       if (showCargoSummary) {
-        blocks.push(buildRouteMeasurements(route, data));
+        blocks.push(buildRouteProductTable(route, data));
       }
 
       if (showCargoTable) {
@@ -397,6 +397,15 @@ function formatNumeric(value: any, precision: number = 0): string {
   });
 }
 
+function getApiCargoProducts(cargo: any): any[] {
+  return cargo?.quoteProduct || cargo?.quoteProducts || cargo?.products || [];
+}
+
+// IsHaz / IsStackable are Char(1) 'Y'/'N' from the API but booleans in the entry form.
+function isYesFlag(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+}
+
 function getRouteCargoGroups(route: any): any[] {
   if (!route) return [];
   if (Array.isArray(route.cargo) && route.cargo.length > 0) return route.cargo;
@@ -420,26 +429,6 @@ const DIMENSION_UNITS: ReadonlyArray<{ id: number; name: string }> = [
 function resolveDimensionUnit(unitSid: any): string {
   const id = Number(unitSid);
   return DIMENSION_UNITS.find(unit => unit.id === id)?.name || '';
-}
-
-function sumCargoField(route: any, field: string): number {
-  return getRouteCargoGroups(route).reduce((sum: number, cargo: any) => sum + (Number(cargo?.[field]) || 0), 0);
-}
-
-function sumProductField(route: any, field: string): number {
-  return (route?.products || []).reduce((sum: number, product: any) => sum + (Number(product?.[field]) || 0), 0);
-}
-
-function isAirSegment(route: any): boolean {
-  const segment = (route?.segmentType || '').toString().toUpperCase();
-  if (segment) return segment === 'AIR';
-  return (route?.departmentName || '').toLowerCase().includes('air');
-}
-
-function getRoutePackageCount(route: any): number {
-  // Cargo-level PackageQty is often 0; the real count is carried on each product.
-  const productTotal = sumProductField(route, 'packageQty');
-  return productTotal || sumCargoField(route, 'noOfPackage');
 }
 
 function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>): any {
@@ -474,35 +463,155 @@ function buildRouteInfo(route: any, carrier: any): any {
   ]);
 }
 
-function buildRouteMeasurements(route: any, data: QuotationPdfData): any {
-  const weightUom = route?.weightUom ? ` ${route.weightUom}` : '';
+interface QuotationPrintRow {
+  cargoType: string;
+  commodity: string;
+  packageType: string;
+  noOfPackage: number;
+  dimensions: string;
+  grossWeight: number;
+  netWeight: number;
+  cbmOrChargeable: number;
+  haz: string;
+  stackable: string;
+}
 
-  const cells: Array<{ label: string; value: string } | null> = [
-    { label: 'Cargo Type', value: getRoutePrintCargoTypeSummary(route, data) },
-    { label: 'Gross Wt', value: `${formatNumeric(sumCargoField(route, 'grossWeight'), 3)}${weightUom}` },
-    isAirSegment(route)
-      ? { label: 'Chrg Wt', value: `${formatNumeric(sumCargoField(route, 'chargeableWeight'), 3)}${weightUom}` }
-      : { label: 'Net Wt', value: `${formatNumeric(sumCargoField(route, 'netWeight'), 3)}${weightUom}` },
-    // CBM only applies to a Sea/LCL department; keep the slot so Dims starts on the next row.
-    shouldShowRouteCbm(route, data)
-      ? { label: 'CBM', value: formatNumeric(sumCargoField(route, 'volume'), 3) }
-      : null
-  ];
+function formatPrintDimensions(product: any, dimUom: string): string {
+  const length = Number(product?.length) || 0;
+  const width = Number(product?.width) || 0;
+  const height = Number(product?.height) || 0;
 
-  const length = sumProductField(route, 'length');
-  const width = sumProductField(route, 'width');
-  const height = sumProductField(route, 'height');
-  if (length || width || height) {
-    const dims = `${length || '-'} × ${width || '-'} × ${height || '-'}`;
-    cells.push({ label: 'Dims', value: `${dims}${route?.dimUom ? ` ${route.dimUom}` : ''}` });
+  if (!length && !width && !height) {
+    return '';
   }
 
-  const packageCount = getRoutePackageCount(route);
-  if (packageCount) {
-    cells.push({ label: 'No of Pkgs', value: formatNumeric(packageCount) });
+  return `${length || '-'} × ${width || '-'} × ${height || '-'}${dimUom ? ` ${dimUom}` : ''}`;
+}
+
+/**
+ * One row per PRODUCT, not per cargo: Commodity, Pkg Type, No. of Pkg, Dim, Haz and Stackable
+ * only exist on QuoteProduct — QuoteCargo has no column for any of them. The parent cargo
+ * supplies Cargo Type and the fallback weights. Mirrors getRoutePrintProductRows() in
+ * quotation-entry.component.ts so the preview and the PDF stay identical.
+ */
+function getRoutePrintProductRows(route: any, data: QuotationPdfData): QuotationPrintRow[] {
+  const isAir = getRouteCargoMode(route, data) === 'AIR';
+  const dimUom = route?.dimUom || '';
+  const rows: QuotationPrintRow[] = [];
+
+  getRouteCargoGroups(route).forEach((cargo: any) => {
+    const products = cargo?.products || [];
+
+    if (!products.length) {
+      rows.push({
+        cargoType: cargo?.cargoType || '',
+        commodity: cargo?.productName || '',
+        packageType: cargo?.packageType || '',
+        noOfPackage: Number(cargo?.packageQty) || 0,
+        dimensions: '',
+        grossWeight: Number(cargo?.grossWeight) || 0,
+        netWeight: Number(cargo?.netWeight) || 0,
+        cbmOrChargeable: Number(isAir ? cargo?.chargeableWeight : cargo?.volume) || 0,
+        haz: '',
+        stackable: ''
+      });
+      return;
+    }
+
+    // With a single product the cargo weights are the same figures, so fall back to them when
+    // the product line is blank. With several products that fallback would repeat the whole
+    // cargo weight on every row, so the product values stand alone.
+    const single = products.length === 1;
+    const weight = (productValue: any, cargoValue: any) =>
+      Number(productValue) || (single ? Number(cargoValue) || 0 : 0);
+
+    products.forEach((product: any) => {
+      rows.push({
+        cargoType: cargo?.cargoType || '',
+        commodity: product?.productName || cargo?.productName || '',
+        packageType: product?.packageType || cargo?.packageType || '',
+        noOfPackage: Number(product?.externalQty) || (single ? Number(cargo?.packageQty) || 0 : 0),
+        dimensions: formatPrintDimensions(product, dimUom),
+        grossWeight: weight(product?.grossWeight, cargo?.grossWeight),
+        netWeight: weight(product?.netWeight, cargo?.netWeight),
+        cbmOrChargeable: isAir
+          ? weight(product?.chargeableWeight, cargo?.chargeableWeight)
+          : weight(product?.volume, cargo?.volume),
+        haz: product?.isHaz ? 'Y' : 'N',
+        stackable: product?.isStackable ? 'Y' : 'N'
+      });
+    });
+  });
+
+  return rows;
+}
+
+function buildRouteProductTable(route: any, data: QuotationPdfData): any {
+  const rows = getRoutePrintProductRows(route, data);
+  const isAir = getRouteCargoMode(route, data) === 'AIR';
+  // An all-blank Dim column is noise, so it only prints when some row carries dimensions.
+  const showDim = rows.some((row: QuotationPrintRow) => !!row.dimensions);
+
+  const header = [
+    'Cargo Type', 'Commodity', 'Pkg Type', 'No. of Pkg',
+    ...(showDim ? ['Dim'] : []),
+    'G. Weight', 'Net Wt', isAir ? 'Chrg Wt' : 'CBM', 'Haz', 'Stackable'
+  ].map((text: string) => ({ text, bold: true, alignment: 'center', fontSize: 7 }));
+
+  const body: any[] = [header];
+
+  rows.forEach((row: QuotationPrintRow) => {
+    body.push([
+      { text: row.cargoType || '-', alignment: 'left', fontSize: 7 },
+      { text: row.commodity || '-', alignment: 'left', fontSize: 7 },
+      { text: row.packageType || '-', alignment: 'left', fontSize: 7 },
+      { text: formatNumeric(row.noOfPackage), alignment: 'right', fontSize: 7 },
+      ...(showDim ? [{ text: row.dimensions || '-', alignment: 'left', fontSize: 7 }] : []),
+      { text: formatNumeric(row.grossWeight, 3), alignment: 'right', fontSize: 7 },
+      { text: formatNumeric(row.netWeight, 3), alignment: 'right', fontSize: 7 },
+      { text: formatNumeric(row.cbmOrChargeable, 3), alignment: 'right', fontSize: 7 },
+      { text: row.haz || '-', alignment: 'center', fontSize: 7 },
+      { text: row.stackable || '-', alignment: 'center', fontSize: 7 }
+    ]);
+  });
+
+  if (rows.length) {
+    const total = (field: 'grossWeight' | 'netWeight' | 'cbmOrChargeable') =>
+      rows.reduce((sum: number, row: QuotationPrintRow) => sum + (Number(row[field]) || 0), 0);
+
+    // pdfmake needs a placeholder cell for every column a colSpan swallows.
+    const labelSpan = showDim ? 5 : 4;
+    body.push([
+      { text: 'Total', bold: true, alignment: 'right', colSpan: labelSpan, fontSize: 7 },
+      ...Array.from({ length: labelSpan - 1 }, () => ({})),
+      { text: formatNumeric(total('grossWeight'), 3), bold: true, alignment: 'right', fontSize: 7 },
+      { text: formatNumeric(total('netWeight'), 3), bold: true, alignment: 'right', fontSize: 7 },
+      { text: formatNumeric(total('cbmOrChargeable'), 3), bold: true, alignment: 'right', fontSize: 7 },
+      { text: '', colSpan: 2 },
+      {}
+    ]);
   }
 
-  return buildLabeledGrid(cells);
+  return {
+    table: {
+      headerRows: 1,
+      widths: showDim
+        ? ['9%', '13%', '8%', '9%', '14%', '11%', '11%', '10%', '7%', '8%']
+        : ['10%', '20%', '10%', '11%', '13%', '13%', '12%', '5%', '6%'],
+      body
+    },
+    layout: {
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingLeft: () => 3,
+      paddingRight: () => 3,
+      paddingTop: () => 2,
+      paddingBottom: () => 2
+    },
+    margin: [10, 0, 10, 4]
+  };
 }
 
 function getContainerTypeDisplay(containerType: any, data: QuotationPdfData): string {
@@ -587,29 +696,6 @@ function shouldShowRouteCargoTable(route: any, data: QuotationPdfData): boolean 
   return getRouteCargoMode(route, data) === 'FCL';
 }
 
-// CBM applies only to a Sea department whose FCL/LCL setup is LCL.
-// Mirrors shouldShowRouteCbm() in quotation-entry.component.ts.
-function shouldShowRouteCbm(route: any, data: QuotationPdfData): boolean {
-  const department = (data.departments || []).find(
-    (dep: any) => Number(dep?.DepartmentMasterSid) === Number(route?.departmentSid)
-  );
-
-  if (!department) {
-    return false;
-  }
-
-  return normalizeCode(department?.departmentType) === 'SEA'
-    && normalizeCode(department?.FCLLCL) === 'LCL';
-}
-
-function getRoutePrintCargoTypeSummary(route: any, data: QuotationPdfData): string {
-  const cargoTypes = getRoutePrintCargoDetails(route, data)
-    .map((cargo: any) => cargo?.cargoType)
-    .filter((cargoType: string) => !!cargoType);
-
-  return cargoTypes.length ? Array.from(new Set(cargoTypes)).join(', ') : '-';
-}
-
 export function transformQuotationApiData(
   apiData: any,
   company: any,
@@ -624,6 +710,7 @@ export function transformQuotationApiData(
     containerTypeList?: any[];
     weightUnitList?: any[];
     measurementUnitList?: any[];
+    packageTypes?: any[];
   },
   options?: {
     routeTandCMap?: Record<string, any[]>;
@@ -707,13 +794,32 @@ export function transformQuotationApiData(
         netWeight: Number(cargo.NetWeight) || 0,
         volume: Number(cargo.Volume) || 0,
         chargeableWeight: Number(cargo.ChargeableWeight) || 0,
-        noOfPackage: Number(cargo.PackageQty) || 0
+        noOfPackage: Number(cargo.PackageQty) || 0,
+        productName: cargo.ProductName || '',
+        packageType: cargo.PackageType || '',
+        packageQty: Number(cargo.PackageQty) || 0,
+        products: getApiCargoProducts(cargo).map((product: any) => ({
+          productName: product.ProductName || '',
+          // The Pkg Type dropdown writes ExternalPkg (a UOMMasterSid); PackageType is null on
+          // any quotation not converted from an enquiry, so resolve the id first.
+          packageType: resolveUomCode(lookups?.packageTypes, product.ExternalPkg) || product.PackageType || '',
+          externalQty: Number(product.ExternalQty) || 0,
+          length: Number(product.Length) || 0,
+          width: Number(product.Width) || 0,
+          height: Number(product.Height) || 0,
+          grossWeight: Number(product.GrossWeight) || 0,
+          netWeight: Number(product.NetWeight) || 0,
+          volume: Number(product.Volume) || 0,
+          chargeableWeight: Number(product.ChargeableWeight) || 0,
+          isHaz: isYesFlag(product.IsHaz),
+          isStackable: isYesFlag(product.IsStackable)
+        }))
       })),
       terms: (options?.routeTandCMap?.[String(route.QuoteRouteSid)] || []).map((term: any) => ({
         content: getTermText(term)
       })),
       products: (route.quoteCargo || []).flatMap((cargo: any) =>
-        (cargo.quoteProduct || cargo.quoteProducts || cargo.products || []).map((product: any) => ({
+        getApiCargoProducts(cargo).map((product: any) => ({
           length: Number(product.Length) || 0,
           width: Number(product.Width) || 0,
           height: Number(product.Height) || 0,

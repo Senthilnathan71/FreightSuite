@@ -53,11 +53,34 @@ export interface QuotationRouteData {
   effDate?: Date | string;
   expDate?: Date | string;
   carriers: QuotationCarrierData[];
-  cargo?: PdfCargoItem[];
+  cargo?: QuotationCargoItem[];
   products?: Array<{ length?: number; width?: number; height?: number; packageQty?: number }>;
   terms?: PdfTermItem[];
   weightUom?: string;
   dimUom?: string;
+}
+
+// Commodity, Pkg Type, No. of Pkg, dimensions, Haz and Stackable exist only on QuoteProduct,
+// so the print table needs each cargo's products, not the route-flattened list above.
+export interface QuotationCargoItem extends PdfCargoItem {
+  productName?: string;
+  packageQty?: number;
+  products?: QuotationProductItem[];
+}
+
+export interface QuotationProductItem {
+  productName?: string;
+  packageType?: string;
+  externalQty?: number;
+  length?: number;
+  width?: number;
+  height?: number;
+  grossWeight?: number;
+  netWeight?: number;
+  volume?: number;
+  chargeableWeight?: number;
+  isHaz?: boolean;
+  isStackable?: boolean;
 }
 
 export interface QuotationCarrierData {

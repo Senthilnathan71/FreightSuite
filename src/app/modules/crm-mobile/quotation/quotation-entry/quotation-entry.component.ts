@@ -7298,7 +7298,8 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         ports: this.ports,
         containerTypeList: this.containerTypeList,
         weightUnitList: this.weightUnitList,
-        measurementUnitList: this.measurementUnitList
+        measurementUnitList: this.measurementUnitList,
+        packageTypes: this.packageTypes
       },
       {
         routeTandCMap: this.routeTandCMap,
@@ -7619,6 +7620,122 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         cargo.packageQuantity ||
         cargo.dimensions.length
       );
+  }
+
+  /**
+   * The print cargo table is one row per PRODUCT, not per cargo: Commodity, Pkg Type,
+   * No. of Pkg, Dims, Haz and Stackable only exist on QuoteProduct — QuoteCargo has no
+   * column for any of them. The parent cargo supplies Cargo Type and the fallback weights.
+   * A cargo with no product rows still prints one row so its weights are never dropped.
+   */
+  getRoutePrintProductRows(route: any): Array<{
+    cargoType: string;
+    commodity: string;
+    packageType: string;
+    noOfPackage: number;
+    dimensions: string;
+    grossWeight: number;
+    netWeight: number;
+    cbmOrChargeable: number;
+    haz: string;
+    stackable: string;
+  }> {
+    const isAir = this.isAirQuotationSegment(route);
+    const rows: any[] = [];
+
+    this.getRouteCargoGroups(route).forEach((cargo: any) => {
+      const products = this.getQuotationCargoProducts(cargo);
+      const unitSid = Number(cargo?.WeightUnitSid ?? route?.WeightUnitSid);
+      const dimUom = this.dimensionUnits.find(unit => unit.id === unitSid)?.name || '';
+
+      if (!products.length) {
+        rows.push({
+          cargoType: cargo?.CargoType || '',
+          commodity: cargo?.ProductName || '',
+          packageType: cargo?.PackageType || '',
+          noOfPackage: Number(cargo?.PackageQty) || 0,
+          dimensions: '',
+          grossWeight: Number(cargo?.GrossWeight) || 0,
+          netWeight: Number(cargo?.NetWeight) || 0,
+          cbmOrChargeable: Number(isAir ? cargo?.ChargeableWeight : cargo?.Volume) || 0,
+          haz: '',
+          stackable: ''
+        });
+        return;
+      }
+
+      // With a single product the cargo weights are the same figures, so fall back to them
+      // when the product line is blank. With several products that fallback would repeat the
+      // whole cargo weight on every row, so the product values stand alone.
+      const single = products.length === 1;
+      const weight = (productValue: any, cargoValue: any) =>
+        Number(productValue) || (single ? Number(cargoValue) || 0 : 0);
+
+      products.forEach((product: any) => {
+        rows.push({
+          cargoType: cargo?.CargoType || '',
+          commodity: product?.ProductName || cargo?.ProductName || '',
+          packageType: this.resolvePrintPackageType(product) || cargo?.PackageType || '',
+          noOfPackage: Number(product?.ExternalQty) || (single ? Number(cargo?.PackageQty) || 0 : 0),
+          dimensions: this.formatPrintDimensions(product, dimUom),
+          grossWeight: weight(product?.GrossWeight, cargo?.GrossWeight),
+          netWeight: weight(product?.NetWeight, cargo?.NetWeight),
+          cbmOrChargeable: isAir
+            ? weight(product?.ChargeableWeight, cargo?.ChargeableWeight)
+            : weight(product?.Volume, cargo?.Volume),
+          haz: this.isHazardous(product?.IsHaz) ? 'Y' : 'N',
+          stackable: this.isStackable(product?.IsStackable) ? 'Y' : 'N'
+        });
+      });
+    });
+
+    return rows;
+  }
+
+  /**
+   * The product's Pkg Type dropdown writes ExternalPkg (a UOMMasterSid), so PackageType is
+   * null on any quotation not converted from an enquiry. Resolve the id first and treat the
+   * PackageType string as the legacy fallback.
+   */
+  private resolvePrintPackageType(product: any): string {
+    const packageUom = this.packageTypes.find(
+      (unit: any) => Number(unit?.UOMMasterSid) === Number(product?.ExternalPkg)
+    );
+
+    return packageUom?.UOMCode || packageUom?.UOMName || product?.PackageType || '';
+  }
+
+  // An all-blank Dim column is noise, so it only prints when some row carries dimensions.
+  routeHasPrintDimensions(route: any): boolean {
+    return this.getRoutePrintProductRows(route).some(row => !!row.dimensions);
+  }
+
+  private formatPrintDimensions(product: any, dimUom: string): string {
+    const length = Number(product?.Length) || 0;
+    const width = Number(product?.Width) || 0;
+    const height = Number(product?.Height) || 0;
+
+    if (!length && !width && !height) {
+      return '';
+    }
+
+    return `${length || '-'} × ${width || '-'} × ${height || '-'}${dimUom ? ` ${dimUom}` : ''}`;
+  }
+
+  getRoutePrintProductTotals(route: any): { grossWeight: number; netWeight: number; cbmOrChargeable: number } {
+    return this.getRoutePrintProductRows(route).reduce(
+      (totals, row) => ({
+        grossWeight: totals.grossWeight + (Number(row.grossWeight) || 0),
+        netWeight: totals.netWeight + (Number(row.netWeight) || 0),
+        cbmOrChargeable: totals.cbmOrChargeable + (Number(row.cbmOrChargeable) || 0)
+      }),
+      { grossWeight: 0, netWeight: 0, cbmOrChargeable: 0 }
+    );
+  }
+
+  // AIR is charged on chargeable weight; everything else on volume.
+  getRouteCbmOrChargeableLabel(route: any): string {
+    return this.isAirQuotationSegment(route) ? 'Chrg Wt' : 'CBM';
   }
 
   getCarrierTotalLocalAmount(carrier: any): number {

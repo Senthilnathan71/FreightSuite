@@ -3361,70 +3361,54 @@
     <div style="font-size:14px;">
 
       @if(!shouldShowContainerQuantity(route)){
-      <table style="width:100%; border-collapse:collapse; font-size:14px; line-height:1.1;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px; line-height:1.1;">
 
         <tr>
-          @if(!shouldShowContainerQuantity(route)){
-            <th style="text-align:center; border:1px solid #000; padding:3px 8px;font-weight:bolder;">Cargo Type</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Cargo Type</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Commodity</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Pkg Type</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">No. of Pkg</th>
+          @if(routeHasPrintDimensions(route)){
+            <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Dim</th>
           }
-
-          <th style="text-align:center; border:1px solid #000; padding:3px 8px;font-weight:bolder;">Gross Wt</th>
-
-          @if(!isAirQuotationSegment(route)){
-            <th style="text-align:center; border:1px solid #000; padding:3px 8px;font-weight:bolder;">Net Wt</th>
-          } @else {
-            <th style="text-align:center; border:1px solid #000; padding:3px 8px;font-weight:bolder;">Chrg Wt</th>
-          }
-
-          @if(shouldShowRouteCbm(route)){
-            <th style="text-align:center; border:1px solid #000; padding:3px 8px;font-weight:bolder;">CBM</th>
-          }
-
-          @if(getProductDimensions(route).length){
-            <th style="text-align:center; border:1px solid #000; padding:3px 8px;font-weight:bolder;">Dims</th>
-          }
-
-          @if(getNofoPackegas(route)){
-            <th style="text-align:center; border:1px solid #000; padding:3px 8px;font-weight:bolder;">No of Pkgs</th>
-          }
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">G. Weight</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Net Wt</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">{{ getRouteCbmOrChargeableLabel(route) }}</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Haz</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Stackable</th>
         </tr>
 
-        @for(cargoDetail of getRoutePrintCargoDetails(route); track $index){
+        @for(cargoRow of getRoutePrintProductRows(route); track $index){
         <tr>
-          @if(!shouldShowContainerQuantity(route)){
-            <td style="border:1px solid #000; padding:3px 8px;">{{ cargoDetail.cargoType || '-' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px;">{{ cargoRow.cargoType || '-' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px;">{{ cargoRow.commodity || '-' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px;">{{ cargoRow.packageType || '-' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:end;">{{ cargoRow.noOfPackage | number:'1.0-0' }}</td>
+          @if(routeHasPrintDimensions(route)){
+            <td style="border:1px solid #000; padding:3px 5px;">{{ cargoRow.dimensions || '-' }}</td>
           }
+          <td style="border:1px solid #000; padding:3px 5px; text-align:end;">{{ cargoRow.grossWeight | number:'1.3-3' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:end;">{{ cargoRow.netWeight | number:'1.3-3' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:end;">{{ cargoRow.cbmOrChargeable | number:'1.3-3' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:center;">{{ cargoRow.haz || '-' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:center;">{{ cargoRow.stackable || '-' }}</td>
+        </tr>
+        }
 
-          <td style="border:1px solid #000; padding:3px 8px; text-align:end;">{{ cargoDetail.grossWeight | number:'1.3-3' }}</td>
-
-          @if(!isAirQuotationSegment(route)){
-            <td style="border:1px solid #000; padding:3px 8px; text-align:end;">{{ cargoDetail.netWeight | number:'1.3-3' }}</td>
-          } @else {
-            <td style="border:1px solid #000; padding:3px 8px; text-align:end;">{{ cargoDetail.chargeableWeight | number:'1.3-3' }}</td>
-          }
-
-          @if(shouldShowRouteCbm(route)){
-            <td style="border:1px solid #000; padding:3px 8px; text-align:end;">{{ cargoDetail.cbm | number:'1.3-3' }}</td>
-          }
-
-          @if(getProductDimensions(route).length){
-            <td style="border:1px solid #000; padding:3px 8px;">
-              @for(dim of cargoDetail.dimensions; track $index){
-                <div>
-                {{ dim.length ? dim.length : '-' }}
-                ×
-                {{ dim.width ? dim.width : '-' }}
-                ×
-                {{ dim.height ? dim.height : '-' }}
-                {{ cargoDetail.dimUom }}
-                </div>
-              }
-            </td>
-          }
-
-          @if(getNofoPackegas(route)){
-            <td style="border:1px solid #000; padding:3px 8px; text-align:end;">{{ cargoDetail.packageQuantity | number:'1.0-0' }}</td>
-          }
+        @if(getRoutePrintProductRows(route).length){
+        <tr style="font-weight:600;">
+          <td [attr.colspan]="routeHasPrintDimensions(route) ? 5 : 4"
+              style="border:1px solid #000; padding:3px 5px; text-align:end; font-weight:bolder;">Total</td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:end; font-weight:bolder;">
+            {{ getRoutePrintProductTotals(route).grossWeight | number:'1.3-3' }}
+          </td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:end; font-weight:bolder;">
+            {{ getRoutePrintProductTotals(route).netWeight | number:'1.3-3' }}
+          </td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:end; font-weight:bolder;">
+            {{ getRoutePrintProductTotals(route).cbmOrChargeable | number:'1.3-3' }}
+          </td>
+          <td colspan="2" style="border:1px solid #000; padding:3px 5px;"></td>
         </tr>
         }
 
