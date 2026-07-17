@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { toNumber } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-invoice-commodity-print',
@@ -10,7 +12,10 @@ import { LogoService } from 'src/app/core/services/logo.service';
   templateUrl: './invoice-commodity-print.component.html',
 })
 export class InvoiceCommodityPrintComponent {
-  constructor(public logoService: LogoService) {}
+  constructor(
+    public logoService: LogoService,
+    private currencyFormatter: CurrencyFormatService,
+  ) {}
 
   @Input() invoicePrintData: any;
   @Input() invoiceData: any;
@@ -99,13 +104,18 @@ export class InvoiceCommodityPrintComponent {
     return total;
   }
 
-  getInvoicePrintAmountTotal(field: string): number {
-    return (this.invoicePrintData?.voucherDetails || []).reduce(
-      (sum: number, d: any) => {
-        return sum + Number(d?.[field] || 0);
-      },
+  getInvoicePrintAmountTotal(field: string): string {
+    // voucherDetails amounts are comma-formatted strings (e.g. "36,599,959,740.00"),
+    // so use toNumber() to strip commas before summing — Number() would yield NaN.
+    const total = (this.invoicePrintData?.voucherDetails || []).reduce(
+      (sum: number, d: any) => sum + toNumber(d?.[field]),
       0,
     );
+
+    return this.currencyFormatter.formatMaskedAmount({
+      value: total,
+      currencyCode: this.currentCompanyCurrency?.code || '',
+    });
   }
 
   getBankCurrencyCode(bankDetail: any): string {
