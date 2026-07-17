@@ -7722,14 +7722,15 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     return `${length || '-'} × ${width || '-'} × ${height || '-'}${dimUom ? ` ${dimUom}` : ''}`;
   }
 
-  getRoutePrintProductTotals(route: any): { grossWeight: number; netWeight: number; cbmOrChargeable: number } {
+  getRoutePrintProductTotals(route: any): { noOfPackage: number; grossWeight: number; netWeight: number; cbmOrChargeable: number } {
     return this.getRoutePrintProductRows(route).reduce(
       (totals, row) => ({
+        noOfPackage: totals.noOfPackage + (Number(row.noOfPackage) || 0),
         grossWeight: totals.grossWeight + (Number(row.grossWeight) || 0),
         netWeight: totals.netWeight + (Number(row.netWeight) || 0),
         cbmOrChargeable: totals.cbmOrChargeable + (Number(row.cbmOrChargeable) || 0)
       }),
-      { grossWeight: 0, netWeight: 0, cbmOrChargeable: 0 }
+      { noOfPackage: 0, grossWeight: 0, netWeight: 0, cbmOrChargeable: 0 }
     );
   }
 

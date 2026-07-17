@@ -124,11 +124,19 @@ function buildRouteSections(data: QuotationPdfData): any[] {
     const fdp = route.fdpSid && route.fdpSid !== route.podSid ? getFormattedPort(route.fdpSid, data.ports || []) : '';
     const routeLabel = `${pol} - ${pod}${fdp ? ` - ${fdp}` : ''}`;
 
+    // Department | Valid | ports, matching the preview's route header row.
     blocks.push({
       table: {
-        widths: ['20%', '80%'],
+        widths: ['20%', '40%', '40%'],
         body: [[
           { text: deptName, bold: true, margin: [7, 1, 0, 2] },
+          {
+            columns: [
+              { text: 'Valid', bold: true, width: 40 },
+              { text: `: ${formatDate(route.effDate)} - ${formatDate(route.expDate)}`, width: '*' }
+            ],
+            margin: [0, 1, 0, 2]
+          },
           { text: routeLabel, bold: true, alignment: 'right', margin: [0, 1, 14, 2] }
         ]]
       },
@@ -141,12 +149,12 @@ function buildRouteSections(data: QuotationPdfData): any[] {
     });
 
     const carriers = route.carriers || [];
-    carriers.forEach((carrier: any) => {
-      const showCargoTable = shouldShowRouteCargoTable(route, data);
-      const showCargoSummary = !shouldShowContainerQuantity(route, data);
+    const showCargoTable = shouldShowRouteCargoTable(route, data);
+    const showCargoSummary = !shouldShowContainerQuantity(route, data);
 
-      blocks.push(buildRouteInfo(route, carrier));
-
+    // The cargo table describes the route, so it prints once above the carriers rather than
+    // repeating per carrier — the preview does the same via its isFirstCarrier guard.
+    if (carriers.length) {
       // FCL shows the container table instead of the per-product cargo table.
       if (showCargoSummary) {
         blocks.push(buildRouteProductTable(route, data));
@@ -155,7 +163,10 @@ function buildRouteSections(data: QuotationPdfData): any[] {
       if (showCargoTable) {
         blocks.push(buildRouteCargoTable(route, data));
       }
+    }
 
+    carriers.forEach((carrier: any) => {
+      blocks.push(buildRouteInfo(route, carrier));
       blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate, data.companyCurrencyCode, data.currencyMaster));
     });
 
@@ -455,11 +466,12 @@ function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>)
   return { stack: rows, margin: [0, 0, 0, 2] };
 }
 
+// Valid belongs to the route, so it prints in the route header; this row is per carrier.
 function buildRouteInfo(route: any, carrier: any): any {
   return buildLabeledGrid([
     { label: 'Carrier', value: carrier?.carrierName || '' },
     { label: 'TT. Days', value: carrier?.transitTime || '' },
-    { label: 'Valid', value: `${formatDate(route.effDate)} - ${formatDate(route.expDate)}` }
+    null
   ]);
 }
 
@@ -576,14 +588,17 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
   });
 
   if (rows.length) {
-    const total = (field: 'grossWeight' | 'netWeight' | 'cbmOrChargeable') =>
+    const total = (field: 'noOfPackage' | 'grossWeight' | 'netWeight' | 'cbmOrChargeable') =>
       rows.reduce((sum: number, row: QuotationPrintRow) => sum + (Number(row[field]) || 0), 0);
+    const totalPackages = total('noOfPackage');
 
-    // pdfmake needs a placeholder cell for every column a colSpan swallows.
-    const labelSpan = showDim ? 5 : 4;
+    // The label stops at Pkg Type so No. of Pkg can carry its own total. pdfmake still needs a
+    // placeholder cell for every column a colSpan swallows.
     body.push([
-      { text: 'Total', bold: true, alignment: 'right', colSpan: labelSpan, fontSize: 7 },
-      ...Array.from({ length: labelSpan - 1 }, () => ({})),
+      { text: 'Total', bold: true, alignment: 'right', colSpan: 3, fontSize: 7 },
+      {}, {},
+      { text: totalPackages ? formatNumeric(totalPackages) : '-', bold: true, alignment: 'right', fontSize: 7 },
+      ...(showDim ? [{}] : []),
       { text: formatNumeric(total('grossWeight'), 3), bold: true, alignment: 'right', fontSize: 7 },
       { text: formatNumeric(total('netWeight'), 3), bold: true, alignment: 'right', fontSize: 7 },
       { text: formatNumeric(total('cbmOrChargeable'), 3), bold: true, alignment: 'right', fontSize: 7 },
