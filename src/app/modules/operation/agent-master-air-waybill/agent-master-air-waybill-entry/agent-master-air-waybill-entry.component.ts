@@ -932,7 +932,14 @@ private setupMBLDateListener(): void {
 
    onETDDateSelect(): void {
     const etaControl = this.houseJobForm.get('ETA');
-    if (etaControl?.value) {
+    const etdValue = this.houseJobForm.get('ETD')?.value;
+    if (!etaControl?.value || !etdValue) {
+      return;
+    }
+
+    const etaDate = new Date(etaControl.value);
+    const etdDate = new Date(etdValue);
+    if (!isNaN(etaDate.getTime()) && !isNaN(etdDate.getTime()) && etaDate < etdDate) {
       etaControl.setValue(null);
     }
   }
@@ -2480,8 +2487,8 @@ onCurrencyChange(event: any) {
   if (etdValue && etaValue) {
     const etdDate = new Date(etdValue);
     const etaDate = new Date(etaValue);
-    if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
-      this.toastr.error('ETA date should be greater than ETD date');
+    if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate < etdDate) {
+      this.toastr.error('ETA date should not be earlier than ETD date');
       this.houseJobForm.get('ETA')?.setErrors({ etaLessThanOrEqualEtd: true });
       this.houseJobForm.get('ETA')?.markAsTouched();
       this.selectedTab = 'Shipment';

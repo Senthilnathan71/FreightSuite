@@ -1186,7 +1186,7 @@
                               class="text-danger"></span></label>
                           @if(houseJobForm.get('ETA')?.touched && houseJobForm.get('ETA')?.hasError('etaLessThanOrEqualEtd')){
                           <div class="error-message">
-                            <span>ETA date should be greater than ETD date</span>
+                            <span>ETA date should not be earlier than ETD date</span>
                           </div>
                           }
                         </div>
