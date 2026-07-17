@@ -217,7 +217,8 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
       paddingTop: () => 2,
       paddingBottom: () => 2
     },
-    margin: [40, 0, 40, 4]
+    // Top gap so the table's border does not merge into the route header's bottom line.
+    margin: [40, 4, 40, 4]
   };
 }
 
@@ -625,7 +626,8 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
       paddingTop: () => 2,
       paddingBottom: () => 2
     },
-    margin: [10, 0, 10, 4]
+    // Top gap so the table's border does not merge into the route header's bottom line.
+    margin: [10, 4, 10, 4]
   };
 }
 
