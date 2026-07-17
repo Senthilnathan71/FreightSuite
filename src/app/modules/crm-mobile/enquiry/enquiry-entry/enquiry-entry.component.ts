@@ -70,6 +70,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -94,7 +95,8 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
     DialCodeDropdownComponent,
     MultiSelectComponent,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    PreventMultiClickDirective
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
@@ -1196,11 +1198,16 @@ ${this.userData.userName}`;
   }
 
 
-  addCargo(routeIndex: number, isInitialCargo = false) {
-    if (!isInitialCargo && this.selectedCargoMode !== 'FCL') {
-      return;
-    }
+  /**
+   * The API stores IsStackable as Char(1) 'Y'/'N', but the form holds a boolean for the
+   * checkbox. Rows can reach here either from the API ('Y') or already-boolean form state,
+   * so accept both shapes.
+   */
+  isStackable(value: any): boolean {
+    return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+  }
 
+  addCargo(routeIndex: number, isInitialCargo = false) {
     if (this.quotationCreatedAgainstThisEnquiry) {
       return;
     }
@@ -1224,7 +1231,8 @@ ${this.userData.userName}`;
       volumetric: [''],
       length: [''],
       width: [''],
-      height: ['']
+      height: [''],
+      IsStackable: [false]
     });
     this.updateCargoValidators(cargoForm, this.selectedCargoMode);
     this.routeCargo(routeIndex).push(cargoForm);
@@ -1832,7 +1840,8 @@ private parseFloatSafe(value: any): number {
             length: [cargo.length || null],
             width: [cargo.width || null],
             height: [cargo.height || null],
-            volumetric: [cargo.Volumetric || '']
+            volumetric: [cargo.Volumetric || ''],
+            IsStackable: [this.isStackable(cargo.IsStackable)]
           })
         );
       });
@@ -3389,7 +3398,8 @@ if (this.isTermsAndConditionsEnabled) {
         {
           ports: this.ports,
           departments: this.departments,
-          salesmen: this.salesmanList
+          salesmen: this.salesmanList,
+          measurementUnits: this.measurementUnitList
         },
         {
           routeTandCMap: this.routeTandCMap,
@@ -3615,7 +3625,8 @@ if (this.isTermsAndConditionsEnabled) {
         {
           ports: this.ports,
           departments: this.departments,
-          salesmen: this.salesmanList
+          salesmen: this.salesmanList,
+          measurementUnits: this.measurementUnitList
         },
         {
           routeTandCMap: this.routeTandCMap,
@@ -3634,8 +3645,8 @@ if (this.isTermsAndConditionsEnabled) {
 
   getUOMCode(uomId: number): string {
     if (!uomId) return '';
-    const weightUnit = this.weightUnitList.find(unit => unit.UOMMasterSid === uomId);
-    return weightUnit?.UOMCode || '';
+    const weightUnit = this.measurementUnitList.find(unit => unit.id === uomId);
+    return weightUnit?.name || '';
   }
 
   // Add these methods to your EnquiryEntryComponent class
@@ -3710,9 +3721,30 @@ if (this.isTermsAndConditionsEnabled) {
     return total;
   }
 
+  /**
+   * Print and PDF only ever show stackable cargo, so the preview rows and every total must
+   * read the cargo through this one filter. A route whose rows are all filtered out still
+   * prints its ports and terms, just with a No Record row in place of the cargo.
+   */
+  getPrintCargo(route: any): any[] {
+    return (route?.enquiryCargo || []).filter((cargo: any) => this.isStackable(cargo?.IsStackable));
+  }
+
+  get printRoutes(): any[] {
+    return this.enquiryData?.enquiryRoute || [];
+  }
+
+  /**
+   * Width of the "No Record" row. Every cargo mode renders the same 3 base columns plus 5
+   * mode-specific ones, so the print header is always 8 columns wide.
+   */
+  get cargoColumnCount(): number {
+    return 8;
+  }
+
   calculateRouteGrossWeight(route: any): number {
     let total = 0;
-    route?.enquiryCargo?.forEach((cargo: any) => {
+    this.getPrintCargo(route).forEach((cargo: any) => {
       total += Number(cargo?.GrossWeight) || 0;
     });
     return total;
@@ -3720,15 +3752,23 @@ if (this.isTermsAndConditionsEnabled) {
 
   calculateRouteCBM(route: any): number {
     let total = 0;
-    route?.enquiryCargo?.forEach((cargo: any) => {
+    this.getPrintCargo(route).forEach((cargo: any) => {
       total += Number(cargo?.Volume) || 0;
+    });
+    return total;
+  }
+
+   calculateRouteChargeableWeight(route: any): number {
+    let total = 0;
+    this.getPrintCargo(route).forEach((cargo: any) => {
+      total += Number(cargo?.ChargeableWeight) || 0;
     });
     return total;
   }
 
   calculateRouteNetWeight(route: any): number {
     let total = 0;
-    route?.enquiryCargo?.forEach((cargo: any) => {
+    this.getPrintCargo(route).forEach((cargo: any) => {
       total += Number(cargo?.NetWeight) || 0;
     });
     return total;

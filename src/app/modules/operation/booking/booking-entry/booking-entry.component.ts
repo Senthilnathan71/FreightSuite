@@ -655,7 +655,7 @@ get visibleTabs() {
     this.initOtherForm();
     this.initCroForm();
     this.initDetailsForm();
-    this.addBookingCargo(undefined, true);
+    this.addBookingCargo();
     this.onShipmentTypeChange();
 
 
@@ -1097,6 +1097,7 @@ subscribeToFormChanges() {
         this.isSurfaceCargoMode() ? [Validators.max(99999.999)] : [Validators.required,Validators.min(0.001),Validators.max(99999.999)]
       ],
       IsHaz: [false],
+      IsStackable: [false],
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
@@ -1370,6 +1371,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
         this.isSurfaceCargoMode() ? [Validators.max(99999.999)] : [Validators.required,Validators.min(0.001),Validators.max(99999.999)]
       ],
       IsHaz: [isHaz],
+      IsStackable: [this.isStackable(data?.IsStackable)],
       ImcoClass: [{ value: data?.ImcoClass || null, disabled: !isHaz }],
       UnNo: [{ value: data?.UnNo || '', disabled: !isHaz }],
       PkgGroup: [{ value: data?.PkgGroup || '', disabled: !isHaz }],
@@ -1512,6 +1514,14 @@ private resolvePackageTypeSid(value: any): number | null {
 }
 
 private isHazardous(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+}
+
+/**
+ * IsStackable is Char(1) 'Y'/'N' from the API but a boolean in the form. Rows reach the
+ * builders from the API ('Y') and from quotation form state (true), so accept both.
+ */
+isStackable(value: any): boolean {
   return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
 }
 
@@ -2098,6 +2108,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         Height: product.Height,
         UomMasterSid: product.UomMasterSid ?? product.ProductUnit ?? 2,
         IsHaz: product.IsHaz,
+        IsStackable: product.IsStackable,
         ImcoClass: product.ImcoClass,
         UnNo: product.UnNo,
         PkgGroup: product.PkgGroup,
@@ -2278,6 +2289,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           NetWeight: data?.NetWeight,
         Volume: data?.Volume,
         IsHaz: this.isHazardous(data?.IsHaz),
+        IsStackable: this.isStackable(data?.IsStackable),
         ImcoClass: data?.ImcoClass,
         UnNo: data?.UnNo,
         PkgGroup: data?.PkgGroup,
@@ -2592,6 +2604,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           NetWeight: parseFloat(product.NetWeight) || 0,
           Volume: parseFloat(product.Volume) || 0,
           IsHaz: product.IsHaz ? 'Y' : 'N',
+          IsStackable: this.isStackable(product.IsStackable) ? 'Y' : 'N',
           ImcoClass: product.ImcoClass || '',
           UnNo: String(product.UnNo ?? ''),
           PkgGroup: product.PkgGroup || '',
@@ -2617,6 +2630,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           NetWeight: parseFloat(product.NetWeight) || 0,
           Volume: parseFloat(product.Volume) || 0,
           IsHaz: product.IsHaz ? 'Y' : 'N',
+          IsStackable: this.isStackable(product.IsStackable) ? 'Y' : 'N',
           ImcoClass: product.ImcoClass || '',
           UnNo: String(product.UnNo ?? ''),
           PkgGroup: product.PkgGroup || '',
@@ -4478,7 +4492,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
 
     this.bookingCargoExpanded = [];
     this.bookingCargoActiveIndex = 0;
-    this.addBookingCargo(undefined, true);
+    this.addBookingCargo();
     this.slicedProductArr = [];
     this.productDataLength = 0;
 
@@ -5654,12 +5668,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     return this.createBookingProductGroup(data, isPatching);
   }
 
-  addBookingCargo(data?: any, bypassFclCheck: boolean = false): void {
-    if (!bypassFclCheck && this.selectedFCLLCL !== 'FCL') {
-      this.appSettingService.showInfo('Add Cargo is available for FCL bookings only.');
-      return;
-    }
-
+  addBookingCargo(data?: any): void {
     const cargoGroup = this.createBookingCargoGroup(data);
     this.bookingCargo.push(cargoGroup);
     this.bookingCargoExpanded.push(true);
@@ -5725,7 +5734,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     this.bookingCargoExpanded.splice(cargoIndex, 1);
 
     if (this.bookingCargo.length === 0) {
-      this.addBookingCargo(undefined, true);
+      this.addBookingCargo();
       return;
     }
 

@@ -2,7 +2,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, effect, ElementRef, HostListener, OnDestroy, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbCalendar,
@@ -140,7 +140,6 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   private subscription = new Subscription()
 
   // SECTION1 - VARIABLE DECLARATION
-  @ViewChildren('revenueLocalAmountInput') revenueLocalInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChild('customerCreatedModal') customerCreatedModal!: TemplateRef<any>
   @ViewChild('bookingConfirmationModal') bookingConfirmationModal!: TemplateRef<any>;
   currentDate = new Date()
@@ -423,6 +422,7 @@ dataFromEnqPage:any;
     'Height',
     'ProductUnit',
     'IsHaz',
+    'IsStackable',
     'ImcoClass',
     'UnNo',
     'PkgGroup',
@@ -799,7 +799,6 @@ dataFromEnqPage:any;
         ? route.quoteCargo
         : (Array.isArray(route?.enquiryCargo) ? route.enquiryCargo : []);
       const primaryCargo = cargoGroups[0] || this.extractCargoData(route?.enquiryCargo);
-      const isFclRoute = this.isFclQuotationSegment(segment);
 
       const routeData = {
         QuoteRouteSid: route?.QuoteRouteSid || null,
@@ -841,40 +840,20 @@ dataFromEnqPage:any;
       const addedRouteIndex = this.quoteRoutes.length - 1;
       this.addQuoteCarrier(addedRouteIndex);
 
-      if (isFclRoute) {
-  cargoGroups.forEach((cargo: any) => {
-    this.addQuoteCargo(addedRouteIndex, {
-      ...cargo,
-      isFromEnquiry: true   // ✅ ADD THIS HERE ONLY
-    });
-  });
-} else {
-        this.addQuoteProduct(addedRouteIndex, {
-          Sno: 1,
-          ProductSid: null,
-          ProductName: primaryCargo?.ProductName || route?.ProductName,
-          PackageType: primaryCargo?.PackageType || route?.PackageType,
-          CargoDescription: null,
-          GrossWeight: primaryCargo?.GrossWeight || route?.GrossWeight,
-          NetWeight: primaryCargo?.NetWeight || route?.NetWeight,
-          ChargeableWeight: primaryCargo?.ChargeableWeight || route?.ChargeableWeight,
-          Volume: primaryCargo?.Volume || route?.Volume || route?.CBM,
-          ExternalPkg: this.resolvePackageTypeSid(primaryCargo?.PackageTypeId || route?.PackageTypeId || primaryCargo?.PackageType || route?.PackageType),
-          ExternalQty: primaryCargo?.PackageQty || route?.PackageQty,
-          Length: primaryCargo?.length || route?.length,
-          Volumetric: primaryCargo?.Volumetric || route?.Volumetric,
-          Width: primaryCargo?.width || route?.width,
-          Height: primaryCargo?.height || route?.height,
-          ProductUnit: this.resolvePackageTypeSid(primaryCargo?.PackageTypeId || route?.PackageTypeId || primaryCargo?.PackageType || route?.PackageType)
-        });
+      // Carry every enquiry cargo across, whatever the department. addQuoteCargo synthesises
+      // a product from each cargo's own fields (ProductName, weights, dims) when the enquiry
+      // has no product rows of its own, which is the case for every enquiry today.
+      const cargoSource = cargoGroups.length
+        ? cargoGroups
+        : (primaryCargo ? [primaryCargo] : []);
 
-        cargoGroups.slice(1).forEach((cargo: any) => {
-  this.addQuoteCargo(addedRouteIndex, {
-    ...cargo,
-    isFromEnquiry: true   // ✅ ADD HERE ALSO
-  });
-});
-      }
+      cargoSource.forEach((cargo: any) => {
+        this.addQuoteCargo(addedRouteIndex, {
+          ...cargo,
+          isFromEnquiry: true
+        });
+      });
+      this.ensureQuoteCargoSeeded(addedRouteIndex);
 
       this.onRouteChange(addedRouteIndex);
 
@@ -1168,6 +1147,14 @@ private isHazardous(value: any): boolean {
   return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
 }
 
+/**
+ * IsStackable is Char(1) 'Y'/'N' in the API but a boolean in the form. Rows reach the
+ * builders from the API ('Y') and from in-memory form state (true), so accept both.
+ */
+isStackable(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+}
+
   private mapQuotationCargoProduct(product: any): any {
     return {
       ProductName: product.ProductName || '',
@@ -1179,6 +1166,7 @@ private isHazardous(value: any): boolean {
       NetWeight: product.NetWeight,
     Volume: product.Volume,
     IsHaz: product.IsHaz,
+    IsStackable: product.IsStackable,
     ImcoClass: product.ImcoClass,
     UnNo: product.UnNo,
     PkgGroup: product.PkgGroup,
@@ -1652,7 +1640,23 @@ private mapQuotationCargoForBooking(cargo: any): any {
       route.get('PODSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
       route.get('POLSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
     });
-    this.subscribeToLeadCustomerToggle(); 
+    this.subscribeToLeadCustomerToggle();
+    this.subscribeToAgreedRateToggle();
+  }
+
+  /**
+   * Checking "Rate agreed" reveals the Exchange Rate / Local Amount columns, whose
+   * controls may have been written while hidden (async rate fetch, tariff apply).
+   * Recalculate so what becomes visible is never stale.
+   */
+  subscribeToAgreedRateToggle() {
+    this.subscription.add(
+      this.quotationForm.get('AgreedRate')?.valueChanges.pipe(
+        distinctUntilChanged()
+      ).subscribe(() => {
+        this.recalculateAllCharges();
+      })
+    );
   }
 
   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
@@ -1815,8 +1819,10 @@ private mapQuotationCargoForBooking(cargo: any): any {
       FreightPPCC : [{value : data?.FreightPPCC || null, disabled : true}],
       
       // Cargo Related Controls (Route wise single)
+      // Legacy: every department now holds its cargo in the `quoteCargo` FormArray below.
+      // These stay only so old payloads round-trip; they are not rendered and carry no validators.
       QuoteCargoSid : [data?.QuoteCargoSid || null],
-      CargoType: [data?.CargoType || null, [Validators.required]],
+      CargoType: [data?.CargoType || null],
       WeightUnitSid: [data?.WeightUnitSid || null],
       GrossWeight: [
         data?.GrossWeight ? 
@@ -2318,6 +2324,11 @@ private syncApprovedByControlState(): void {
     return routeForm.get(ctrl)?.hasValidator(Validators.required);
   }
 
+  isRequiredInQuoteCargo(routeIndex: number, cargoIndex: number, ctrl: string): boolean {
+    const cargoForm = this.quoteCargo(routeIndex)?.at(cargoIndex) as FormGroup;
+    return !!cargoForm?.get(ctrl)?.hasValidator(Validators.required);
+  }
+
   isCostPerUnitRequired(routeIndex: number,carrierIndex:number): boolean {
     const chargesArray = this.quoteCharges(routeIndex,carrierIndex);
     if (!chargesArray) {
@@ -2379,15 +2390,29 @@ private syncApprovedByControlState(): void {
     });
   }
 
-  private syncQuoteCargoValidation(routeIndex: number): void {
+  /**
+   * Required cargo fields per mode. These rules used to live on the route-level cargo
+   * controls (handleValidationOnDept); they moved here when every department switched to
+   * the `quoteCargo` FormArray, so each cargo row is validated on its own.
+   */
+  private readonly quoteCargoRequiredByMode: Record<string, string[]> = {
+    FCL: ['CargoType', 'ContainerType', 'Qty'],
+    LCL: ['CargoType', 'GrossWeight', 'Volume'],
+    AIR: ['CargoType', 'GrossWeight', 'ChargeableWeight'],
+    ROAD: ['CargoType', 'GrossWeight', 'NetWeight'],
+  };
+
+  private syncQuoteCargoValidation(routeIndex: number, fallbackType: string | null = null): void {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-    const isFclRoute = this.isFclQuotationSegment(routeForm);
+    const cargoMode = this.getRouteCargoMode(routeForm, fallbackType);
+    const requiredFields = this.quoteCargoRequiredByMode[cargoMode] || this.quoteCargoRequiredByMode['LCL'];
+    const allFields = ['CargoType', 'ContainerType', 'Qty', 'GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight'];
 
     this.quoteCargo(routeIndex).controls.forEach((cargoControl: AbstractControl) => {
       const cargoForm = cargoControl as FormGroup;
-      this.setOrClearRequired(cargoForm.get('CargoType'), isFclRoute);
-      this.setOrClearRequired(cargoForm.get('ContainerType'), isFclRoute);
-      this.setOrClearRequired(cargoForm.get('Qty'), isFclRoute);
+      allFields.forEach(fieldName => {
+        this.setOrClearRequired(cargoForm.get(fieldName), requiredFields.includes(fieldName));
+      });
     });
   }
 
@@ -2427,6 +2452,7 @@ private syncApprovedByControlState(): void {
           ProductUnit: data?.PackageTypeId || data?.ProductUnit || null,
           ChargeableWeight: data?.ChargeableWeight || '',
           IsHaz: this.isHazardous(data?.IsHaz),
+          IsStackable: this.isStackable(data?.IsStackable),
           ImcoClass: data?.ImcoClass || null,
           UnNo: data?.UnNo || '',
           PkgGroup: data?.PkgGroup || '',
@@ -2481,6 +2507,12 @@ private syncApprovedByControlState(): void {
 
   addQuoteProduct(routeIndex: number, data?: any, cargoIndex: number = -1) {
     const isHaz = this.isHazardous(data?.IsHaz);
+    // Derived here rather than at the call sites: loading cargo-nested products goes through
+    // addQuoteCargo, which has no chance to enrich them first.
+    const derivedVolumetric = data?.Volumetric || this.deriveProductVolumetric(data) || '';
+    const derivedUnNo = data?.UnNo
+      || this.productList.find(prod => prod.ProductMasterSid === data?.ProductMasterSid)?.UnNo
+      || '';
     const productForm = this.fb.group({
       QuoteProductSid : [data?.QuoteProductSid || null],
       Sno : [data?.Sno || null],
@@ -2506,7 +2538,7 @@ private syncApprovedByControlState(): void {
         0
       ],
       Length : [data?.Length ?? ''],
-      Volumetric: [data?.Volumetric || ''],
+      Volumetric: [derivedVolumetric],
       Width : [data?.Width ?? ''],
       Height : [data?.Height ?? ''],
        ProductUnit : [this.resolvePackageTypeSid(data?.ProductUnit ?? data?.PackageTypeId ?? data?.PackageType)],
@@ -2516,8 +2548,9 @@ private syncApprovedByControlState(): void {
         0
       ],
       IsHaz : [isHaz],
+      IsStackable : [this.isStackable(data?.IsStackable)],
       ImcoClass : [{ value : data?.ImcoClass || null, disabled : !isHaz }],
-      UnNo : [{ value : data?.UnNo || '', disabled : !isHaz }],
+      UnNo : [{ value : derivedUnNo, disabled : !isHaz }],
       PkgGroup : [{ value : data?.PkgGroup || null, disabled : !isHaz }],
       Remarks : [data?.Remarks || ''],
     });
@@ -2970,32 +3003,15 @@ isRateLockDisabled(): boolean {
         }, 100);
       }
       
-      if (isFclRoute) {
-        cargoGroups.forEach((cargoItem: any) => {
-          this.addQuoteCargo(routeIndex, {
-            ...cargoItem,
-            quoteProducts: cargoItem?.quoteProducts || cargoItem?.quoteProduct || cargoItem?.products || []
-          });
+      // Every department stores its cargo in `quoteCargo`, so load them all the same way.
+      // Older non-FCL records simply come back as a single cargo group.
+      cargoGroups.forEach((cargoItem: any) => {
+        this.addQuoteCargo(routeIndex, {
+          ...cargoItem,
+          quoteProducts: cargoItem?.quoteProducts || cargoItem?.quoteProduct || cargoItem?.products || []
         });
-      } else {
-        if (cargo) {
-          (cargo.quoteProduct || cargo.quoteProducts || []).forEach(product => {
-            const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
-            this.addQuoteProduct(routeIndex, {
-              ...product,
-              Volumetric: this.deriveProductVolumetric(product),
-              UnNo: productUnNo
-            });
-          })
-        }
-
-        cargoGroups.slice(1).forEach((extraCargo: any) => {
-          this.addQuoteCargo(routeIndex, {
-            ...extraCargo,
-            quoteProducts: extraCargo?.quoteProducts || extraCargo?.quoteProduct || extraCargo?.products || []
-          });
-        });
-      }
+      });
+      this.ensureQuoteCargoSeeded(routeIndex);
 
       (route?.quoteCarrier || []).forEach((carrier,carrierIndex) => {
         this.addQuoteCarrier(routeIndex,carrier);
@@ -3194,7 +3210,6 @@ isRateLockDisabled(): boolean {
     (response.quoteRoute || []).forEach((route: any, routeIndex: number) => {
       const cargoGroups = Array.isArray(route?.quoteCargo) ? route.quoteCargo : [];
       const cargo = cargoGroups[0];
-      const isFclRoute = this.isFclQuotationSegment(route);
       const fullRouteData = {
         ...route,
         QuoteRouteSid: null,
@@ -3220,41 +3235,24 @@ isRateLockDisabled(): boolean {
       this.handleValidationOnDept(routeIndex, route.segmentType);
       this.onRouteChange(routeIndex);
 
-      if (isFclRoute) {
-        cargoGroups.forEach((cargoItem: any) => {
-          this.addQuoteCargo(routeIndex, {
-            ...cargoItem,
-            QuoteCargoSid: null,
-            QuoteHeaderSid: null,
-            QuoteRouteSid: null,
-            quoteProducts: cargoItem?.quoteProducts || cargoItem?.quoteProduct || cargoItem?.products || []
-          });
-        });
-      } else if (cargo) {
-        (cargo.quoteProduct || cargo.quoteProducts || []).forEach((product: any) => {
-          const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
-          this.addQuoteProduct(routeIndex, {
+      // Copy every cargo the same way regardless of department, clearing the identifiers so
+      // the duplicate saves as new rows rather than updating the source quotation's.
+      cargoGroups.forEach((cargoItem: any) => {
+        const cargoProducts = cargoItem?.quoteProducts || cargoItem?.quoteProduct || cargoItem?.products || [];
+        this.addQuoteCargo(routeIndex, {
+          ...cargoItem,
+          QuoteCargoSid: null,
+          QuoteHeaderSid: null,
+          QuoteRouteSid: null,
+          quoteProducts: cargoProducts.map((product: any) => ({
             ...product,
             QuoteProductSid: null,
             QuoteCargoSid: null,
             QuoteHeaderSid: null,
-            Volumetric: this.deriveProductVolumetric(product),
-            UnNo: productUnNo
-          });
+          }))
         });
-      }
-
-      if (!isFclRoute) {
-        cargoGroups.slice(1).forEach((extraCargo: any) => {
-          this.addQuoteCargo(routeIndex, {
-            ...extraCargo,
-            QuoteCargoSid: null,
-            QuoteHeaderSid: null,
-            QuoteRouteSid: null,
-            quoteProducts: extraCargo?.quoteProducts || extraCargo?.quoteProduct || extraCargo?.products || []
-          });
-        });
-      }
+      });
+      this.ensureQuoteCargoSeeded(routeIndex);
 
       (route?.quoteCarrier || []).forEach((carrier: any, carrierIndex: number) => {
         this.addQuoteCarrier(routeIndex, {
@@ -3509,7 +3507,6 @@ isRateLockDisabled(): boolean {
 
       quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => {
         const cargoItems = Array.isArray(route.quoteCargo) ? route.quoteCargo : [];
-        const isFclRoute = this.isFclQuotationSegment(route);
 
         const mapProducts = (products: any[] = []) => products.map((product: any) => {
           const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
@@ -3520,57 +3517,25 @@ isRateLockDisabled(): boolean {
           };
         });
 
-        const quoteCargo = isFclRoute
-          ? cargoItems.map((cargo: any) => ({
-              QuoteCargoSid: cargo.QuoteCargoSid,
-              CargoType: cargo.CargoType,
-              WeightUnitSid: cargo.WeightUnitSid,
-              GrossWeight: cargo.GrossWeight,
-              NetWeight: cargo.NetWeight,
-              Volume: cargo.Volume,
-              ChargeableWeight: cargo.ChargeableWeight,
-              ContainerType: cargo.ContainerType,
-              Qty: cargo.Qty,
-              BookingHeaderSid: cargo.BookingHeaderSid,
-              ShipmentTerms: cargo.ShipmentTerms,
-              PackageType: cargo.PackageType,
-              PackageQty: cargo.PackageQty,
-              CargoDescription: cargo.CargoDescription,
-              quoteProducts: mapProducts(cargo.quoteProducts || cargo.quoteProduct || cargo.products || [])
-            }))
-          : [{
-              QuoteCargoSid: route.QuoteCargoSid,
-              CargoType: route.CargoType,
-              WeightUnitSid: route.WeightUnitSid,
-              GrossWeight: route.GrossWeight,
-              NetWeight: route.NetWeight,
-              Volume: route.Volume,
-              ChargeableWeight: route.ChargeableWeight,
-              ContainerType: route.ContainerType,
-              Qty: route.Qty,
-              BookingHeaderSid: route.BookingHeaderSid,
-              ShipmentTerms: route.ShipmentTerms,
-              PackageType: route.PackageType,
-              PackageQty: route.PackageQty,
-              CargoDescription: route.CargoDescription,
-              quoteProducts: mapProducts(route.quoteProducts || [])
-            }, ...cargoItems.map((cargo: any) => ({
-              QuoteCargoSid: cargo.QuoteCargoSid,
-              CargoType: cargo.CargoType,
-              WeightUnitSid: cargo.WeightUnitSid,
-              GrossWeight: cargo.GrossWeight,
-              NetWeight: cargo.NetWeight,
-              Volume: cargo.Volume,
-              ChargeableWeight: cargo.ChargeableWeight,
-              ContainerType: cargo.ContainerType,
-              Qty: cargo.Qty,
-              BookingHeaderSid: cargo.BookingHeaderSid,
-              ShipmentTerms: cargo.ShipmentTerms,
-              PackageType: cargo.PackageType,
-              PackageQty: cargo.PackageQty,
-              CargoDescription: cargo.CargoDescription,
-              quoteProducts: mapProducts(cargo.quoteProducts || cargo.quoteProduct || cargo.products || [])
-            }))];
+        // Cargo comes from the `quoteCargo` FormArray for every department now, so there is
+        // no route-level cargo to fold in as cargo[0].
+        const quoteCargo = cargoItems.map((cargo: any) => ({
+          QuoteCargoSid: cargo.QuoteCargoSid,
+          CargoType: cargo.CargoType,
+          WeightUnitSid: cargo.WeightUnitSid,
+          GrossWeight: cargo.GrossWeight,
+          NetWeight: cargo.NetWeight,
+          Volume: cargo.Volume,
+          ChargeableWeight: cargo.ChargeableWeight,
+          ContainerType: cargo.ContainerType,
+          Qty: cargo.Qty,
+          BookingHeaderSid: cargo.BookingHeaderSid,
+          ShipmentTerms: cargo.ShipmentTerms,
+          PackageType: cargo.PackageType,
+          PackageQty: cargo.PackageQty,
+          CargoDescription: cargo.CargoDescription,
+          quoteProducts: mapProducts(cargo.quoteProducts || cargo.quoteProduct || cargo.products || [])
+        }));
 
         const porSid = this.toNumberOrNull(route.PORSid ?? route.POOSid);
         const polSid = this.toNumberOrNull(route.POLSid);
@@ -3611,7 +3576,9 @@ isRateLockDisabled(): boolean {
         PackageType: route.PackageType,
         PackageQty: route.PackageQty,
         CargoDescription: route.CargoDescription,
-        quoteProducts: isFclRoute ? [] : quoteCargo[0].quoteProducts,
+        // Route-level products are a legacy transport field; products now always travel
+        // nested under their cargo.
+        quoteProducts: [],
         quoteCargo,
 
         // Route - Carrier
@@ -3908,79 +3875,20 @@ isRateLockDisabled(): boolean {
 
   handleValidationOnDept(index: number, type: string | null) {
     const routeForm = this.quoteRoutes.at(index) as FormGroup;
-    const cargoMode = this.getRouteCargoMode(routeForm, type);
 
-    const validationConfig = {
-      FCL: [],
-      LCL: ['GrossWeight', 'Volume'],
-      AIR: ['GrossWeight', 'ChargeableWeight'],
-      ROAD: ['GrossWeight', 'NetWeight'],
-    };
-
-    let allDynamicFields;
+    // Cargo now lives in the `quoteCargo` FormArray for every department, so the route-level
+    // cargo controls are inert. Clear them unconditionally: leaving a validator on a control
+    // that is no longer rendered would make the route invalid with nothing on screen to fix.
     const routeCargoControls = ['CargoType', 'GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight', 'ContainerType', 'Qty'];
-    switch (cargoMode) {
-      case 'FCL':
-        allDynamicFields = ['GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight'];
-        break;
-      case 'LCL':
-        allDynamicFields = ['ContainerType', 'Qty','ChargeableWeight'];
-        break;
-      case 'AIR':
-        allDynamicFields = ['ContainerType', 'Qty'];
-        break;
-      case 'ROAD':
-        allDynamicFields = ['ContainerType', 'Volume', 'ChargeableWeight'];
-        break;
-      default:
-        allDynamicFields = [];
-    }
-
-    if (cargoMode === 'FCL') {
-      routeCargoControls.forEach(fieldName => {
-        const control = routeForm.get(fieldName);
-        if (control) {
-          if (['GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight'].includes(fieldName)) {
-            control.setValue(null, { emitEvent: false });
-          }
-          control.clearValidators();
-          control.updateValueAndValidity({ emitEvent: false });
-        }
-      });
-    }
-
-    allDynamicFields.forEach(fieldName => {
+    routeCargoControls.forEach(fieldName => {
       const control = routeForm.get(fieldName);
       if (control) {
-        control.setValue(null, { emitEvent: false });
         control.clearValidators();
         control.updateValueAndValidity({ emitEvent: false });
       }
     });
 
-    if (cargoMode && validationConfig[cargoMode]) {
-      const requiredFields = validationConfig[cargoMode];
-
-      requiredFields.forEach(fieldName => {
-        const control = routeForm.get(fieldName);
-        if (control) {
-          const newValidators = [Validators.required];
-
-          if (fieldName !== 'ContainerType' && fieldName !== 'Volume') {
-            newValidators.push(Validators.min(1));
-          }
-
-          if(fieldName === 'Volume'){
-            newValidators.push(Validators.min(0.001));
-          }
-
-          control.setValidators(newValidators);
-          control.updateValueAndValidity({ emitEvent: false });
-        }
-      });
-    }
-
-    this.syncQuoteCargoValidation(index);
+    this.syncQuoteCargoValidation(index, type);
 
     routeForm.updateValueAndValidity();
   }
@@ -3995,7 +3903,7 @@ isRateLockDisabled(): boolean {
     if (!dept || dept === undefined) {
       routeForm.get('segmentType').setValue('LCL');
       this.handleValidationOnDept(routeIndex, 'LCL');
-      this.quoteCargo(routeIndex).clear();
+      this.ensureQuoteCargoSeeded(routeIndex);
       this.refreshRoutePortFilters(routeIndex);
       this.refreshAuthorizationForRoute(routeIndex);
       return;
@@ -4006,23 +3914,33 @@ isRateLockDisabled(): boolean {
     const selectedCargoMode = this.resolveCargoModeByDepartment(dept);
     routeForm.get('segmentType').setValue(selectedFCLLCL);
     this.handleValidationOnDept(routeIndex, selectedCargoMode);
-    if (selectedCargoMode !== 'FCL') {
-      this.quoteCargo(routeIndex).clear();
-    }
-    
+
     this.refreshRoutePortFilters(routeIndex);
-    this.quoteRoutes.controls.forEach((route:FormGroup)=>{
-      this.handleSegmentChangeOnAllProducts(routeIndex);
-    })
+    this.syncAllProductsForRoute(routeIndex);
 
     this.filterChargesBySegment(routeIndex, selectedFCLLCL);
     this.refreshAuthorizationForRoute(routeIndex);
-    if (selectedCargoMode === 'FCL') {
-      const cargoArray = this.quoteCargo(routeIndex);
-      if (cargoArray.length === 0) {
-        this.addQuoteCargo(routeIndex);
-      }
+    this.ensureQuoteCargoSeeded(routeIndex);
+  }
+
+  /**
+   * Every department renders its cargo from the `quoteCargo` FormArray, so a route with an
+   * empty array would show no cargo fields at all. Keep at least one row present.
+   */
+  private ensureQuoteCargoSeeded(routeIndex: number): void {
+    if (this.quoteCargo(routeIndex).length === 0) {
+      this.addQuoteCargo(routeIndex);
     }
+  }
+
+  /**
+   * Products hang off each cargo, so re-validating a route means walking every cargo's
+   * product list rather than the (now unused) route-level one.
+   */
+  private syncAllProductsForRoute(routeIndex: number): void {
+    this.quoteCargo(routeIndex).controls.forEach((_, cargoIndex) => {
+      this.handleSegmentChangeOnAllProducts(routeIndex, cargoIndex);
+    });
   }
 
   onCustomerChange(event: any): void {
@@ -4475,23 +4393,31 @@ isRateLockDisabled(): boolean {
 
     if (qty && revenueRate && revExRate) {
       chargeCtrl.get('RevenueLocalAmount')?.setValue((qty * revenueRate * revExRate).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
-      this.blurRevenueLocalInput(routeIndex, carrierIndex, chargeIndex);
     } else {
       chargeCtrl.get('RevenueLocalAmount')?.setValue((0).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
     }
   }
 
-  blurRevenueLocalInput(routeIndex: number, carrierIndex: number, chargeIndex: number) {
-    const el = this.revenueLocalInputs.find(ref => {
-      const e = ref.nativeElement;
-      return +e.getAttribute('data-route') === routeIndex &&
-        +e.getAttribute('data-carrier') === carrierIndex &&
-        +e.getAttribute('data-charge') === chargeIndex;
-    });
+  /** Recalculates both sides of a single charge row. Idempotent — safe to call repeatedly. */
+  private recalculateCharge(routeIndex: number, carrierIndex: number, chargeIndex: number) {
+    this.calculateRevenueTotalAmount(routeIndex, carrierIndex, chargeIndex);
+    this.calculateCostTotalAmount(routeIndex, carrierIndex, chargeIndex);
+  }
 
-    if (el && document.activeElement !== el.nativeElement) {
-      el.nativeElement.blur();
-    }
+  /**
+   * Recalculates every charge row across all routes and carriers.
+   * Approved carriers are skipped: their figures are frozen and must not be
+   * rewritten behind the lock, the same guard `fetchExchangeRate` applies.
+   */
+  private recalculateAllCharges() {
+    this.quoteRoutes.controls.forEach((_, routeIndex) => {
+      this.quoteCarriers(routeIndex).controls.forEach((__, carrierIndex) => {
+        if (this.isExchangeRateDisabled(routeIndex, carrierIndex)) return;
+        this.quoteCharges(routeIndex, carrierIndex).controls.forEach((___, chargeIndex) => {
+          this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
+        });
+      });
+    });
   }
 
   calculateCostTotalAmount(routeIndex: number,carrierIndex:number, chargeIndex: number) {
@@ -5352,6 +5278,7 @@ canGetTariff(routeIndex: number): boolean {
       Height: 'Height',
       ProductUnit: 'Product unit',
       IsHaz: 'Hazardous flag',
+      IsStackable: 'Stackable flag',
       ImcoClass: 'IMCO class',
       UnNo: 'UN number',
       PkgGroup: 'Package group',
@@ -5508,8 +5435,10 @@ canGetTariff(routeIndex: number): boolean {
     if (fieldName === 'CargoType') {
       const match = this.matchDropdownItem(spoken, this.modeOfCargoType, ['name']);
       if (match) {
-        routeForm.get('CargoType')?.setValue(match.name);
-        this.handleSegmentChangeOnAllProducts(this.voiceRouteIndex);
+        // CargoType lives on the cargo row, not the route.
+        this.ensureVoiceCargo();
+        this.quoteCargo(this.voiceRouteIndex).at(this.voiceCargoIndex)?.get('CargoType')?.setValue(match.name);
+        this.handleSegmentChangeOnAllProducts(this.voiceRouteIndex, this.voiceCargoIndex);
         setTimeout(() => this.moveRouteNext(), 200);
       }
       return;
@@ -5682,6 +5611,14 @@ canGetTariff(routeIndex: number): boolean {
       const checked = ['yes', 'true', 'on', '1', 'haz', 'hazardous'].some(v => spoken.includes(v));
       productForm.get('IsHaz')?.setValue(checked);
       this.toggleHazProduct(this.voiceRouteIndex, this.voiceProductIndex, this.voiceCargoIndex);
+      setTimeout(() => this.moveProductNext(), 200);
+      return;
+    }
+
+    if (fieldName === 'IsStackable') {
+      const checked = ['yes', 'true', 'on', '1', 'stackable'].some(v => spoken.includes(v)) &&
+        !spoken.includes('non stackable') && !spoken.includes('nonstackable');
+      productForm.get('IsStackable')?.setValue(checked);
       setTimeout(() => this.moveProductNext(), 200);
       return;
     }
@@ -7361,7 +7298,8 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
         ports: this.ports,
         containerTypeList: this.containerTypeList,
         weightUnitList: this.weightUnitList,
-        measurementUnitList: this.measurementUnitList
+        measurementUnitList: this.measurementUnitList,
+        packageTypes: this.packageTypes
       },
       {
         routeTandCMap: this.routeTandCMap,
@@ -7632,18 +7570,173 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
       .filter(dim => dim.length || dim.width || dim.height);
   }
 
-  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string; grossWeight: number; netWeight: number; cbm: number }> {
+  getRoutePrintCargoDetails(route: any): Array<{
+    cargoType: string;
+    containerType: string;
+    quantity: number | string;
+    grossWeight: number;
+    netWeight: number;
+    cbm: number;
+    chargeableWeight: number;
+    packageQuantity: number;
+    dimensions: Array<{ length: number; width: number; height: number }>;
+    dimUom: string;
+  }> {
     const cargoGroups = this.getRouteCargoGroups(route);
     return cargoGroups
-      .map((cargo: any) => ({
-        cargoType: cargo?.CargoType || '',
-        containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
-        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? '',
-        grossWeight: Number(cargo?.GrossWeight) || 0,
-        netWeight: Number(cargo?.NetWeight) || 0,
-        cbm: Number(cargo?.Volume) || 0
-      }))
-      .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
+      .map((cargo: any) => {
+        const products = this.getQuotationCargoProducts(cargo);
+        const productPackageQuantity = products
+          .reduce((sum: number, product: any) => sum + (Number(product?.ExternalQty) || 0), 0);
+        const unitSid = Number(cargo?.WeightUnitSid ?? route?.WeightUnitSid);
+
+        return {
+          cargoType: cargo?.CargoType || '',
+          containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
+          quantity: cargo?.Qty ?? cargo?.NoofContainers ?? '',
+          grossWeight: Number(cargo?.GrossWeight) || 0,
+          netWeight: Number(cargo?.NetWeight) || 0,
+          cbm: Number(cargo?.Volume) || 0,
+          chargeableWeight: Number(cargo?.ChargeableWeight) || 0,
+          packageQuantity: productPackageQuantity || Number(cargo?.PackageQty) || 0,
+          dimensions: products
+            .map((product: any) => ({
+              length: Number(product?.Length || 0),
+              width: Number(product?.Width || 0),
+              height: Number(product?.Height || 0)
+            }))
+            .filter(dim => dim.length || dim.width || dim.height),
+          dimUom: this.dimensionUnits.find(unit => unit.id === unitSid)?.name || ''
+        };
+      })
+      .filter((cargo: any) =>
+        cargo.cargoType ||
+        cargo.containerType ||
+        cargo.quantity !== '' ||
+        cargo.grossWeight ||
+        cargo.netWeight ||
+        cargo.cbm ||
+        cargo.chargeableWeight ||
+        cargo.packageQuantity ||
+        cargo.dimensions.length
+      );
+  }
+
+  /**
+   * The print cargo table is one row per PRODUCT, not per cargo: Commodity, Pkg Type,
+   * No. of Pkg, Dims, Haz and Stackable only exist on QuoteProduct — QuoteCargo has no
+   * column for any of them. The parent cargo supplies Cargo Type and the fallback weights.
+   * A cargo with no product rows still prints one row so its weights are never dropped.
+   */
+  getRoutePrintProductRows(route: any): Array<{
+    cargoType: string;
+    commodity: string;
+    packageType: string;
+    noOfPackage: number;
+    dimensions: string;
+    grossWeight: number;
+    netWeight: number;
+    cbmOrChargeable: number;
+    haz: string;
+    stackable: string;
+  }> {
+    const isAir = this.isAirQuotationSegment(route);
+    const rows: any[] = [];
+
+    this.getRouteCargoGroups(route).forEach((cargo: any) => {
+      const products = this.getQuotationCargoProducts(cargo);
+      const unitSid = Number(cargo?.WeightUnitSid ?? route?.WeightUnitSid);
+      const dimUom = this.dimensionUnits.find(unit => unit.id === unitSid)?.name || '';
+
+      if (!products.length) {
+        rows.push({
+          cargoType: cargo?.CargoType || '',
+          commodity: cargo?.ProductName || '',
+          packageType: cargo?.PackageType || '',
+          noOfPackage: Number(cargo?.PackageQty) || 0,
+          dimensions: '',
+          grossWeight: Number(cargo?.GrossWeight) || 0,
+          netWeight: Number(cargo?.NetWeight) || 0,
+          cbmOrChargeable: Number(isAir ? cargo?.ChargeableWeight : cargo?.Volume) || 0,
+          haz: '',
+          stackable: ''
+        });
+        return;
+      }
+
+      // With a single product the cargo weights are the same figures, so fall back to them
+      // when the product line is blank. With several products that fallback would repeat the
+      // whole cargo weight on every row, so the product values stand alone.
+      const single = products.length === 1;
+      const weight = (productValue: any, cargoValue: any) =>
+        Number(productValue) || (single ? Number(cargoValue) || 0 : 0);
+
+      products.forEach((product: any) => {
+        rows.push({
+          cargoType: cargo?.CargoType || '',
+          commodity: product?.ProductName || cargo?.ProductName || '',
+          packageType: this.resolvePrintPackageType(product) || cargo?.PackageType || '',
+          noOfPackage: Number(product?.ExternalQty) || (single ? Number(cargo?.PackageQty) || 0 : 0),
+          dimensions: this.formatPrintDimensions(product, dimUom),
+          grossWeight: weight(product?.GrossWeight, cargo?.GrossWeight),
+          netWeight: weight(product?.NetWeight, cargo?.NetWeight),
+          cbmOrChargeable: isAir
+            ? weight(product?.ChargeableWeight, cargo?.ChargeableWeight)
+            : weight(product?.Volume, cargo?.Volume),
+          haz: this.isHazardous(product?.IsHaz) ? 'Y' : 'N',
+          stackable: this.isStackable(product?.IsStackable) ? 'Y' : 'N'
+        });
+      });
+    });
+
+    return rows;
+  }
+
+  /**
+   * The product's Pkg Type dropdown writes ExternalPkg (a UOMMasterSid), so PackageType is
+   * null on any quotation not converted from an enquiry. Resolve the id first and treat the
+   * PackageType string as the legacy fallback.
+   */
+  private resolvePrintPackageType(product: any): string {
+    const packageUom = this.packageTypes.find(
+      (unit: any) => Number(unit?.UOMMasterSid) === Number(product?.ExternalPkg)
+    );
+
+    return packageUom?.UOMCode || packageUom?.UOMName || product?.PackageType || '';
+  }
+
+  // An all-blank Dim column is noise, so it only prints when some row carries dimensions.
+  routeHasPrintDimensions(route: any): boolean {
+    return this.getRoutePrintProductRows(route).some(row => !!row.dimensions);
+  }
+
+  private formatPrintDimensions(product: any, dimUom: string): string {
+    const length = Number(product?.Length) || 0;
+    const width = Number(product?.Width) || 0;
+    const height = Number(product?.Height) || 0;
+
+    if (!length && !width && !height) {
+      return '';
+    }
+
+    return `${length || '-'} × ${width || '-'} × ${height || '-'}${dimUom ? ` ${dimUom}` : ''}`;
+  }
+
+  getRoutePrintProductTotals(route: any): { noOfPackage: number; grossWeight: number; netWeight: number; cbmOrChargeable: number } {
+    return this.getRoutePrintProductRows(route).reduce(
+      (totals, row) => ({
+        noOfPackage: totals.noOfPackage + (Number(row.noOfPackage) || 0),
+        grossWeight: totals.grossWeight + (Number(row.grossWeight) || 0),
+        netWeight: totals.netWeight + (Number(row.netWeight) || 0),
+        cbmOrChargeable: totals.cbmOrChargeable + (Number(row.cbmOrChargeable) || 0)
+      }),
+      { noOfPackage: 0, grossWeight: 0, netWeight: 0, cbmOrChargeable: 0 }
+    );
+  }
+
+  // AIR is charged on chargeable weight; everything else on volume.
+  getRouteCbmOrChargeableLabel(route: any): string {
+    return this.isAirQuotationSegment(route) ? 'Chrg Wt' : 'CBM';
   }
 
   getCarrierTotalLocalAmount(carrier: any): number {
@@ -7864,34 +7957,43 @@ getContainerTypeName(containerCode: string): string {
 
     if(fromCurrency === toCurrency){
       destExRateCtrl.setValue(1);
+      this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
       return;
     }
-    
-    if(fromCurrencyCode && toCurrencyCode && segment){
-      const payload = {
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-        BranchMasterSid : this.currentBranch?.BranchMasterSid,
-        fromCurrencyCode: fromCurrencyCode,
-        toCurrencyCode: toCurrencyCode,
-        EffectiveFrom : this.isEditMode ? new Date(this.quotationData?.QuoteDate) : new Date(),
-        segment: segment
-      }
-      this.subscription.add(
-        this.leadService.getExchangeRate(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              const exchangeRate = resp.data;
-              destExRateCtrl.setValue(exchangeRate);
-            } else {
-              destExRateCtrl?.setValue('');
-            }
-          },
-          (error) => {
-            this.appSettingService.showError('Error fetching exchange rate: ' + error.message);
-          }
-        )
-      )
+
+    // Currency changed but no rate could be resolved: the amount's decimal precision
+    // still moved, so recalculate against what is currently in the row.
+    if(!fromCurrencyCode || !toCurrencyCode || !segment){
+      this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
+      return;
     }
+
+    const payload = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid,
+      fromCurrencyCode: fromCurrencyCode,
+      toCurrencyCode: toCurrencyCode,
+      EffectiveFrom : this.isEditMode ? new Date(this.quotationData?.QuoteDate) : new Date(),
+      segment: segment
+    }
+    this.subscription.add(
+      this.leadService.getExchangeRate(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            const exchangeRate = resp.data;
+            destExRateCtrl.setValue(exchangeRate);
+          } else {
+            destExRateCtrl?.setValue('');
+          }
+          // The rate lands asynchronously; without this the Local Amount keeps
+          // whatever it held before the currency was picked.
+          this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
+        },
+        (error) => {
+          this.appSettingService.showError('Error fetching exchange rate: ' + error.message);
+        }
+      )
+    )
 
   }
 

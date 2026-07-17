@@ -105,7 +105,18 @@ export class DecimalPrecisionDirective implements OnInit, AfterViewInit, OnChang
   onBlur(): void {
     this.isTyping = false;
     // Format immediately on blur
-    this.applyFormatting(this.el.nativeElement.value);
+    this.applyFormatting(this.getSourceValue());
+  }
+
+  /**
+   * The FormControl is the source of truth, not the DOM text.
+   * While the field has focus `applyFormatting` is suppressed, so a programmatic
+   * setValue landing mid-typing (e.g. an async exchange-rate fetch) leaves the DOM
+   * showing stale text. Formatting from the DOM would push that stale text back
+   * into the control and silently revert the new value.
+   */
+  private getSourceValue(): any {
+    return this.control?.control ? this.control.control.value : this.el.nativeElement.value;
   }
 
   @HostListener('input', ['$event'])
@@ -303,7 +314,7 @@ export class DecimalPrecisionDirective implements OnInit, AfterViewInit, OnChang
   private scheduleFormat(): void {
     setTimeout(() => {
       if (!this.isTyping) {
-        this.applyFormatting(this.el.nativeElement.value);
+        this.applyFormatting(this.getSourceValue());
       }
     }, 0);
   }

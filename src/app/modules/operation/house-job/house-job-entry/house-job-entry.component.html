@@ -1722,8 +1722,8 @@
 
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
       <div class="d-flex justify-content-end align-items-center gap-2 pe-1">
-        <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargo(undefined, false)"
-          *ngIf="selectedFCLLCL === 'FCL'" [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
+        <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargo()"
+          [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
           <i class="fas fa-plus me-1"></i> Add Cargo
         </button>
       </div>
@@ -1983,6 +1983,7 @@
                         }
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date</th>
                         <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty</th>
+                        <th class="bg-transparent text-light" scope="col">Non Stackable</th>
                         @if(isHazCargoType(cargoIndex)){
                           <th class="bg-transparent text-light" scope="col">Is Haz</th>
                           <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
@@ -2124,6 +2125,9 @@
                           <td>
                             <input type="text" formControlName="DeliveredQty" placeholder="" [onlyNumbers]
                               class="custom-input-field sm text-end">
+                          </td>
+                          <td class="text-center align-middle">
+                            <input type="checkbox" class="m-0" formControlName="IsStackable" />
                           </td>
                           @if(isHazCargoType(cargoIndex)){
                             <td class="text-center align-middle">
@@ -2556,6 +2560,7 @@
                   }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty<span class="text-danger"></span></th>
+                  <th class="bg-transparent text-light" scope="col">Non Stackable</th>
                   @if(isActiveCargoHazType()){
                   <th class="bg-transparent text-light" scope="col">Is Haz<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-60" scope="col">Imco Class<span class="text-danger"></span></th>
@@ -2785,6 +2790,11 @@
                   <td>
                     <input type="text" id="text-input" formControlName="DeliveredQty" placeholder="" [onlyNumbers]
                       class="custom-input-field sm text-end">
+                  </td>
+                  <td>
+                    <div class="form-check text-center">
+                      <input class="form-check-input" type="checkbox" formControlName="IsStackable">
+                    </div>
                   </td>
                   @if(isActiveCargoHazType()){
                   <td>
@@ -3826,6 +3836,16 @@
               }
             </div>
           </aside>
+
+          <aside class="col-md-4 d-flex align-items-center">
+            <div class="form-check form-check-inline p-0">
+              <div class="form-check d-flex align-items-center">
+                <input type="checkbox" id="" class="form-check-input sm" formControlName="IsStackable">
+                <label for="" class="form-check-label sm">Non Stackable</label>
+              </div>
+            </div>
+          </aside>
+
           @if(isActiveCargoHazType()){
           <aside class="col-md-4 d-flex align-items-center">
         <div class="form-check form-check-inline p-0">
