@@ -2213,7 +2213,18 @@
                 </div>
 
 
-                <ng-container *ngFor="let route of enquiryData?.enquiryRoute; let routeIndex = index">
+                @if (!printRoutes.length) {
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; table-layout:fixed; margin: 0;">
+                        <ng-container *ngTemplateOutlet="cargoTableHead"></ng-container>
+                        <tbody>
+                            <ng-container *ngTemplateOutlet="noCargoRecordRow"></ng-container>
+                        </tbody>
+                    </table>
+                </div>
+                }
+
+                <ng-container *ngFor="let route of printRoutes; let routeIndex = index">
                     <div style="margin-top: 0;" [style.marginTop.px]="routeIndex === 0 ? 0 : 0">
                      
 <div>
@@ -2256,83 +2267,12 @@
 
                      <div style="overflow-x: auto;">
     <table style="width: 100%; border-collapse: collapse; table-layout:fixed; margin: 0;">
-        <thead>
-            <tr>
-                <th style="border: 1px solid #000; padding: 2px 4px; border-left:none; text-align: center; font-weight: bolder; width: 9%;">
-                    <strong>Cargo Type</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 25%;">
-                    <strong>Cargo Desc</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 12%;">
-                    <strong>Product Name</strong>
-                </th>
-                @if(selectedCargoMode === "AIR"){
-              
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 8%;">
-                    <strong>Pkg Type</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
-                    <strong>No. of Pkg</strong>
-                </th>
-                 <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 140px;">
-                    <strong>Dims</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
-                    <strong>Gross Wt.</strong>
-                </th>
-                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 13%;">
-                    <strong>Chargeable Wt.</strong>
-                </th>
-                }
-                @if(selectedCargoMode === "FCL"){
-                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; width: 12%; text-align: center;">
-                    <strong>Cont. Type</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; width: 10%; font-weight: bolder; text-align: center;">
-                    <strong>No. of Cont.</strong>
-                </th>
-                }
-                @if(selectedCargoMode === "LCL"){
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
-                    <strong>No. of Pkg</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 140px;">
-                    <strong>Dims</strong>
-                </th>
-                }
-                @if(selectedCargoMode === "ROAD"){
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
-                    <strong>No. of Pkg</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
-                    <strong>Gross Wt.</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
-                    <strong>Net Wt.</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
-                    <strong>CBM</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; border-right: none;">
-                    <strong>Chargeable Wt.</strong>
-                </th>
-                }
-                @if(selectedCargoMode === "FCL" || selectedCargoMode==="LCL"){
-                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; width: 8%; text-align: center;">
-                    <strong>Pkg Type</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 10%;">
-                    <strong>Gross Wt.</strong>
-                </th>
-                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; border-right: none; text-align: center;">
-                    <strong>CBM</strong>
-                </th>
-                }
-            </tr>
-        </thead>
+        <ng-container *ngTemplateOutlet="cargoTableHead"></ng-container>
         <tbody>
-            <ng-container *ngFor="let cargo of route?.enquiryCargo">
+            @if (!getPrintCargo(route).length) {
+            <ng-container *ngTemplateOutlet="noCargoRecordRow"></ng-container>
+            }
+            <ng-container *ngFor="let cargo of getPrintCargo(route)">
                 <tr style="line-height: 1.2;">
                     <td style="border:1px solid #000; padding:2px 4px; border-left:none; text-align:start;">
                         {{ cargo?.CargoType || '' }}
@@ -2414,7 +2354,8 @@
                     }
                 </tr>
             </ng-container>
-            
+
+            @if (getPrintCargo(route).length) {
             <tr style="line-height: 1.2; font-weight: 600;">
                 @if (selectedCargoMode === 'AIR') {
                 <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
@@ -2468,6 +2409,7 @@
                 </td>
                 }
             </tr>
+            }
         </tbody>
     </table>
 </div>
@@ -2485,7 +2427,7 @@
                         </div>
                         }
 
-                        @if (routeIndex < (enquiryData?.enquiryRoute?.length || 0) - 1) {
+                        @if (routeIndex < printRoutes.length - 1) {
                         <div style="border-top: 1px solid #000;"></div>
                         }
 
@@ -2520,4 +2462,93 @@
 
 
     </div>
+
+    <!-- Shown in place of the cargo rows when a route has no stackable cargo. -->
+    <ng-template #noCargoRecordRow>
+        <tr style="line-height: 1.2;">
+            <td [attr.colspan]="cargoColumnCount"
+                style="border:1px solid #000; border-left:none; border-right:none; padding:6px 4px; text-align:center; font-weight:bolder;">
+                <strong>No Record</strong>
+            </td>
+        </tr>
+    </ng-template>
+
+    <!-- Cargo column header, shared by the route tables and the No Record table. -->
+    <ng-template #cargoTableHead>
+        <thead>
+            <tr>
+                <th style="border: 1px solid #000; padding: 2px 4px; border-left:none; text-align: center; font-weight: bolder; width: 9%;">
+                    <strong>Cargo Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 25%;">
+                    <strong>Cargo Desc</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 12%;">
+                    <strong>Product Name</strong>
+                </th>
+                @if(selectedCargoMode === "AIR"){
+              
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 8%;">
+                    <strong>Pkg Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
+                    <strong>No. of Pkg</strong>
+                </th>
+                 <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 140px;">
+                    <strong>Dims</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
+                    <strong>Gross Wt.</strong>
+                </th>
+                 <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 13%;">
+                    <strong>Chargeable Wt.</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "FCL"){
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; width: 12%; text-align: center;">
+                    <strong>Cont. Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; width: 10%; font-weight: bolder; text-align: center;">
+                    <strong>No. of Cont.</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "LCL"){
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>No. of Pkg</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 140px;">
+                    <strong>Dims</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "ROAD"){
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>No. of Pkg</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>Gross Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>Net Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>CBM</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; border-right: none;">
+                    <strong>Chargeable Wt.</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "FCL" || selectedCargoMode==="LCL"){
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; width: 8%; text-align: center;">
+                    <strong>Pkg Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 10%;">
+                    <strong>Gross Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; border-right: none; text-align: center;">
+                    <strong>CBM</strong>
+                </th>
+                }
+            </tr>
+        </thead>
+    </ng-template>
 </ng-template>

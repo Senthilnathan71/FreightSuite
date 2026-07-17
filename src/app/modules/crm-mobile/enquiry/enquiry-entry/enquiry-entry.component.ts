@@ -3721,9 +3721,30 @@ if (this.isTermsAndConditionsEnabled) {
     return total;
   }
 
+  /**
+   * Print and PDF only ever show stackable cargo, so the preview rows and every total must
+   * read the cargo through this one filter. A route whose rows are all filtered out still
+   * prints its ports and terms, just with a No Record row in place of the cargo.
+   */
+  getPrintCargo(route: any): any[] {
+    return (route?.enquiryCargo || []).filter((cargo: any) => this.isStackable(cargo?.IsStackable));
+  }
+
+  get printRoutes(): any[] {
+    return this.enquiryData?.enquiryRoute || [];
+  }
+
+  /**
+   * Width of the "No Record" row. Every cargo mode renders the same 3 base columns plus 5
+   * mode-specific ones, so the print header is always 8 columns wide.
+   */
+  get cargoColumnCount(): number {
+    return 8;
+  }
+
   calculateRouteGrossWeight(route: any): number {
     let total = 0;
-    route?.enquiryCargo?.forEach((cargo: any) => {
+    this.getPrintCargo(route).forEach((cargo: any) => {
       total += Number(cargo?.GrossWeight) || 0;
     });
     return total;
@@ -3731,7 +3752,7 @@ if (this.isTermsAndConditionsEnabled) {
 
   calculateRouteCBM(route: any): number {
     let total = 0;
-    route?.enquiryCargo?.forEach((cargo: any) => {
+    this.getPrintCargo(route).forEach((cargo: any) => {
       total += Number(cargo?.Volume) || 0;
     });
     return total;
@@ -3739,7 +3760,7 @@ if (this.isTermsAndConditionsEnabled) {
 
    calculateRouteChargeableWeight(route: any): number {
     let total = 0;
-    route?.enquiryCargo?.forEach((cargo: any) => {
+    this.getPrintCargo(route).forEach((cargo: any) => {
       total += Number(cargo?.ChargeableWeight) || 0;
     });
     return total;
@@ -3747,7 +3768,7 @@ if (this.isTermsAndConditionsEnabled) {
 
   calculateRouteNetWeight(route: any): number {
     let total = 0;
-    route?.enquiryCargo?.forEach((cargo: any) => {
+    this.getPrintCargo(route).forEach((cargo: any) => {
       total += Number(cargo?.NetWeight) || 0;
     });
     return total;

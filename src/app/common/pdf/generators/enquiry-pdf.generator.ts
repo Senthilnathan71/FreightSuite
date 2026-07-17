@@ -19,6 +19,14 @@ import { formatDate, formatNumber, joinNonEmpty } from '../helpers/pdf-formatter
 const ENQUIRY_LINE_WIDTH = 0.25;
 
 /**
+ * IsStackable is Char(1) 'Y'/'N' in the API but a boolean in the entry form, so accept
+ * both shapes. Only stackable cargo is printed.
+ */
+function isCargoStackable(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+}
+
+/**
  * Generate enquiry PDF document definition
  */
 export function generateEnquiryDocument(data: EnquiryPdfData): any {
@@ -153,13 +161,15 @@ function buildEnquiryInfo(data: EnquiryPdfData): any {
 function buildCargoSection(data: EnquiryPdfData): any[] {
   const content: any[] = [];
   const routes = data.routes || [];
-  const routesWithCargo = routes.filter(route => (route.cargo || []).length > 0);
 
-  if (routesWithCargo.length === 0) {
+  // No routes at all, so there is no port summary to hang a table off. Print a bare header
+  // with a No Record row.
+  if (routes.length === 0) {
+    content.push(buildEmptyCargoTable(data.fclLcl));
     return content;
   }
 
-  routesWithCargo.forEach((route, routeIndex) => {
+  routes.forEach((route, routeIndex) => {
     const cargoData = (route.cargo || []).map(cargo => ({
       CargoType: cargo.cargoType || '',
       CargoDesc: cargo.cargoDescription || '',
@@ -181,8 +191,14 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
       content.push(buildDivider({ width: 575, thickness: ENQUIRY_LINE_WIDTH, margin: [-10, 2, -10, 2] }));
     }
 
+    // The route's ports and terms still describe the enquiry even when every cargo row on it
+    // was filtered out as non-stackable, so only the table body falls back to No Record.
     content.push(buildRoutePortSummary(route, routeIndex === 0));
-    content.push(buildEnquiryCargoTable(cargoData, data.fclLcl));
+    content.push(
+      cargoData.length > 0
+        ? buildEnquiryCargoTable(cargoData, data.fclLcl)
+        : buildEmptyCargoTable(data.fclLcl)
+    );
     content.push(buildRouteTermsSection(route.terms || []));
   });
 
@@ -234,14 +250,6 @@ function buildEnquiryCargoTable(cargo: any[], fclLcl: 'FCL' | 'LCL' | 'AIR' | 'R
     return formatNumber(value, decimals);
   };
 
-  const headerRow = columns.map(col => ({
-    text: col.header,
-    style: 'tableHeader',
-    alignment: 'center',
-    noWrap: true,
-    fontSize: 7
-  }));
-
   const dataRows = cargo.map(row =>
     columns.map(col => ({
       text: formatCellValue(row[col.field], col.decimals),
@@ -253,11 +261,25 @@ function buildEnquiryCargoTable(cargo: any[], fclLcl: 'FCL' | 'LCL' | 'AIR' | 'R
 
   const totalRow = buildCargoTotalRow(cargo, columns, mode);
 
+  return buildCargoTableShell(columns, [...dataRows, totalRow]);
+}
+
+function buildCargoHeaderRow(columns: any[]): any[] {
+  return columns.map(col => ({
+    text: col.header,
+    style: 'tableHeader',
+    alignment: 'center',
+    noWrap: true,
+    fontSize: 7
+  }));
+}
+
+function buildCargoTableShell(columns: any[], bodyRows: any[]): any {
   return {
     table: {
       headerRows: 1,
       widths: columns.map(col => col.width),
-      body: [headerRow, ...dataRows, totalRow]
+      body: [buildCargoHeaderRow(columns), ...bodyRows]
     },
     layout: {
       ...PDF_TABLE_LAYOUTS.bordered,
@@ -266,6 +288,22 @@ function buildEnquiryCargoTable(cargo: any[], fclLcl: 'FCL' | 'LCL' | 'AIR' | 'R
     },
     margin: [-10, 4, -10, 3]
   };
+}
+
+/**
+ * Header row plus a single full-width "No Record" row, used when no stackable cargo exists.
+ */
+function buildEmptyCargoTable(fclLcl: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any {
+  const columns = getEnquiryCargoColumns(fclLcl || 'LCL');
+
+  // pdfmake needs a placeholder cell for every column the colSpan swallows.
+  const noRecordRow = columns.map((_, index) =>
+    index === 0
+      ? { text: 'No Record', colSpan: columns.length, style: 'tableCellBold', alignment: 'center', fontSize: 7, margin: [0, 3, 0, 3] }
+      : {}
+  );
+
+  return buildCargoTableShell(columns, [noRecordRow]);
 }
 
 function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
@@ -545,7 +583,9 @@ export function transformEnquiryApiData(
       terms: (options?.routeTandCMap?.[String(route.EnquiryRouteSid)] || []).map((term: any) => ({
         content: getTermDisplayText(term)
       })),
-      cargo: (route.enquiryCargo || []).map((cargo: any) => ({
+      cargo: (route.enquiryCargo || [])
+        .filter((cargo: any) => isCargoStackable(cargo.IsStackable))
+        .map((cargo: any) => ({
         cargoType: cargo.CargoType || '',
         cargoDescription: cargo.CargoDescription || '',
         productName: cargo.ProductName || '',
