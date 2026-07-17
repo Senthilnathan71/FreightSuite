@@ -555,7 +555,7 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
   const header = [
     'Cargo Type', 'Commodity', 'Pkg Type', 'No. of Pkg',
     ...(showDim ? ['Dim'] : []),
-    'G. Weight', 'Net Wt', isAir ? 'Chrg Wt' : 'CBM', 'Haz', 'Stackable'
+    'G. Weight', 'Net Wt', isAir ? 'Chrg Wt' : 'CBM', 'Haz', 'Non-Stack.'
   ].map((text: string) => ({ text, bold: true, alignment: 'center', fontSize: 7 }));
 
   const body: any[] = [header];
@@ -597,7 +597,7 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
       headerRows: 1,
       widths: showDim
         ? ['9%', '13%', '8%', '9%', '14%', '11%', '11%', '10%', '7%', '8%']
-        : ['10%', '20%', '10%', '11%', '13%', '13%', '12%', '5%', '6%'],
+        : ['10%', '20%', '8%', '11%', '13%', '13%', '12%', '5%', '8%'],
       body
     },
     layout: {
