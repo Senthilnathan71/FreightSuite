@@ -1000,7 +1000,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         body: [headerRow, ...dataRows, totalRow]
       },
       layout: compactMode ? compactBorderedLayout : PDF_TABLE_LAYOUTS.bordered,
-      margin: [0, 0, 0, 2],
+      margin: [-10, 0, -10, 2],
       fontSize: compactMode ? 6 : undefined
     };
   }
