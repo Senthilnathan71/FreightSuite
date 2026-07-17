@@ -149,3 +149,48 @@
     z-index: 2;
   }
 }
+
+.bookingStyle {
+  .quick-form-grid {
+    grid-template-columns:
+      minmax(280px, 0.95fr)
+      minmax(145px, 0.55fr)
+      minmax(160px, 0.55fr)
+      minmax(90px, 0.25fr)
+      minmax(240px, 0.75fr)
+      minmax(150px, 0.45fr);
+  }
+
+  .booking-no-field,
+  .booking-date-field,
+  .booking-status-field {
+    min-width: 0;
+  }
+
+  .booking-no-field .custom-input-field {
+    width: 100%;
+    min-width: 0;
+    padding-right: 4px !important;
+    text-overflow: clip;
+  }
+
+  .booking-date-field .input-group {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 1200px) {
+  .bookingStyle {
+    .quick-form-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .bookingStyle {
+    .quick-form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

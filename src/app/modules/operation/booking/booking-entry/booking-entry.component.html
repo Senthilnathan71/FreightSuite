@@ -157,7 +157,7 @@
   <div class="quick-form-panel compact-form" [formGroup]="bookingForm">
 
     <div class="quick-form-grid " [class.expanded]="isQuickFormExpanded">
-      <div class="smart-field-group">
+      <div class="smart-field-group booking-no-field">
         <div class="custom-form-group" style="margin-top: 8px;">
           <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
             formControlName="BookingNo">
@@ -175,7 +175,7 @@
             <span class="text-danger"></span></label>
         </div>
       </div>
-      <div class="smart-field-group">
+      <div class="smart-field-group booking-date-field">
         <div class=" custom-form-group custom-form-group-select-date"
           [class.filled]="!!bookingForm.get('BookingDateTime')?.value">
           <div class="input-group ">
@@ -243,7 +243,7 @@
               <span class="text-danger"></span></label>
           </div>
         </div>
-      <div class="smart-field-group">
+      <div class="smart-field-group booking-status-field">
         <aside>
           <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('status')?.value">
             @if(isEditMode){

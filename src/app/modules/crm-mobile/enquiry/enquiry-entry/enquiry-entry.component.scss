@@ -196,7 +196,7 @@
 }
 
 :host ::ng-deep .custom-form-group .input-label .text-danger,
-.enquiry-lcl-cargo-table thead .text-danger {
+.requestLooper table thead .text-danger {
   display: inline-block;
   min-width: 8px;
   font-size: 12px;
@@ -204,7 +204,11 @@
   line-height: 1;
 }
 
-.enquiry-lcl-cargo-table thead .text-danger {
+:host ::ng-deep .custom-form-group .input-label .text-danger {
+  color: #e83e8c !important;
+}
+
+.requestLooper table thead .text-danger {
   color: #ffb3b3 !important;
 }
 
