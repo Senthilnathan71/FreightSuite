@@ -1983,7 +1983,7 @@
                         }
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date</th>
                         <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty</th>
-                        <th class="bg-transparent text-light" scope="col">Stackable</th>
+                        <th class="bg-transparent text-light" scope="col">Non Stackable</th>
                         @if(isHazCargoType(cargoIndex)){
                           <th class="bg-transparent text-light" scope="col">Is Haz</th>
                           <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
@@ -2560,7 +2560,7 @@
                   }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty<span class="text-danger"></span></th>
-                  <th class="bg-transparent text-light" scope="col">Stackable</th>
+                  <th class="bg-transparent text-light" scope="col">Non Stackable</th>
                   @if(isActiveCargoHazType()){
                   <th class="bg-transparent text-light" scope="col">Is Haz<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-60" scope="col">Imco Class<span class="text-danger"></span></th>
@@ -3841,7 +3841,7 @@
             <div class="form-check form-check-inline p-0">
               <div class="form-check d-flex align-items-center">
                 <input type="checkbox" id="" class="form-check-input sm" formControlName="IsStackable">
-                <label for="" class="form-check-label sm">Stackable</label>
+                <label for="" class="form-check-label sm">Non Stackable</label>
               </div>
             </div>
           </aside>

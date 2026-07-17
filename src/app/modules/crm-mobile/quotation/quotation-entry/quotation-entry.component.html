@@ -875,7 +875,7 @@
                                 <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">UOM</th>
                                 }
                                 <th class="bg-transparent text-light" scope="col" width="5%">Is Haz</th>
-                                <th class="bg-transparent text-light" scope="col" width="5%">Stackable</th>
+                                <th class="bg-transparent text-light" scope="col" width="5%">Non Stackable</th>
 
                                 <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Imco Class
                                 </th>
@@ -1192,13 +1192,13 @@
                                         <th class="bg-transparent text-light" scope="col"
                                           *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1"></th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">External Pkg</th>
+                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col"> Pkg Type</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg</th>
                                       <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Wt.</th>
                                       <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Wt.</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM</th>
                                         <th class="bg-transparent text-light">Is Haz</th>
-                                        <th class="bg-transparent text-light">Stackable</th>
+                                        <th class="bg-transparent text-light">Non Stackable</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Pkg Group</th>
@@ -1254,7 +1254,7 @@
                                           </div>
                                         </td>
                                         <td>
-                                          <div class="form-check ms-2">
+                                          <div class="form-check ms-4">
                                             <input class="form-check-input" type="checkbox" formControlName="IsStackable">
                                           </div>
                                         </td>
@@ -2333,7 +2333,7 @@
                               <tr class="bg-info text-center">
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
                                 @if(isLclStyleQuotationSegment(route)){
-                                <th class="bg-transparent text-light dofi-min-w-150" scope="col">External Pkg <span
+                                <th class="bg-transparent text-light dofi-min-w-150" scope="col"> Pkg type<span
                                     class="text-danger">*</span></th>
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg <span
                                     class="text-danger">*</span></th>
@@ -2345,7 +2345,7 @@
                                     class="text-danger">*</span></th>
                                 }
                                 <th class="bg-transparent text-light" scope="col">Is Haz</th>
-                                <th class="bg-transparent text-light" scope="col">Stackable</th>
+                                <th class="bg-transparent text-light" scope="col">Non Stackable</th>
 
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
@@ -2410,7 +2410,7 @@
                                 </td>
 
                                 <td>
-                                  <div class="form-check ms-2">
+                                  <div class="form-check ms-4">
                                     <input class="form-check-input" type="checkbox" formControlName="IsStackable">
                                   </div>
                                 </td>
