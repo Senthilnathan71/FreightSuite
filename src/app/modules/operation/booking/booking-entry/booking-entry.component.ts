@@ -655,7 +655,7 @@ get visibleTabs() {
     this.initOtherForm();
     this.initCroForm();
     this.initDetailsForm();
-    this.addBookingCargo(undefined, true);
+    this.addBookingCargo();
     this.onShipmentTypeChange();
 
 
@@ -4492,7 +4492,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
 
     this.bookingCargoExpanded = [];
     this.bookingCargoActiveIndex = 0;
-    this.addBookingCargo(undefined, true);
+    this.addBookingCargo();
     this.slicedProductArr = [];
     this.productDataLength = 0;
 
@@ -5668,12 +5668,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     return this.createBookingProductGroup(data, isPatching);
   }
 
-  addBookingCargo(data?: any, bypassFclCheck: boolean = false): void {
-    if (!bypassFclCheck && this.selectedFCLLCL !== 'FCL') {
-      this.appSettingService.showInfo('Add Cargo is available for FCL bookings only.');
-      return;
-    }
-
+  addBookingCargo(data?: any): void {
     const cargoGroup = this.createBookingCargoGroup(data);
     this.bookingCargo.push(cargoGroup);
     this.bookingCargoExpanded.push(true);
@@ -5739,7 +5734,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     this.bookingCargoExpanded.splice(cargoIndex, 1);
 
     if (this.bookingCargo.length === 0) {
-      this.addBookingCargo(undefined, true);
+      this.addBookingCargo();
       return;
     }
 

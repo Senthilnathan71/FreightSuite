@@ -1096,6 +1096,13 @@
 
                                 <div class="row">
                                     <div class="col-12">
+                                        <div class="d-flex justify-content-end me-2">
+                                            <button class="btn btn-info btn-sm ms-auto" type="button"
+                                                (click)="addCargo(routeIndex)"
+                                                [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry || (isEditMode && isSuspended)">
+                                                 <i class="fas fa-plus"></i> Add Cargo
+                                            </button>
+                                        </div>
                                         @if(selectedCargoMode ==='LCL'){
                                         <div formArrayName="cargo" class="table-responsive table-borderless">
                                             <div>
@@ -1353,15 +1360,6 @@
                                         </div>
                                         }
                                         <!-- #endregion -->
-                                         @if(selectedCargoMode === 'FCL'){
-                                        <div class="d-flex justify-content-end me-2">
-                                            <button class="btn btn-info btn-sm ms-auto" type="button"
-                                                (click)="addCargo(routeIndex)"
-                                                [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry || (isEditMode && isSuspended)">
-                                                 <i class="fas fa-plus"></i> Add Cargo
-                                            </button>
-                                        </div>
-                                        }
                                         <!-- #region FCL -->
                                         @if(selectedCargoMode ==='FCL'){
                                         <div formArrayName="cargo" class="table-responsive table-borderless"

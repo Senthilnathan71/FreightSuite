@@ -1478,19 +1478,54 @@
             </button>
           </div>
           <div class="col-md-12">
-            <div class="row compact-form agent-mawb-cargo-form px-md-5" [formGroup]="cargoForm">
+            <div class="d-flex justify-content-end align-items-center gap-2 pe-1 mb-1">
+              <button class="btn btn-sm btn-info" type="button" (click)="addCargo()"
+                [disabled]="isEditMode && isSuspended">
+                <i class="fas fa-plus me-1"></i> Add Cargo
+              </button>
+            </div>
+
+            <div [formGroup]="detailForm">
+              <div formArrayName="houseJobCargo" ngbAccordion [closeOthers]="true"
+                class="custom-accordion-quotation">
+                <div ngbAccordionItem *ngFor="let cargo of houseJobCargos.controls; let cargoIndex = index"
+                  [formGroupName]="cargoIndex" [ngbAccordionItem]="'mawb-cargo-' + cargoIndex" class="mb-1"
+                  [collapsed]="cargoIndex !== cargoActiveIndex">
+                  <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton type="button"
+                      class="d-flex justify-content-between align-items-center w-100 py-0"
+                      (click)="onCargoHeaderClick(cargoIndex)">
+                      <h6 class="fw-semibold my-1 text-light">
+                        Cargo {{ cargoIndex + 1 }}
+                        <span class="badge rounded-pill text-bg-light text-dark ms-1">
+                          {{ cargo.get('CargoType')?.value || 'General' }}
+                        </span>
+                        <span class="badge rounded-pill text-bg-secondary text-white ms-1">
+                          {{ houseJobCargoProducts(cargoIndex).length }} Product(s)
+                        </span>
+                      </h6>
+                      <button type="button" class="btn btn-sm text-light" *ngIf="houseJobCargos.length > 1"
+                        [disabled]="isEditMode && isSuspended"
+                        (click)="removeCargo(cargoIndex); $event.stopPropagation()">
+                        <i class="fas fa-trash text-danger"></i>
+                      </button>
+                    </button>
+                  </h2>
+
+                  <div ngbAccordionCollapse>
+            <div class="row compact-form agent-mawb-cargo-form px-md-5">
 
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('CargoType')?.value">
+                  [class.filled]="!!cargo.get('CargoType')?.value">
                   <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
                     formControlName="CargoType" placeholder="" appendTo="body">
                   </ng-select>
                   <label for="text-input" class="input-label">Cargo Type <span class="text-danger">*</span></label>
-                  @if(cargoForm.get('CargoType')?.touched &&
-                  cargoForm.get('CargoType')?.invalid){
+                  @if(cargo.get('CargoType')?.touched &&
+                  cargo.get('CargoType')?.invalid){
                   <div class="error-message">
-                    @if(cargoForm.get('CargoType')?.hasError('required')){
+                    @if(cargo.get('CargoType')?.hasError('required')){
                     <span>Required</span>
                     }
                   </div>
@@ -1500,7 +1535,7 @@
               @if(selectedFCLLCL === "FCL"){
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('ContainerType')?.value">
+                  [class.filled]="!!cargo.get('ContainerType')?.value">
                   <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                     class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
                     (change)="onContainerTypeChange($event)">
@@ -1526,17 +1561,17 @@
                   </label>
 
                   <!-- Validation Messages -->
-                  @if ((cargoForm.get('GrossWeight')?.touched || cargoForm.get('GrossWeight')?.dirty) &&
-                  cargoForm.get('GrossWeight')?.invalid) {
+                  @if ((cargo.get('GrossWeight')?.touched || cargo.get('GrossWeight')?.dirty) &&
+                  cargo.get('GrossWeight')?.invalid) {
                   <div class="error-message">
-                    @if (cargoForm.get('GrossWeight')?.errors?.['max']) {
+                    @if (cargo.get('GrossWeight')?.errors?.['max']) {
                     <span>Gross Weight cannot exceed 9,999,999.999</span>
-                    } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
+                    } @else if (cargo.get('GrossWeight')?.errors?.['decimalPrecision']) {
                     <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-                    } @else if (cargoForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
+                    } @else if (cargo.get('GrossWeight')?.errors?.['grossLessThanNet']) {
                     <span>Gross Weight cannot be less than Net Weight</span>
                     }
-                    @else if (cargoForm.get('GrossWeight')?.errors?.['required']) {
+                    @else if (cargo.get('GrossWeight')?.errors?.['required']) {
                     <span>Required</span>
                     }
                   </div>
@@ -1550,18 +1585,18 @@
                   <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                     formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
-                    (blur)="cargoForm.get('GrossWeight')?.updateValueAndValidity()"
-                    (input)="cargoForm.get('GrossWeight')?.updateValueAndValidity()">
+                    (blur)="cargo.get('GrossWeight')?.updateValueAndValidity()"
+                    (input)="cargo.get('GrossWeight')?.updateValueAndValidity()">
                   <label for="text-input" class="input-label">Net Wt.<span class="text-danger"></span></label>
                   <!-- Validation Messages -->
-                  @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
-                  cargoForm.get('NetWeight')?.invalid) {
+                  @if ((cargo.get('NetWeight')?.touched || cargo.get('NetWeight')?.dirty) &&
+                  cargo.get('NetWeight')?.invalid) {
                   <div class="error-message">
-                    @if (cargoForm.get('NetWeight')?.errors?.['max']) {
+                    @if (cargo.get('NetWeight')?.errors?.['max']) {
                     <span>Net Weight cannot exceed 9,999,999.999</span>
-                    } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
+                    } @else if (cargo.get('NetWeight')?.errors?.['decimalPrecision']) {
                     <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-                    } @else if (cargoForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
+                    } @else if (cargo.get('NetWeight')?.errors?.['netGreaterThanGross']) {
                     <span>Net Weight cannot be greater than Gross Weight</span>
                     }
                   </div>
@@ -1575,12 +1610,12 @@
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
                   <!-- Validation Messages -->
-                  @if ((cargoForm.get('Volume')?.touched || cargoForm.get('Volume')?.dirty) &&
-                  cargoForm.get('Volume')?.invalid) {
+                  @if ((cargo.get('Volume')?.touched || cargo.get('Volume')?.dirty) &&
+                  cargo.get('Volume')?.invalid) {
                   <div class="error-message">
-                    @if (cargoForm.get('Volume')?.errors?.['max']) {
+                    @if (cargo.get('Volume')?.errors?.['max']) {
                     <span>Net Weight cannot exceed 9,999,999.999</span>
-                    } @else if (cargoForm.get('Volume')?.errors?.['decimalPrecision']) {
+                    } @else if (cargo.get('Volume')?.errors?.['decimalPrecision']) {
                     <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                     }
                   </div>
@@ -1595,12 +1630,12 @@
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">Volumetric<span class="text-danger"></span></label>
                   <!-- Validation Messages -->
-                  @if ((cargoForm.get('Volumetric')?.touched || cargoForm.get('Volumetric')?.dirty) &&
-                  cargoForm.get('Volumetric')?.invalid) {
+                  @if ((cargo.get('Volumetric')?.touched || cargo.get('Volumetric')?.dirty) &&
+                  cargo.get('Volumetric')?.invalid) {
                   <div class="error-message">
-                    @if (cargoForm.get('Volumetric')?.errors?.['max']) {
+                    @if (cargo.get('Volumetric')?.errors?.['max']) {
                     <span>Net Weight cannot exceed 9,999,999.999</span>
-                    } @else if (cargoForm.get('Volumetric')?.errors?.['decimalPrecision']) {
+                    } @else if (cargo.get('Volumetric')?.errors?.['decimalPrecision']) {
                     <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                     }
                   </div>
@@ -1614,12 +1649,12 @@
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">Chargeable Wt.<span class="text-danger"></span></label>
                   <!-- Validation Messages -->
-                  @if ((cargoForm.get('ChargeableWeight')?.touched || cargoForm.get('ChargeableWeight')?.dirty) &&
-                  cargoForm.get('ChargeableWeight')?.invalid) {
+                  @if ((cargo.get('ChargeableWeight')?.touched || cargo.get('ChargeableWeight')?.dirty) &&
+                  cargo.get('ChargeableWeight')?.invalid) {
                   <div class="error-message">
-                    @if (cargoForm.get('ChargeableWeight')?.errors?.['max']) {
+                    @if (cargo.get('ChargeableWeight')?.errors?.['max']) {
                     <span>Net Weight cannot exceed 9,999,999.999</span>
-                    } @else if (cargoForm.get('ChargeableWeight')?.errors?.['decimalPrecision']) {
+                    } @else if (cargo.get('ChargeableWeight')?.errors?.['decimalPrecision']) {
                     <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
                     }
                   </div>
@@ -1634,10 +1669,10 @@
                     [DecimalPrecisionAfter]="0" max="9999999.999">
                   <label for="text-input" class="input-label">No of Pkg<span class="text-danger"></span></label>
                   <!-- Validation Messages -->
-                  @if ((cargoForm.get('NoOfPackage')?.touched || cargoForm.get('NoOfPackage')?.dirty) &&
-                  cargoForm.get('NoOfPackage')?.invalid) {
+                  @if ((cargo.get('NoOfPackage')?.touched || cargo.get('NoOfPackage')?.dirty) &&
+                  cargo.get('NoOfPackage')?.invalid) {
                   <div class="error-message">
-                    @if (cargoForm.get('NoOfPackage')?.errors?.['decimalPrecision']) {
+                    @if (cargo.get('NoOfPackage')?.errors?.['decimalPrecision']) {
                     <small>Allowed: 10 digits Number Only</small>
                     }
                   </div>
@@ -1647,7 +1682,7 @@
               @if(selectedDepartmentType === "SEA"){
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('MovementType')?.value">
+                  [class.filled]="!!cargo.get('MovementType')?.value">
                   <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select"
                     placeholder="" formControlName="MovementType" appendTo="body">
                   </ng-select>
@@ -1657,7 +1692,7 @@
               }
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
+                  [class.filled]="!!cargo.get('ModeOfTransport')?.value">
                   <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name" placeholder=""
                     formControlName="ModeOfTransport" appendTo="body">
 
@@ -1667,7 +1702,7 @@
               </aside>
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('StuffingAt')?.value">
+                  [class.filled]="!!cargo.get('StuffingAt')?.value">
                   <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
                     formControlName="StuffingAt" (change)="handleCFSOrYard()
                 " appendTo="body">
@@ -1678,7 +1713,7 @@
               @if(selectedDepartmentType === "SEA"){
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
+                  [class.filled]="!!cargo.get('ShipmentTerms')?.value">
                   <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
                     appendTo="body" placeholder="" formControlName="ShipmentTerms">
                   </ng-select>
@@ -1689,7 +1724,7 @@
 
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('CommodityDescription')?.value">
+                  [class.filled]="!!cargo.get('CommodityDescription')?.value">
                   <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
                     formControlName="CommodityDescription" placeholder="" appendTo="body">
                   <label for="text-input" class="input-label">Good Description<span class="text-danger"></span></label>
@@ -1698,7 +1733,7 @@
 
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('MarksAndNumber')?.value">
+                  [class.filled]="!!cargo.get('MarksAndNumber')?.value">
                   <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
                     formControlName="MarksAndNumber" placeholder="" appendTo="body">
                   <label for="text-input" class="input-label">Marks And Number<span class="text-danger"></span></label>
@@ -1706,13 +1741,17 @@
               </aside>
               <aside class="col-md-2" *ngIf="selectedDepartment?.ExportImport !== 'Export'">
                 <div class="custom-form-group custom-form-group-select"
-                  [class.filled]="!!cargoForm.get('LandedMarksandNumber')?.value">
+                  [class.filled]="!!cargo.get('LandedMarksandNumber')?.value">
                   <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
                     formControlName="LandedMarksandNumber" placeholder="" appendTo="body">
                   <label for="text-input" class="input-label">Landed Marks And No<span
                       class="text-danger"></span></label>
                 </div>
               </aside>
+            </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div>
@@ -1821,7 +1860,8 @@
           <div class="alert alert-info text-center">No Product added yet.</div>
         </div>
         } -->
-            <div class="col-12 px-1" [formGroup]="detailForm">
+            <!-- Products belong to the cargo selected in the accordion above. -->
+            <div class="col-12 px-1" *ngIf="activeCargoGroup" [formGroup]="activeCargoGroup">
               <div class="table-responsive table-borderless1" formArrayName="bookingProducts"
                 style="overflow-y: hidden;">
                 <table class="table table-hover align-middle no-wrap table-sm mb-0 agent-mawb-product-table">

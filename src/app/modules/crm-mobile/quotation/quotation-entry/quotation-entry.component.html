@@ -774,119 +774,6 @@
                       <aside class="col-md-2 d-md-block d-none"
                         *ngIf="isLclStyleQuotationSegment(route) || isAirQuotationSegment(route) || isSurfaceQuotationSegment(route)"></aside>
                       <!-- <aside class="col-md-2 d-md-block d-none" *ngIf="getRouteSegmentType(route) === 'LCL'"></aside> -->
-                      <ng-container *ngIf="!isFclQuotationSegment(route)">
-                        <aside class="col-md-2">
-                          <div class="custom-form-group custom-form-group-select mt-md-1"
-                            [class.filled]="!!quoteRoutes.at(routeIndex).get('CargoType')?.value">
-                            <ng-select formControlName="CargoType" [items]="modeOfCargoType" bindLabel="name"
-                              bindValue="name" placeholder="">
-
-                            </ng-select>
-                            <label for="" class="input-label">Cargo Type <span class="text-danger">{{
-                                isRequiredInQuoteRoute(routeIndex,'CargoType') ? '*' : '' }}</span></label>
-                            @if(route.get('CargoType')?.invalid && route.get('CargoType')?.touched){
-                            <div class="error-message">
-                              @if(route.get('CargoType')?.hasError('required')){
-                              <span>Required</span>
-                              }
-                            </div>
-                            }
-                          </div>
-                        </aside>
-                        <aside class="col-md-2"
-                          *ngIf="isLclStyleQuotationSegment(route) || isAirQuotationSegment(route) || isSurfaceQuotationSegment(route)">
-                          <div class="custom-form-group mt-md-1">
-                            <input type="text" id="text-input" placeholder="" DecimalPrecision
-                              [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
-                              class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
-                              (focus)="route.get('GrossWeight')?.updateValueAndValidity()"
-                              (blur)="route.get('GrossWeight')?.updateValueAndValidity()">
-                            <label for="text-input" class="input-label">Gross Wt.<span
-                                class="text-danger">{{
-                                isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
-                            <!-- <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
-                                  Gr weight > Net weight
-                                </span> -->
-                          </div>
-                        </aside>
-                        <aside class="col-md-2" *ngIf="isLclStyleQuotationSegment(route) || isSurfaceQuotationSegment(route)">
-                          <div class="custom-form-group quote-net-weight-field mt-md-1">
-                            <input type="text" id="text-input" placeholder=""
-                              class="form-control custom-input-field sm text-end" formControlName="NetWeight"
-                              DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                            <label for="text-input" class="input-label ">Net Wt.<span
-                                class="text-danger"></span></label>
-                          </div>
-                        </aside>
-
-                        <aside class="col-md-2" >
-                          <div class="custom-form-group mt-md-1">
-                            <input type="text" id="text-input" placeholder=""
-                              class="form-control custom-input-field sm text-end" formControlName="Volume"
-                              DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                            <label for="text-input" class="input-label">CBM <span class="text-danger">{{
-                                isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
-                            @if(route.get('Volume')?.invalid && route.get('Volume')?.touched){
-                            <div class="error-message">
-                              @if(route.get('Volume')?.hasError('required')){
-                              <span>Required</span>
-                              }
-                            </div>
-                            }
-                          </div>
-                        </aside>
-
-                        <aside class="col-md-2" *ngIf="isAirQuotationSegment(route) || isSurfaceQuotationSegment(route)">
-                          <div class="custom-form-group mt-md-1">
-                            <input type="text" id="text-input" placeholder=""
-                              class="form-control custom-input-field sm text-end" formControlName="ChargeableWeight"
-                              DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                            <label for="text-input" class="input-label">Chargeable Wt.<span class="text-danger">{{
-                                isRequiredInQuoteRoute(routeIndex,'ChargeableWeight') ? '*' : '' }}</span></label>
-                            @if(route.get('ChargeableWeight')?.invalid && route.get('ChargeableWeight')?.touched){
-                            <div class="error-message">
-                              @if(route.get('ChargeableWeight')?.hasError('required')){
-                              <span>Required</span>
-                              }
-                            </div>
-                            }
-                          </div>
-                        </aside>
-
-                        <aside class="col-md-2" *ngIf="isFclQuotationSegment(route)">
-                          <div class="custom-form-group custom-form-group-select quote-container-type-select mt-md-1"
-                            [class.filled]="!!quoteRoutes.at(routeIndex).get('ContainerType')?.value">
-                            <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerCode"
-                              formControlName="ContainerType" dropdownPosition="bottom" placeholder="">
-                            </ng-select>
-                            <label class="input-label">Container Type <span class="text-danger">{{
-                                isRequiredInQuoteRoute(routeIndex,'ContainerType') ? '*' : '' }}</span></label>
-                            @if(route.get('ContainerType')?.invalid && route.get('ContainerType')?.touched){
-                            <div class="error-message">
-                              @if(route.get('ContainerType')?.hasError('required')){
-                              <span>Required</span>
-                              }
-                            </div>
-                            }
-                          </div>
-                        </aside>
-
-                        <aside class="col-md-2" *ngIf="isFclQuotationSegment(route)">
-                          <div class="custom-form-group mt-md-1">
-                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
-                              formControlName="Qty" [onlyNumbers]>
-                            <label for="text-input" class="input-label">No of Container <span class="text-danger">{{
-                                isRequiredInQuoteRoute(routeIndex,'Qty') ? '*' : '' }}</span></label>
-                            @if(route.get('ContainerQty')?.invalid && route.get('ContainerQty')?.touched){
-                            <div class="error-message">
-                              @if(route.get('ContainerQty')?.hasError('required')){
-                              <span>Required</span>
-                              }
-                            </div>
-                            }
-                          </div>
-                        </aside>
-                      </ng-container>
 
                       
  <aside class="col-md-2">
@@ -1136,7 +1023,6 @@
                         
                       </div>-->
 
-                      @if(isFclQuotationSegment(route)){
                       <div class="d-flex justify-content-end pr-2">
                         <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button"
                           (click)="addQuoteCargo(routeIndex)"
@@ -1160,12 +1046,23 @@
                                 </span>
                           
                                 <div class="d-flex align-items-center gap-1 small">
-                                  <span class="badge rounded-pill text-bg-light text-dark">
-                                    {{ getContainerTypeName(cargo.get('ContainerType')?.value) || 'Container Type' }}
-                                  </span>
-                                  <span class="badge rounded-pill text-bg-secondary text-white">
-                                    Qty : {{ cargo.get('Qty')?.value || 0 }}
-                                  </span>
+                                  <ng-container *ngIf="isFclQuotationSegment(route); else nonFclCargoBadges">
+                                    <span class="badge rounded-pill text-bg-light text-dark">
+                                      {{ getContainerTypeName(cargo.get('ContainerType')?.value) || 'Container Type' }}
+                                    </span>
+                                    <!-- <span class="badge rounded-pill text-bg-secondary text-white">
+                                      Qty : {{ cargo.get('Qty')?.value || 0 }}
+                                    </span> -->
+                                  </ng-container>
+                                  <ng-template #nonFclCargoBadges>
+                                    <span class="badge rounded-pill text-bg-light text-dark">
+                                      {{ cargo.get('CargoType')?.value || 'Cargo Type' }}
+                                    </span>
+                                    <!-- <span class="badge rounded-pill text-bg-secondary text-white">
+                                      {{ (isAirQuotationSegment(route) ? 'CW : ' : 'CBM : ')
+                                         + ((isAirQuotationSegment(route) ? cargo.get('ChargeableWeight')?.value : cargo.get('Volume')?.value) || 0) }}
+                                    </span> -->
+                                  </ng-template>
                                 </div>
                               </div>
                           
@@ -1196,7 +1093,7 @@
                                       }
                                     </div>
                                   </aside>
-                                  <aside class="col-md-2">
+                                  <aside class="col-md-2" *ngIf="isFclQuotationSegment(route)">
                                     <div class="custom-form-group custom-form-group-select"
                                       [class.filled]="!!quoteCargo(routeIndex).at(cargoIndex).get('ContainerType')?.value">
                                       <ng-select [items]="containerTypeList" bindLabel="ContainerName"
@@ -1211,7 +1108,7 @@
                                       }
                                     </div>
                                   </aside>
-                                  <aside class="col-md-2">
+                                  <aside class="col-md-2" *ngIf="isFclQuotationSegment(route)">
                                     <div class="custom-form-group">
                                       <input type="text" class="custom-input-field sm text-end" formControlName="Qty" [onlyNumbers]>
                                       <label class="input-label">No of Container <span class="text-danger">*</span></label>
@@ -1228,21 +1125,46 @@
                                     <div class="custom-form-group">
                                       <input type="text" class="custom-input-field sm text-end" formControlName="GrossWeight"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">Gross Wt. <span class="text-danger">*</span></label>
+                                      <label class="input-label">Gross Wt. <span class="text-danger">{{
+                                          isRequiredInQuoteCargo(routeIndex, cargoIndex, 'GrossWeight') ? '*' : '' }}</span></label>
+                                      @if(cargo.get('GrossWeight')?.invalid && cargo.get('GrossWeight')?.touched){
+                                      <div class="error-message">
+                                        @if(cargo.get('GrossWeight')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                      </div>
+                                      }
                                     </div>
                                   </aside>
                                   <aside class="col-md-1">
                                     <div class="custom-form-group quote-net-weight-field">
                                       <input type="text" class="custom-input-field sm text-end" formControlName="NetWeight"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">Net Wt. <span class="text-danger">*</span></label>
+                                      <label class="input-label">Net Wt. <span class="text-danger">{{
+                                          isRequiredInQuoteCargo(routeIndex, cargoIndex, 'NetWeight') ? '*' : '' }}</span></label>
                                     </div>
                                   </aside>
-                                  <aside class="col-md-1">
+                                  <aside class="col-md-1" *ngIf="isAirQuotationSegment(route) || isSurfaceQuotationSegment(route)">
+                                    <div class="custom-form-group">
+                                      <input type="text" class="custom-input-field sm text-end" formControlName="ChargeableWeight"
+                                        DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                      <label class="input-label">Chargeable Wt. <span class="text-danger">{{
+                                          isRequiredInQuoteCargo(routeIndex, cargoIndex, 'ChargeableWeight') ? '*' : '' }}</span></label>
+                                      @if(cargo.get('ChargeableWeight')?.invalid && cargo.get('ChargeableWeight')?.touched){
+                                      <div class="error-message">
+                                        @if(cargo.get('ChargeableWeight')?.hasError('required')){
+                                        <span>Required</span>
+                                        }
+                                      </div>
+                                      }
+                                    </div>
+                                  </aside>
+                                  <aside class="col-md-1" *ngIf="!isAirQuotationSegment(route)">
                                     <div class="custom-form-group">
                                       <input type="text" class="custom-input-field sm text-end" formControlName="Volume"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">CBM</label>
+                                      <label class="input-label">CBM <span class="text-danger">{{
+                                          isRequiredInQuoteCargo(routeIndex, cargoIndex, 'Volume') ? '*' : '' }}</span></label>
                                     </div>
                                   </aside>
                                   <aside class="col-md-2">
@@ -1360,7 +1282,6 @@
                           No cargo added.
                         </div>
                       </div>
-                      }
 
                       <div class="col-12" formArrayName="quoteCarriers">
                         <div ngbAccordion #acc1="ngbAccordion" [closeOthers]="true" class="custom-accordion-quotation">

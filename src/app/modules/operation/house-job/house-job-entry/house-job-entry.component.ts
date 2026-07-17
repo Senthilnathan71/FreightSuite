@@ -5642,12 +5642,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     return (cargoGroup?.get('bookingProducts') as FormArray) || this.fb.array([]);
   }
 
-  addHouseJobCargo(data?: any, bypassFclCheck: boolean = false): void {
-    if (!bypassFclCheck && this.selectedFCLLCL !== 'FCL') {
-      this.appSettingService.showInfo('Add Cargo is available for FCL bookings only.');
-      return;
-    }
-
+  addHouseJobCargo(data?: any): void {
     const cargoGroup = this.createCargoGroup(data);
     this.houseJobCargos.push(cargoGroup);
     this.houseJobCargoExpanded.push(true);
@@ -5704,7 +5699,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     this.houseJobCargoExpanded.splice(cargoIndex, 1);
 
     if (this.houseJobCargos.length === 0) {
-      this.addHouseJobCargo(undefined, true);
+      this.addHouseJobCargo();
       return;
     }
 

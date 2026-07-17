@@ -1,6 +1,6 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input, HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
-import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -122,6 +122,7 @@ type Html2PdfOptions = {
     EmailEntryComponent,
     FollowUpComponent,
     SearchableDropdown,
+    NgbAccordionModule,
     NgbDropdownModule,
     BoeEntryComponent,
     VehicleComponent,
@@ -335,6 +336,8 @@ auditLogs: any[] = []; // Stores audit logs
   containerTypeList: any[] = [];
   selectedContainerType : any;
   cargoForm !: FormGroup;
+  cargoActiveIndex = 0;
+  private cargoSubscriptionsWired = new WeakSet<FormGroup>();
   modeOfCargoType = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Haz' },
@@ -688,9 +691,10 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   this.currentMenuId = this.mps.getMenuId() || Number(sessionStorage.getItem('currentMenuId'));
   this.loadTermsAndConditionsConfig();
   this.initBookingForm();
+  // detailForm owns the houseJobCargo FormArray, so it must exist before cargo is seeded.
+  this.initDetailsForm();
   this.initCargoForm();
   this.initOtherForm();
-  this.initDetailsForm();
   this.setupMBLDateListener();
   this.spinner.show();
    this.mps.init().subscribe(() => {
@@ -938,39 +942,134 @@ private setupMBLDateListener(): void {
   }
 
   // Cargo Form Initiation
-  initCargoForm() {
-    this.cargoForm = this.fb.group({
-      HouseJobCargoSid: [null],
-      CargoType: ['General',Validators.required],
-      ContainerType: [null],
-      NoofContainers: [''],
-      GrossWeight: ['',Validators.required],
-      NetWeight: [''],
-      Volume: [''],
-      Volumetric: [''],
-      ChargeableWeight: [''],
-      NoOfPackage: [''],
-      ShipmentTerms: [null],
-      MovementType: [null],
-      FreightTerms: [null],
-      CommodityDescription:[],
-      MarksAndNumber:[],
-      LandedMarksandNumber:[],
-      ModeOfTransport : [null],
-      StuffingAt: ['Dock']
+  get houseJobCargos(): FormArray {
+    return this.detailForm.get('houseJobCargo') as FormArray;
+  }
+
+  /** The cargo row the product table below the accordion is bound to. */
+  get activeCargoGroup(): FormGroup | null {
+    return (this.houseJobCargos?.at(this.cargoActiveIndex) as FormGroup) || null;
+  }
+
+  houseJobCargoProducts(cargoIndex: number): FormArray {
+    const cargoGroup = this.houseJobCargos.at(cargoIndex) as FormGroup | undefined;
+    return (cargoGroup?.get('bookingProducts') as FormArray) || this.fb.array([]);
+  }
+
+  /**
+   * Expanding a cargo makes it the active one, which is what the product table below the
+   * accordion is bound to.
+   */
+  onCargoHeaderClick(cargoIndex: number): void {
+    this.setActiveCargo(cargoIndex);
+    this.updateProductPagination();
+  }
+
+  private createCargoGroup(data?: any): FormGroup {
+    return this.fb.group({
+      HouseJobCargoSid: [data?.HouseJobCargoSid ?? null],
+      CargoType: [data?.CargoType ?? 'General', Validators.required],
+      ContainerType: [data?.ContainerType ?? null],
+      NoofContainers: [data?.NoofContainers ?? ''],
+      GrossWeight: [data?.GrossWeight ?? '', Validators.required],
+      NetWeight: [data?.NetWeight ?? ''],
+      Volume: [data?.Volume ?? ''],
+      Volumetric: [data?.Volumetric ?? ''],
+      ChargeableWeight: [data?.ChargeableWeight ?? ''],
+      NoOfPackage: [data?.NoOfPackage ?? ''],
+      ShipmentTerms: [data?.ShipmentTerms ?? null],
+      MovementType: [data?.MovementType ?? null],
+      FreightTerms: [data?.FreightTerms ?? null],
+      CommodityDescription: [data?.CommodityDescription ?? null],
+      MarksAndNumber: [data?.MarksAndNumber ?? null],
+      LandedMarksandNumber: [data?.LandedMarksandNumber ?? null],
+      ModeOfTransport: [data?.ModeOfTransport ?? null],
+      StuffingAt: [data?.StuffingAt ?? 'Dock'],
+      bookingProducts: this.fb.array([]),
     });
-      // Setup subscriptions for cargo form calculations
-      if(!this.isEditMode){
-        this.setupCargoCalculationSubscriptions();
-      }
-  
-  this.cargoForm.valueChanges.subscribe(() => {
-    this.syncFormValueWithRateComponent();
-    if (this.cargoForm.dirty) {
-      this.formSaved = false;
+  }
+
+  addCargo(data?: any): void {
+    const cargoGroup = this.createCargoGroup(data);
+    this.houseJobCargos.push(cargoGroup);
+    this.setActiveCargo(this.houseJobCargos.length - 1);
+
+    const cargoProducts = Array.isArray(data?.bookingProducts)
+      ? data.bookingProducts
+      : Array.isArray(data?.products)
+        ? data.products
+        : [];
+    cargoProducts.forEach((product: any) => {
+      this.addCargoProduct(this.houseJobCargos.length - 1, product);
+    });
+  }
+
+  addCargoProduct(cargoIndex: number, data?: any): void {
+    const cargoGroup = this.houseJobCargos.at(cargoIndex) as FormGroup;
+    if (!cargoGroup) {
+      return;
     }
-  });
-}
+    this.setActiveCargo(cargoIndex);
+    const products = cargoGroup.get('bookingProducts') as FormArray;
+    products.push(this.createBookingProductGroup(data, true));
+    products.markAsDirty();
+  }
+
+  /**
+   * Products come back flat with a HouseJobCargoSid pointing at their cargo. Anything
+   * unmatched (legacy rows saved before cargo was linked) lands on the first cargo.
+   */
+  private resolveCargoIndexForProduct(product: any): number {
+    const cargoSid = product?.HouseJobCargoSid;
+    if (cargoSid) {
+      const matchedIndex = this.houseJobCargos.controls.findIndex(
+        cargo => Number(cargo.get('HouseJobCargoSid')?.value) === Number(cargoSid)
+      );
+      if (matchedIndex >= 0) {
+        return matchedIndex;
+      }
+    }
+    return 0;
+  }
+
+  removeCargo(cargoIndex: number): void {
+    if (this.houseJobCargos.length <= 1) {
+      return;
+    }
+    this.houseJobCargos.removeAt(cargoIndex);
+    this.setActiveCargo(Math.max(0, Math.min(this.cargoActiveIndex, this.houseJobCargos.length - 1)));
+    this.detailForm.markAsDirty();
+  }
+
+  /**
+   * `cargoForm` stays pointed at the active cargo row so the calculation, validation and
+   * serialisation code that predates the FormArray keeps working unchanged.
+   */
+  private setActiveCargo(cargoIndex: number): void {
+    this.cargoActiveIndex = cargoIndex;
+    const cargoGroup = this.houseJobCargos.at(cargoIndex) as FormGroup;
+    if (!cargoGroup) {
+      return;
+    }
+    this.cargoForm = cargoGroup;
+
+    if (this.cargoSubscriptionsWired.has(cargoGroup)) {
+      return;
+    }
+    this.cargoSubscriptionsWired.add(cargoGroup);
+    this.setupCargoCalculationSubscriptions();
+    cargoGroup.valueChanges.subscribe(() => {
+      this.syncFormValueWithRateComponent();
+      if (cargoGroup.dirty) {
+        this.formSaved = false;
+      }
+    });
+  }
+
+  initCargoForm() {
+    this.houseJobCargos.clear();
+    this.addCargo();
+  }
 
 // NEW METHOD: Setup cargo calculation subscriptions
 private setupCargoCalculationSubscriptions(): void {
@@ -1367,6 +1466,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
   initDetailsForm() {
     this.detailForm = this.fb.group({
+      houseJobCargo: this.fb.array([]),
+      // Legacy flat product list. Kept as the fallback target for `bookingProducts` when no
+      // cargo row is active; products otherwise live nested under their cargo.
       bookingProducts: this.fb.array([]),
     })
     this.detailForm.valueChanges.subscribe(() => {
@@ -1391,8 +1493,14 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   }
 
 
+  /**
+   * Resolves to the active cargo's product list, falling back to the legacy flat array when
+   * no cargo row exists yet. Callers therefore depend on `cargoActiveIndex`.
+   */
   get bookingProducts(): FormArray {
-    return this.detailForm.get('bookingProducts') as FormArray;
+    const activeCargo = this.houseJobCargos?.at(this.cargoActiveIndex) as FormGroup | undefined;
+    return (activeCargo?.get('bookingProducts') as FormArray)
+      || (this.detailForm.get('bookingProducts') as FormArray);
   }
   get bookingConnections(): FormArray {
     return this.detailForm.get('bookingConnections') as FormArray;
@@ -1614,10 +1722,15 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   });
 }
 
-addProduct() {
+addProduct(cargoIndex: number = this.cargoActiveIndex) {
+    const cargoGroup = this.houseJobCargos.at(cargoIndex) as FormGroup;
+    if (!cargoGroup) {
+      return;
+    }
+    this.setActiveCargo(cargoIndex);
     const formGroup = this.createBookingProductGroup();
     formGroup.get('UomMasterSid')?.setValue(2, { emitEvent: true });
-    this.bookingProducts.push(formGroup);
+    (cargoGroup.get('bookingProducts') as FormArray).push(formGroup);
   }
 
   createBookingConnectionGroup(data?: any): FormGroup {
@@ -2086,38 +2199,53 @@ private loadMasterJobDetails(masterJobSid: number): void {
       this.loadMawbStock(response);
     }, 500);
     this.PODandFPODsame = response.POD === response.FPD;
-    const cargoData = response.Cargo?.[0];
-    
-    if (cargoData) {
-      let volumetricValue = cargoData.Volumetric;
-      
-      // If Volumetric is not in cargoData, calculate it from products
-      if (!volumetricValue && response.Products && response.Products.length > 0) {
-        volumetricValue = response.Products.reduce((sum, product) => {
-          return sum + (Number(product.Volumetric) || 0);
-        }, 0);
-      }
-      this.cargoForm.patchValue({
-        HouseJobCargoSid: cargoData.HouseJobCargoSid,
-        CargoType: cargoData.CargoType || 'General',
-        ContainerType: cargoData.ContainerType,
-        NoofContainers: cargoData.NoofContainers || 0,
-        GrossWeight: cargoData.GrossWeight || 0,
-        NetWeight: cargoData.NetWeight || 0,
-        Volume: cargoData.Volume || 0,
-        Volumetric: volumetricValue || 0,
-        ChargeableWeight: cargoData.ChargeableWeight || 0,
-        NoOfPackage: cargoData.NoOfPackage || 0,
-        ShipmentTerms: cargoData.ShipmentTerms,
-        MovementType: cargoData.MovementType,
-        FreightTerms: cargoData.FreightTerms,
-        CommodityDescription: cargoData.CommodityDescription,
-        MarksAndNumber: cargoData.MarksAndNumber,
-        LandedMarksandNumber: cargoData.LandedMarksandNumber,
-        ModeOfTransport: cargoData.ModeOfTransport,
-        StuffingAt: cargoData.StuffingAt || 'Dock'
-      }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
+    const cargoList = response.Cargo || response.houseJobCargo || [];
+    const allProducts = response.Products || [];
+
+    this.houseJobCargos.clear();
+    this.cargoSubscriptionsWired = new WeakSet<FormGroup>();
+
+    if (cargoList.length) {
+      cargoList.forEach((cargoData: any) => {
+        let volumetricValue = cargoData.Volumetric;
+
+        // Fall back to summing this cargo's own products rather than every product on the job.
+        if (!volumetricValue) {
+          const ownProducts = allProducts.filter(
+            (product: any) => Number(product?.HouseJobCargoSid) === Number(cargoData.HouseJobCargoSid)
+          );
+          if (ownProducts.length) {
+            volumetricValue = ownProducts.reduce(
+              (sum: number, product: any) => sum + (Number(product.Volumetric) || 0), 0
+            );
+          }
+        }
+
+        this.addCargo({
+          HouseJobCargoSid: cargoData.HouseJobCargoSid,
+          CargoType: cargoData.CargoType || 'General',
+          ContainerType: cargoData.ContainerType,
+          NoofContainers: cargoData.NoofContainers || 0,
+          GrossWeight: cargoData.GrossWeight || 0,
+          NetWeight: cargoData.NetWeight || 0,
+          Volume: cargoData.Volume || 0,
+          Volumetric: volumetricValue || 0,
+          ChargeableWeight: cargoData.ChargeableWeight || 0,
+          NoOfPackage: cargoData.NoOfPackage || 0,
+          ShipmentTerms: cargoData.ShipmentTerms,
+          MovementType: cargoData.MovementType,
+          FreightTerms: cargoData.FreightTerms,
+          CommodityDescription: cargoData.CommodityDescription,
+          MarksAndNumber: cargoData.MarksAndNumber,
+          LandedMarksandNumber: cargoData.LandedMarksandNumber,
+          ModeOfTransport: cargoData.ModeOfTransport,
+          StuffingAt: cargoData.StuffingAt || 'Dock'
+        });
+      });
+    } else {
+      this.addCargo();
     }
+    this.setActiveCargo(0);
     
     this.evaluateDropdownOrFreeText();
     
@@ -2177,10 +2305,9 @@ private loadMasterJobDetails(masterJobSid: number): void {
     
     this.evaluateDropdownOrFreeText();
 
-    this.bookingProducts.clear();
     const productsFromResponse = response.Products || [];
     this.productDataLength = productsFromResponse.length;
-    
+
     if (this.productDataLength) {
       for (const productData of productsFromResponse) {
         const formWithData = this.createBookingProductGroup(productData, true);
@@ -2189,7 +2316,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
         );
 
         formWithData.get('isProductFreeText')?.setValue(!productExists);
-        this.bookingProducts.push(formWithData);
+        const cargoIndex = this.resolveCargoIndexForProduct(productData);
+        (this.houseJobCargos.at(cargoIndex).get('bookingProducts') as FormArray).push(formWithData);
       }
       this.updateProductPagination();
     }
@@ -2553,7 +2681,6 @@ onCurrencyChange(event: any) {
   this.isSaving = true;
   this.isLoading = true;
   
-  const cargoFormValue = this.cargoForm.getRawValue();
   const otherFormValue = this.otherForm.getRawValue();
   const detailFormValue = this.detailForm.getRawValue();
   const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
@@ -2593,8 +2720,7 @@ onCurrencyChange(event: any) {
     }
   }
 
-  const cargoSid = cargoFormValue.HouseJobCargoSid || null;
-  const mappedHouseJobProducts = (detailFormValue.bookingProducts || []).map((product: any) => ({
+  const mapHouseJobProduct = (product: any, cargoSid: any) => ({
       HouseJobProductSid: product.HouseJobProductSid || null,
       HouseJobCargoSid: product.HouseJobCargoSid || cargoSid,
       ProductName: product.ProductName || '',
@@ -2625,7 +2751,40 @@ onCurrencyChange(event: any) {
       MarksAndNumbers: product.MarksAndNumbers,
       DeliveryDate: product.DeliveryDate,
       DeliveredQty: product.DeliveredQty,
-  }));
+  });
+
+  // One entry per cargo row, each carrying its own products. The house-job service (which
+  // this payload is forwarded to) reads either `bookingProducts` or `products`.
+  const cargoPayload = (detailFormValue.houseJobCargo || []).map((cargo: any) => {
+    const rowCargoSid = cargo.HouseJobCargoSid || null;
+    const rowProducts = (cargo.bookingProducts || []).map(
+      (product: any) => mapHouseJobProduct(product, rowCargoSid)
+    );
+    return {
+      HouseJobCargoSid: rowCargoSid,
+      CargoType: cargo.CargoType || 'General',
+      ContainerType: cargo.ContainerType || null,
+      NoofContainers: parseFloat(cargo.NoofContainers) || 0,
+      GrossWeight: parseFloat(cargo.GrossWeight) || 0,
+      NetWeight: parseFloat(cargo.NetWeight) || 0,
+      Volume: parseFloat(cargo.Volume) || 0,
+      Volumetric: parseFloat(cargo.Volumetric) || 0,
+      ChargeableWeight: parseFloat(cargo.ChargeableWeight) || 0,
+      NoOfPackage: parseFloat(cargo.NoOfPackage) || 0,
+      ShipmentTerms: cargo.ShipmentTerms || null,
+      CommodityDescription: cargo.CommodityDescription || null,
+      MarksAndNumber: cargo.MarksAndNumber || null,
+      LandedMarksandNumber: cargo.LandedMarksandNumber || null,
+      MovementType: cargo.MovementType || null,
+      FreightTerms: cargo.FreightTerms || null,
+      ModeOfTransport: cargo.ModeOfTransport || null,
+      StuffingAt: cargo.StuffingAt || 'Dock',
+      bookingProducts: rowProducts,
+      products: rowProducts,
+    };
+  });
+
+  const mappedHouseJobProducts = cargoPayload.flatMap((cargo: any) => cargo.products);
 
   const payload = {
     // Master Job fields (for MasterJob table)
@@ -2689,28 +2848,8 @@ onCurrencyChange(event: any) {
     ShipmentNo: houseJobFormValue.ShipmentNo || null,
     
     // Related data
-    houseJobCargo: {
-      HouseJobCargoSid: cargoSid,
-      CargoType: cargoFormValue.CargoType || 'General',
-      ContainerType: cargoFormValue.ContainerType || null,
-      NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
-      GrossWeight: parseFloat(cargoFormValue.GrossWeight) || 0,
-      NetWeight: parseFloat(cargoFormValue.NetWeight) || 0,
-      Volume: parseFloat(cargoFormValue.Volume) || 0,
-      Volumetric: parseFloat(cargoFormValue.Volumetric) || 0,
-      ChargeableWeight: parseFloat(cargoFormValue.ChargeableWeight) || 0,
-      NoOfPackage: parseFloat(cargoFormValue.NoOfPackage) || 0,
-      ShipmentTerms: cargoFormValue.ShipmentTerms || null,
-      CommodityDescription: cargoFormValue.CommodityDescription || null,
-      MarksAndNumber: cargoFormValue.MarksAndNumber || null,
-      LandedMarksandNumber: cargoFormValue.LandedMarksandNumber || null,
-      MovementType: cargoFormValue.MovementType || null,
-      FreightTerms: cargoFormValue.FreightTerms || null,
-      ModeOfTransport: cargoFormValue.ModeOfTransport || null,
-      StuffingAt: cargoFormValue.StuffingAt || 'Dock',
-      bookingProducts: mappedHouseJobProducts,
-      products: mappedHouseJobProducts
-    },
+    houseJobCargo: cargoPayload,
+    cargo: cargoPayload,
     
     houseJobOthers: {
       HouseJobOthersSid: otherFormValue.HouseJobOthersSid || null,

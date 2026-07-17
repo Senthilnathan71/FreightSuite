@@ -1206,10 +1206,6 @@ ${this.userData.userName}`;
   }
 
   addCargo(routeIndex: number, isInitialCargo = false) {
-    if (!isInitialCargo && this.selectedCargoMode !== 'FCL') {
-      return;
-    }
-
     if (this.quotationCreatedAgainstThisEnquiry) {
       return;
     }

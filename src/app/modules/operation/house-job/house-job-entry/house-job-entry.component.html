@@ -1722,8 +1722,8 @@
 
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
       <div class="d-flex justify-content-end align-items-center gap-2 pe-1">
-        <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargo(undefined, false)"
-          *ngIf="selectedFCLLCL === 'FCL'" [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
+        <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargo()"
+          [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
           <i class="fas fa-plus me-1"></i> Add Cargo
         </button>
       </div>
