@@ -1884,6 +1884,7 @@
                       <th class="bg-transparent text-light dofi-min-w-110" scope="col">Delivered Qty<span
                           class="text-danger"></span></th>
                       <th class="bg-transparent text-light dofi-min-w-80" scope="col">Is Haz<span class="text-danger"></span></th>
+                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">Stackable</th>
                       <th class="bg-transparent text-light dofi-min-w-100" scope="col">Imco Class<span
                           class="text-danger"></span></th>
                       <th class="bg-transparent text-light dofi-min-w-80" scope="col">Un No.<span
@@ -2154,6 +2155,11 @@
                           <input class="form-check-input" type="checkbox" id="leadOrCustomer" formControlName="IsHaz"
                             (change)="onHazChange(productIndex,$event)"
                             (keydown.enter)="onHazChange(productIndex,$event)">
+                        </div>
+                      </td>
+                      <td>
+                        <div class="form-check text-center">
+                          <input class="form-check-input" type="checkbox" formControlName="IsStackable">
                         </div>
                       </td>
                       <td>
@@ -3211,6 +3217,15 @@
           <div class="form-check d-flex align-items-center">
             <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
             <label for="" class="form-check-label sm">If Haz <span class="text-danger"></span></label>
+          </div>
+        </div>
+      </aside>
+
+      <aside class="col-md-4 d-flex align-items-center">
+        <div class="form-check form-check-inline p-0">
+          <div class="form-check d-flex align-items-center">
+            <input type="checkbox" id="" class="form-check-input sm" formControlName="IsStackable">
+            <label for="" class="form-check-label sm">Stackable</label>
           </div>
         </div>
       </aside>

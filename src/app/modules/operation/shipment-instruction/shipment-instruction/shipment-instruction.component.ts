@@ -644,6 +644,10 @@ export class ShipmentInstructionComponent {
           NetWeight: parseFloat(product.NetWeight) || 0,
           Volume: this.toNumber(editedContainer.volume ?? product.Volume),
           IsHaz: product.IsHaz ? 'Y' : 'N',
+          // `product` is API-shaped here ('Y'/'N'), so compare explicitly rather than relying on
+          // truthiness — 'N' is a truthy string. Must be sent: the API rewrites the row, and an
+          // omitted flag would reset a stackable product to 'N'.
+          IsStackable: product.IsStackable === true || product.IsStackable === 'Y' ? 'Y' : 'N',
           ImcoClass: product.ImcoClass || '',
           UnNo: product.UnNo || '',
           PkgGroup: product.PkgGroup || '',

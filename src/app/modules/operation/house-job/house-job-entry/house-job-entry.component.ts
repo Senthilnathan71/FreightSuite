@@ -1381,6 +1381,7 @@ shouldCalculateVolume(): boolean {
       isVolumeManualOverride: [false],
       isVolumetricManualOverride: [false],
       IsHaz: [false],
+      IsStackable: [false],
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
@@ -1736,6 +1737,14 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   }
 
   /**
+   * IsStackable is Char(1) 'Y'/'N' from the API but a boolean in the form. Rows reach the
+   * builders from the API ('Y') and from booking form state (true), so accept both shapes.
+   */
+  isStackable(value: any): boolean {
+    return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+  }
+
+  /**
    *    Create FormArray elements
    */
 
@@ -1760,6 +1769,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       isVolumeManualOverride: [data?.isVolumeManualOverride ?? false],
       isVolumetricManualOverride: [data?.isVolumetricManualOverride ?? false],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
+      IsStackable : [this.isStackable(data?.IsStackable)],
       ImcoClass : [data?.ImcoClass || null],
       UnNo : [data?.UnNo || ''],
       PkgGroup : [data?.PkgGroup || ''],
@@ -3174,6 +3184,7 @@ private applyExportToImportFieldLocks(): void {
         Volume: data?.Volume,
         Volumetric: data?.Volumetric,
         IsHaz: data?.IsHaz,
+        IsStackable: this.isStackable(data?.IsStackable),
         ImcoClass: data?.ImcoClass,
         UnNo: data?.UnNo,
         PkgGroup: data?.PkgGroup,
@@ -3984,6 +3995,9 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
         Volume: parseFloat(product.Volume) || 0,
         Volumetric: parseFloat(product.Volumetric) || 0,
         IsHaz: isHazCargo && product.IsHaz ? 'Y' : 'N',
+        // Not gated on isHazCargo: stackability applies to every cargo type, unlike the
+        // IMCO/UN/PkgGroup fields which only exist for hazardous cargo.
+        IsStackable: this.isStackable(product.IsStackable) ? 'Y' : 'N',
         ImcoClass: isHazCargo ? product.ImcoClass || '' : '',
         UnNo: isHazCargo ? String(product.UnNo || '') : '',
         PkgGroup: isHazCargo ? product.PkgGroup || '' : '',

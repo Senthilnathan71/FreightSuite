@@ -1196,6 +1196,15 @@ ${this.userData.userName}`;
   }
 
 
+  /**
+   * The API stores IsStackable as Char(1) 'Y'/'N', but the form holds a boolean for the
+   * checkbox. Rows can reach here either from the API ('Y') or already-boolean form state,
+   * so accept both shapes.
+   */
+  isStackable(value: any): boolean {
+    return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+  }
+
   addCargo(routeIndex: number, isInitialCargo = false) {
     if (!isInitialCargo && this.selectedCargoMode !== 'FCL') {
       return;
@@ -1224,7 +1233,8 @@ ${this.userData.userName}`;
       volumetric: [''],
       length: [''],
       width: [''],
-      height: ['']
+      height: [''],
+      IsStackable: [false]
     });
     this.updateCargoValidators(cargoForm, this.selectedCargoMode);
     this.routeCargo(routeIndex).push(cargoForm);
@@ -1832,7 +1842,8 @@ private parseFloatSafe(value: any): number {
             length: [cargo.length || null],
             width: [cargo.width || null],
             height: [cargo.height || null],
-            volumetric: [cargo.Volumetric || '']
+            volumetric: [cargo.Volumetric || ''],
+            IsStackable: [this.isStackable(cargo.IsStackable)]
           })
         );
       });

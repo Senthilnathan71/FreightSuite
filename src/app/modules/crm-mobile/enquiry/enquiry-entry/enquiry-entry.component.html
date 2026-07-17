@@ -1187,6 +1187,11 @@
                                                                 <label class="form-label mb-0">Shipment Terms <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
+                                                            <td class="bg-transparent text-light text-center"
+                                                                style="width: 90px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label class="form-label mb-0">Stackable</label>
+                                                            </td>
 
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td class="bg-transparent text-light " style="width: 200px;"
@@ -1325,6 +1330,10 @@
                                                                     </ng-option>
                                                                 </ng-select>
                                                             </td>
+                                                            <td class="text-center align-middle">
+                                                                <input class="form-check-input m-0" type="checkbox"
+                                                                    formControlName="IsStackable">
+                                                            </td>
 
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td data-label="Action" class="dofi-max-w-150">
@@ -1436,7 +1445,12 @@
                                                                 <label class="form-label mb-0">Shipment Terms <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                           
+                                                            <td class="bg-transparent text-light text-center"
+                                                                style="width: 90px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label class="form-label mb-0">Stackable</label>
+                                                            </td>
+
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -1566,8 +1580,11 @@
                                                                     </ng-option>
                                                                 </ng-select>
                                                             </td>
+                                                            <td class="text-center align-middle">
+                                                                <input class="form-check-input m-0" type="checkbox"
+                                                                    formControlName="IsStackable">
+                                                            </td>
 
-                                                            
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -1658,6 +1675,11 @@
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Net Weight <span
                                                                         class="text-danger"></span></label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light text-center"
+                                                                style="width: 90px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">Stackable</label>
                                                             </td>
 
                                                             @if( routeCargo(routeIndex).controls.length > 1){
@@ -1787,6 +1809,10 @@
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
+                                                            <td class="text-center align-middle">
+                                                                <input class="form-check-input m-0" type="checkbox"
+                                                                    formControlName="IsStackable">
+                                                            </td>
 
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td data-label="Action">
@@ -1842,6 +1868,9 @@
                                                             </td>
                                                             <td class="bg-transparent text-light" style="width: 180px;">
                                                                 <label class="form-label mb-0">Chargeable Weight</label>
+                                                            </td>
+                                                            <td class="bg-transparent text-light text-center" style="width: 90px;">
+                                                                <label class="form-label mb-0">Stackable</label>
                                                             </td>
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td class="bg-transparent text-light" style="width: 120px;">
@@ -1913,6 +1942,10 @@
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3">
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <input class="form-check-input m-0" type="checkbox"
+                                                                    formControlName="IsStackable">
                                                             </td>
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td data-label="Action">

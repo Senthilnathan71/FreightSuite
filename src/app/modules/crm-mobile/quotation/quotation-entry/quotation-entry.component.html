@@ -988,6 +988,7 @@
                                 <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">UOM</th>
                                 }
                                 <th class="bg-transparent text-light" scope="col" width="5%">Is Haz</th>
+                                <th class="bg-transparent text-light" scope="col" width="5%">Stackable</th>
 
                                 <th class="bg-transparent text-light dofi-min-w-80" scope="col" width="5%">Imco Class
                                 </th>
@@ -1089,6 +1090,12 @@
                                     <input class="form-check-input" type="checkbox" id="IsHaz"
                                       formControlName="IsHaz" (change)="onHazChange(routeIndex,productIndex,$event)"
                                       (keydown.enter)="onHazChange(routeIndex,productIndex,$event)">
+                                  </div>
+                                </td>
+
+                                <td>
+                                  <div class="form-check ms-5">
+                                    <input class="form-check-input" type="checkbox" formControlName="IsStackable">
                                   </div>
                                 </td>
 
@@ -1269,6 +1276,7 @@
                                       <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Wt.</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM</th>
                                         <th class="bg-transparent text-light">Is Haz</th>
+                                        <th class="bg-transparent text-light">Stackable</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Pkg Group</th>
@@ -1321,6 +1329,11 @@
                                           <div class="form-check ms-2">
                                             <input class="form-check-input" type="checkbox" formControlName="IsHaz"
                                               (change)="toggleHazProduct(routeIndex,productIndex,cargoIndex)">
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <div class="form-check ms-2">
+                                            <input class="form-check-input" type="checkbox" formControlName="IsStackable">
                                           </div>
                                         </td>
                                         <td>
@@ -1711,7 +1724,7 @@
                                               placeholder="" class="custom-input-field sm text-end" DecimalPrecision
                                               [DecimalPrecisionBefore]="6" 
                                               [DecimalPrecisionAfter]="getAmountDecimalPlaces(charge.get('RevenueCurrencyMasterSid')?.getRawValue())"
-                                              [disabled]="isPerUnitDisabled(routeIndex,carrierIndex)"
+                                              [readonly]="isPerUnitDisabled(routeIndex,carrierIndex)"
                                               (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               style="margin-top: 2px;">
                                             @if(charge.get("RevenueRate")?.touched &&
@@ -1726,12 +1739,11 @@
                                         </td>
                                         @if(f['AgreedRate']?.value && showRevenue){
                                         <td>
-                                          <input type="text" #revenueLocalAmountInput [attr.data-route]="routeIndex"
-                                            [attr.data-carrier]="carrierIndex" [attr.data-charge]="chargeIndex"
+                                          <input type="text"
                                             id="text-input" formControlName="RevenueExchangeRate" placeholder=""
                                             (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             class="form-control custom-input-field sm  text-end" DecimalPrecision
-                                            [disabled]="isExchangeRateDisabled(routeIndex,carrierIndex)"
+                                            [readonly]="isExchangeRateDisabled(routeIndex,carrierIndex)"
                                             [DecimalPrecisionBefore]="4" 
                                             [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(charge.get('RevenueCurrencyMasterSid')?.getRawValue())"
                                             style="margin-top: 2px;">
@@ -1811,7 +1823,7 @@
                                             <input type="text" id="text-input" formControlName="CostRate" placeholder=""
                                               DecimalPrecision [DecimalPrecisionBefore]="6"
                                               [DecimalPrecisionAfter]="getAmountDecimalPlaces(charge.get('CostCurrencyMasterSid')?.getRawValue())"
-                                              [disabled]="isPerUnitDisabled(routeIndex,carrierIndex)"
+                                              [readonly]="isPerUnitDisabled(routeIndex,carrierIndex)"
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               class="custom-input-field sm  text-end" style="margin-top: 2px;">
                                             @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
@@ -1829,7 +1841,7 @@
                                             (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             placeholder="" class="form-control custom-input-field sm  text-end"
                                             DecimalPrecision [DecimalPrecisionBefore]="4"
-                                            [disabled]="isExchangeRateDisabled(routeIndex,carrierIndex)"
+                                            [readonly]="isExchangeRateDisabled(routeIndex,carrierIndex)"
                                             [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(charge.get('CostCurrencyMasterSid')?.getRawValue())" 
                                             style="margin-top: 2px;">
 
@@ -2412,6 +2424,7 @@
                                     class="text-danger">*</span></th>
                                 }
                                 <th class="bg-transparent text-light" scope="col">Is Haz</th>
+                                <th class="bg-transparent text-light" scope="col">Stackable</th>
 
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
@@ -2472,6 +2485,12 @@
                                   <div class="form-check ms-2">
                                     <input class="form-check-input" type="checkbox" id="leadOrCustomer"
                                       formControlName="IsHaz" (change)="toggleHazProduct(routeIndex,productIndex)">
+                                  </div>
+                                </td>
+
+                                <td>
+                                  <div class="form-check ms-2">
+                                    <input class="form-check-input" type="checkbox" formControlName="IsStackable">
                                   </div>
                                 </td>
 

@@ -2,7 +2,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, effect, ElementRef, HostListener, OnDestroy, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbCalendar,
@@ -140,7 +140,6 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   private subscription = new Subscription()
 
   // SECTION1 - VARIABLE DECLARATION
-  @ViewChildren('revenueLocalAmountInput') revenueLocalInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChild('customerCreatedModal') customerCreatedModal!: TemplateRef<any>
   @ViewChild('bookingConfirmationModal') bookingConfirmationModal!: TemplateRef<any>;
   currentDate = new Date()
@@ -423,6 +422,7 @@ dataFromEnqPage:any;
     'Height',
     'ProductUnit',
     'IsHaz',
+    'IsStackable',
     'ImcoClass',
     'UnNo',
     'PkgGroup',
@@ -1168,6 +1168,14 @@ private isHazardous(value: any): boolean {
   return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
 }
 
+/**
+ * IsStackable is Char(1) 'Y'/'N' in the API but a boolean in the form. Rows reach the
+ * builders from the API ('Y') and from in-memory form state (true), so accept both.
+ */
+isStackable(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+}
+
   private mapQuotationCargoProduct(product: any): any {
     return {
       ProductName: product.ProductName || '',
@@ -1179,6 +1187,7 @@ private isHazardous(value: any): boolean {
       NetWeight: product.NetWeight,
     Volume: product.Volume,
     IsHaz: product.IsHaz,
+    IsStackable: product.IsStackable,
     ImcoClass: product.ImcoClass,
     UnNo: product.UnNo,
     PkgGroup: product.PkgGroup,
@@ -1652,7 +1661,23 @@ private mapQuotationCargoForBooking(cargo: any): any {
       route.get('PODSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
       route.get('POLSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
     });
-    this.subscribeToLeadCustomerToggle(); 
+    this.subscribeToLeadCustomerToggle();
+    this.subscribeToAgreedRateToggle();
+  }
+
+  /**
+   * Checking "Rate agreed" reveals the Exchange Rate / Local Amount columns, whose
+   * controls may have been written while hidden (async rate fetch, tariff apply).
+   * Recalculate so what becomes visible is never stale.
+   */
+  subscribeToAgreedRateToggle() {
+    this.subscription.add(
+      this.quotationForm.get('AgreedRate')?.valueChanges.pipe(
+        distinctUntilChanged()
+      ).subscribe(() => {
+        this.recalculateAllCharges();
+      })
+    );
   }
 
   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
@@ -2427,6 +2452,7 @@ private syncApprovedByControlState(): void {
           ProductUnit: data?.PackageTypeId || data?.ProductUnit || null,
           ChargeableWeight: data?.ChargeableWeight || '',
           IsHaz: this.isHazardous(data?.IsHaz),
+          IsStackable: this.isStackable(data?.IsStackable),
           ImcoClass: data?.ImcoClass || null,
           UnNo: data?.UnNo || '',
           PkgGroup: data?.PkgGroup || '',
@@ -2516,6 +2542,7 @@ private syncApprovedByControlState(): void {
         0
       ],
       IsHaz : [isHaz],
+      IsStackable : [this.isStackable(data?.IsStackable)],
       ImcoClass : [{ value : data?.ImcoClass || null, disabled : !isHaz }],
       UnNo : [{ value : data?.UnNo || '', disabled : !isHaz }],
       PkgGroup : [{ value : data?.PkgGroup || null, disabled : !isHaz }],
@@ -4475,23 +4502,31 @@ isRateLockDisabled(): boolean {
 
     if (qty && revenueRate && revExRate) {
       chargeCtrl.get('RevenueLocalAmount')?.setValue((qty * revenueRate * revExRate).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
-      this.blurRevenueLocalInput(routeIndex, carrierIndex, chargeIndex);
     } else {
       chargeCtrl.get('RevenueLocalAmount')?.setValue((0).toFixed(this.getAmountDecimalPlaces(companyCurrency)));
     }
   }
 
-  blurRevenueLocalInput(routeIndex: number, carrierIndex: number, chargeIndex: number) {
-    const el = this.revenueLocalInputs.find(ref => {
-      const e = ref.nativeElement;
-      return +e.getAttribute('data-route') === routeIndex &&
-        +e.getAttribute('data-carrier') === carrierIndex &&
-        +e.getAttribute('data-charge') === chargeIndex;
-    });
+  /** Recalculates both sides of a single charge row. Idempotent — safe to call repeatedly. */
+  private recalculateCharge(routeIndex: number, carrierIndex: number, chargeIndex: number) {
+    this.calculateRevenueTotalAmount(routeIndex, carrierIndex, chargeIndex);
+    this.calculateCostTotalAmount(routeIndex, carrierIndex, chargeIndex);
+  }
 
-    if (el && document.activeElement !== el.nativeElement) {
-      el.nativeElement.blur();
-    }
+  /**
+   * Recalculates every charge row across all routes and carriers.
+   * Approved carriers are skipped: their figures are frozen and must not be
+   * rewritten behind the lock, the same guard `fetchExchangeRate` applies.
+   */
+  private recalculateAllCharges() {
+    this.quoteRoutes.controls.forEach((_, routeIndex) => {
+      this.quoteCarriers(routeIndex).controls.forEach((__, carrierIndex) => {
+        if (this.isExchangeRateDisabled(routeIndex, carrierIndex)) return;
+        this.quoteCharges(routeIndex, carrierIndex).controls.forEach((___, chargeIndex) => {
+          this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
+        });
+      });
+    });
   }
 
   calculateCostTotalAmount(routeIndex: number,carrierIndex:number, chargeIndex: number) {
@@ -5352,6 +5387,7 @@ canGetTariff(routeIndex: number): boolean {
       Height: 'Height',
       ProductUnit: 'Product unit',
       IsHaz: 'Hazardous flag',
+      IsStackable: 'Stackable flag',
       ImcoClass: 'IMCO class',
       UnNo: 'UN number',
       PkgGroup: 'Package group',
@@ -5682,6 +5718,14 @@ canGetTariff(routeIndex: number): boolean {
       const checked = ['yes', 'true', 'on', '1', 'haz', 'hazardous'].some(v => spoken.includes(v));
       productForm.get('IsHaz')?.setValue(checked);
       this.toggleHazProduct(this.voiceRouteIndex, this.voiceProductIndex, this.voiceCargoIndex);
+      setTimeout(() => this.moveProductNext(), 200);
+      return;
+    }
+
+    if (fieldName === 'IsStackable') {
+      const checked = ['yes', 'true', 'on', '1', 'stackable'].some(v => spoken.includes(v)) &&
+        !spoken.includes('non stackable') && !spoken.includes('nonstackable');
+      productForm.get('IsStackable')?.setValue(checked);
       setTimeout(() => this.moveProductNext(), 200);
       return;
     }
@@ -7864,34 +7908,43 @@ getContainerTypeName(containerCode: string): string {
 
     if(fromCurrency === toCurrency){
       destExRateCtrl.setValue(1);
+      this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
       return;
     }
-    
-    if(fromCurrencyCode && toCurrencyCode && segment){
-      const payload = {
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-        BranchMasterSid : this.currentBranch?.BranchMasterSid,
-        fromCurrencyCode: fromCurrencyCode,
-        toCurrencyCode: toCurrencyCode,
-        EffectiveFrom : this.isEditMode ? new Date(this.quotationData?.QuoteDate) : new Date(),
-        segment: segment
-      }
-      this.subscription.add(
-        this.leadService.getExchangeRate(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              const exchangeRate = resp.data;
-              destExRateCtrl.setValue(exchangeRate);
-            } else {
-              destExRateCtrl?.setValue('');
-            }
-          },
-          (error) => {
-            this.appSettingService.showError('Error fetching exchange rate: ' + error.message);
-          }
-        )
-      )
+
+    // Currency changed but no rate could be resolved: the amount's decimal precision
+    // still moved, so recalculate against what is currently in the row.
+    if(!fromCurrencyCode || !toCurrencyCode || !segment){
+      this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
+      return;
     }
+
+    const payload = {
+      CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid : this.currentBranch?.BranchMasterSid,
+      fromCurrencyCode: fromCurrencyCode,
+      toCurrencyCode: toCurrencyCode,
+      EffectiveFrom : this.isEditMode ? new Date(this.quotationData?.QuoteDate) : new Date(),
+      segment: segment
+    }
+    this.subscription.add(
+      this.leadService.getExchangeRate(payload).subscribe(
+        (resp: any) => {
+          if (resp.status) {
+            const exchangeRate = resp.data;
+            destExRateCtrl.setValue(exchangeRate);
+          } else {
+            destExRateCtrl?.setValue('');
+          }
+          // The rate lands asynchronously; without this the Local Amount keeps
+          // whatever it held before the currency was picked.
+          this.recalculateCharge(routeIndex, carrierIndex, chargeIndex);
+        },
+        (error) => {
+          this.appSettingService.showError('Error fetching exchange rate: ' + error.message);
+        }
+      )
+    )
 
   }
 

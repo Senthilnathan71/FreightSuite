@@ -1593,6 +1593,7 @@
                         }
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date</th>
                         <th class="bg-transparent text-light is-haz-col" scope="col">Is Haz</th>
+                        <th class="bg-transparent text-light is-haz-col" scope="col">Stackable</th>
                         <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
                         <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No</th>
                         <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group</th>
@@ -1778,6 +1779,9 @@
                           </td>
                           <td class="is-haz-col">
                             <input class="form-check-input m-0" type="checkbox" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
+                          </td>
+                          <td class="is-haz-col">
+                            <input class="form-check-input m-0" type="checkbox" formControlName="IsStackable" />
                           </td>
                           <td>
                             <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
@@ -2183,6 +2187,7 @@
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date <span
                       class="text-danger"></span></th>
                   <th class="bg-transparent text-light" scope="col">Is Haz</th>
+                  <th class="bg-transparent text-light" scope="col">Stackable</th>
 
                   <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class
                   </th>
@@ -2348,6 +2353,11 @@
                     <div class="form-check text-center">
                       <input class="form-check-input" type="checkbox" id="leadOrCustomer" formControlName="IsHaz"
                         (change)="onHazChange(productIndex,$event)" (keydown.enter)="onHazChange(productIndex,$event)">
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-check text-center">
+                      <input class="form-check-input" type="checkbox" formControlName="IsStackable">
                     </div>
                   </td>
 
@@ -3208,6 +3218,15 @@
           <div class="form-check d-flex align-items-center">
             <input type="checkbox" id="" class="form-check-input sm" formControlName="IsHaz">
             <label for="" class="form-check-label sm  ps-0"> Haz ? <span class="text-danger"></span></label>
+          </div>
+        </div>
+      </aside>
+
+      <aside class="col-md-4 d-flex align-items-center">
+        <div class="form-check form-check-inline p-0">
+          <div class="form-check d-flex align-items-center">
+            <input type="checkbox" id="" class="form-check-input sm" formControlName="IsStackable">
+            <label for="" class="form-check-label sm  ps-0"> Stackable ?</label>
           </div>
         </div>
       </aside>

@@ -1166,6 +1166,7 @@ shouldCalculateVolume(): boolean {
       Volume: ['',[Validators.required,Validators.min(0.001)]],
       Volumetric: ['',isAirOrLCL ? [Validators.required] : []],
       IsHaz: [false],
+      IsStackable: [false],
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
@@ -1407,6 +1408,14 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
    *    Create FormArray elements
    */
 
+  /**
+   * IsStackable is Char(1) 'Y'/'N' from the API but a boolean in the form. Rows reach the
+   * builders from the API ('Y') and from in-memory form state (true), so accept both shapes.
+   */
+  isStackable(value: any): boolean {
+    return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+  }
+
   createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
     const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
     const productForm = this.fb.group({
@@ -1423,6 +1432,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
       Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required, Validators.min(0.001)] : []],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
+      IsStackable : [this.isStackable(data?.IsStackable)],
       ImcoClass : [data?.ImcoClass || null],
       UnNo : [data?.UnNo || ''],
       PkgGroup : [data?.PkgGroup || ''],
@@ -2269,6 +2279,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
         Volume: data?.Volume,
         Volumetric: data?.Volumetric,
         IsHaz: data?.IsHaz,
+        IsStackable: this.isStackable(data?.IsStackable),
         ImcoClass: data?.ImcoClass,
         UnNo: data?.UnNo,
         PkgGroup: data?.PkgGroup,
@@ -2596,6 +2607,7 @@ onCurrencyChange(event: any) {
       Volume: parseFloat(product.Volume) || 0,
       Volumetric: parseFloat(product.Volumetric) || 0,
       IsHaz: product.IsHaz ? 'Y' : 'N',
+      IsStackable: this.isStackable(product.IsStackable) ? 'Y' : 'N',
       ImcoClass: product.ImcoClass || '',
       UnNo: String(product.UnNo ?? ''),
       PkgGroup: product.PkgGroup || '',
