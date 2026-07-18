@@ -290,38 +290,39 @@ MenuMasterSid:any
   // Initialize the Form
   initForm() {
     this.leadForm = this.fb.group({
-      preCustomerName: ['', [Validators.required]],
-      leadReferredBy: ['', [Validators.required]],
-      leadFrom: ['', [Validators.required]],
-      preCustomerType: [],
+      preCustomerName: ['', [Validators.required, Validators.maxLength(100)]],
+      leadReferredBy: ['', [Validators.required, Validators.maxLength(20)]],
+      leadFrom: ['', [Validators.required, Validators.maxLength(20)]],
+      preCustomerType: ['', [Validators.maxLength(10)]],
       preCustomerAddress1: ['', [
         Validators.required,
+        Validators.maxLength(300),
         Validators.pattern(/^[a-zA-Z0-9#\/\s,.\-]+$/)
                        // only letters, numbers, space
       ]],
 
-      preCustomerAddress2: [''],
-      POBOX: [''],
+      preCustomerAddress2: ['', [Validators.maxLength(300)]],
+      POBOX: ['', [Validators.maxLength(100)]],
       CountryMasterSid: [, [Validators.required]],
       StateMasterSid: [, [Validators.required]],
       CityMasterSid: [, [Validators.required]],
-      contactPerson: ['', [Validators.required]],
+      contactPerson: ['', [Validators.required, Validators.maxLength(50)]],
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
       phoneCode: [DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)],
       phone: ['',[Validators.required,Validators.maxLength(15), this.phoneNumberValidator]],
       leadStatus: [{ value: LeadStatus.Discovery, disabled: true }],
-      PreferredContactMode: ['Email'],
+      PreferredContactMode: ['Email', [Validators.maxLength(100)]],
       LanguagePreferrence: ['', [
   Validators.maxLength(100),
   this.languagePrefValidator()
 ]],
-      ServiceOfInterest: [''],
+      ServiceOfInterest: ['', [Validators.maxLength(100)]],
       // PurchaseTimeline : [''],
-      SpecificRequirements: [''],
-      Industry: [''],
+      SpecificRequirements: ['', [Validators.maxLength(100)]],
+      Industry: ['', [Validators.maxLength(100)]],
       CompanySize: [''],
       AnnualRevenue: [''],
-      Notes: [''],
+      Notes: ['', [Validators.maxLength(100)]],
       isQualify: [false],
       status: ['Active', [Validators.required]]
     });
@@ -392,23 +393,23 @@ languagePrefValidator(): ValidatorFn {
     const userEmail = this.userData['userEmail'];
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid
-    const formData = this.leadForm.value;
+    const formData = this.leadForm.getRawValue();
     console.log(formData)
-    const payload = {
-      ...formData,
-      phone: this.withDialCode(formData.phone, formData.phoneCode),
-      CompanySize: parseInt(formData.CompanySize),
-      AnnualRevenue: parseInt(formData.AnnualRevenue),
-      ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
-      status: formData.status.charAt(0),
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      isQualify: formData.isQualify ? "Y" : "N",
-      leadStatus: formData.leadStatus,
-    }
-    console.log(payload, "PAYLOAD")
+    const payload = this.buildLeadPayload(formData, userEmail);
+    const requestPayload = this.isEditMode
+      ? this.buildChangedPayload(payload, this.buildLeadPayload(this.initialFormValue, userEmail), userEmail)
+      : payload;
+    console.log(requestPayload, "PAYLOAD")
     if (this.isEditMode) {
-      this.leadService.updateLeadById(this.PreCustomerMasterSid, payload).subscribe(
+      if (Object.keys(requestPayload).filter(key => key !== 'updatedBy').length === 0) {
+        this.isSaving = false;
+        this.btnDisable = false;
+        this.appSettingService.showWarning('No changes to save');
+        if (resolve) resolve(false);
+        return;
+      }
+
+      this.leadService.updateLeadById(this.PreCustomerMasterSid, requestPayload).subscribe(
         (resp: any) => {
           this.isSaving = false;
           this.btnDisable = false;
@@ -428,10 +429,11 @@ languagePrefValidator(): ValidatorFn {
           this.btnDisable = false;
           if (resolve) resolve(false);
           console.error('leadUpdate', error)
+          this.appSettingService.showError(this.getBackendErrorMessage(error, 'Failed to update lead'));
         }
       )
     } else {
-      this.leadService.createNewLead(payload).subscribe(
+      this.leadService.createNewLead(requestPayload).subscribe(
         (resp: any) => {
           this.isSaving = false;
           this.btnDisable = false;
@@ -455,6 +457,7 @@ languagePrefValidator(): ValidatorFn {
           this.btnDisable = false;
           if (resolve) resolve(false);
           console.error('leadCreate', error)
+          this.appSettingService.showError(this.getBackendErrorMessage(error, 'Failed to create lead'));
         }
       )
     }
@@ -864,22 +867,72 @@ onStateChange(selectedState: any) {
   }
 
   findStatus(value) {
-    switch (value) {
-      case 'A':
-        return 'Active'
+    return this.statusMap[value] || 'Active';
+  }
 
-      case 'P':
-        return 'Pending'
+  private statusCodeFromLabel(value: string): string {
+    return value === 'Suspended' ? 'S' : 'A';
+  }
 
-      case 'S':
-        return 'Success'
+  private buildLeadPayload(formData: any, userEmail: string): any {
+    const payload = {
+      ...formData,
+      phone: this.withDialCode(formData?.phone, formData?.phoneCode),
+      CompanySize: this.toOptionalIntegerPayload(formData?.CompanySize),
+      AnnualRevenue: this.toOptionalIntegerPayload(formData?.AnnualRevenue),
+      ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
+      status: this.statusCodeFromLabel(formData?.status),
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      isQualify: formData?.isQualify ? "Y" : "N",
+      leadStatus: this.toApiLeadStatus(formData?.leadStatus),
+    };
 
-      case 'N':
-        return 'No Progress'
+    delete payload.phoneCode;
+    return payload;
+  }
 
-      default:
-        return 'Closed'
+  private buildChangedPayload(currentPayload: any, initialPayload: any, userEmail: string): any {
+    const changedPayload: any = {};
+
+    Object.keys(currentPayload).forEach((key) => {
+      if (key === 'createdBy' || key === 'updatedBy') return;
+      if (!this.deepEqual(currentPayload[key], initialPayload?.[key])) {
+        changedPayload[key] = currentPayload[key];
+      }
+    });
+
+    if (Object.keys(changedPayload).length > 0) {
+      changedPayload.updatedBy = userEmail;
     }
+
+    return changedPayload;
+  }
+
+  private toOptionalIntegerPayload(value: any): number | string | null {
+    if (value === null || value === undefined || value === '') return null;
+    const numericValue = Number(value);
+    return Number.isInteger(numericValue) ? numericValue : value;
+  }
+
+  private toApiLeadStatus(value: string): string {
+    const map: Record<string, string> = {
+      'Meeting Scheduled': 'MeetingScheduled',
+      'Meeting Completed': 'MeetingCompleted',
+      'Enquiry Generated': 'EnquiryGenerated',
+      'Quotation Created': 'QuotationCreated',
+      'Quotation Confirmed': 'QuotationConfirmed',
+      'Contract Signed': 'ContractSigned',
+      'Deal Won': 'DealWon',
+      'Deal Lost': 'DealLost',
+      'Customer Created': 'CustomerCreated'
+    };
+
+    return map[value] || value || 'Discovery';
+  }
+
+  private getBackendErrorMessage(error: any, fallback: string): string {
+    return error?.error?.message || error?.message || fallback;
   }
 
   showInfo() {
