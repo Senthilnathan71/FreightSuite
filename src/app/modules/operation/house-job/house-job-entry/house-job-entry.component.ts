@@ -77,6 +77,7 @@ import { PerformaInvoiceComponent } from '../report/performa-invoice/performa-in
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -137,6 +138,7 @@ type Html2PdfOptions = {
     TimeAgoPipe,
     ElementStateGuardDirective,
     FormStateGuardDirective,
+    ExpandTextDirective,
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],

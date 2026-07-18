@@ -88,7 +88,9 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" id="bookingNo" placeholder="" class="custom-input-field sm"
-                                formControlName="BookingNo" readonly />
+                                formControlName="BookingNo" readonly
+                                appExpandText="Booking No"
+                                title="Double-click or press Enter twice to expand" />
                             <label for="bookingNo" class="input-label">Booking No
                                 <i
                                     *ngIf="cargoForm?.get('BookingNo')?.value"

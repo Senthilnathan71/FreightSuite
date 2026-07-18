@@ -29,6 +29,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -46,6 +47,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     ElementStateGuardDirective,
     FormStateGuardDirective,
     NgxSpinnerModule,
+    ExpandTextDirective,
 ],
   templateUrl: './cargo-receipt-entry.component.html',
   styleUrl: './cargo-receipt-entry.component.scss',

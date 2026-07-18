@@ -1,23 +1,27 @@
-<div class="modal-header">
-  <h5 class="modal-title">{{ title }}</h5>
-  <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
-</div>
-<div class="modal-body">
-  <textarea
-    #ta
-    class="form-control text-expand-textarea"
-    [value]="text"
-    (input)="onModelChange(ta.value)"
-    (keydown.enter)="onEnter($event)"
-    [attr.maxlength]="maxLength"
-    [placeholder]="placeholder"
-    [disabled]="isDisabled"
-    rows="10"
-  ></textarea>
-  <div class="char-count" [class.limit]="maxLength && length >= maxLength">
-    {{ length }}<ng-container *ngIf="maxLength"> / {{ maxLength }}</ng-container>
+<div class="modal-header" [class.compact]="compact">
+  <div class="title-wrap">
+    <span class="title-icon">
+      <i class="fas fa-copy"></i>
+    </span>
+    <h5 class="modal-title">{{ title }}</h5>
   </div>
+  <button type="button" class="btn-close close-btn" aria-label="Close" (click)="close()"></button>
 </div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-sm btn-primary" (click)="close()">Done</button>
+<div class="modal-body" [class.compact]="compact">
+  <div class="editor-shell">
+    <textarea
+      #ta
+      class="form-control text-expand-textarea"
+      [value]="text"
+      (keydown.enter)="onEnter($event)"
+      [attr.maxlength]="maxLength"
+      [placeholder]="placeholder"
+      readonly
+      [rows]="rows"
+      [class.compact]="compact"
+    ></textarea>
+    <div class="char-count" [class.limit]="maxLength && length >= maxLength">
+      {{ length }}<ng-container *ngIf="maxLength"> / {{ maxLength }}</ng-container>
+    </div>
+  </div>
 </div>

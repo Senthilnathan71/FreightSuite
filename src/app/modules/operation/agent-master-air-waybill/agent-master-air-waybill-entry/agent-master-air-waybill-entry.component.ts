@@ -72,6 +72,7 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoice/performa-invoice.component';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -130,7 +131,8 @@ type Html2PdfOptions = {
     MultiSelectComponent,
     RouterModule,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './agent-master-air-waybill-entry.component.html',
   styleUrl: './agent-master-air-waybill-entry.component.scss',

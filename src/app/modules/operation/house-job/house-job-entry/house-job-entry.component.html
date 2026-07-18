@@ -336,7 +336,9 @@
     <div class="col-md-3">
       <div class="custom-form-group">
         <input type="text" id="shipment-input" placeholder="" class="form-control custom-input-field sm"
-          formControlName="ShipmentNo">
+          formControlName="ShipmentNo"
+          appExpandText="Shipment No"
+          title="Double-click or press Enter twice to expand">
         <label for="shipment-input" class="input-label">Shipment No. <span class="text-danger"></span></label>
       </div>
     </div>
@@ -1921,13 +1923,17 @@
                   }
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="CommodityDescription" placeholder="">
+                      <input type="text" class="custom-input-field sm" formControlName="CommodityDescription" placeholder=""
+                        appExpandText="Good Description"
+                        title="Double-click or press Enter twice to expand">
                       <label class="input-label">Good Description</label>
                     </div>
                   </aside>
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="MarksAndNumber" placeholder="">
+                      <input type="text" class="custom-input-field sm" formControlName="MarksAndNumber" placeholder=""
+                        appExpandText="Marks And Number"
+                        title="Double-click or press Enter twice to expand">
                       <label class="input-label">Marks And Number</label>
                     </div>
                   </aside>
@@ -2391,7 +2397,9 @@
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('CommodityDescription')?.value">
               <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
-                formControlName="CommodityDescription" placeholder="" appendTo="body">
+                formControlName="CommodityDescription" placeholder="" appendTo="body"
+                appExpandText="Good Description"
+                title="Double-click or press Enter twice to expand">
               <label for="text-input" class="input-label">Good Description<span class="text-danger"></span></label>
             </div>
           </aside>
@@ -2400,7 +2408,9 @@
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('MarksAndNumber')?.value">
               <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
-                formControlName="MarksAndNumber" placeholder="" appendTo="body">
+                formControlName="MarksAndNumber" placeholder="" appendTo="body"
+                appExpandText="Marks And Number"
+                title="Double-click or press Enter twice to expand">
               <label for="text-input" class="input-label">Marks And Number<span class="text-danger"></span></label>
             </div>
           </aside>

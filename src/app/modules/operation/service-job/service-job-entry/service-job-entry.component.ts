@@ -56,6 +56,7 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
 import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoice/performa-invoice.component';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 
 
@@ -90,7 +91,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     PreventMultiClickDirective,
     TimeAgoPipe,
     FormStateGuardDirective,
-    ElementStateGuardDirective
+    ElementStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './service-job-entry.component.html',
   styleUrl: './service-job-entry.component.scss',

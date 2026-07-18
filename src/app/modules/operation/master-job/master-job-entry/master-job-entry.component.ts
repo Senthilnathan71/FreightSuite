@@ -80,6 +80,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -115,7 +116,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     DecimalPrecisionDirective,
     CustomsComponent,
     FormStateGuardDirective,
-    ElementStateGuardDirective
+    ElementStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './master-job-entry.component.html',
   styleUrls: ['./master-job-entry.component.scss'],

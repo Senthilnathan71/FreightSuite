@@ -179,6 +179,8 @@
                     formControlName="Remarks"
                     placeholder=""
                     [attr.maxlength]="LIMITS.paymentRequest.Remarks"
+                    appExpandText="Remarks"
+                    title="Double-click or press Enter twice to expand"
                   />
                   <label class="input-label">Remarks
                     <i
@@ -255,6 +257,8 @@
                     formControlName="PayableTo"
                     placeholder=""
                     [attr.maxlength]="LIMITS.paymentRequest.PayableTo"
+                    appExpandText="Payable To"
+                    title="Double-click or press Enter twice to expand"
                   />
                   <label class="input-label">
                     Payable To
@@ -366,6 +370,8 @@
       type="text"
       class="custom-input-field sm"
       formControlName="MasterJobNo"
+      appExpandText="Job No"
+      title="Double-click or press Enter twice to expand"
     />
     <label class="input-label">Job No.
       <i

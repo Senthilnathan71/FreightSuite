@@ -5,9 +5,8 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 /**
- * Generic "expand text" modal. Edits a local copy and pushes it to the passed
- * FormControl via setValue() on every keystroke, so the source field updates
- * live (two-way) without the fragility of binding one control to two views.
+ * Generic "expand text" modal. Shows a selectable read-only copy of the source
+ * FormControl value so users can inspect/copy long text without editing it here.
  * Opened via the `appExpandText` directive (or manually through NgbModal).
  */
 @Component({
@@ -22,8 +21,7 @@ export class TextExpandModalComponent implements OnInit, AfterViewInit {
   @Input() title = 'Edit Text';
   @Input() maxLength: number | null = null; // null => no char-count cap shown
   @Input() placeholder = '';
-  @Input() onInput?: () => void; // fired on each keystroke
-  @Input() disabled = false; // locked state mirrored from the host field (readonly/native/reactive)
+  @Input() compact = false;
 
   @ViewChild('ta') ta?: ElementRef<HTMLTextAreaElement>;
 
@@ -37,34 +35,25 @@ export class TextExpandModalComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     const el = this.ta?.nativeElement;
-    if (el && !this.isDisabled) {
-      el.focus();
-      const len = el.value.length;
-      el.setSelectionRange(len, len); // cursor at end
+    if (!el) {
+      return;
     }
-  }
 
-  get isDisabled(): boolean {
-    return this.disabled || !!this.control?.disabled;
+    setTimeout(() => this.fitTextareaToContent());
+
+    el.focus();
+    el.select();
   }
 
   get length(): number {
     return this.text?.length ?? 0;
   }
 
-  onModelChange(value: string): void {
-    if (this.isDisabled) {
-      return; // locked field — ignore edits
-    }
-    this.text = value;
-    if (this.control) {
-      this.control.setValue(value);
-      this.control.markAsDirty();
-    }
-    this.onInput?.();
+  get rows(): number {
+    return 1;
   }
 
-  /** Plain Enter saves & closes; Shift+Enter inserts a line break. */
+  /** Enter closes the read-only preview. */
   onEnter(event: Event): void {
     if ((event as KeyboardEvent).shiftKey) {
       return; // allow the newline
@@ -75,5 +64,19 @@ export class TextExpandModalComponent implements OnInit, AfterViewInit {
 
   close(): void {
     this.activeModal.close(this.text);
+  }
+
+  private fitTextareaToContent(): void {
+    const el = this.ta?.nativeElement;
+    if (!el) {
+      return;
+    }
+
+    el.style.height = 'auto';
+    const minHeight = this.compact ? 48 : 72;
+    const maxHeight = Math.round(window.innerHeight * 0.55);
+    const nextHeight = Math.min(Math.max(el.scrollHeight, minHeight), maxHeight);
+    el.style.height = `${nextHeight}px`;
+    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
   }
 }

@@ -112,23 +112,26 @@ export class ExpandTextDirective implements AfterViewInit, OnDestroy {
     const el = this.host.nativeElement;
     const maxAttr = el.getAttribute('maxlength');
     const maxLength = this.expandMaxLength ?? (maxAttr ? +maxAttr : null);
-    // Mirror the host's locked state: native disabled/readonly or a disabled reactive control.
-    const disabled = el.disabled || el.readOnly || !!control.disabled;
+    const currentValue = `${control.value ?? ''}`;
+    const lineCount = currentValue.split(/\r\n|\r|\n/).length;
+    const isCompact = currentValue.length <= 120 && lineCount <= 3;
+    const widthClass = isCompact
+      ? 'text-expand-compact-modal'
+      : currentValue.length <= 350 && lineCount <= 6
+        ? 'text-expand-medium-modal'
+        : 'text-expand-modal';
 
     const modalRef = this.modalService.open(TextExpandModalComponent, {
-      size: 'lg',
+      size: isCompact ? undefined : 'lg',
       centered: true,
       backdrop: 'static',
+      windowClass: widthClass,
     });
     modalRef.componentInstance.control = control;
     modalRef.componentInstance.title = this.title || el.getAttribute('placeholder') || 'Edit Text';
     modalRef.componentInstance.maxLength = maxLength;
     modalRef.componentInstance.placeholder = el.getAttribute('placeholder') || '';
-    modalRef.componentInstance.disabled = disabled;
-    // Re-run the host's own (input) handler (e.g. header->detail sync) on each keystroke.
-    modalRef.componentInstance.onInput = () =>
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-
-    modalRef.result.catch(() => {}); // dismiss is a no-op; value is already live-bound
+    modalRef.componentInstance.compact = isCompact;
+    modalRef.result.catch(() => {}); // dismiss is a no-op for the read-only preview
   }
 }

@@ -42,6 +42,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 
 @Component({
   selector: 'app-payment-request-entry',
@@ -61,7 +62,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     PrintFooterComponent,
     CustomDatePipe,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    ExpandTextDirective
   ],
   templateUrl: './payment-request-entry.component.html',
   styleUrl: './payment-request-entry.component.scss',

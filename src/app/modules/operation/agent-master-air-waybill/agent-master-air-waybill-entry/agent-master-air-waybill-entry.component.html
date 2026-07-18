@@ -184,7 +184,9 @@
     <div class="col-md-2">
       <div class="custom-form-group">
         <input type="text" formControlName="MasterJobNumber" class="form-control custom-input-field sm"
-          [readonly]="isEditMode" [textWithNumbers]="15" placeholder="">
+          [readonly]="isEditMode" [textWithNumbers]="15" placeholder=""
+          appExpandText="Master Job No"
+          title="Double-click or press Enter twice to expand">
         <label class="input-label">Master Job No
           <i
             *ngIf="houseJobForm?.get('MasterJobNumber')?.value"
@@ -1726,7 +1728,9 @@
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!cargo.get('CommodityDescription')?.value">
                   <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
-                    formControlName="CommodityDescription" placeholder="" appendTo="body">
+                    formControlName="CommodityDescription" placeholder="" appendTo="body"
+                    appExpandText="Good Description"
+                    title="Double-click or press Enter twice to expand">
                   <label for="text-input" class="input-label">Good Description<span class="text-danger"></span></label>
                 </div>
               </aside>
@@ -1735,7 +1739,9 @@
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!cargo.get('MarksAndNumber')?.value">
                   <input bindLabel="name" id="text-input" bindValue="name" class="custom-input-field sm"
-                    formControlName="MarksAndNumber" placeholder="" appendTo="body">
+                    formControlName="MarksAndNumber" placeholder="" appendTo="body"
+                    appExpandText="Marks And Number"
+                    title="Double-click or press Enter twice to expand">
                   <label for="text-input" class="input-label">Marks And Number<span class="text-danger"></span></label>
                 </div>
               </aside>

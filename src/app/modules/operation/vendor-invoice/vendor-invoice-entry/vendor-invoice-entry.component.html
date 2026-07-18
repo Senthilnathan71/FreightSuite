@@ -640,7 +640,9 @@
               <!-- MBL No -->
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm text-end" />
+                  <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm text-end"
+                    appExpandText="MBL No"
+                    title="Double-click or press Enter twice to expand" />
                   <label for="MBLNo" class="input-label">MBL No.
                     <i
                       *ngIf="vendorInvoiceForm?.get('MBLNo')?.value"
@@ -656,7 +658,9 @@
               <!-- HBL No -->
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm text-end" />
+                  <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm text-end"
+                    appExpandText="HBL No"
+                    title="Double-click or press Enter twice to expand" />
                   <label for="HBLNo" class="input-label">HBL No.
                     <i
                       *ngIf="vendorInvoiceForm?.get('HBLNo')?.value"

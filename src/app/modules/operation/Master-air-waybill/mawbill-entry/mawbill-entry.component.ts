@@ -69,6 +69,7 @@ import { JobCardComponent } from '../../master-job/reports/job-card/job-card.com
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ExpandTextDirective } from 'src/app/core/Directives/expand-text.directive';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -103,7 +104,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
      NgbTooltip,
      DecimalPrecisionDirective,
      FormStateGuardDirective,
-     ElementStateGuardDirective
+     ElementStateGuardDirective,
+     ExpandTextDirective
   ],
    templateUrl: './mawbill-entry.component.html',
   styleUrl: './mawbill-entry.component.scss',

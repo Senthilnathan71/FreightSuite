@@ -207,7 +207,9 @@
                                             <div class="custom-form-group">
                                                 <input type="text" formControlName="MasterJobNumber"
                                                     class="form-control custom-input-field sm"
-                                                     placeholder="">
+                                                     placeholder=""
+                                                    appExpandText="Master Job No"
+                                                    title="Double-click or press Enter twice to expand">
                                                 <label class="input-label">Master Job No
                                                     <i
                                                         *ngIf="masterJobForm?.get('MasterJobNumber')?.value"
@@ -853,7 +855,9 @@
                                             <div class="custom-form-group mt-md-1">
                                                 <input type="textarea" formControlName="CommodityDescription"
                                                     id="text-input" class="custom-input-field sm" placeholder=""
-                                                    [textWithNumbers]="1000">
+                                                    [textWithNumbers]="1000"
+                                                    appExpandText="Commodity Description"
+                                                    title="Double-click or press Enter twice to expand">
                                                 <label for="text-input" class="input-label">Commodity Description
                                                 </label>
                                                 <div class="error-message"
@@ -868,7 +872,9 @@
                                             <div class="custom-form-group mt-md-1">
                                                 <input type="textarea" formControlName="MarksandNumber" id="text-input"
                                                     class="custom-input-field sm" placeholder=""
-                                                    [textWithNumbers]="500">
+                                                    [textWithNumbers]="500"
+                                                    appExpandText="Marks and Number"
+                                                    title="Double-click or press Enter twice to expand">
                                                 <label for="text-input" class="input-label">Marks and Number </label>
                                                 <div class="error-message"
                                                     *ngIf="masterJobForm.get('MarksandNumber')?.touched && masterJobForm.get('MarksandNumber')?.invalid">

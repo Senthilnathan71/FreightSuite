@@ -193,7 +193,9 @@
             <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
-                  formControlName="HBLNo">
+                  formControlName="HBLNo"
+                  appExpandText="House Job No"
+                  title="Double-click or press Enter twice to expand">
                 <label for="text-input" [ngClass]="{
                           'input-label': true,
                           'bg-transparent': !b['HBLNo']?.getRawValue()
@@ -839,7 +841,9 @@
           <!-- External Note -->
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <textarea rows="1" class=" custom-input-field" formControlName="ExternalNote" placeholder=""></textarea>
+              <textarea rows="1" class=" custom-input-field" formControlName="ExternalNote" placeholder=""
+                appExpandText="External Note"
+                title="Double-click to expand"></textarea>
               <label class="input-label">External Note</label>
             </div>
           </aside>
@@ -847,14 +851,18 @@
           <!-- Internal Note -->
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <textarea rows="1" class=" custom-input-field" formControlName="InternalNote" placeholder=""></textarea>
+              <textarea rows="1" class=" custom-input-field" formControlName="InternalNote" placeholder=""
+                appExpandText="Internal Note"
+                title="Double-click to expand"></textarea>
               <label class="input-label">Internal Note</label>
             </div>
           </aside>
 
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <input  class="form-control custom-input-field" formControlName="CommodityDescription" placeholder="">
+              <input  class="form-control custom-input-field" formControlName="CommodityDescription" placeholder=""
+                appExpandText="Good Description"
+                title="Double-click or press Enter twice to expand">
               <label class="input-label">Good Decription</label>
             </div>
           </aside>
@@ -862,7 +870,9 @@
           <!-- Internal Note -->
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <input  class="form-control custom-input-field" formControlName="MarksAndNumber" placeholder="">
+              <input  class="form-control custom-input-field" formControlName="MarksAndNumber" placeholder=""
+                appExpandText="Marks and Number"
+                title="Double-click or press Enter twice to expand">
               <label class="input-label">Marks and Number</label>
             </div>
           </aside>
