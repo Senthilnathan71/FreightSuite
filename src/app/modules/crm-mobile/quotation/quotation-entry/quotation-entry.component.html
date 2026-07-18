@@ -771,74 +771,60 @@
                        <aside class="col-md-3">
                         
                       </aside> -->
-                      <aside class="col-md-2 d-md-block d-none"
-                        *ngIf="isLclStyleQuotationSegment(route) || isAirQuotationSegment(route) || isSurfaceQuotationSegment(route)"></aside>
-                      <!-- <aside class="col-md-2 d-md-block d-none" *ngIf="getRouteSegmentType(route) === 'LCL'"></aside> -->
+                      <!-- Route action bar: booking number (left) + rate-lock / carrier / booking actions (right) -->
+                      <div class="col-12">
+                        <div class="route-action-bar d-flex flex-wrap align-items-center gap-2">
+                          <a *ngIf="getBookingNumber(route.getRawValue()?.QuoteRouteSid)"
+                             href="javascript:void(0)"
+                             class="booking-link"
+                             (click)="viewBooking(getBookingHeader(route.getRawValue()?.QuoteRouteSid))"
+                             [title]="'View Booking: ' + getBookingNumber(route.getRawValue()?.QuoteRouteSid)">
+                            <i class="fas fa-file-invoice me-1"></i>{{ getBookingNumber(route.getRawValue()?.QuoteRouteSid) }}
+                          </a>
 
-                      
- <aside class="col-md-2">
-    <div class="custom-form-group mt-md-2">
-       <!-- Make the booking number clickable -->
-    <div *ngIf="getBookingNumber(route.getRawValue()?.QuoteRouteSid)">
-      <a href="javascript:void(0)" 
-         class="booking-link"
-         (click)="viewBooking(getBookingHeader(route.getRawValue()?.QuoteRouteSid))"
-         [title]="'View Booking: ' + getBookingNumber(route.getRawValue()?.QuoteRouteSid)">
-        {{ getBookingNumber(route.getRawValue()?.QuoteRouteSid) }}
-      </a>
-    </div>
-   
-  
-  </div>
-</aside>
-                      
-<div class="row">
-  <div class="col-md-12">
-    <div class="d-flex justify-content-end align-items-center gap-2">
-      <div class="custom-form-group me-2 mb-0">
-        <div class="form-check d-flex align-items-center mb-0">
-          <input class="form-check-input" type="checkbox"
-                 id="rateLock"
-                 [formControl]="$any(quotationForm.get('RateLock'))"
-                 [disabled]="isRateLockDisabled()"
-                 (change)="onRateLockChange()">
-          <label class="form-check-label ms-2" for="rateLock">
-            Rate Lock
-          </label>
-          <i
-            *ngIf="!canUserLockRates"
-            class="fas fa-info-circle text-muted ms-1"
-            [ngbTooltip]="'You do not have permission to lock rates'"
-            placement="top"
-          ></i>
-        </div>
-      </div>
+                          <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                            <div class="form-check d-flex align-items-center mb-0">
+                              <input class="form-check-input" type="checkbox"
+                                     id="rateLock"
+                                     [formControl]="$any(quotationForm.get('RateLock'))"
+                                     [disabled]="isRateLockDisabled()"
+                                     (change)="onRateLockChange()">
+                              <label class="form-check-label ms-2" for="rateLock">Rate Lock</label>
+                              <i class="fas fa-info-circle text-muted ms-1"
+                                 [ngbTooltip]="canUserLockRates
+                                   ? 'Lock the agreed rates so they cannot be edited on this quotation'
+                                   : 'You do not have permission to lock rates'"
+                                 placement="top"></i>
+                            </div>
 
-      <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)"
-        [disabled]="isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
-        <i class="fas fa-plus me-1"></i> Add Carrier
-      </button>
+                            <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)"
+                              [disabled]="isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
+                              <i class="fas fa-plus me-1"></i> Add Carrier
+                            </button>
 
-      <ng-container *ngIf="isEditMode && isRouteApproved(routeIndex)">
-        <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
-                (click)="goForBookingCreationForRoute(routeIndex, route.getRawValue()?.QuoteRouteSid)"
-                [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.getRawValue()?.QuoteRouteSid))">
+                            <button class="btn btn-sm btn-info" type="button" (click)="addQuoteCargo(routeIndex)"
+                              [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
+                              <i class="fas fa-plus me-1"></i> Add Cargo
+                            </button>
 
-          @if(doesBookingExistForRoute(route.getRawValue()?.QuoteRouteSid) && quotationForm.get('IsContract')?.value) {
-            <i class="fas fa-plus me-1"></i> Create Booking
-          }
-          @else if(doesBookingExistForRoute(route.getRawValue()?.QuoteRouteSid) && !quotationForm.get('IsContract')?.value) {
-            Booking Created
-          }
-          @else {
-            <i class="fas fa-plus me-1"></i> Create Booking
-          }
-        </button>
-      </ng-container>
-     
-    </div>
-  </div>
-</div>
+                            <ng-container *ngIf="isEditMode && isRouteApproved(routeIndex)">
+                              <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
+                                      (click)="goForBookingCreationForRoute(routeIndex, route.getRawValue()?.QuoteRouteSid)"
+                                      [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.getRawValue()?.QuoteRouteSid))">
+                                @if(doesBookingExistForRoute(route.getRawValue()?.QuoteRouteSid) && quotationForm.get('IsContract')?.value) {
+                                  <i class="fas fa-plus me-1"></i> Create Booking
+                                }
+                                @else if(doesBookingExistForRoute(route.getRawValue()?.QuoteRouteSid) && !quotationForm.get('IsContract')?.value) {
+                                  Booking Created
+                                }
+                                @else {
+                                  <i class="fas fa-plus me-1"></i> Create Booking
+                                }
+                              </button>
+                            </ng-container>
+                          </div>
+                        </div>
+                      </div>
 
                      <!-- <div class="col-12 px-2">
                         <div class="d-flex justify-content-end">
@@ -1023,13 +1009,7 @@
                         
                       </div>-->
 
-                      <div class="d-flex justify-content-end pr-2">
-                        <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button"
-                          (click)="addQuoteCargo(routeIndex)"
-                          [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
-                          <i class="fas fa-plus me-1"></i> Add Cargo
-                        </button>
-                      </div>
+                      <!-- Add Cargo moved into the route action bar above to remove the empty band. -->
 
                       <div formArrayName="quoteCargo" class="px-2">
                         <div ngbAccordion [closeOthers]="true" class="custom-accordion-quotation">
@@ -1327,7 +1307,7 @@
                             <div ngbAccordionCollapse [id]="'carrier-' + carrierIndex">
                               <div class="px-1">
                                 <div class="col-md-12">
-                                  <div class="row">
+                                  <div class="row align-items-center">
                                     <div class="col-md-9">
                                       <div class="row">
                                         <aside class="col-md-3">
@@ -1431,30 +1411,24 @@
 
                                     </div>
                                     <div class="col-md-3">
-                                      <aside class="col-md-12 d-flex justify-content-end">
-                                        <div class="d-flex align-items-center px-0 py-2">
-                                          <!-- <h5 class="card-title text-info ms-1">Charge Details</h5> -->
-                                        
-                                          
-                                          <button class="btn btn-info btn-sm me-1" type="button" appPreventMultiClick
+                                      <div class="charge-action-bar d-flex flex-wrap justify-content-end align-items-center gap-1 px-0 py-1 h-100">
+                                        <button class="btn btn-info btn-sm text-nowrap" type="button" appPreventMultiClick
         (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
         [disabled]="disableAllModification || !canGetTariff(routeIndex) || isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
   <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
 </button>
-<button class="btn btn-info btn-sm me-1" type="button" appPreventMultiClick
+<button class="btn btn-info btn-sm text-nowrap" type="button" appPreventMultiClick
   (click)="openStandardCharges(routeIndex, carrierIndex)" [disabled]="disableAllModification || !canGetTariff(routeIndex) || isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
   Get Std Charges
 </button>
 
-
 <!-- Add Charge button -->
-<button class="btn btn-info btn-sm" type="button" appPreventMultiClick
+<button class="btn btn-info btn-sm text-nowrap" type="button" appPreventMultiClick
         (click)="addQuoteCharge(routeIndex,carrierIndex,'manual')"
         [disabled]="disableAllModification || isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
   <i class="fas fa-plus me-1"></i> Add Charge
 </button>
-                                        </div>
-                                      </aside>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
