@@ -2431,8 +2431,12 @@ private syncApprovedByControlState(): void {
     const routeForm = this.quoteRoutes.at(routeIndex);
     const isFCL = this.isFclQuotationSegment(routeForm);
 
-
+    // Synthesise a product from the cargo's own fields ONLY when converting an enquiry:
+    // enquiries carry cargo weights but no discrete product rows. Loading/copying a saved
+    // quotation must NOT fabricate a product — a cargo that came back with quoteProduct: []
+    // has genuinely no products, so the product grid must stay empty until the user adds one.
     const defaultCargoProduct = (
+      data?.isFromEnquiry === true &&
       !cargoProducts.length &&
       (data?.ProductName || data?.PackageType || data?.GrossWeight || data?.NetWeight || data?.Volume))
       ? [{
@@ -3726,7 +3730,9 @@ isRateLockDisabled(): boolean {
             }
             if (resolve) resolve(true);
           } else {
-            this.appSettingService.showError("Quotation Creation Failed");
+            // Surface the backend message (e.g. a field-length validation error naming the exact
+            // field) instead of a generic string, so the user knows what to fix.
+            this.appSettingService.showError(resp.message || "Quotation Creation Failed");
             if (resolve) resolve(false);
           }
         },
