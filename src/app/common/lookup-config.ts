@@ -108,6 +108,13 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['CustomerName', 'PanType', 'CompanyType', 'CountryName'],
     displayLabels: ['Name', 'PAN', 'Company Type', 'Country'],
     labelFields: ['CustomerName']
+  },
+  // DepartmentNames is derived — MilestoneMaster.DepartmentMasterSid is a string[] of
+  // department names, which the dropdown cannot render or search directly.
+  MILESTONE: {
+    displayFields: ['MilestoneName', 'DepartmentNames'],
+    displayLabels: ['Milestone', 'Department'],
+    labelFields: ['MilestoneName']
   }
 } satisfies Record<string, {
   displayFields: string[];

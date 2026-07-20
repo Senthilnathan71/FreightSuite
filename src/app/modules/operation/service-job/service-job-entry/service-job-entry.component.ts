@@ -937,7 +937,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
             this.loadServiceJobById(this.HouseJobSid);
             if (resolve) resolve(true);
           } else {
-            this.appSettingService.showError('Error updating Service Job.');
+            // Surface the backend message (e.g. a missing number series configuration naming
+            // the exact setting to fix) instead of a generic string.
+            this.appSettingService.showError(resp.message || 'Error updating Service Job.');
             console.error(resp.message);
             if (resolve) resolve(false);
           }
@@ -945,7 +947,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
         error: (err) => {
           this.spinner.hide();
           this.isSaving = false;
-          this.appSettingService.showError('Failed to update Service Job.');
+          this.appSettingService.showError(
+            err?.error?.message || err?.message || 'Failed to update Service Job.'
+          );
           console.error(err);
           if (resolve) resolve(false);
         }
@@ -962,7 +966,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
             this.router.navigate(['operation/service-job/entry', houseId]);
             if (resolve) resolve(true);
           } else {
-            this.appSettingService.showError('Error creating service job.');
+            // Surface the backend message (e.g. a missing number series configuration naming
+            // the exact setting to fix) instead of a generic string.
+            this.appSettingService.showError(resp.message || 'Error creating service job.');
             console.error(resp.message);
             if (resolve) resolve(false);
           }
@@ -970,7 +976,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
         error: (err) => {
           this.spinner.hide();
           this.isSaving = false;
-          this.appSettingService.showError('Failed to create service job.');
+          this.appSettingService.showError(
+            err?.error?.message || err?.message || 'Failed to create service job.'
+          );
           console.error(err);
           if (resolve) resolve(false);
         }

@@ -1561,7 +1561,7 @@
     </div> -->
       <div class="col-12">
         <div class="table-responsive table-borderless">
-          <table class="table table-hover align-middle no-wrap  table-sm mb-1"
+          <table class="table table-hover align-middle no-wrap  table-sm mb-1 milestone-table"
             style="max-height: 300px; overflow-y: scroll;">
             <thead>
               <tr class="bg-info">
@@ -1570,7 +1570,10 @@
                 <th class="bg-transparent text-light" scope="col">Milestone</th>
                 <th class="bg-transparent text-light " scope="col">Update Type</th>
                 <th class="bg-transparent text-light" scope="col">Contact info</th>
-                <th class="bg-transparent text-light " scope="col">Effective From</th>
+                <th class="bg-transparent text-light" scope="col">Email</th>
+                <th class="bg-transparent text-light" scope="col">Mobile Number</th>
+                <th class="bg-transparent text-light " scope="col">Effective From <span
+                    class="text-danger">*</span></th>
                 <th class="bg-transparent text-light " scope="col">Status</th>
               </tr>
             </thead>
@@ -1578,7 +1581,7 @@
             <tbody formArrayName="cusMilestone">
               <!-- No Records -->
               <tr *ngIf="(slicedCusMilestoneList?.length || 0) === 0">
-                <td [attr.colspan]="7" class="text-center text-muted py-1">
+                <td [attr.colspan]="9" class="text-center text-muted py-1">
                   No records found
                 </td>
               </tr>
@@ -1599,7 +1602,7 @@
                 <!-- Branch -->
                 <td class="px-1">
                   <ng-select formControlName="CustomerBranchSid" appendTo="body" placeholder=""
-                    [disabled]="!isEditMode">
+                    [disabled]="!isEditMode" (change)="validateDuplicateMilestones()">
                     <ng-option *ngFor="let branch of getAvailableBranches()" [value]="branch.CustomerBranchSid">
                       {{ branch.BranchName }}
                     </ng-option>
@@ -1608,9 +1611,16 @@
 
                 <!-- Milestone -->
                 <td class="px-1">
-                  <ng-select [items]="milestoneListArr" bindLabel="MilestoneName" bindValue="MilestoneMasterSid"
-                    formControlName="MilestoneMasterSid" appendTo="body" placeholder="">
-                  </ng-select>
+                  <dofi-searchable-dropdown [items]="milestoneListArr" formControlName="MilestoneMasterSid"
+                    placeholder="" [displayFields]="milestoneLookupConfig.displayFields"
+                    [displayLabels]="milestoneLookupConfig.displayLabels"
+                    [labelFields]="milestoneLookupConfig.labelFields" bindLabel="MilestoneName"
+                    bindValue="MilestoneMasterSid" (itemSelected)="validateDuplicateMilestones()">
+                  </dofi-searchable-dropdown>
+                  <div class="text-danger small"
+                    *ngIf="item.get('MilestoneMasterSid')?.hasError('duplicateMilestone')">
+                    Already added for this branch
+                  </div>
                 </td>
 
                 <td class="px-1">
@@ -1624,6 +1634,14 @@
                 </td>
 
                 <td class="px-1">
+                  <input type="email" placeholder="" class="custom-input-field sm" formControlName="Email">
+                </td>
+
+                <td class="px-1">
+                  <input type="text" placeholder="" class="custom-input-field sm" formControlName="MobileNo">
+                </td>
+
+                <td class="px-1">
                   <div class="custom-form-group custom-form-group-select-date mt-0">
                     <div class="d-flex align-items-center">
                       <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d19="ngbDatepicker"
@@ -1634,6 +1652,9 @@
                         <i-feather name="calendar" class="feather-sm"></i-feather>
                       </button>
                     </div>
+                    @if (item.get('EffectiveFrom')?.touched && item.get('EffectiveFrom')?.hasError('required')) {
+                    <div class="error-message"><span>Required</span></div>
+                    }
                   </div>
                 </td>
 

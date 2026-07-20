@@ -2099,7 +2099,7 @@ private parseFloatSafe(value: any): number {
               }
             });
           } else {
-            this.appSettingService.showError('Enquiry Update Failed');
+            this.appSettingService.showError(resp.message || 'Enquiry Update Failed');
             this.isSaving = false;
             if (resolve) resolve(false);
           }
@@ -2170,7 +2170,9 @@ private parseFloatSafe(value: any): number {
             }
           });
         } else {
-          this.appSettingService.showError('Enquiry Creation Failed');
+          // Surface the backend message (e.g. a missing number series configuration naming the
+          // exact setting to fix) instead of a generic string, so the user knows what to do.
+          this.appSettingService.showError(resp.message || 'Enquiry Creation Failed');
           this.isSaving = false;
           if (resolve) resolve(false);
         }
