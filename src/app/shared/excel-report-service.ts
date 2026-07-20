@@ -73,6 +73,12 @@ export interface ReportHeaderConfig {
   companyName: string;
   reportTitle: string;
   additionalInfo?: { label: string; value: string; valueWidth?: number | string }[];
+  /**
+   * Renders the company GST/VAT registration line in the PDF header.
+   * Mirrors PrintHeaderComponent's showTaxRegistration input, so a report opts in
+   * for the PDF the same way it does for the on-screen print view.
+   */
+  showTaxRegistration?: boolean;
 }
 
 /**

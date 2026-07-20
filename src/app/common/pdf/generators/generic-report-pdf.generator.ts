@@ -43,6 +43,45 @@ const COMPACT_TABLE_LAYOUT = {
   paddingBottom: () => 2
 };
 
+/**
+ * Company GST/VAT registration line, resolved the same way PrintHeaderComponent does:
+ * India shows the GST registration, everywhere else the VAT/PAN registration.
+ * Returns null when nothing is configured, so the label is never printed on its own.
+ */
+function buildCompanyTaxRegistrationLine(
+  company: PdfCompanyInfo,
+  branch: PdfBranchInfo,
+  alignment: 'left' | 'center' | 'right'
+): any | null {
+  const countryCode = String(
+    (branch as any)?.countryMaster?.countryCode ||
+    (branch as any)?.countryCode ||
+    (company as any)?.countryMaster?.countryCode ||
+    (company as any)?.countryCode ||
+    ''
+  ).toLowerCase();
+  const isIndia = countryCode === 'in';
+
+  const gstNo = (branch as any)?.taxRegistrationNo || (company as any)?.GST_VAT || '';
+  const panNo = (company as any)?.Pan || (company as any)?.PAN || '';
+  const value = String((isIndia ? gstNo : panNo) || '').trim();
+
+  if (!value) {
+    return null;
+  }
+
+  return {
+    text: [
+      { text: `${isIndia ? 'GST No' : 'VAT No'} : `, bold: true },
+      { text: value }
+    ],
+    fontSize: 8,
+    alignment,
+    color: '#000000',
+    noWrap: true
+  };
+}
+
 function getGenericHeaderPrintSettings(): GenericHeaderPrintSettings {
   try {
     const raw = localStorage.getItem('companyPrintSettings');
@@ -370,6 +409,13 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       });
     }
 
+    const portraitTaxLine = exportConfig.reportHeader.showTaxRegistration
+      ? buildCompanyTaxRegistrationLine(company, branch, printSettings.companyAlignment)
+      : null;
+    if (portraitTaxLine) {
+      companyStack.push(portraitTaxLine);
+    }
+
     stack.push({
       columns: [
         ...buildHeaderSlots(
@@ -513,6 +559,13 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         alignment: printSettings.companyAlignment,
         color: '#000000'
       });
+    }
+
+    const landscapeTaxLine = exportConfig.reportHeader.showTaxRegistration
+      ? buildCompanyTaxRegistrationLine(company, branch, printSettings.companyAlignment)
+      : null;
+    if (landscapeTaxLine) {
+      companyStack.push(landscapeTaxLine);
     }
 
     stack.push({
@@ -797,7 +850,10 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     company?.companyName,
     branch?.branchName,
     branch?.addressLine1 || company?.addressLine1,
-    branch?.addressLine2 || branch?.cityMaster?.cityName || branch?.cityName || branch?.postalCode || (branch as any)?.ZipCode || branch?.phoneNumber || (branch as any)?.Phone
+    branch?.addressLine2 || branch?.cityMaster?.cityName || branch?.cityName || branch?.postalCode || (branch as any)?.ZipCode || branch?.phoneNumber || (branch as any)?.Phone,
+    exportConfig.reportHeader.showTaxRegistration
+      ? buildCompanyTaxRegistrationLine(company, branch, printSettings.companyAlignment)
+      : null
   ].filter(Boolean).length;
   const parameterRows = isLandscape
     ? landscapeAdditionalInfo.rowCount

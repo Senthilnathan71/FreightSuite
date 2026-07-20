@@ -11,6 +11,12 @@ export interface PdfCompanyInfo {
   postalCode?: string;
   phoneNumber?: string;
   email?: string;
+  /** Company tax registration - PAN (non-India) / GST (India) */
+  Pan?: string;
+  GST_VAT?: string;
+  countryMaster?: {
+    countryCode?: string;
+  };
 }
 
 export interface PdfBranchInfo {
@@ -23,6 +29,11 @@ export interface PdfBranchInfo {
   phoneNumber?: string;
   cityMaster?: {
     cityName?: string;
+  };
+  /** Branch GST/VAT registration number */
+  taxRegistrationNo?: string;
+  countryMaster?: {
+    countryCode?: string;
   };
 }
 

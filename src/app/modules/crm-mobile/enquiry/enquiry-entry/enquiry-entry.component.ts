@@ -3766,6 +3766,14 @@ if (this.isTermsAndConditionsEnabled) {
     return total;
   }
 
+  calculateRoutePackageQty(route: any): number {
+    let total = 0;
+    this.getPrintCargo(route).forEach((cargo: any) => {
+      total += Number(cargo?.PackageQty) || 0;
+    });
+    return total;
+  }
+
   calculateRouteNetWeight(route: any): number {
     let total = 0;
     this.getPrintCargo(route).forEach((cargo: any) => {

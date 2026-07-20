@@ -348,7 +348,7 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
 
   return [
     ...baseColumns,
-    { header: 'No. of Pkg', field: 'NoOfPackage', width: 48, alignment: 'right', decimals: 2 },
+    { header: 'No. of Pkg', field: 'NoOfPackage', width: 48, alignment: 'right', decimals: 0 },
     { header: 'Dims', field: 'Dims', width: 88, alignment: 'right' },
     { header: 'Pkg Type', field: 'PackageType', width: 48, alignment: 'left' },
     { header: 'Gross Wt.', field: 'GrossWeight', width: 55, alignment: 'right', decimals: 3 },
@@ -364,15 +364,25 @@ function buildCargoTotalRow(cargo: any[], columns: any[], mode: 'FCL' | 'LCL' | 
       totalRow[index] = { text: formatNumber(value, decimals), style: 'tableCellBold', alignment: 'right' , fontSize: 7 };
     }
   };
-  const labelIndex = mode === 'AIR'
-    ? columns.findIndex(column => column.field === 'Dims')
-    : columns.findIndex(column => column.field === 'PackageType');
+  // The label sits in the last descriptive column so it reads immediately before the
+  // first total, instead of trailing after the numbers in Dims / Pkg Type.
+  const labelIndex = columns.findIndex(column => column.field === 'ProductName');
 
   if (labelIndex >= 0) {
-    totalRow[labelIndex] = { text: 'Total', style: 'tableCellBold', alignment: 'right' };
+    totalRow[labelIndex] = { text: 'Total', style: 'tableCellBold', alignment: 'right', fontSize: 7 };
   }
 
   setTotalCell('GrossWeight', cargo.reduce((sum, item) => sum + (Number(item.GrossWeight) || 0), 0));
+
+  
+  if (mode === 'AIR' || mode === 'LCL') {
+    const packageColumn = columns.find(column => column.field === 'NoOfPackage');
+    setTotalCell(
+      'NoOfPackage',
+      cargo.reduce((sum, item) => sum + (Number(item.NoOfPackage) || 0), 0),
+      packageColumn?.decimals ?? 0
+    );
+  }
 
   if (mode === 'AIR') {
     setTotalCell('ChargeableWeight', cargo.reduce((sum, item) => sum + (Number(item.ChargeableWeight) || 0), 0));

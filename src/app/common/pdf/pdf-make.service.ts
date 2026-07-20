@@ -690,7 +690,12 @@ export class PdfMakeService {
       city: company?.cityMaster?.cityName || company?.city || '',
       postalCode: company?.postalCode || company?.ZipCode || '',
       phoneNumber: company?.Phone || company?.phoneNumber || '',
-      email: company?.Email || company?.email || ''
+      email: company?.Email || company?.email || '',
+      // Needed for the GST/VAT registration line in report headers
+      Pan: company?.Pan || company?.PAN || '',
+      GST_VAT: company?.GST_VAT || '',
+      countryCode: company?.countryCode || '',
+      countryMaster: company?.countryMaster
     };
   }
 
@@ -702,7 +707,11 @@ export class PdfMakeService {
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      // Needed for the GST/VAT registration line in report headers
+      taxRegistrationNo: branch?.taxRegistrationNo || '',
+      countryCode: branch?.countryCode || '',
+      countryMaster: branch?.countryMaster
     };
   }
 
