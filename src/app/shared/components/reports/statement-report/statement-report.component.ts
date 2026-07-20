@@ -691,6 +691,8 @@ export class StatementReportComponent {
       reportHeader: {
         companyName: this.currentCompany?.companyName || '',
         reportTitle: `Statement of Acconuts`,
+        // Matches [showTaxRegistration]="true" on app-print-header in the template
+        showTaxRegistration: true,
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },

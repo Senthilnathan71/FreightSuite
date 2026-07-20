@@ -676,6 +676,7 @@ export class OutstandingReportComponent {
       sheetName: 'OutstandingReport',
       showFooterNote: true,
       reportHeader: {
+        showTaxRegistration: true,
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Outstanding Report`,
         additionalInfo: [

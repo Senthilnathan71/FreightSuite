@@ -3462,11 +3462,11 @@
       <td colspan="8" style="padding:4px 23px;">
         <table style="width:100%; border-collapse:collapse;">
           <tr>
-            <td style="width:80px; padding:2px;"><strong>Carrier</strong></td>
-            <td style="padding:2px;">: {{ carrier?.CarrierName || '' }}</td>
+            <td style="width:100px; white-space:nowrap;"><strong>Carrier</strong></td>
+            <td style="width:40%;">: {{ carrier?.CarrierName || '' }}</td>
 
-            <td style="width:80px; padding:2px;"><strong>TT. Days</strong></td>
-            <td style="padding:2px;">: {{ carrier?.TransitTime || '' }}</td>
+            <td style="width:100px; white-space:nowrap;"><strong>TT. Days</strong></td>
+            <td>: {{ carrier?.TransitTime || '' }}</td>
           </tr>
         </table>
       </td>
@@ -3565,7 +3565,7 @@
 
         @if (getRouteTerms(route).length) {
         <div style="font-size:12px; padding-left:25px; padding-top:8px; margin-top:0;">
-          <h5 style="margin:0; padding:0;  line-height:1.2;">
+          <h5 style="margin:0; padding:0;  line-height:1.2; font-size:14px;">
             <strong>Terms and Conditions</strong>
           </h5>
           <ul style="margin:4px 0 0 0; padding-left:1.2rem; line-height:1.4;">

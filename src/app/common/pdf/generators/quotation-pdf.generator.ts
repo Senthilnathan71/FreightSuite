@@ -2,6 +2,12 @@ import { QuotationPdfData, QuotationDocumentType } from '../interfaces/pdf-docum
 import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { formatDate, getDepartmentName, getFormattedPort } from '../helpers/pdf-formatters';
 
+/**
+ * Height the company header occupies on every page: 58pt logo row + 8pt table
+ * padding + the builder's 5pt top/bottom margins, rounded up for the tax line.
+ */
+const QUOTATION_HEADER_HEIGHT = 80;
+
 export function generateQuotationDocument(
   data: QuotationPdfData,
   documentType: QuotationDocumentType = 'quotation'
@@ -12,7 +18,10 @@ export function generateQuotationDocument(
   return {
     pageSize: 'A4',
     pageOrientation: 'portrait',
-    pageMargins: [15, 16, 15, 24],
+    // Top margin reserves room for the repeating company header (see `header` below):
+    // ~58pt logo + table padding + the builder's own 5pt top/bottom margins, plus the
+    // original 16pt gap above it.
+    pageMargins: [15, QUOTATION_HEADER_HEIGHT + 16, 15, 24],
     background: (_: number, pageSize: any) => ({
       canvas: [
         {
@@ -26,8 +35,13 @@ export function generateQuotationDocument(
         }
       ]
     }),
+    // Repeated on every page rather than sitting in `content`, so continuation pages
+    // carry the company name/logo/address too.
+    header: () => ({
+      margin: [15, 16, 15, 0],
+      stack: [buildCompanyHeader(data)]
+    }),
     content: [
-      buildCompanyHeader(data),
       buildTitle(title),
       buildCustomerInfo(data, isContract),
       buildGreeting(),
@@ -37,7 +51,7 @@ export function generateQuotationDocument(
     ],
     footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
     defaultStyle: {
-      fontSize: 8,
+      fontSize: 7,
       color: '#000'
     }
   };
@@ -118,14 +132,23 @@ function buildRouteSections(data: QuotationPdfData): any[] {
   const blocks: any[] = [];
 
   routes.forEach((route: any) => {
+    // Everything for one route goes into a single unbreakable stack, so a page break
+    // never lands between the route header, its cargo table and its charges - which
+    // is what made the cargo table's headerRows repeat on the following page.
+    const routeBlocks: any[] = [];
     const deptName = route.departmentName || getDepartmentName(route.departmentSid, data.departments || []);
     const pol = getFormattedPort(route.polSid, data.ports || []);
     const pod = getFormattedPort(route.podSid, data.ports || []);
     const fdp = route.fdpSid && route.fdpSid !== route.podSid ? getFormattedPort(route.fdpSid, data.ports || []) : '';
     const routeLabel = `${pol} - ${pod}${fdp ? ` - ${fdp}` : ''}`;
 
+    // The route header and the cargo table that describes it are grouped separately
+    // as well, so that even a route too tall for one page can never break between
+    // them - that split is what left an orphaned table header on the previous page.
+    const routeHeaderGroup: any[] = [];
+
     // Department | Valid | ports, matching the preview's route header row.
-    blocks.push({
+    routeHeaderGroup.push({
       table: {
         widths: ['20%', '40%', '40%'],
         body: [[
@@ -157,21 +180,31 @@ function buildRouteSections(data: QuotationPdfData): any[] {
     if (carriers.length) {
       // FCL shows the container table instead of the per-product cargo table.
       if (showCargoSummary) {
-        blocks.push(buildRouteProductTable(route, data));
+        routeHeaderGroup.push(buildRouteProductTable(route, data));
       }
 
       if (showCargoTable) {
-        blocks.push(buildRouteCargoTable(route, data));
+        routeHeaderGroup.push(buildRouteCargoTable(route, data));
       }
     }
 
+    routeBlocks.push({ stack: routeHeaderGroup, unbreakable: true });
+
+    // Each carrier keeps its own info line glued to its charge table.
     carriers.forEach((carrier: any) => {
-      blocks.push(buildRouteInfo(route, carrier));
-      blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate, data.companyCurrencyCode, data.currencyMaster));
+      routeBlocks.push({
+        stack: [
+          buildRouteInfo(route, carrier),
+          buildChargeTable(carrier?.charges || [], showAgreedRate, data.companyCurrencyCode, data.currencyMaster)
+        ],
+        unbreakable: true
+      });
     });
 
-    blocks.push(buildRouteTermsSection(route.terms || []));
-    blocks.push({ text: '', margin: [0, 0, 0, 0] });
+    routeBlocks.push(buildRouteTermsSection(route.terms || []));
+    routeBlocks.push({ text: '', margin: [0, 0, 0, 0] });
+
+    blocks.push({ stack: routeBlocks, unbreakable: true });
   });
 
   return blocks;
@@ -184,20 +217,20 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
     ? ['18%', '20%', '18%', '18%', '18%']
     : ['25%', '25%', '17%', '17%', '16%'];
   const body: any[] = [[
-    { text: 'Cargo Type', bold: true, alignment: 'center' },
-    { text: 'Container Type', bold: true, alignment: 'center' },
-    ...(showQuantity ? [{ text: 'No of Container', bold: true, alignment: 'center' }] : []),
-    { text: 'Gross Wt', bold: true, alignment: 'center' },
-    { text: 'Net Wt', bold: true, alignment: 'center' },
+    { text: 'Cargo Type', bold: true, alignment: 'center' , fontSize: 7},
+    { text: 'Container Type', bold: true, alignment: 'center', fontSize: 7 },
+    ...(showQuantity ? [{ text: 'No of Container', bold: true, alignment: 'center' , fontSize: 7}] : []),
+    { text: 'Gross Wt', bold: true, alignment: 'center' , fontSize: 7},
+    { text: 'Net Wt', bold: true, alignment: 'center', fontSize: 7 },
   ]];
 
   cargoDetails.forEach((cargo: any) => {
     body.push([
-      { text: cargo?.cargoType || '-', alignment: 'left' },
-      { text: cargo?.containerType || '-', alignment: 'left' },
-      ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'right' }] : []),
-      { text: formatNumeric(cargo?.grossWeight, 3), alignment: 'right' },
-      { text: formatNumeric(cargo?.netWeight, 3), alignment: 'right' },
+      { text: cargo?.cargoType || '-', alignment: 'left', fontSize: 7 },
+      { text: cargo?.containerType || '-', alignment: 'left' , fontSize: 7},
+      ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'right', fontSize: 7 }] : []),
+      { text: formatNumeric(cargo?.grossWeight, 3), alignment: 'right' , fontSize: 7},
+      { text: formatNumeric(cargo?.netWeight, 3), alignment: 'right' , fontSize: 7},
     ]);
   });
 
@@ -316,16 +349,6 @@ function getUniqueTerms(terms: any[]): string[] {
     .filter((term: string, index: number, arr: string[]) => !!term && arr.indexOf(term) === index);
 }
 
-function buildTermsSection(data: QuotationPdfData): any {
-  const termValues = getUniqueTerms(data.terms || []);
-
-  return {
-    stack: [
-      { text: 'Terms and Conditions', bold: true, fontSize: 8, margin: [10, 10, 0, 2] },
-      { ul: termValues, fontSize: 7, margin: [12, 0, 0, 10], lineHeight: 1.4 }
-    ]
-  };
-}
 
 function buildRouteTermsSection(terms: any[]): any {
   const termValues = getUniqueTerms(terms || []);
@@ -336,8 +359,8 @@ function buildRouteTermsSection(terms: any[]): any {
 
   return {
     stack: [
-      { text: 'Terms and Conditions', bold: true, fontSize: 8, margin: [10, 6, 0, 2] },
-      { ul: termValues, fontSize: 7, margin: [12, 0, 0, 6], lineHeight: 1.4 }
+      { text: 'Terms and Conditions', bold: true, fontSize: 7, margin: [10, 6, 0, 2] },
+      { ul: termValues, fontSize: 7, margin: [12, 0, 0, 0], lineHeight: 1 }
     ]
   };
 }
@@ -443,7 +466,7 @@ function resolveDimensionUnit(unitSid: any): string {
   return DIMENSION_UNITS.find(unit => unit.id === id)?.name || '';
 }
 
-function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>): any {
+function buildLabeledGrid(cells: Array<{ label: string; value: string} | null>): any {
   const rows: any[] = [];
   for (let i = 0; i < cells.length; i += 3) {
     const group = cells.slice(i, i + 3);
@@ -470,7 +493,7 @@ function buildLabeledGrid(cells: Array<{ label: string; value: string } | null>)
 // Valid belongs to the route, so it prints in the route header; this row is per carrier.
 function buildRouteInfo(route: any, carrier: any): any {
   return buildLabeledGrid([
-    { label: 'Carrier', value: carrier?.carrierName || '' },
+    { label: 'Carrier', value: carrier?.carrierName || ''},
     { label: 'TT. Days', value: carrier?.transitTime || '' },
     null
   ]);
