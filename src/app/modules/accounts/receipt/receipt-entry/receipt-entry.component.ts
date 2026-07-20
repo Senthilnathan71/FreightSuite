@@ -2029,6 +2029,17 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // If not yet loaded, loadAllLookups will call setCurrencyCode once currencies arrive.
     this.setCurrencyCode(headerInfo.CurrencyMasterSid);
 
+    // Header Ex Rate reopens editable for a foreign-currency voucher — init disabled it for
+    // the default company currency, and the patch above skips the currency-change handler.
+    // handleHeaderExchangeRate is NOT called here: it would re-fetch today's master rate and
+    // overwrite the saved one. Posted/read-only loads disable the whole form further down.
+    const headerExCtrl = this.receiptForm.get('ExchangeRate');
+    if (headerInfo.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid) {
+      headerExCtrl?.disable({ emitEvent: false }); // company currency: rate locked at 1
+    } else {
+      headerExCtrl?.enable({ emitEvent: false }); // foreign currency: editable, saved rate kept
+    }
+
     // Edit mode: restrict the date picker to the original voucher's month so user
     // cannot change the voucher date to a different month.
     const _rcOrigDate = new Date(headerInfo.VoucherDate);
