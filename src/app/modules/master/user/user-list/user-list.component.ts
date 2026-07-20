@@ -116,6 +116,15 @@ export class UserListComponent extends BaseListComponent implements OnInit {
         width: '150px',
       },
       {
+        key: 'isLoginUser',
+        label: 'IsLoginUser',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      },
+      {
         key: 'status',
         label: 'Status',
         sortable: true,

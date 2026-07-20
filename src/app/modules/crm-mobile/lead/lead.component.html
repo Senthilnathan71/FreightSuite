@@ -11,7 +11,7 @@
                     <div class="brand-icon">
                         <i class="fas fa-user-plus"></i>
                     </div>
-                    <h5 class="page-title mb-0 fw-bold">{{isEditMode ? 'Update Lead' : 'Create New Lead'}}</h5>
+                    <h5 class="page-title mb-0 fw-bold">{{isEditMode ? ' Lead' : '  Lead'}}</h5>
                     @if(isEditMode){
                     <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                         <i class="fas fs-6 fa-info-circle"></i>
@@ -145,6 +145,8 @@
                             <div class="error-message">
                                 @if(leadForm.get('leadReferredBy')?.hasError('required')){
                                 Required
+                                } @else if(leadForm.get('leadReferredBy')?.hasError('maxlength')){
+                                Max 20 Chars
                                 }
                             </div>
                             }
@@ -513,11 +515,12 @@
                                 </label>
                                 <div class="error-message"
                                     *ngIf="leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid">
-                                    <span *ngIf="leadForm.get('phone')?.hasError('maxlength')">
-                                        Enter a Valid Phone Number
-                                    </span>
                                     @if(leadForm.get('phone')?.hasError('required')) {
                                     <span>Required</span>
+                                    } @else if(leadForm.get('phone')?.hasError('invalidPhoneNumber')) {
+                                    <span>Phone must be 6 to 15 digits</span>
+                                    } @else if(leadForm.get('phone')?.hasError('maxlength')) {
+                                    <span>Max 15 Chars</span>
                                     }
                                 </div>
                             </div>
@@ -734,6 +737,8 @@
                                     <div class="error-message">
                                         @if(leadForm.get('leadReferredBy')?.hasError('required')){
                                         <span>Required</span>
+                                        } @else if(leadForm.get('leadReferredBy')?.hasError('maxlength')){
+                                        <span>Max 20 Chars</span>
                                         }
                                     </div>
                                     }
@@ -1002,7 +1007,10 @@
                                     <span>Only Digits are allowed</span>
                                     }
                                     @else if(leadForm.get('phone')?.hasError('maxlength')){
-                                    <span>Max 50 Chars</span>
+                                    <span>Max 15 Chars</span>
+                                    }
+                                    @else if(leadForm.get('phone')?.hasError('invalidPhoneNumber')){
+                                    <span>Phone must be 6 to 15 digits</span>
                                     }
                                 </div>
                                 }
