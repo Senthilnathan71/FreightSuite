@@ -458,7 +458,7 @@ private bookingDataSubject = new BehaviorSubject<any>({});
   }
 
   updateEnquiryById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`ff-enquiry/header/${id}`, payload).pipe(
+    return this.http.patch<{ status: boolean; data: any; message: string }>(`ff-enquiry/header/${id}`, payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

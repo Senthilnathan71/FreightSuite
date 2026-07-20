@@ -74,6 +74,32 @@
   }
 }
 
+/*
+ * Milestone tab column sizing.
+ * dofi-searchable-dropdown sets no `display` on its host, so it defaults to inline and
+ * contributes almost no width inside an auto-layout <td> — the column collapses. The
+ * min-widths keep the three dropdown columns readable on an empty row, where ng-select
+ * would otherwise shrink to its placeholder.
+ */
+:host ::ng-deep .milestone-table {
+  dofi-searchable-dropdown {
+    display: block;
+    width: 100%;
+  }
+
+  [formControlName="CustomerBranchSid"] {
+    min-width: 150px;
+  }
+
+  [formControlName="MilestoneMasterSid"] {
+    min-width: 210px;
+  }
+
+  [formControlName="UpdateType"] {
+    min-width: 140px;
+  }
+}
+
 .cell-truncate {
   display: inline-block;
   max-width: 150px;

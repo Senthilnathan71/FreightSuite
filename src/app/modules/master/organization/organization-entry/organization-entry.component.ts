@@ -180,6 +180,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy, HasUnsaved
   isLoadingStates = false;
   isCurrentUserIndian: boolean = false;
   countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
+    milestoneLookupConfig = DROPDOWN_CONFIGS.MILESTONE;
     stateLookupConfig = DROPDOWN_CONFIGS.STATE;
     cityLookupConfig = DROPDOWN_CONFIGS.CITY;
     userLookupConfig = DROPDOWN_CONFIGS.USER;
@@ -2600,7 +2601,12 @@ private normalizeCustomerTypeValue(customerType: any): Record<string, string> {
       (resp: any) => {
         console.log('Milestones API response:', resp);
         if (resp.status) {
-          this.milestoneListArr = resp.data || [];
+          // DepartmentMasterSid is a string[] of department names on MilestoneMaster; flatten it
+          // so the dropdown can display and search on it.
+          this.milestoneListArr = (resp.data || []).map((milestone: any) => ({
+            ...milestone,
+            DepartmentNames: (milestone.DepartmentMasterSid || []).filter(Boolean).join(', ')
+          }));
           console.log('Milestones loaded successfully:', this.milestoneListArr.length, 'items');
 
           // Now load customer-specific milestones
@@ -2742,7 +2748,9 @@ loadCustomerSalesTeamData() {
       MilestoneMasterSid: [data?.MilestoneMasterSid || null, [Validators.required]],
       UpdateType: [data?.UpdateType || null, [Validators.required]],
       ContactInfo: [data?.ContactInfo || '', [Validators.required]],
-      EffectiveFrom: [data ? new Date(data?.EffectiveFrom) : null],
+      Email: [data?.Email || ''],
+      MobileNo: [data?.MobileNo || ''],
+      EffectiveFrom: [data?.EffectiveFrom ? new Date(data.EffectiveFrom) : null, [Validators.required]],
       Status: [data ? (data?.Status === "A" ? "Active" : "Suspended") : 'Active']
     });
     return formGroup;
@@ -2754,6 +2762,34 @@ loadCustomerSalesTeamData() {
     this.updateCustomerMilestonePagination();
   }
 
+
+  /**
+   * A milestone may be selected only once per customer branch. The department is carried by the
+   * milestone master itself, so matching on MilestoneMasterSid is what keeps one milestone per
+   * department. Mirrors the backend check in customer-milestone.helper.ts.
+   */
+  validateDuplicateMilestones() {
+    const groups = this.cusMilestone.controls as FormGroup[];
+    const seen = new Set<string>();
+
+    for (const grp of groups) {
+      const ctrl = grp.get('MilestoneMasterSid');
+      const milestoneSid = ctrl?.value;
+
+      if (!milestoneSid || grp.get('Status')?.value === 'Deleted') {
+        this.setFieldErrorFlag(ctrl, 'duplicateMilestone', false);
+        continue;
+      }
+
+      const key = `${grp.get('CustomerBranchSid')?.value ?? 'no-branch'}|${milestoneSid}`;
+      // Flag only the repeat occurrence — the first row to claim a milestone keeps it, so the
+      // user sees the error on the row they need to change, not on the one already saved.
+      this.setFieldErrorFlag(ctrl, 'duplicateMilestone', seen.has(key));
+      seen.add(key);
+    }
+
+    this.cdRef.markForCheck();
+  }
 
   onAddMilestone() {
     const newGrp = this.createCusMilestoneFormGrp();
@@ -2816,6 +2852,7 @@ loadCustomerSalesTeamData() {
             this.cusMilestone.removeAt(actualIndex);
             this.pruneBaselineBySid('CustomerMilestoneSid', CustomerMilestoneSid);
             this.updateCustomerMilestonePagination();
+            this.validateDuplicateMilestones();
           } else {
             this.appSettingService.showError(resp.message);
           }
@@ -2827,6 +2864,7 @@ loadCustomerSalesTeamData() {
     } else {
       this.cusMilestone.removeAt(actualIndex);
       this.updateCustomerMilestonePagination();
+      this.validateDuplicateMilestones();
       this.appSettingService.showSuccess('Customer Milestone Deleted Successfully.')
     }
   }
@@ -3634,6 +3672,8 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
       MilestoneMasterSid: mileData.MilestoneMasterSid,
       UpdateType: mileData.UpdateType,
       ContactInfo: mileData.ContactInfo,
+      Email: mileData.Email || null,
+      MobileNo: mileData.MobileNo || null,
       EffectiveFrom: mileData.EffectiveFrom,
       Status: mileData.Status === 'Active' ? 'A' : 'S'
     };
@@ -3812,6 +3852,8 @@ private buildBranchLoginPayload(loginData: any): any {
       MilestoneMasterSid: mileData.MilestoneMasterSid,
       UpdateType: mileData.UpdateType,
       ContactInfo: mileData.ContactInfo,
+      Email: mileData.Email || null,
+      MobileNo: mileData.MobileNo || null,
       EffectiveFrom: mileData.EffectiveFrom,
       Status: mileData.Status === 'Active' ? 'A' : 'S'
     };

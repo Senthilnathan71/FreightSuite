@@ -2363,12 +2363,20 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   ): void {
     const message = extractBackendErrorMessage(source, fallbackMessage);
 
-    if (useWarning) {
-      this.appSettingService.showWarning(message);
+    // Backend messages are joined with '\n'; toastr needs <br/> + enableHtml to break lines.
+    const htmlMessage = message.replace(/\n/g, '<br/>');
+    const option = { closeButton: true, enableHtml: true };
+
+    // A missing document-number configuration is a hard stop, not a soft warning —
+    // always surface it as an error so the user is sent to the settings screen.
+    const isMissingNumberSeriesConfig = /Operation Document Number settings/i.test(message);
+
+    if (useWarning && !isMissingNumberSeriesConfig) {
+      this.appSettingService.showWarning(htmlMessage, 'Alert!', option);
       return;
     }
 
-    this.appSettingService.showError(message);
+    this.appSettingService.showError(htmlMessage, 'Oops!', option);
   }
 
   handleConnectionChange(allConnections: any[]) {
@@ -2880,6 +2888,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           } else {
             this.showBookingBackendMessage(resp, 'Error creating booking.', true);
             this.isSaving = false;
+            this.spinner.hide();
             if (resolve) resolve(false);
             console.error(resp.message);
           }
@@ -2887,6 +2896,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         error: (err) => {
           this.showBookingBackendMessage(err, 'Failed to create booking.');
           this.isSaving = false;
+          this.spinner.hide();
           if (resolve) resolve(false);
           console.error(err);
         }
