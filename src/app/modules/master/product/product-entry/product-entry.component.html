@@ -286,10 +286,11 @@
                         </div>
                     </aside>
                     <aside class="col-md-4">
-                        <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                formControlName="IMOClass" [textWithNumbers]="5">
-                            <label for="text-input" class="input-label">IMO Class <span
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('IMOClass')?.value">
+                            <ng-select formControlName="IMOClass" [items]="imcoList" bindLabel="ImcoClass"
+                                bindValue="ImcoClass" placeholder="">
+                            </ng-select>
+                            <label for="" class="input-label">IMO Class <span
                                     class="text-danger"></span></label>
                             @if(productForm.get('IMOClass').touched && productForm.get('IMOClass').invalid){
                                 <div class="error-message">

@@ -41,6 +41,7 @@ export class ProductEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     isEditMode : boolean;
     ProductMasterSId : number;
     UOMList : any[];
+    imcoList : any[] = [];
     hsnList: any[];
     productData: any;
     auditLogs: any[] = []; // Stores audit logs
@@ -101,6 +102,7 @@ export class ProductEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
         this.subscribeToFormChanges();
         this.getAllUom();
         this.getAllHSN();
+        this.getAllIMCO();
         this.currentRoute.paramMap.subscribe(
             (param)=>{
                 this.ProductMasterSId = +param.get('id')
@@ -368,6 +370,17 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
             },
             (error)=>{
                 console.error('Error Loading Charge Tax',error);
+            }
+        )
+    }
+
+    getAllIMCO(){
+        this.masterService.getAllIMCO().subscribe(
+            (resp:any)=>{
+                this.imcoList = resp.data || [];
+            },
+            (error)=>{
+                console.error('Error Loading IMCO',error);
             }
         )
     }

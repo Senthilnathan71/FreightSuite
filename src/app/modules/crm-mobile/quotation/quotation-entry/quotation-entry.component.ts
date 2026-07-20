@@ -1167,7 +1167,9 @@ isStackable(value: any): boolean {
     Volume: product.Volume,
     IsHaz: product.IsHaz,
     IsStackable: product.IsStackable,
-    ImcoClass: product.ImcoClass,
+    // Quotation stores ImcoClass as the ImcoMasterSid, but the booking grid binds the IMCO
+    // by name, so hand it the name or the dropdown renders the raw sid.
+    ImcoClass: this.resolveImcoNameForBooking(product.ImcoClass),
     UnNo: product.UnNo,
     PkgGroup: product.PkgGroup,
     Length: product.Length,
@@ -1192,6 +1194,35 @@ private mapQuotationCargoForBooking(cargo: any): any {
     NoOfPackage: cargo?.PackageQty || cargo?.NoOfPackage || 0,
     ShipmentTerms: cargo?.ShipmentTerms || null,
   };
+}
+
+/**
+ * Inverse of resolveImcoClassSid: the booking screen's IMCO dropdown is bound by ImcoName,
+ * so a quotation sid has to be translated on the way out. A value that is already a name
+ * (or an unknown sid) is passed through untouched rather than being dropped.
+ */
+private resolveImcoNameForBooking(value: any): any {
+  const normalizedValue = String(value ?? '').trim();
+  if (!normalizedValue) {
+    return value;
+  }
+
+  const matchedImco = this.imcoList.find(imco => String(imco.ImcoMasterSid) === normalizedValue);
+  return matchedImco ? matchedImco.ImcoName : value;
+}
+
+private resolveImcoClassSid(value: any): number | null {
+  const normalizedValue = String(value ?? '').trim().toLowerCase();
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const matchedImco = this.imcoList.find(imco =>
+    String(imco.ImcoMasterSid) === normalizedValue ||
+    String(imco.ImcoName ?? '').trim().toLowerCase() === normalizedValue
+  );
+
+  return matchedImco ? Number(matchedImco.ImcoMasterSid) : null;
 }
 
 
@@ -2468,6 +2499,9 @@ private syncApprovedByControlState(): void {
       (cargoProducts.length ? cargoProducts : defaultCargoProduct).forEach((product: any) => {
         this.addQuoteProduct(routeIndex, product, cargoIndex);
       });
+      // Align the header with the rows we just loaded, but leave the form pristine — this is
+      // a load, not a user edit.
+      this.syncCargoTypeFromHazProducts(routeIndex, cargoIndex, false);
     }
   }
 
@@ -2693,6 +2727,47 @@ private syncApprovedByControlState(): void {
       this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('PkgGroup')?.clearValidators();
       this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('PkgGroup')?.disable();
     }
+
+    this.syncCargoTypeFromHazProducts(routeIndex, cargoIndex);
+  }
+
+  /**
+   * A cargo is hazardous as soon as any one of its product rows is flagged Haz, so the cargo
+   * header's Cargo Type follows the product grid rather than being kept in sync by hand.
+   * The Cargo Type that was selected before the switch is remembered per cargo group, so
+   * unticking the last Haz product restores that choice (Reefer, Tanker, ...) instead of
+   * flattening it to General. A cargo the user has deliberately set to some other non-Haz
+   * type is never touched while no product is Haz.
+   */
+  private readonly HAZ_CARGO_TYPE = 'Haz';
+  private readonly cargoTypeBeforeHaz = new WeakMap<FormGroup, string | null>();
+
+  private syncCargoTypeFromHazProducts(routeIndex: number, cargoIndex: number, markDirty: boolean = true): void {
+    // The legacy route-level product grid (cargoIndex -1) has no cargo header to drive.
+    if (cargoIndex < 0) { return; }
+
+    const cargoForm = this.quoteCargo(routeIndex)?.at(cargoIndex) as FormGroup;
+    const cargoTypeControl = cargoForm?.get('CargoType');
+    if (!cargoTypeControl) { return; }
+
+    const products = this.quoteProducts(routeIndex, cargoIndex);
+    const hasHazProduct = (products?.controls || []).some(
+      product => this.isHazardous(product.get('IsHaz')?.value)
+    );
+    const currentType = cargoTypeControl.value;
+
+    if (hasHazProduct) {
+      if (currentType === this.HAZ_CARGO_TYPE) { return; }
+      this.cargoTypeBeforeHaz.set(cargoForm, currentType ?? null);
+      cargoTypeControl.setValue(this.HAZ_CARGO_TYPE);
+      if (markDirty) { cargoTypeControl.markAsDirty(); }
+      return;
+    }
+
+    if (currentType !== this.HAZ_CARGO_TYPE) { return; }
+    cargoTypeControl.setValue(this.cargoTypeBeforeHaz.get(cargoForm) ?? 'General');
+    this.cargoTypeBeforeHaz.delete(cargoForm);
+    if (markDirty) { cargoTypeControl.markAsDirty(); }
   }
 
   onImcoChange(routeIndex:number,productIndex,item:any,cargoIndex: number = -1){
@@ -2715,6 +2790,7 @@ private syncApprovedByControlState(): void {
           ctrl.removeAt(productIndex);
           this.quoteProducts(routeIndex, cargoIndex).updateValueAndValidity();
           this.handleCalculation(routeIndex, cargoIndex);
+          this.syncCargoTypeFromHazProducts(routeIndex, cargoIndex);
           this.appSettingService.showSuccess("Product Deleted Successfully");
         } else {
           this.appSettingService.showError("Error Deleting Product");
@@ -2724,6 +2800,7 @@ private syncApprovedByControlState(): void {
       ctrl.removeAt(productIndex);
       this.quoteProducts(routeIndex, cargoIndex).updateValueAndValidity();
       this.handleCalculation(routeIndex, cargoIndex);
+      this.syncCargoTypeFromHazProducts(routeIndex, cargoIndex);
       this.appSettingService.showSuccess("Product Deleted Successfully");
     }
   }
@@ -2758,6 +2835,7 @@ private syncApprovedByControlState(): void {
     productForm.get('ImcoClass')?.setValue('');
     productForm.get('PkgGroup')?.setValue('');
     if(!product){
+      this.syncCargoTypeFromHazProducts(routeIndex, cargoIndex);
       return;
     } else {
       productForm.get('ProductName')?.setValue(product.ProductName);
@@ -2769,7 +2847,7 @@ private syncApprovedByControlState(): void {
         productForm.get('PkgGroup')?.enable();
         
         productForm.patchValue({
-          ImcoClass : product.IMOClass,
+          ImcoClass : this.resolveImcoClassSid(product.ImcoMasterSid ?? product.ImcoClass ?? product.IMOClass),
           UnNo : product.UNNo,
           PkgGroup : product.PackingGroup
         })
@@ -2782,6 +2860,8 @@ private syncApprovedByControlState(): void {
         productForm.get('PkgGroup')?.disable();
       }
     }
+
+    this.syncCargoTypeFromHazProducts(routeIndex, cargoIndex);
   }
 
 

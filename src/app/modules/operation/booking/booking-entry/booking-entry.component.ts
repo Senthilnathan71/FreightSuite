@@ -2198,7 +2198,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       
       // NOW trigger calculations AFTER patching is complete
       if(!this.isEditMode){
-      if (this.bookingProducts.length > 0) {
+      // Totals must be summed per cargo. Calling this with no index aggregates the FLAT
+      // bookingProducts array (every product of every cargo) onto cargoForm — i.e. Cargo 1 —
+      // so a quotation with two cargos used to land all its weights on the first one.
+      if (this.bookingCargo.length > 0) {
+        this.bookingCargo.controls.forEach((_, cargoIndex) => {
+          this.handleProductRelatedCalculation(cargoIndex);
+        });
+      } else if (this.bookingProducts.length > 0) {
         this.handleProductRelatedCalculation();
       }
       this.calculateChargeableWeight();
@@ -3981,6 +3988,7 @@ getVesselVoyBasedOnPorts() {
         UnNo: '',
         PkgGroup: ''
       })
+      this.syncCargoTypeFromHazProducts(cargoIndex);
       return;
     }
     productGroup.patchValue({
@@ -3998,6 +4006,46 @@ getVesselVoyBasedOnPorts() {
       productGroup.get('UnNo')?.disable();
       productGroup.get('PkgGroup')?.disable();
     }
+
+    this.syncCargoTypeFromHazProducts(cargoIndex);
+  }
+
+  /**
+   * A cargo is hazardous as soon as any one of its product rows is flagged Haz, so the cargo
+   * header's Cargo Type follows the product grid rather than being kept in sync by hand.
+   * The Cargo Type selected before the switch is remembered per cargo group, so unticking the
+   * last Haz product restores that choice (Reefer, Tanker, ...) instead of flattening it to
+   * General. A cargo deliberately set to another non-Haz type is never touched while no
+   * product is Haz. cargoIndex -1 targets the flat product grid, whose header is `cargoForm`.
+   */
+  private readonly HAZ_CARGO_TYPE = 'Haz';
+  private readonly cargoTypeBeforeHaz = new WeakMap<FormGroup, string | null>();
+
+  private syncCargoTypeFromHazProducts(cargoIndex: number = -1, markDirty: boolean = true): void {
+    const cargoForm = cargoIndex < 0
+      ? this.cargoForm
+      : this.bookingCargo.at(cargoIndex) as FormGroup;
+    const cargoTypeControl = cargoForm?.get('CargoType');
+    if (!cargoTypeControl) { return; }
+
+    const products = cargoIndex < 0 ? this.bookingProducts : this.bookingCargoProducts(cargoIndex);
+    const hasHazProduct = (products?.controls || []).some(
+      product => this.isHazardous(product.get('IsHaz')?.value)
+    );
+    const currentType = cargoTypeControl.value;
+
+    if (hasHazProduct) {
+      if (currentType === this.HAZ_CARGO_TYPE) { return; }
+      this.cargoTypeBeforeHaz.set(cargoForm, currentType ?? null);
+      cargoTypeControl.setValue(this.HAZ_CARGO_TYPE);
+      if (markDirty) { cargoTypeControl.markAsDirty(); }
+      return;
+    }
+
+    if (currentType !== this.HAZ_CARGO_TYPE) { return; }
+    cargoTypeControl.setValue(this.cargoTypeBeforeHaz.get(cargoForm) ?? 'General');
+    this.cargoTypeBeforeHaz.delete(cargoForm);
+    if (markDirty) { cargoTypeControl.markAsDirty(); }
   }
 
   onImcoChange(productIndex: number, item: any, cargoIndex: number = -1) {
@@ -4052,6 +4100,8 @@ getVesselVoyBasedOnPorts() {
       productGroup.get('PkgGroup')?.clearValidators();
       productGroup.get('PkgGroup')?.disable();
     }
+
+    this.syncCargoTypeFromHazProducts(cargoIndex);
   }
 
   deleteBookingProduct(productIndex: number, BookingProductSid?: number, cargoIndex: number = -1) {
@@ -4070,6 +4120,7 @@ getVesselVoyBasedOnPorts() {
             // this.adjustPageAfterDelete();
             // this.updateProductPagination();
             this.handleProductRelatedCalculation(cargoIndex);
+            this.syncCargoTypeFromHazProducts(cargoIndex);
           } else {
             this.appSettingService.showError("Error deleting product.");
           }
@@ -4082,6 +4133,7 @@ getVesselVoyBasedOnPorts() {
       this.appSettingService.showSuccess('Product Deleted Successfully');
       // this.adjustPageAfterDelete();
       this.handleProductRelatedCalculation(cargoIndex);
+      this.syncCargoTypeFromHazProducts(cargoIndex);
     }
     productArr.updateValueAndValidity();
     // this.updateProductPagination();
@@ -5492,7 +5544,10 @@ deepEqual(obj1: any, obj2: any): boolean {
     HouseJobSid: this.b['HouseJobSid']?.getRawValue() || null,
   }];
 
-  const isHaz = this.c['CargoType']?.value === 'Haz';
+  // The generated job covers the whole booking, so any hazardous cargo makes it hazardous —
+  // not just the cargo that happens to be active in the accordion.
+  const isHaz = this.c['CargoType']?.value === this.HAZ_CARGO_TYPE ||
+    this.bookingCargo.controls.some(cargo => cargo.get('CargoType')?.value === this.HAZ_CARGO_TYPE);
 
 
   const payload = {
@@ -5687,6 +5742,9 @@ deepEqual(obj1: any, obj2: any): boolean {
       cargoProducts.forEach((product: any) => {
         this.addBookingCargoProduct(this.bookingCargo.length - 1, product);
       });
+      // Align the header with the rows we just loaded (including quotation conversions), but
+      // leave the form pristine — this is a load, not a user edit.
+      this.syncCargoTypeFromHazProducts(this.bookingCargo.length - 1, false);
     }
 
     this.handleProductRelatedCalculation(this.bookingCargo.length - 1);
