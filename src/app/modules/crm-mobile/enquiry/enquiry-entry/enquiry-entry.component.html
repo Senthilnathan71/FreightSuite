@@ -1106,102 +1106,94 @@
                                         @if(selectedCargoMode ==='LCL'){
                                         <div formArrayName="cargo" class="table-responsive table-borderless">
                                             <div>
-                                                <table class="table table-hover align-middle no-wrap table-sm my-1 enquiry-lcl-cargo-table"
-                                                    style="min-width: 1200px; width: 100%;">
+                                                <table class="table table-hover align-middle no-wrap table-sm my-1 enquiry-lcl-cargo-table">
                                                     <thead>
                                                         <tr class="bg-info  text-center">
                                                             @if( routeCargo(routeIndex).controls.length > 1){
-                                                            <td class="bg-transparent text-light" style="width: 20px;"
+                                                            <td class="bg-transparent text-light lcl-col-action"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0"></label>
                                                             </td>
                                                             }
-                                                            <td class="bg-transparent text-light" style="width: 200px;"
+                                                            <td class="bg-transparent text-light lcl-col-cargo-type"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Cargo Type <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light" style="width: 300px;"
+                                                            <td class="bg-transparent text-light lcl-col-description"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Cargo Description
                                                                     <span class="text-danger"></span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light  "
-                                                                style="width: 300px;"
+                                                            <td class="bg-transparent text-light lcl-col-product"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Product <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
 
 
-                                                            <td class="bg-transparent text-light  "
-                                                                style="width: 200px;"
+                                                            <td class="bg-transparent text-light lcl-col-pkg-type"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Pkg Type <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light  "
-                                                                style="width: 100px;"
+                                                            <td class="bg-transparent text-light lcl-col-uom"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">UOM <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 90px;"
+                                                            <td class="bg-transparent text-light lcl-col-pkg-qty"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">No. of Pkg <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100 dimension-x-after"
-                                                                style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center dimension-x-after lcl-col-dim"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">L <span
                                                                         class="text-danger"></span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100 dimension-x-after"
-                                                                style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center dimension-x-after lcl-col-dim"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">W <span
                                                                         class="text-danger"></span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
-                                                                style="width: 160px;"
+                                                            <td class="bg-transparent text-light text-center lcl-col-dim"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">H <span
                                                                         class="text-danger"></span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                            <td class="bg-transparent text-light lcl-col-cbm"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">CBM <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                            <td class="bg-transparent text-light lcl-col-volumetric"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Volumetric <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 160px;"
+                                                            <td class="bg-transparent text-light lcl-col-chargeable"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Chargeable Wt.
                                                                     <span class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width: 150px;"
+                                                            <td class="bg-transparent text-light lcl-col-weight"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Gross Wt. <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light " style="width:150px;"
+                                                            <td class="bg-transparent text-light lcl-col-weight"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label for="" class="form-label mb-0">Net Wt. <span
                                                                         class="text-danger"></span></label>
                                                             </td>
 
-                                                            <td class="bg-transparent text-light" style="width: 200px;"
+                                                            <td class="bg-transparent text-light lcl-col-shipment"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Shipment Terms <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center"
-                                                                style="width: 90px;"
+                                                            <td class="bg-transparent text-light text-center lcl-col-stackable"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Non Stackable</label>
                                                             </td>
@@ -1211,7 +1203,7 @@
                                                         <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
                                                             [formGroupName]="cargoIndex">
                                                             @if( routeCargo(routeIndex).controls.length > 1){
-                                                            <td data-label="Action">
+                                                            <td class="lcl-col-action" data-label="Action">
                                                                 <section class="action-items">
                                                                     <button class="btn btn-sm btn-link text-danger"
                                                                         (click)="deleteCargo(routeIndex ,cargoIndex)"
@@ -1221,7 +1213,7 @@
                                                                 </section>
                                                             </td>
                                                             }
-                                                            <td>
+                                                            <td class="lcl-col-cargo-type">
                                                                 <ng-select #CargoTypeNg formControlName="CargoType"
                                                                     class="ng-select" appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('CargoType')?.value">
@@ -1231,7 +1223,7 @@
                                                                     </ng-option>
                                                                 </ng-select>
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-description">
                                                                 <input type="text" formControlName="CargoDescription"
                                                                     class="custom-input-field sm w-100" appendTo="body">
                                                                 <div *ngIf="cargo.get('CargoDescription')?.hasError('maxlength')"
@@ -1239,7 +1231,7 @@
                                                                     Cargo Description cannot exceed 100 characters.
                                                                 </div>
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-product">
                                                                 <ng-select name="product" #ProductNameNg
                                                                     formControlName="ProductName" id=""
                                                                     class="ng-select" placeholder="" appendTo="body"
@@ -1249,7 +1241,7 @@
                                                                 </ng-select>
                                                             </td>
 
-                                                            <td>
+                                                            <td class="lcl-col-pkg-type">
                                                                 <ng-select #PackageTypeNg formControlName="PackageType"
                                                                     class="ng-select " appendTo="body" placeholder=""
                                                                     [class.filled]="!!routes.at(routeIndex).get('PackageType')?.value">
@@ -1259,37 +1251,37 @@
                                                                     </ng-option>
                                                                 </ng-select>
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-uom">
                                                                 <ng-select class="ng-select"
                                                                     formControlName="WeightUnitSid"
                                                                     [items]="measurementUnitList" bindLabel="name"
                                                                     bindValue="id" appendTo="body">
                                                                 </ng-select>
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-pkg-qty">
                                                                 <input type="text" formControlName="PackageQty"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     [onlyNumbers]="5" appendTo="body">
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-dim">
                                                                 <input type="text" formControlName="length"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3">
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-dim">
                                                                 <input type="text" formControlName="width"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3">
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-dim">
                                                                 <input type="text" formControlName="height"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3">
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-cbm">
                                                                 <input type="text" formControlName="cbm"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
@@ -1299,7 +1291,7 @@
                                                                     CBM cannot exceed 9999999.999.
                                                                 </div>
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-volumetric">
                                                                 <input type="text" formControlName="volumetric"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
@@ -1309,13 +1301,13 @@
                                                                     Volumetric cannot exceed 9999999.999.
                                                                 </div>
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-chargeable">
                                                                 <input type="text" formControlName="ChargeableWeight"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-weight">
                                                                 <!-- <div class="custom-form-group"> -->
                                                                 <input type="text" formControlName="GrossWeight"
                                                                     class="custom-input-field sm text-end w-100"
@@ -1329,14 +1321,14 @@
                                                                 </span> -->
                                                                 <!-- </div> -->
                                                             </td>
-                                                            <td>
+                                                            <td class="lcl-col-weight">
                                                                 <input type="text" formControlName="NetWeight"
                                                                     class="custom-input-field sm text-end w-100"
                                                                     DecimalPrecision [DecimalPrecisionBefore]="7"
                                                                     [DecimalPrecisionAfter]="3" appendTo="body">
                                                             </td>
 
-                                                            <td>
+                                                            <td class="lcl-col-shipment">
                                                                 <ng-select #ShipmentTermsNg
                                                                     formControlName="ShipmentTerms" class="ng-select "
                                                                     placeholder="" appendTo="body"
@@ -1347,7 +1339,7 @@
                                                                     </ng-option>
                                                                 </ng-select>
                                                             </td>
-                                                            <td class="text-center align-middle">
+                                                            <td class="text-center align-middle lcl-col-stackable">
                                                                 <input class="form-check-input m-0" type="checkbox"
                                                                     formControlName="IsStackable">
                                                             </td>

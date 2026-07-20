@@ -192,7 +192,85 @@
 }
 
 .enquiry-lcl-cargo-table {
-  min-width: 1420px !important;
+  width: 100%;
+  min-width: 2280px !important;
+  table-layout: fixed;
+
+  th,
+  td {
+    box-sizing: border-box;
+    vertical-align: middle;
+  }
+
+  thead td {
+    padding-left: 4px;
+    padding-right: 4px;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .lcl-col-action {
+    width: 44px;
+    min-width: 44px;
+  }
+
+  .lcl-col-cargo-type {
+    width: 135px;
+    min-width: 135px;
+  }
+
+  .lcl-col-description {
+    width: 210px;
+    min-width: 210px;
+  }
+
+  .lcl-col-product {
+    width: 170px;
+    min-width: 170px;
+  }
+
+  .lcl-col-pkg-type {
+    width: 150px;
+    min-width: 150px;
+  }
+
+  .lcl-col-uom {
+    width: 82px;
+    min-width: 82px;
+  }
+
+  .lcl-col-pkg-qty,
+  .lcl-col-dim {
+    width: 112px;
+    min-width: 112px;
+  }
+
+  .lcl-col-cbm,
+  .lcl-col-volumetric,
+  .lcl-col-chargeable,
+  .lcl-col-weight {
+    width: 138px;
+    min-width: 138px;
+  }
+
+  .lcl-col-shipment {
+    width: 160px;
+    min-width: 160px;
+  }
+
+  .lcl-col-stackable {
+    width: 118px;
+    min-width: 118px;
+  }
+
+  .custom-input-field,
+  .ng-select {
+    min-width: 0;
+  }
 }
 
 :host ::ng-deep .custom-form-group .input-label .text-danger,
@@ -212,19 +290,3 @@
   color: #ffb3b3 !important;
 }
 
-.enquiry-lcl-cargo-table th:nth-child(7),
-.enquiry-lcl-cargo-table th:nth-child(8),
-.enquiry-lcl-cargo-table th:nth-child(9),
-.enquiry-lcl-cargo-table td:nth-child(7),
-.enquiry-lcl-cargo-table td:nth-child(8),
-.enquiry-lcl-cargo-table td:nth-child(9) {
-  width: 90px !important;
-  min-width: 90px !important;
-  max-width: none !important;
-}
-
-.enquiry-lcl-cargo-table td:nth-child(7) .custom-input-field,
-.enquiry-lcl-cargo-table td:nth-child(8) .custom-input-field,
-.enquiry-lcl-cargo-table td:nth-child(9) .custom-input-field {
-  min-width: 82px;
-}
