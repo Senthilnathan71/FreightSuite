@@ -20,7 +20,7 @@ export type ConfirmAction = 'confirm' | 'cancel';
       <button type="button"
               class="btn-close"
               aria-label="Close"
-              (click)="onCancel()">
+              (click)="onDismiss()">
       </button>
     </div>
 
@@ -39,7 +39,7 @@ export type ConfirmAction = 'confirm' | 'cancel';
       <button type="button"
               class="btn btn-light cancel-btn"
               (click)="onCancel()">
-        Cancel
+        {{ cancelLabel }}
       </button>
 
       <button type="button"
@@ -201,6 +201,9 @@ export class ConfirmDialogComponent {
   @Input() title = 'Confirmation';
   // @Input() message = '';
   @Input() confirmLabel = 'Proceed';
+  // Defaults to 'Cancel' so every existing caller is unchanged; set it when the negative
+  // choice is a real alternative rather than an abort (e.g. "Use Current Date").
+  @Input() cancelLabel = 'Cancel';
 
   safeMessage!: SafeHtml;
 
@@ -216,5 +219,15 @@ export class ConfirmDialogComponent {
 
   onCancel(): void {
     this.activeModal.close('cancel' as ConfirmAction);
+  }
+
+  /**
+   * Closing via the X is a dismissal, not the negative choice. When both buttons are real
+   * alternatives ("Use Booking Date" / "Use Current Date") the caller must be able to tell
+   * "walked away" apart from "picked the second option". confirm() maps both to false, so
+   * existing callers are unaffected.
+   */
+  onDismiss(): void {
+    this.activeModal.dismiss('dismiss');
   }
 }

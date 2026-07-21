@@ -423,6 +423,33 @@
                             <label class="input-label">Vsl/Voyage <span class="text-danger">*</span></label>
                         </div>
                     </aside>
+                    <!-- Multi-booking consols have no single ETD or booking date to inherit,
+                         so the job date is stated here and limited to the current month. -->
+                    <aside class="col-md-3" *ngIf="isMultiBookingSelection">
+                        <div class="custom-form-group custom-form-group-select-date my-0 mx-2"
+                            [class.filled]="!!loadingPlanForm.get('JobDate')?.value">
+                            <div class="input-group">
+                                <!-- readonly on purpose: the shared CustomDateParserFormatter
+                                     formats as dd/MM/yyyy but parsed only dd-MMM-yyyy, so a
+                                     typed date silently resolved to null. Forcing calendar
+                                     selection guarantees a real Date reaches the control. -->
+                                <input class="form-control custom-input-field sm" placeholder="dd-mm-yyyy" name="jobDp"
+                                    readonly ngbDatepicker #jobDp="ngbDatepicker" (click)="jobDp.toggle()"
+                                    formControlName="JobDate" [minDate]="jobDateMin" [maxDate]="jobDateMax"
+                                    (dateSelect)="onJobDateSelected($event)"
+                                    [class.is-invalid]="f['JobDate']?.invalid && f['JobDate']?.touched"
+                                    (keydown.arrowDown)="jobDp.open()" style="cursor: pointer; background-color: #fff;"
+                                    container="body" />
+                                <button class="btn bi bi-calendar3" (click)="jobDp.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label">Job Date <span class="text-danger">*</span></label>
+                            @if(f['JobDate']?.invalid && f['JobDate']?.touched){
+                            <small class="text-danger">Job Date is required</small>
+                            }
+                        </div>
+                    </aside>
                     <div>
                         <button class="btn btn-sm btn-info" appPreventMultiClick (click)="onClickGenerateJob()"><i
                                 class="fas fa-briefcase me-1"></i>

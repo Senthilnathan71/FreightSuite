@@ -38,8 +38,25 @@ export class ModalService {
     confirm(
         message: string,
         title = 'Confirmation',
-        confirmLabel = 'Proceed'
+        confirmLabel = 'Proceed',
+        cancelLabel = 'Cancel'
     ): Promise<boolean> {
+
+        return this.choose(message, title, confirmLabel, cancelLabel)
+            .then(choice => choice === 'confirm');
+    }
+
+    /**
+     * Same dialog as confirm(), but distinguishes the negative choice from walking away.
+     * Use this when both buttons are real alternatives — with confirm() a dismissal and a
+     * deliberate "no" both collapse to false, which would silently pick the second option.
+     */
+    choose(
+        message: string,
+        title = 'Confirmation',
+        confirmLabel = 'Proceed',
+        cancelLabel = 'Cancel'
+    ): Promise<ConfirmAction | 'dismiss'> {
 
         const modalRef = this.modalService.open(ConfirmDialogComponent, {
             backdrop: 'static',
@@ -51,10 +68,11 @@ export class ModalService {
         modalRef.componentInstance.title = title;
         modalRef.componentInstance.message = message;
         modalRef.componentInstance.confirmLabel = confirmLabel;
+        modalRef.componentInstance.cancelLabel = cancelLabel;
 
         return modalRef.result.then(
-            (result: ConfirmAction) => result === 'confirm',
-            () => false
+            (result: ConfirmAction) => result,
+            () => 'dismiss' as const
         );
     }
 }

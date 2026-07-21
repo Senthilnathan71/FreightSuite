@@ -5527,7 +5527,82 @@ deepEqual(obj1: any, obj2: any): boolean {
   }
 
   
-  onGenerateJob() {
+  /**
+   * Decides the date the generated job (and its HBL) carries.
+   *
+   * ETD present            -> ETD, no prompt.
+   * Booking in this month  -> booking date, no prompt.
+   * Previous month, no ETD -> ask the user: booking date or today.
+   *
+   * Returns null when the user dismisses the dialog or the resulting date falls outside the
+   * open financial year, in which case the caller must abort — generating the job would burn
+   * a number-series slot in the wrong period.
+   */
+  private async resolveGenerateJobDate(): Promise<Date | null> {
+    const bookingDateValue = this.b['BookingDateTime']?.getRawValue();
+    const etdValue = this.b['ETD']?.getRawValue();
+
+    const bookingDate = bookingDateValue ? new Date(bookingDateValue) : null;
+    const etd = etdValue ? new Date(etdValue) : null;
+
+    if (etd && !isNaN(etd.getTime())) {
+      return this.assertJobDateWithinFinancialYear(etd);
+    }
+
+    if (!bookingDate || isNaN(bookingDate.getTime())) {
+      return this.assertJobDateWithinFinancialYear(getDefaultTodayDate());
+    }
+
+    const today = getDefaultTodayDate();
+    const isPreviousMonth =
+      bookingDate.getFullYear() < today.getFullYear() ||
+      (bookingDate.getFullYear() === today.getFullYear() && bookingDate.getMonth() < today.getMonth());
+
+    if (!isPreviousMonth) {
+      return this.assertJobDateWithinFinancialYear(bookingDate);
+    }
+
+    const bookingDateText = this.datePipe.transform(bookingDate);
+    const todayText = this.datePipe.transform(today);
+
+    const choice = await this.commonModalService.choose(
+      `Previous month booking. ETD not exist.<br><br>` +
+      `Do you want to create job on booking date (<strong>${bookingDateText}</strong>) ` +
+      `or current date (<strong>${todayText}</strong>)?`,
+      'Job Date',
+      'Use Booking Date',
+      'Use Current Date'
+    );
+
+    if (choice === 'dismiss') {
+      return null;
+    }
+
+    return this.assertJobDateWithinFinancialYear(choice === 'confirm' ? bookingDate : today);
+  }
+
+  /**
+   * The job date selects the number-series period, so a date outside the open financial year
+   * would consume a counter in a closed year. Booking save already guards this on its own
+   * date; job generation had no equivalent check.
+   */
+  private assertJobDateWithinFinancialYear(jobDate: Date): Date | null {
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (!fy) {
+      return jobDate;
+    }
+
+    if (jobDate < new Date(fy.StartDate) || jobDate > new Date(fy.EndDate)) {
+      this.appSettingService.showWarning(
+        `Job Date must be within the financial year (${fy.YearName})`
+      );
+      return null;
+    }
+
+    return jobDate;
+  }
+
+  async onGenerateJob() {
   if (!this.bookingData || !this.BookingHeaderSid) {
     this.appSettingService.showWarning('Please save the booking first before generating job.');
     return;
@@ -5537,6 +5612,13 @@ deepEqual(obj1: any, obj2: any): boolean {
   if (this.b['BookingStatus']?.value === 'Stuffed') {
     this.appSettingService.showWarning('Cannot generate job for Stuffed booking.');
     return;
+  }
+
+  // Resolve the job date before anything else: it decides which period's number series is
+  // consumed, so it cannot be left to the server's default once ETD is missing.
+  const resolvedJobDate = await this.resolveGenerateJobDate();
+  if (!resolvedJobDate) {
+    return; // user dismissed the prompt, or the chosen date is outside the financial year
   }
 
   this.spinner.show();
@@ -5563,6 +5645,12 @@ deepEqual(obj1: any, obj2: any): boolean {
   const payload = {
     createdBy: userEmail,
     MenuMasterSid: currentMenuId,
+    // Explicit job date — the server now treats a supplied date as authoritative instead of
+    // overwriting it with the booking date. One date drives the master job, its MBL and the
+    // house's HBL/MBL.
+    MasterJobDate: resolvedJobDate,
+    MBLDate: resolvedJobDate,
+    HBLDate: resolvedJobDate,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     DepartmentMasterSid: this.b['DepartmentMasterSid']?.value,
