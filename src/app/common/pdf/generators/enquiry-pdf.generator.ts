@@ -14,7 +14,7 @@ import {
   buildRemarks
 } from '../builders/pdf-section.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
-import { formatDate, formatNumber, joinNonEmpty } from '../helpers/pdf-formatters';
+import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
 
 const ENQUIRY_LINE_WIDTH = 0.25;
 
@@ -247,7 +247,7 @@ function buildEnquiryCargoTable(cargo: any[], fclLcl: 'FCL' | 'LCL' | 'AIR' | 'R
       return '';
     }
 
-    return formatNumber(value, decimals);
+    return formatNumberWithCommas(value, decimals);
   };
 
   const dataRows = cargo.map(row =>
@@ -316,9 +316,9 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
   if (mode === 'AIR') {
     return [
       ...baseColumns,
-      { header: 'Pkg Type', field: 'PackageType', width: 46, alignment: 'left' },
-      { header: 'No. of Pkg', field: 'NoOfPackage', width: 46, alignment: 'right', decimals: 0 },
-      { header: 'Dims', field: 'Dims', width: 88, alignment: 'right' },
+      { header: 'Pkg Type', field: 'PackageType', width: 35, alignment: 'left' },
+      { header: 'No. of Pkg', field: 'NoOfPackage', width: 35, alignment: 'right', decimals: 0 },
+      { header: 'Dims', field: 'Dims', width: 70, alignment: 'right' },
       { header: 'Gross Wt.', field: 'GrossWeight', width: 52, alignment: 'right', decimals: 3 },
       { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 65, alignment: 'right', decimals: 3 }
     ];
@@ -329,7 +329,7 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
       ...baseColumns,
       { header: 'Cont. Type', field: 'ContainerType', width: 58, alignment: 'left' },
       { header: 'No. of Cont.', field: 'NoofContainers', width: 50, alignment: 'right', decimals: 0 },
-      { header: 'Pkg Type', field: 'PackageType', width: 50, alignment: 'left' },
+      { header: 'Pkg Type', field: 'PackageType', width: 35, alignment: 'left' },
       { header: 'Gross Wt.', field: 'GrossWeight', width: 55, alignment: 'right', decimals: 3 },
       { header: 'CBM', field: 'Volume', width: 45, alignment: 'right', decimals: 3 }
     ];
@@ -338,7 +338,7 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
   if (mode === 'ROAD') {
     return [
       ...baseColumns,
-      { header: 'No. of Pkg', field: 'Qty', width: 48, alignment: 'right', decimals: 0 },
+      { header: 'No. of Pkg', field: 'Qty', width: 35, alignment: 'right', decimals: 0 },
       { header: 'Gross Wt.', field: 'GrossWeight', width: 52, alignment: 'right', decimals: 3 },
       { header: 'Net Wt.', field: 'NetWeight', width: 50, alignment: 'right', decimals: 3 },
       { header: 'CBM', field: 'Volume', width: 45, alignment: 'right', decimals: 3 },
@@ -348,9 +348,9 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
 
   return [
     ...baseColumns,
-    { header: 'No. of Pkg', field: 'NoOfPackage', width: 48, alignment: 'right', decimals: 0 },
-    { header: 'Dims', field: 'Dims', width: 88, alignment: 'right' },
-    { header: 'Pkg Type', field: 'PackageType', width: 48, alignment: 'left' },
+    { header: 'No. of Pkg', field: 'NoOfPackage', width: 35, alignment: 'right', decimals: 0 },
+    { header: 'Dims', field: 'Dims', width: 70, alignment: 'right' },
+    { header: 'Pkg Type', field: 'PackageType', width: 35, alignment: 'left' },
     { header: 'Gross Wt.', field: 'GrossWeight', width: 55, alignment: 'right', decimals: 3 },
     { header: 'CBM', field: 'Volume', width: 45, alignment: 'right', decimals: 3 }
   ];
@@ -361,7 +361,7 @@ function buildCargoTotalRow(cargo: any[], columns: any[], mode: 'FCL' | 'LCL' | 
   const setTotalCell = (field: string, value: number, decimals = 3) => {
     const index = columns.findIndex(column => column.field === field);
     if (index >= 0) {
-      totalRow[index] = { text: formatNumber(value, decimals), style: 'tableCellBold', alignment: 'right' , fontSize: 7 };
+      totalRow[index] = { text: formatNumberWithCommas(value, decimals), style: 'tableCellBold', alignment: 'right' , fontSize: 7 };
     }
   };
   // The label sits in the last descriptive column so it reads immediately before the
@@ -406,28 +406,29 @@ function formatDimensions(cargo: any): string {
 
 function buildRoutePortSummary(route: EnquiryPdfData['routes'][number], isFirstRoute = false): any {
   const item = (label: string, value: string) => ({
+    width: '50%',
     stack: [
-      { text: label, style: 'labelBold', margin: [0, 0, 0, 2], fontSize:8 },
-      { text: value || '-', noWrap: true }
+      { text: label, style: 'labelBold', margin: [0, 0, 0, 2], fontSize: 8 },
+      { text: value || '-' }
     ],
     margin: [0, 0, 10, 0]
   });
 
-  return {
+  const portRow = (leftLabel: string, leftValue: string, rightLabel: string, rightValue: string, bottomGap = 0) => ({
     columns: [
-      item('POO', formatPort(route.poo)),
-      item('POL', formatPort(route.pol)),
-      item('POD', formatPort(route.pod)),
-      {
-        stack: [
-          { text: 'FPOD', style: 'labelBold', margin: [0, 0, 0, 2] },
-          { text: formatPort(route.fpd) || '-', noWrap: true }
-        ],
-        margin: [0, 0, 0, 0]
-      }
+      item(leftLabel, leftValue),
+      item(rightLabel, rightValue)
     ],
-    columnGap: 0,
-    fontSize:7,
+    columnGap: 4,
+    margin: [0, 0, 0, bottomGap]
+  });
+
+  return {
+    stack: [
+      portRow('POO', formatPort(route.poo), 'POL', formatPort(route.pol), 5),
+      portRow('POD', formatPort(route.pod), 'FPOD', formatPort(route.fpd))
+    ],
+    fontSize: 7,
     margin: [5, isFirstRoute ? 6 : 8, 5, 3]
   };
 }
@@ -451,7 +452,7 @@ function calculateCargoTotals(cargo: any[]): any {
  */
 function formatPort(port: { portName: string; portCode: string } | undefined): string {
   if (!port) return '';
-  return port.portCode ? `${port.portName} (${port.portCode})` : port.portName;
+  return port.portCode ? `${port.portName} - ${port.portCode}` : port.portName;
 }
 
 /**

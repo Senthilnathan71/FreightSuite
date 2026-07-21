@@ -67,7 +67,7 @@ export function generateBookingDocument(
       {
         text: 'We are pleased to confirm your booking as below',
         style: 'labelBold',
-        fontSize: 10,
+        fontSize: 8,
         margin: [4, 0, 0, 6]
       },
 
@@ -104,7 +104,7 @@ function buildBookingTitle(title: string): any {
         text: title,
         alignment: 'center',
         bold: true,
-        fontSize: 13,
+        fontSize: 10,
         margin: [0, 3, 0, 8]
       },
       {
@@ -126,23 +126,23 @@ function buildBookingInfo(data: BookingPdfData): any {
 
   const leftBlock = {
     stack: [
-      { text: 'Customer', style: 'labelBold', fontSize: 11, margin: [8, 0, 0, 4] },
-      { text: booking?.customerName || '', fontSize: 10, margin: [24, 0, 0, 3] },
-      { text: booking?.customerAddress || '', fontSize: 10, margin: [24, 0, 10, 0] }
+      { text: 'Customer', style: 'labelBold', fontSize: 8, margin: [8, 0, 0, 4] },
+      { text: booking?.customerName || '', fontSize: 8, margin: [24, 0, 0, 3] },
+      { text: booking?.customerAddress || '', fontSize: 8, margin: [24, 0, 10, 0] }
     ]
   };
 
   const rightItems = [
-    { label: 'Booking No.', value: booking?.bookingNo || '' },
-    { label: 'Booking Date', value: formatDate(booking?.bookingDate) || '' },
-    { label: 'Cut Off Date', value: formatDate(booking?.cutOffDate) || '' },
+    { label: 'Booking No.', value: booking?.bookingNo || '', fontSize: 8 },
+    { label: 'Booking Date', value: formatDate(booking?.bookingDate) || '' , fontSize: 8 },
+    { label: 'Cut Off Date', value: formatDate(booking?.cutOffDate) || '' , fontSize: 8 },
   ];
 
   const rightBlock = {
     stack: rightItems.map((item) => ({
       columns: [
         { text: item.label, style: 'labelBold', width: 85 },
-        { text: ':', width: 8 },
+        { text: ':', width: 2 },
         { text: item.value, width: '*' }
       ],
       margin: [0, 0, 0, 6]
@@ -217,9 +217,9 @@ function buildShipmentDetails(data: BookingPdfData): any {
 function buildDetailRows(items: Array<{ label: string; value: string }>, labelWidth: number): any[] {
   return items.map((item) => ({
     columns: [
-      { text: item.label, style: 'labelBold', fontSize: 11, width: labelWidth },
+      { text: item.label, style: 'labelBold', fontSize: 8, width: labelWidth },
       { text: ':', width: 6 },
-      { text: item.value || '', fontSize: 10, width: '*' }
+      { text: item.value || '', fontSize: 8, width: '*' }
     ],
     margin: [0, 3, 0, 3]
   }));
@@ -309,12 +309,12 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
 
   return {
     stack: [
-      { text: 'Cargo Details', style: 'sectionTitle', margin: [0, 5, 0, 5] },
+      { text: 'Cargo Details', style: 'sectionTitle', margin: [0, 5, 0, 5] , fontSize:8},
       {
         table: {
           headerRows: 1,
           widths: new Array(headerRow.length).fill('*'),
-          body: [headerRow, ...valueRows]
+          body: [headerRow, ...valueRows],
         },
         layout: PDF_TABLE_LAYOUTS.bordered,
         margin: [0, 0, 0, 6]
@@ -452,20 +452,20 @@ function buildBookingFooter(data: BookingPdfData, currentPage: number, pageCount
       {
         text: "Your's Sincerely",
         style: 'labelBold',
-        fontSize: 9,           // ✅ was no fontSize (inherited larger size)
+        fontSize: 8,           // ✅ was no fontSize (inherited larger size)
         margin: [20, 0, 0, 1]  // ✅ was [6, 0, 0, 1]
       },
       {
         text: data.userData?.userName || '',
         style: 'labelBold',
-        fontSize: 9,           // ✅ added fontSize
+        fontSize: 8,           // ✅ added fontSize
         margin: [20, 0, 0, 6]  // ✅ was [6, 0, 0, 8]
       },
       {
         text: 'IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT HESITATE TO CONTACT US.\nTHANK YOU FOR SHIPPING WITH US',
         alignment: 'center',
         style: 'labelBold',
-        fontSize: 9,           // ✅ was 10
+        fontSize: 8,           // ✅ was 10
         margin: [0, 0, 0, 6]   // ✅ was [0, 0, 0, 8]
       },
       footerInfoRow

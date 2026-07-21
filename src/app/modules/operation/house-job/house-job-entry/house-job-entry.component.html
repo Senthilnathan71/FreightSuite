@@ -212,7 +212,7 @@
  <!-- Smart Quick Form -->
 <div class="quick-form-panel compact-form" [formGroup]="houseJobForm">
 
-  <div class="row pb-1 pt-1 px-3" [class.expanded]="isQuickFormExpanded">
+  <div class="row px-3" [class.expanded]="isQuickFormExpanded">
 
     <!-- Department -->
     <div class="col-md-3">
@@ -329,7 +329,7 @@
       </div>
   </div>
 
-  <div class="row pb-1 px-3" [class.expanded]="isQuickFormExpanded">
+  <div class="row  px-3" [class.expanded]="isQuickFormExpanded">
 
 
     <!-- Shipment No -->
@@ -495,7 +495,7 @@
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('CustomerMasterSid')?.touched &&
                       houseJobForm.get('CustomerMasterSid')?.invalid){
-                      <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
+                      <div class="error-message">
                         @if(houseJobForm.get('CustomerMasterSid')?.hasError('required')){
                         <span>Required</span>
                         }
@@ -555,7 +555,7 @@
     </div>
     <label for="text-input" class="input-label">Shipper Name <span class="text-danger">*</span></label>
     @if(houseJobForm.get('ShipperName')?.touched && houseJobForm.get('ShipperName')?.invalid){
-    <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
+    <div class="error-message">
       @if(houseJobForm.get('ShipperName')?.hasError('required')){
       <span>Required</span>
       }
@@ -623,7 +623,7 @@
     </div>
     <label for="text-input" class="input-label">Consignee Name <span class="text-danger">*</span></label>
     @if(houseJobForm.get('ConsigneeName')?.touched && houseJobForm.get('ConsigneeName')?.invalid){
-    <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
+    <div class="error-message">
       @if(houseJobForm.get('ConsigneeName')?.hasError('required')){
       <span>Required</span>
       }

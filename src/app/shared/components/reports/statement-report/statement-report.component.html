@@ -36,7 +36,7 @@
                 </div>
                 <div class="d-flex">
                     <strong style="width: 100px;">Address</strong>
-                    <span class="ms-1 my-0" style="width:450px">
+                    <span class="ms-1 my-0" style="max-width:450px">
                         : {{ fullData?.customerAddress }}
                         <span *ngIf="fullData?.customerAddress && fullData?.contactNo">, </span>
                         {{ fullData?.contactNo }}
