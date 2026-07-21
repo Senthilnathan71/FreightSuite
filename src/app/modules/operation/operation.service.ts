@@ -798,6 +798,26 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  // Job Correction: search master jobs by Job No / MBL / MAWB No across air + sea.
+  jobCorrectionSearch(payload: any) {
+    return this.http.post<{ data: any[] }>('master-job/job-correction/search', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  // Job Correction: corrects a few master-job fields (Job Date / POL / POD /
+  // Vessel-Voyage / ETD / ETA / Container No.) and cascades to house jobs and
+  // the bookings connected under them.
+  jobCorrection(payload: any) {
+    return this.http.patch<{ data: any }>('master-job/job-correction', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   pullMasterJobToImportBranch(payload: {
     MasterJobSid: number;
     CompanyMasterSid: number;
