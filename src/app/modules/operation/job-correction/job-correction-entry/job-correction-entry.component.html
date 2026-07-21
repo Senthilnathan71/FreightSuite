@@ -1,0 +1,224 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <!-- Header bar -->
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
+        <h5 class="page-title mb-0 text-info">Job Correction</h5>
+      </div>
+
+      <div class="col-md-8 pb-1">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetSearch()">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+          <button type="button" class="btn btn-sm dofi-min-w-80 dofi-max-w-80"
+            [ngClass]="{ 'btn-info': hasLoaded, 'btn-secondary': !hasLoaded }" (click)="onSubmit()"
+            [disabled]="isSaving || !hasLoaded">
+            <i class="fas fa-save me-1"></i>
+            <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main form card -->
+  <div class="col-md-12 px-0">
+    <div class="card mb-1">
+      <div class="card-body">
+        <form [formGroup]="jobForm">
+          <div class="row">
+
+            <!-- Job No / MBL / MAWB No searchable dropdown -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!selectedJobSid">
+                <ng-select [items]="jobOptions" bindValue="MasterJobSid" bindLabel="displayLabel"
+                  [typeahead]="jobInput$" [loading]="isSearching" [(ngModel)]="selectedJobSid"
+                  [ngModelOptions]="{ standalone: true }" (change)="onJobSelect($event)" [minTermLength]="1"
+                  placeholder="" typeToSearchText="Type Job No or MBL / MAWB No"
+                  class="ng-select" appendTo="body">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div><strong>{{ item.MasterJobNumber }}</strong></div>
+                    <small class="text-muted">{{ item.isAir ? 'MAWB' : 'MBL' }}: {{ item.MBLNo || '-' }}</small>
+                  </ng-template>
+                </ng-select>
+                <label class="input-label">Job No / {{ mblLabel }} <span class="text-danger">*</span></label>
+              </div>
+            </aside>
+
+            <!-- Department (read-only) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="text" id="Department" formControlName="Department" placeholder=""
+                  class="custom-input-field sm" readonly />
+                <label for="Department" class="input-label">Department</label>
+              </div>
+            </aside>
+
+            <!-- Job Date -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="date" id="MasterJobDate" formControlName="MasterJobDate" placeholder=""
+                  class="custom-input-field sm" [readonly]="!hasLoaded" />
+                <label for="MasterJobDate" class="input-label">
+                  Job Date <span class="text-danger">*</span>
+                </label>
+              </div>
+            </aside>
+
+            <!-- POL (Dofi searchable dropdown, ports filtered Sea/Air) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!jobForm.get('POL')?.value">
+                <dofi-searchable-dropdown [items]="filteredPorts" formControlName="POL" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" [readonly]="!hasLoaded"
+                  (itemSelected)="onPortChange()">
+                </dofi-searchable-dropdown>
+                <label for="POL" class="input-label">POL <span class="text-danger">*</span></label>
+              </div>
+            </aside>
+
+            <!-- POD (Dofi searchable dropdown, ports filtered Sea/Air) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!jobForm.get('POD')?.value">
+                <dofi-searchable-dropdown [items]="filteredPorts" formControlName="POD" placeholder=""
+                  [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                  [labelFields]="portLookupConfig.labelFields" bindValue="PortCode" [readonly]="!hasLoaded"
+                  (itemSelected)="onPortChange()">
+                </dofi-searchable-dropdown>
+                <label for="POD" class="input-label">POD <span class="text-danger">*</span></label>
+              </div>
+            </aside>
+
+            <!-- Vessel (dropdown from same Master Job API, with manual-entry toggle) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!jobForm.get('VesselName')?.value">
+
+                <!-- Dropdown mode -->
+                <div class="d-flex align-items-center" *ngIf="!isVesselFreeText">
+                  <ng-select [items]="vesselOptions" bindLabel="VesselName" bindValue="VesselName"
+                    formControlName="VesselName" placeholder="" class="ng-select w-100" [readonly]="!hasLoaded"
+                    (change)="onVesselChange($event)" appendTo="body">
+                  </ng-select>
+                  <button class="btn btn-sm px-1" type="button" (click)="toggleVesselEntry()" [disabled]="!hasLoaded"
+                    title="Switch to manual entry">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+                </div>
+
+                <!-- Manual mode -->
+                <div class="d-flex align-items-center" *ngIf="isVesselFreeText">
+                  <input type="text" formControlName="VesselName" placeholder="" class="custom-input-field sm w-100"
+                    maxlength="100" [readonly]="!hasLoaded" />
+                  <button class="btn btn-sm px-1" type="button" (click)="toggleVesselEntry()" [disabled]="!hasLoaded"
+                    title="Switch to dropdown">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+                </div>
+
+                <label class="input-label">Vessel</label>
+              </div>
+            </aside>
+
+            <!-- Voyage (dropdown for selected vessel, with manual-entry toggle) -->
+            <aside class="col-md-3">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!jobForm.get('VoyageNo')?.value">
+
+                <!-- Dropdown mode -->
+                <div class="d-flex align-items-center" *ngIf="!isVoyageFreeText">
+                  <ng-select [items]="voyageOptions" bindLabel="VoyageNo" bindValue="VoyageNo"
+                    formControlName="VoyageNo" placeholder="" class="ng-select w-100" [readonly]="!hasLoaded"
+                    (change)="onVoyageChange($event)" appendTo="body">
+                    <ng-template ng-option-tmp let-item="item">{{ item.VoyageNo }}</ng-template>
+                  </ng-select>
+                  <button class="btn btn-sm px-1" type="button" (click)="toggleVoyageEntry()" [disabled]="!hasLoaded"
+                    title="Switch to manual entry">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+                </div>
+
+                <!-- Manual mode -->
+                <div class="d-flex align-items-center" *ngIf="isVoyageFreeText">
+                  <input type="text" formControlName="VoyageNo" placeholder="" class="custom-input-field sm w-100"
+                    maxlength="10" [readonly]="!hasLoaded" />
+                  <button class="btn btn-sm px-1" type="button" (click)="toggleVoyageEntry()" [disabled]="!hasLoaded"
+                    title="Switch to dropdown">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+                </div>
+
+                <label class="input-label">Voyage No</label>
+              </div>
+            </aside>
+
+            <!-- ETD -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="date" id="ETD" formControlName="ETD" placeholder="" class="custom-input-field sm"
+                  [readonly]="!hasLoaded" />
+                <label for="ETD" class="input-label">ETD</label>
+              </div>
+            </aside>
+
+            <!-- ETA -->
+            <aside class="col-md-3">
+              <div class="custom-form-group">
+                <input type="date" id="ETA" formControlName="ETA" placeholder="" class="custom-input-field sm"
+                  [readonly]="!hasLoaded" />
+                <label for="ETA" class="input-label">ETA</label>
+              </div>
+            </aside>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Containers -->
+    <div class="card mb-1" *ngIf="hasLoaded && containers.length">
+      <div class="card-body">
+        <h6 class="text-info mb-2">Container No.</h6>
+        <form [formGroup]="jobForm">
+          <div class="row" formArrayName="containers">
+            <aside class="col-md-3" *ngFor="let ctrl of containers.controls; let i = index" [formGroupName]="i">
+              <div class="custom-form-group">
+                <input type="text" [id]="'ContainerNumber' + i" formControlName="ContainerNumber" placeholder=""
+                  class="custom-input-field sm text-uppercase" maxlength="11"
+                  (input)="onContainerInput(i, $event)" />
+                <label [for]="'ContainerNumber' + i" class="input-label">
+                  Container {{ i + 1 }} <span class="text-danger">*</span>
+                </label>
+                <small class="text-danger d-block"
+                  *ngIf="ctrl.get('ContainerNumber')?.touched && ctrl.get('ContainerNumber')?.errors?.['invalidContainerNumber']">
+                  Invalid container no (4 letters + 6 digits + check digit).
+                </small>
+                <small class="text-danger d-block"
+                  *ngIf="ctrl.get('ContainerNumber')?.errors?.['duplicate']">
+                  Duplicate container no.
+                </small>
+              </div>
+            </aside>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Empty hint before a job is picked -->
+    <div class="card mb-1" *ngIf="!hasLoaded">
+      <div class="card-body text-center text-muted py-3">
+        Search and select a Job No or MBL / MAWB No above to load a job for correction.
+      </div>
+    </div>
+  </div>
+</div>

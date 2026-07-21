@@ -9,12 +9,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgbActiveModal, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDatepickerModule, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { catchError, forkJoin, of, Subject, firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { getDefaultTodayDate, ngbDateStructToDate } from 'src/app/common/helper';
 import { OperationService } from '../../operation.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { Router, RouterModule } from '@angular/router';
@@ -49,6 +53,7 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
     RouterModule,
     TextWithNumbersDirective,
     NgbPaginationModule,
+    NgbDatepickerModule,
     SearchableDropdown,
     CustomDatePipe,
     NgxSpinnerModule,
@@ -62,7 +67,11 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
   styleUrl: './loading-plan-entry.component.scss',
   providers: [
     CustomDatePipe,
-    NgbActiveModal
+    NgbActiveModal,
+    // Without these the datepicker cannot render or parse the bound value and the input
+    // shows an empty dd-mm-yyyy placeholder even though the control holds a date.
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
   ]
 })
 export class LoadingPlanEntryComponent {
@@ -173,6 +182,7 @@ export class LoadingPlanEntryComponent {
     public mps: MenuPermissionService,
     private emailTriggerService: EmailTriggerService,
     private companySettings: CompanySettingsManagerService,
+    private commonModalService: ModalService,
 
 
   ) {
@@ -237,8 +247,74 @@ export class LoadingPlanEntryComponent {
       isVesselVoyage: [false],
       carrier: [null],
       ETA: [null],
-      ETD: [null]
+      ETD: [null],
+      // Only used when more than one booking is selected: a consol has no single booking date
+      // or ETD to inherit, so the user states the job date and it is capped to the current
+      // month. Left empty on purpose — pre-filling today would let Generate Job succeed
+      // without anyone having looked at the date. The control model is a Date
+      // (CustomDateAdapter is NgbDateAdapter<Date>), matching every other date field here.
+      JobDate: [null]
     });
+  }
+
+  /** Current-month bounds for the Job Date picker — nothing outside this month is selectable. */
+  get jobDateMin(): NgbDateStruct {
+    const today = getDefaultTodayDate();
+    return { year: today.getFullYear(), month: today.getMonth() + 1, day: 1 };
+  }
+
+  get jobDateMax(): NgbDateStruct {
+    const today = getDefaultTodayDate();
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    return { year: today.getFullYear(), month: today.getMonth() + 1, day: lastDay };
+  }
+
+  /** The Job Date field is only meaningful for a multi-booking consol. */
+  get isMultiBookingSelection(): boolean {
+    return this.selectedBookings.length > 1;
+  }
+
+  /**
+   * Writes the calendar pick straight to the control as a Date.
+   *
+   * Relying on the datepicker's own value-accessor round-trip proved fragile — the input
+   * would display the chosen date while the form control stayed null, so validation kept
+   * failing with a date visible on screen. (dateSelect) hands us the NgbDateStruct the moment
+   * a day is clicked, so we set the model ourselves and there is no adapter in the path.
+   */
+  onJobDateSelected(date: NgbDateStruct): void {
+    const jobDateControl = this.f['JobDate'];
+    if (!jobDateControl) {
+      return;
+    }
+
+    jobDateControl.setValue(ngbDateStructToDate(date));
+    jobDateControl.markAsTouched();
+    jobDateControl.updateValueAndValidity();
+  }
+
+  /**
+   * Job Date is mandatory only for a multi-booking consol — that is the case where no ETD or
+   * booking date can be inherited, so the user must state it. For a single booking the field
+   * is hidden and must carry no validator, otherwise it would block Generate Job invisibly.
+   */
+  private syncJobDateValidation(): void {
+    const jobDateControl = this.f['JobDate'];
+    if (!jobDateControl) {
+      return;
+    }
+
+    if (this.isMultiBookingSelection) {
+      jobDateControl.setValidators(Validators.required);
+    } else {
+      // Dropping below two bookings hides the field, so clear both the rule and any date
+      // already picked — otherwise a stale value would be sent on the single-booking path,
+      // where ETD (or the booking-date prompt) is supposed to decide.
+      jobDateControl.clearValidators();
+      jobDateControl.setValue(null, { emitEvent: false });
+    }
+
+    jobDateControl.updateValueAndValidity({ emitEvent: false });
   }
 
   get f(): { [key: string]: AbstractControl<any, any> } {
@@ -798,6 +874,11 @@ export class LoadingPlanEntryComponent {
 
 
   calculateTotal() {
+    // Every path that changes the booking selection — tick, untick, and the resets on
+    // dept/POL/POD/voyage change — funnels through here, so keep the Job Date requirement
+    // in step with the selection from one place.
+    this.syncJobDateValidation();
+
     if (this.selectedBookings.length === 0) {
       this.totalPkg = '';
       this.totalGrossWeight = '';
@@ -1163,13 +1244,101 @@ formatContainerNumber(): void {
     this.router.navigate(['operation/master-job/entry']);
   }
 
-  onClickGenerateJob() {
+  /**
+   * Single booking  : ETD decides. No ETD -> ask booking date vs current date.
+   * Multiple bookings: the mandatory Job Date field decides, and ETD is deliberately ignored.
+   *
+   * A consol covers bookings from different months with different (or missing) voyages, so
+   * there is no single ETD or booking date that can honestly date the job — inheriting one
+   * arbitrary booking's date is what the old code did. The user states it instead, capped to
+   * the current month so an old number-series period can never be consumed.
+   *
+   * Returns null when the user declines, dismisses, or has not picked a Job Date.
+   */
+  private async resolveLoadingPlanJobDate(etd: Date | null): Promise<Date | null> {
+    if (this.isMultiBookingSelection) {
+      const jobDateValue = this.f['JobDate']?.value;
+      // The adapter yields a Date, but a value patched from elsewhere could still be a
+      // struct or string, so normalise before use.
+      const jobDate = jobDateValue instanceof Date
+        ? jobDateValue
+        : (jobDateValue ? new Date(jobDateValue) : null);
+
+      if (!jobDate || isNaN(jobDate.getTime())) {
+        // Surface it on the control too, so the field turns red instead of only toasting.
+        this.f['JobDate']?.markAsTouched();
+        this.f['JobDate']?.setErrors({ required: true });
+        this.appSettingService.showWarning('Please select the Job Date before generating the job.');
+        return null;
+      }
+
+      return this.assertJobDateWithinFinancialYear(jobDate);
+    }
+
+    if (etd && !isNaN(etd.getTime())) {
+      return this.assertJobDateWithinFinancialYear(etd);
+    }
+
+    const today = getDefaultTodayDate();
+    const bookingDateValue = this.selectedBookings[0]?.BookingDate;
+    const bookingDate = bookingDateValue ? new Date(bookingDateValue) : null;
+
+    // A single booking has one unambiguous booking date, so offer it — the same choice the
+    // Booking screen gives. Only when the row carries no booking date does it fall back to
+    // the plain "use current date?" confirmation.
+    if (!bookingDate || isNaN(bookingDate.getTime())) {
+      const confirmed = await this.commonModalService.confirm(
+        `ETD not exist for this loading plan.<br><br>` +
+        `Do you want to create a job on current date (<strong>${this.datePipe.transform(today)}</strong>)?`,
+        'Job Date',
+        'Yes, Use Current Date'
+      );
+
+      return confirmed ? this.assertJobDateWithinFinancialYear(today) : null;
+    }
+
+    const choice = await this.commonModalService.choose(
+      `ETD not exist for this booking.<br><br>` +
+      `Do you want to create job on booking date (<strong>${this.datePipe.transform(bookingDate)}</strong>) ` +
+      `or current date (<strong>${this.datePipe.transform(today)}</strong>)?`,
+      'Job Date',
+      'Use Booking Date',
+      'Use Current Date'
+    );
+
+    if (choice === 'dismiss') {
+      return null;
+    }
+
+    return this.assertJobDateWithinFinancialYear(choice === 'confirm' ? bookingDate : today);
+  }
+
+  /**
+   * The job date selects the number-series period, so a date outside the open financial year
+   * would consume a counter in a closed year.
+   */
+  private assertJobDateWithinFinancialYear(jobDate: Date): Date | null {
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (!fy) {
+      return jobDate;
+    }
+
+    if (jobDate < new Date(fy.StartDate) || jobDate > new Date(fy.EndDate)) {
+      this.appSettingService.showWarning(
+        `Job Date must be within the financial year (${fy.YearName})`
+      );
+      return null;
+    }
+
+    return jobDate;
+  }
+
+  async onClickGenerateJob() {
   if (this.selectedBookings.length === 0) {
     this.appSettingService.showWarning('Please select at least one booking.');
     return;
   }
 
-  this.spinnerService.show();
   const formValue = this.loadingPlanForm.getRawValue();
   const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
   const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
@@ -1221,6 +1390,16 @@ formatContainerNumber(): void {
     CutOffDate = firstBooking.CutOffDate ? new Date(firstBooking.CutOffDate) : null;
   }
 
+  // ETD is resolved above from the voyage schedule or the booking, so decide the job date
+  // only once it is known. With an ETD the job is dated by it silently; without one the user
+  // has to agree to today, because the date fixes the number-series period.
+  const resolvedJobDate = await this.resolveLoadingPlanJobDate(ETD);
+  if (!resolvedJobDate) {
+    return;
+  }
+
+  this.spinnerService.show();
+
   const shipmentList = this.selectedBookings.map(booking => ({
     BookingHeaderSid: booking.BookingHeaderSid,
     HouseJobSid: booking.HouseJobSid ?? null,
@@ -1230,6 +1409,10 @@ formatContainerNumber(): void {
   const payload = {
     createdBy: userEmail,
     MenuMasterSid: currentMenuId,
+    // One resolved date drives the master job, its MBL and every house's HBL/MBL.
+    MasterJobDate: resolvedJobDate,
+    MBLDate: resolvedJobDate,
+    HBLDate: resolvedJobDate,
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
     DepartmentMasterSid: formValue.dept,

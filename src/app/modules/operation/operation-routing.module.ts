@@ -48,6 +48,7 @@ import { PaymentRequestEntryComponent } from './payment-request/payment-request-
 import { PaymentRequestListComponent } from './payment-request/payment-request-list/payment-request-list.component';
 import { TrackingComponent } from './tracking/tracking.component';
 import { MilestoneTrackerComponent } from './milestone-tracker/milestone-tracker.component';
+import { JobCorrectionEntryComponent } from './job-correction/job-correction-entry/job-correction-entry.component';
 
 
 export const OperationRoutes: Routes = [
@@ -594,6 +595,17 @@ export const OperationRoutes: Routes = [
           urls: [
             { title: 'Operation', url: '/operation'},
             { title: 'Voucher-Correction'},
+          ],
+        },
+      },
+      {
+        path: 'job-correction',
+        component: JobCorrectionEntryComponent,
+        data: {
+          title: 'Job Correction',
+          urls: [
+            { title: 'Operation', url: '/operation' },
+            { title: 'Job Correction' },
           ],
         },
       },
