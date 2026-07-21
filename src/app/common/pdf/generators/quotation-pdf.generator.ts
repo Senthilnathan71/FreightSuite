@@ -590,7 +590,7 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
 
   const header = [
     'Cargo Type', 'Commodity', 'Pkg Type', 'No. of Pkg',
-    ...(showDim ? ['Dim'] : []),
+    ...(showDim ? ['Dims'] : []),
     'G. Weight', 'Net Wt', isAir ? 'Chrg Wt' : 'CBM', 'Haz', 'Non-Stack.'
   ].map((text: string) => ({ text, bold: true, alignment: 'center', fontSize: 7 }));
 
@@ -602,7 +602,7 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
       { text: row.commodity || '-', alignment: 'left', fontSize: 7 },
       { text: row.packageType || '-', alignment: 'left', fontSize: 7 },
       { text: formatNumeric(row.noOfPackage), alignment: 'right', fontSize: 7 },
-      ...(showDim ? [{ text: row.dimensions || '-', alignment: 'left', fontSize: 7 }] : []),
+      ...(showDim ? [{ text: row.dimensions || '-', alignment: 'right', fontSize: 7 }] : []),
       { text: formatNumeric(row.grossWeight, 3), alignment: 'right', fontSize: 7 },
       { text: formatNumeric(row.netWeight, 3), alignment: 'right', fontSize: 7 },
       { text: formatNumeric(row.cbmOrChargeable, 3), alignment: 'right', fontSize: 7 },

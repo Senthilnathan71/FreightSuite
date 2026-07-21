@@ -3416,295 +3416,6 @@
   </div>
   <div class="modal-body">
       <div id="printContent" class="p-1">
-            <!-- <div class="print-a4">
-      <div> -->
-
-        
-        <!-- <div class="row ">
-         <div class="company-header">
-                    <div class="company-logo">
-                      <img src="assets/images/logos/xtreme-dark-icon.svg"
-                          alt="Company Logo"
-                          class="img-fluid"
-                          >
-                          <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                    </div>
-
-                    <div class="company-info " >
-                      <h4 class="mb-1">{{ currentCompany?.companyName || 'Company Name' }}</h4>
-                      <h5 class="mb-1">{{ currentBranch?.branchName || 'Company Branch' }}</h5>
-                      <p class="mb-1">{{ currentCompany?.addressLine1 || currentCompany?.Address || '' }}</p>
-                      <p class="mb-1">
-                        {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
-                      </p>
-                      <p class="mb-1">{{ currentCompany?.postal_code || currentCompany?.ZipCode || '' }}</p>
-                      <p class="mb-1"> {{ currentCompany?.phoneNumber || currentCompany?.Phone || '' }}</p>
-                    </div>
-                  </div>
-        </div>
-
-        <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-
-        <h5 class="text-center fw-bold m-0">Booking Confirmation - {{selectedDepartment?.departmentName}}</h5>
-
-        <div style="height:1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-
-       
-        <div class="row ">
-          <div class="col-12 col-lg-6">
-            <div class="mb-1">
-              <div class="fw-bold me-2">Customer :</div>
-              <div class="fs-6 text-break">{{bookingHeader?.CustomerName}}</div>
-              <div class="text-break">{{bookingHeader?.CustomerAddress}}</div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-6">
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Booking No</div>
-              <div class="text-break">: {{bookingHeader?.BookingNo}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Booking Date</div>
-              <div class="text-break">: {{bookingHeader?.BookingDateTime | formatDate }}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Cut Off Date</div>
-              <div class="text-break">: {{bookingHeader?.voyageDetails?.PortCutoff | formatDate }}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap" *ngIf="bookingHeader?.quotationHeader?.QuoteNumber">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:120px;">Quotation No</div>
-              <div class="text-break">: {{bookingHeader?.quotationHeader?.QuoteNumber}}</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="height: 1px; background-color: black; width: 100%; margin: 1rem 0;"></div>
-
-        
-        <div class="row ">
-          <p class="fw-bold">We are pleased to confirm your booking as below :</p>
-
-          <div class="col-12 col-lg-6">
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Vessel/Voyage</div>
-              <div class="text-break">: {{bookingHeader?.VesselName && bookingHeader?.VoyageNo ?
-                bookingHeader?.VesselName
-                + ' / ' + bookingHeader?.VoyageNo : ''}}</div>
-            </div> -->
-            <!-- <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETA</div>
-              <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETA | formatDate}}</div>
-            </div> -->
-             <!-- <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Port of Loading</div>
-              <div class="text-break">: {{bookingHeader?.POL}}</div>
-            </div>
-             <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Port of Discharge</div>
-              <div class="text-break">: {{bookingHeader?.POD}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Final Destination</div>
-              <div class="text-break">: {{bookingHeader?.FPD}}</div>
-            </div>
-             <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Shipper Name</div>
-              <div class="text-break">: {{bookingHeader?.ShipperName}}</div>
-            </div>
-             <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Shipping Bill No</div>
-              <div class="text-break">
-                :
-                <ng-container *ngFor="let product of bookingHeader?.bookingProduct; let i = index">
-                  <ng-container *ngIf="product?.ShippingBillNo">
-                    {{ product.ShippingBillNo }}<span *ngIf="i < (bookingHeader?.bookingProduct?.length || 0) - 1">, </span>
-                  </ng-container>
-                </ng-container>
-              </div>
-            </div> -->
-            <!-- <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
-        <div class="text-break">: {{bookingHeader?.voyageDetails?.POLETD | formatDate }}</div>
-      </div> -->
-           
-            <!-- <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Inco Terms</div>
-              <div class="text-break">: {{bookingHeader?.IncoTerms || ''}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Hand Over To</div>
-              <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.YardCFS || ''}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Remarks</div>
-              <div class="text-break">: {{bookingHeader?.InternalNote || ''}}</div>
-            </div>
-          </div>
-
-          <div class="col-12 col-lg-6">
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' :
-                'HBL No'}}</div>
-              <div class="text-break">: {{bookingHeader?.HBLNo || ''}}</div>
-            </div> -->
-            <!-- <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
-              <div class="text-break">: {{(bookingHeader?.voyageDetails?.POLETD | formatDate) || '-'}}</div>
-            </div> -->
-             <!-- <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POD ETA</div>
-              <div class="text-break">: {{bookingHeader?.ETA | formatDate }}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
-              <div class="text-break">: {{getFPDETA() | formatDate}}</div>
-            </div> -->
-            <!-- @if(selectedFCLLCL === "LCL"){
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No. of Pkg</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || ''}}</div>
-            </div>
-            } @else if(selectedFCLLCL === "FCL"){
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Container Type</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || ''}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No. of Containers</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || ''}}</div>
-            </div>
-            } @else if(selectedFCLLCL === "AIR"){
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || ''}}</div>
-            </div>
-            }
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Gross Weight</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.GrossWeight || ''}}</div>
-            </div>
-
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Volume(CBM)</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.Volume || ''}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Commodity</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.CargoType || ''}}</div>
-            </div> -->
-            <!-- <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Freight</div>
-              <div class="text-break">: {{ bookingHeader?.FreightTerms || ''}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Destination Agent</div>
-              <div class="text-break">: {{ getDestinationAgent(bookingHeader?.DestinationAgent) || ''}}</div>
-            </div>
-             <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Consignee Name</div>
-              <div class="text-break">: {{ bookingHeader?.ConsigneeName || ''}}</div>
-            </div>
-             <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier</div>
-              <div class="text-break">: {{bookingHeader?.CarrierName || ''}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Carrier Booking</div>
-              <div class="text-break">: {{bookingHeader?.bookingOthers[0]?.CarrierBookingRef || ''}}</div>
-            </div>
-            <div class="d-flex mb-1 flex-wrap">
-              <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Shipment Terms</div>
-              <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ShipmentTerms || ''}}</div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h5  class=" fw-bold m-0">Product Details</h5>
-          <div class="table-responsive">
-            <table class="table tablebordered table-sm">
-              <thead>
-                <tr>
-                  <th>Commodity</th>
-                  @if(selectedFCLLCL === "FCL"){
-                  <th>
-                    Container Type
-                  </th>
-                   <th class="text-center">
-                    No. of Containers
-                  </th>
-                }
-                  <th class="text-center">
-                    Gross Weight
-                  </th>
-           @if(selectedFCLLCL === "LCL"){
-                  <th class="text-center">
-                    No. of Pkg
-                  </th>
-                }
-
-                @if(selectedFCLLCL === "AIR"){
-                  <th class="text-center">
-                    Chargeable Weight
-                  </th>
-                }
-                  <th class="text-center">
-                    Volume(CBM)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    {{bookingHeader?.bookingCargo[0]?.CargoType || ''}}
-                  </td>
-                   @if(selectedFCLLCL === "FCL"){
-                  <td >{{bookingHeader?.bookingCargo[0]?.ContainerType || ''}}</td>
-                  <td class="text-end">{{bookingHeader?.bookingCargo[0]?.NoofContainers || ''}}</td>
-                   }
-                  <td class="text-end">{{bookingHeader?.bookingCargo[0]?.GrossWeight || ''}}</td>
-                    @if(selectedFCLLCL === "LCL"){
-                  <td class="text-end">{{bookingHeader?.bookingCargo[0]?.NoOfPackage || ''}}</td>
-                    }
-                    @if(selectedFCLLCL === "AIR"){
-                  <td class="text-end">{{bookingHeader?.bookingCargo[0]?.ChargeableWeight || ''}}</td>
-                    }
-                  <td class="text-end">
-                    {{bookingHeader?.bookingCargo[0]?.Volume || ''}}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-
-
-
-        <footer class="text-center mb-0 px-2">
-          <div>
-            <div class="text-start">
-              <p style="font-weight: bold;">Your's Sincerely</p>
-              <div class="text-break">{{userData?.userName || ''}}</div>
-            </div>
-            <div >
-              
-            </div>
-            <p class="my-3 text-center">IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT
-              HESITATE TO <br>CONTACT US. THANK YOU FOR SHIPPING WITH US</p>
-          </div>
-          <div class="d-flex justify-content-between">
-            <div class=""><span >Printed By :</span> {{userData.userName}} </div>
-            <span>
-              This document is computer-generated and does not require a signature.
-            </span>
-            <div><span >Printed On :</span> {{ currentDate | formatDate }}</div>
-          </div>
-        </footer>
-      </div>
-    </div> -->
-
 <div style="
   width:280mm;
   min-height:400mm;
@@ -3733,7 +3444,7 @@
 <div style="border-top:1px solid #000; margin:10px 0;"></div>
 
 <!-- Main Info Table -->
-<table style="width:100%; border-collapse:collapse; font-size:16px; margin:0; padding:0;">
+<table style="width:100%; border-collapse:collapse; margin:0; padding:0;">
   <tr>
     <!-- LEFT COLUMN -->
     <td style="width:50%; vertical-align:top; padding:0 0 0 30px;">
@@ -3794,7 +3505,7 @@
   <strong>  We are pleased to confirm your booking as below </strong>
 </p>
 
-<table style="width:100%; border-collapse:collapse; font-size:17px;border: 1px solid black;">
+<table style="width:100%; border-collapse:collapse;border: 1px solid black;">
   <tr>
     <!-- LEFT COLUMN -->
     <td style="width:50%; vertical-align:top;padding-left: 30px;padding-top: 15px;padding-bottom: 15px;">
@@ -3911,17 +3622,17 @@
 </table>
 
 
-<h5 style="
+<h6 style="
     font-weight:bolder;
     margin-top: 5px;
     margin-bottom: 5px;
 ">
-    <strong>Cargo Details</strong>
-</h5>
+    Cargo Details
+</h6>
 
 
     <div style="width:100%; overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse;">
+      <table style="width:100%; border-collapse:collapse;font-size:13px;">
         <thead>
           <tr>
             <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;"><strong>Cargo Type</strong></th>
@@ -4039,14 +3750,14 @@
     margin-top:40px;        
 ">
 
-    <h4 style="
+    <h5 style="
         margin:0;         
         padding:0;
         font-weight:bolder;
         line-height:1.2;
     ">
         <strong>Terms and Conditions</strong>
-    </h4>
+    </h5>
 
     <ul style="
         margin:4px 0 0 0;  

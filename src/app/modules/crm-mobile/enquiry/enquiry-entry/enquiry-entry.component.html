@@ -2095,7 +2095,7 @@
                             <div style="width:10px; text-align:center;">:</div>
                             <div style="padding-left:6px;">
                                 <!-- {{ (enquiryData?.EnquiryDate | formatDate)  }} -->
-                                {{ formatDate(enquiryData?.EnquiryDate ) }}
+                                {{ (enquiryData?.EnquiryDate | formatDate)}}
                             </div>
                         </div>
 
@@ -2219,37 +2219,44 @@
                 <ng-container *ngFor="let route of printRoutes; let routeIndex = index">
                     <div style="margin-top: 0;" [style.marginTop.px]="routeIndex === 0 ? 0 : 0">
                      
-<div>
-  <div style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:flex-start; margin:0; padding:10px 15px;  box-sizing:border-box; line-height:1.2;">
+<div style="padding:8px 10px; box-sizing:border-box; line-height:1.2;">
+
+  <!-- Row 1: POO / POL -->
+  <div style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:flex-start; margin:0 0 8px 0;">
 
     <!-- POO -->
-    <div style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
+    <div style="width:50%; padding-left:3rem; box-sizing:border-box; min-width:0;">
       <div style="font-weight:bolder;  color:#333;"><strong>POO</strong></div>
-      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+      <div style="word-break:break-word;">
         {{ getPort(route?.PORSid) || '-' }}
       </div>
     </div>
 
     <!-- POL -->
-    <div style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
+    <div style="width:50%; padding-left:2rem; box-sizing:border-box; min-width:0;">
       <div style="font-weight:bolder;  color:#333;"><strong>POL</strong></div>
-      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+      <div style="word-break:break-word;">
         {{ getPort(route?.POLSid) || '-' }}
       </div>
     </div>
 
+  </div>
+
+  <!-- Row 2: POD / FPOD -->
+  <div style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:flex-start; margin:0;">
+
     <!-- POD -->
-    <div style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
+    <div style="width:50%; padding-left:3rem; box-sizing:border-box; min-width:0;">
       <div style="font-weight:bolder;  color:#333;"><strong>POD</strong></div>
-      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+      <div style="word-break:break-word;">
         {{ getPort(route?.PODSid) || '-' }}
       </div>
     </div>
 
     <!-- FPOD -->
-    <div style="display:flex; flex-direction:column; flex:1; min-width:0;">
+    <div style="width:50%; padding-left:2rem; box-sizing:border-box; min-width:0;">
       <div style="font-weight:bolder; color:#333;"><strong>FPOD</strong></div>
-      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+      <div style="word-break:break-word;">
         {{ getPort(route?.FDPSid) || '-' }}
       </div>
     </div>
