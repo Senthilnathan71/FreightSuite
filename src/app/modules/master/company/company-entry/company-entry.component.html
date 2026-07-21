@@ -571,7 +571,7 @@
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!companyForm.get('status')?.value">
                 @if(isEditMode){
-                <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
+                <ng-select name="status" class="ng-select" formControlName="status" id="text-input" appendTo="body">
                   <ng-option value="Active">Active</ng-option>
                   <ng-option value="Suspended">Suspended</ng-option>
                 </ng-select>
