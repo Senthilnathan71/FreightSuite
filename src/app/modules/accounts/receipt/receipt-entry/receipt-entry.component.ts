@@ -3256,6 +3256,73 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return { dr: t.dr, cr: t.cr, net: t.dr - t.cr };
   }
 
+  /** Detail rows' LocalAmount totals by Dr/Cr (company currency, rounded to its decimals). */
+  get detailLocalTotals(): { cr: number; dr: number } {
+    let cr = 0;
+    let dr = 0;
+    (this.detailItems.getRawValue() || []).forEach((vd) => {
+      const amt = toNumber(vd.LocalAmount) || 0;
+      if (vd.DrCr === 'C') cr += amt;
+      else dr += amt;
+    });
+    const localCur = this.currentCompany?.CurrencyMasterSid;
+    return {
+      cr: toNumber(this.getFormattedAndPaddedAmount(cr, localCur)),
+      dr: toNumber(this.getFormattedAndPaddedAmount(dr, localCur)),
+    };
+  }
+
+  /** Matched LOCAL totals across ALL branches (Σ matchLocalAmt by Dr/Cr, rounded). */
+  get matchingLocalTotals(): { cr: number; dr: number } {
+    let cr = 0;
+    let dr = 0;
+    (this.voucherMatchings.getRawValue() || []).forEach((r) => {
+      const amt = toNumber(r.matchLocalAmt) || 0;
+      if (r.drCr === 'Cr') cr += amt;
+      else if (r.drCr === 'Dr') dr += amt;
+    });
+    const localCur = this.currentCompany?.CurrencyMasterSid;
+    return {
+      cr: toNumber(this.getFormattedAndPaddedAmount(cr, localCur)),
+      dr: toNumber(this.getFormattedAndPaddedAmount(dr, localCur)),
+    };
+  }
+
+  /**
+   * Detail party-currency Cr−Dr, rounded to the voucher currency's decimals —
+   * the currency-side balance status cell of the Detail totals chip.
+   */
+  get detailCurrencyDiff(): number {
+    return toNumber(
+      this.getFormattedAndPaddedAmount(
+        this.totalCredits - this.totalDebits,
+        this.receiptForm.get('CurrencyMasterSid')?.getRawValue(),
+      ),
+    );
+  }
+
+  /**
+   * Detail local Dr−Cr, rounded to the local currency's decimals — the balance
+   * invariant shown in the Detail totals chip (green at 0, red otherwise).
+   */
+  get detailLocalDiff(): number {
+    const d = this.detailLocalTotals;
+    return toNumber(
+      this.getFormattedAndPaddedAmount(d.dr - d.cr, this.currentCompany?.CurrencyMasterSid),
+    );
+  }
+
+  /**
+   * Matched LOCAL net (Dr−Cr, same direction as matchingOverallTotal.net) for the
+   * Matching totals chip — non-zero is normal, rendered neutral.
+   */
+  get matchingLocalDiff(): number {
+    const m = this.matchingLocalTotals;
+    return toNumber(
+      this.getFormattedAndPaddedAmount(m.dr - m.cr, this.currentCompany?.CurrencyMasterSid),
+    );
+  }
+
   /** Matched party total for the active branch tab (branch-wise) — shown alongside the branch pills. */
   get activeBranchMatchingTotal(): { branchName: string; dr: number; cr: number; net: number } {
     return (

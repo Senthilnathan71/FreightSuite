@@ -4174,3 +4174,144 @@ textarea:disabled {
   box-shadow: none !important;
 }
 // ---------------------------------
+
+// ── Voucher totals stat-chips (receipt / payment: Detail, Matching, branch-wise) ──
+// Segmented "ledger strip": colored tag on the left, hairline-divided cells with a
+// micro-label over a bold tabular-nums value. Dr = green, Cr = red, Net/Diff = blue;
+// the Detail chip's Diff is a STATUS cell (green wash balanced / red wash off).
+.totals-chip {
+  display: inline-flex;
+  align-items: stretch;
+  background: #fff;
+  border: 1px solid #d3dce6; // overridden per variant below (thin colored identity border)
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(16, 42, 67, 0.08);
+  overflow: hidden;
+
+  &--detail {
+    border-color: #6ea7d8;
+  }
+
+  &--matching {
+    border-color: #ecb45c;
+  }
+
+  &__tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px; // fixed tag width — Detail & Matching chips line up
+    padding: 0 11px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  &--detail > &__tag {
+    background: linear-gradient(165deg, #1e79c3, #135a95);
+  }
+
+  &--matching > &__tag {
+    background: linear-gradient(165deg, #eb9a14, #c77d08);
+  }
+
+  &__cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1px;
+    min-width: 108px; // uniform cell width — same cell count = same chip width
+    padding: 3px 11px;
+    line-height: 1.1;
+
+    & + .totals-chip__cell {
+      border-left: 1px solid #e6ecf3;
+    }
+
+    .lbl {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #5a6b7d;
+      white-space: nowrap;
+    }
+
+    .val {
+      font-size: 0.8rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: #22374a;
+      white-space: nowrap;
+
+      &--dr { color: #1c8a52; }
+      &--cr { color: #cf3b3b; }
+      &--net { color: #1a66c4; }
+    }
+
+    // Status cell (Detail Diff): green wash when balanced, red wash when off
+    &--status {
+      background: #e9f7ef;
+
+      .lbl { color: #1e7a4d; }
+      .val { color: #158a4c; }
+
+      &.is-off {
+        background: #fdeceb;
+
+        .lbl { color: #b04438; }
+        .val { color: #c0392b; }
+      }
+    }
+  }
+
+  // Stronger divider between the CURRENCY cell group and the LOCAL cell group
+  > .totals-chip__cell--group {
+    border-left: 2px solid #b9c8d9;
+  }
+}
+
+// ── Totals row — Detail + Matching side-by-side ABOVE the grid, tab-aware ──
+// The active tab's chip lifts slightly and glows; the other dims. Wraps to two
+// rows when the viewport can't fit both (amount cells must never clip).
+.totals-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 4px;
+
+  .totals-chip {
+    flex: 1 1 620px;
+    // The chip's overflow:hidden (rounded corners) zeroes the automatic flex minimum,
+    // so without this the chip shrinks and CLIPS its last cells instead of wrapping.
+    min-width: max-content;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+
+    .totals-chip__cell {
+      flex: 1 1 0;
+      // Floor = the cell's own content (label/value), never a fixed px — big amounts
+      // (e.g. 999,999,999,999.00) must widen their cell instead of clipping into the
+      // neighbour; when the pair no longer fits, the row wraps to two stacked bands.
+      min-width: max-content;
+      padding: 3px 8px;
+    }
+  }
+
+  // Dim the chip that does NOT belong to the active tab
+  &--detail-active .totals-chip--matching,
+  &--matching-active .totals-chip--detail {
+    opacity: 0.55;
+  }
+
+  // Lift + glow the active tab's chip
+  &--detail-active .totals-chip--detail,
+  &--matching-active .totals-chip--matching {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(16, 42, 67, 0.18);
+  }
+}

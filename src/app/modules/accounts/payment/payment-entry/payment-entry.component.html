@@ -900,44 +900,78 @@
         }
       </div>
 
-      <!-- Totals / Warning (right aligned) -->
+      <!-- Warning (right aligned; both totals chips sit in the row below the pills) -->
       <div class="d-flex align-items-center gap-2 text-end flex-shrink-0">
         @if(validatePartyMatchingAmount()){
         <span class="text-danger fw-semibold me-1">
           !! Matching Amount exceeds party amount
         </span>
         }
-
-        <!-- DETAIL TOTALS -->
-        <div class="position-relative px-1 rounded border border-primary" style="padding-top:0.9rem; padding-bottom:0.2rem;">
-          <span class="position-absolute fw-semibold text-primary" style="font-size:0.6rem; top:0.1rem; right:0.4rem;">Detail</span>
-          <span class="me-2">
-            Total Cr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-primary">{{ totalCredits | number : "1.2-2" }}</span>
-          </span>
-          <span>
-            Total Dr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-primary">{{ totalDebits | number : "1.2-2" }}</span>
-          </span>
-        </div>
-
-        <!-- MATCHING TOTALS — OVERALL across all branches (alongside the main Detail/Matching/Inter Branch tabs) -->
-        <div class="position-relative px-1 rounded border border-info" style="padding-top:0.9rem; padding-bottom:0.2rem;">
-          <span class="position-absolute fw-semibold text-info" style="font-size:0.6rem; top:0.1rem; right:0.4rem;">Matching</span>
-          <span class="me-2">
-            Total Dr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-success">{{ matchingOverallTotal.dr | number : "1.2-2" }}</span>
-          </span>
-          <span class="me-2">
-            Total Cr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-danger">{{ matchingOverallTotal.cr | number : "1.2-2" }}</span>
-          </span>
-          <span>
-            Net ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-primary">{{ matchingOverallTotal.net | number : "1.2-2" }}</span>
-          </span>
-        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- DETAIL + MATCHING totals — one row above the grid; the active tab's chip is emphasized -->
+  <div
+    class="totals-row"
+    [class.totals-row--detail-active]="selectedTab === 'Detail'"
+    [class.totals-row--matching-active]="selectedTab === 'Voucher Matching'"
+  >
+    <div class="totals-chip totals-chip--detail">
+      <span class="totals-chip__tag">Detail</span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Total Cr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+        <span class="val val--net">{{ totalCredits | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Total Dr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+        <span class="val val--net">{{ totalDebits | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell totals-chip__cell--status" [class.is-off]="detailCurrencyDiff !== 0">
+        <span class="lbl">Diff ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+        <span class="val">{{ detailCurrencyDiff | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell totals-chip__cell--group">
+        <span class="lbl">Local Cr ({{ currentCurrencyCode }})</span>
+        <span class="val val--net">{{ detailLocalTotals.cr | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Local Dr ({{ currentCurrencyCode }})</span>
+        <span class="val val--net">{{ detailLocalTotals.dr | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell totals-chip__cell--status" [class.is-off]="detailLocalDiff !== 0">
+        <span class="lbl">Diff ({{ currentCurrencyCode }})</span>
+        <span class="val">{{ detailLocalDiff | number : "1.2-2" }}</span>
+      </span>
+    </div>
+
+    <!-- MATCHING TOTALS — OVERALL across all branches -->
+    <div class="totals-chip totals-chip--matching">
+      <span class="totals-chip__tag">Matching</span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Total Dr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+        <span class="val val--dr">{{ matchingOverallTotal.dr | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Total Cr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+        <span class="val val--cr">{{ matchingOverallTotal.cr | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Net ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+        <span class="val val--net">{{ matchingOverallTotal.net | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell totals-chip__cell--group">
+        <span class="lbl">Local Dr ({{ currentCurrencyCode }})</span>
+        <span class="val val--dr">{{ matchingLocalTotals.dr | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Local Cr ({{ currentCurrencyCode }})</span>
+        <span class="val val--cr">{{ matchingLocalTotals.cr | number : "1.2-2" }}</span>
+      </span>
+      <span class="totals-chip__cell">
+        <span class="lbl">Diff ({{ currentCurrencyCode }})</span>
+        <span class="val val--net">{{ matchingLocalDiff | number : "1.2-2" }}</span>
+      </span>
     </div>
   </div>
 
@@ -1559,11 +1593,20 @@
           </button>
         </div>
         <!-- Branch-wise total for the active branch tab -->
-        <div class="position-relative px-2 rounded border border-info text-end" style="padding-top:0.9rem; padding-bottom:0.2rem; font-size:0.8rem;">
-          <span class="position-absolute fw-semibold text-info" style="font-size:0.6rem; top:0.1rem; right:0.4rem;">{{ activeBranchMatchingTotal.branchName }} ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
-          <span class="me-3">Total Dr <span class="fw-bold text-success">{{ activeBranchMatchingTotal.dr | number : "1.2-2" }}</span></span>
-          <span class="me-3">Total Cr <span class="fw-bold text-danger">{{ activeBranchMatchingTotal.cr | number : "1.2-2" }}</span></span>
-          <span>Net <span class="fw-bold text-primary">{{ activeBranchMatchingTotal.net | number : "1.2-2" }}</span></span>
+        <div class="totals-chip totals-chip--matching">
+          <span class="totals-chip__tag">{{ activeBranchMatchingTotal.branchName }}</span>
+          <span class="totals-chip__cell">
+            <span class="lbl">Total Dr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+            <span class="val val--dr">{{ activeBranchMatchingTotal.dr | number : "1.2-2" }}</span>
+          </span>
+          <span class="totals-chip__cell">
+            <span class="lbl">Total Cr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+            <span class="val val--cr">{{ activeBranchMatchingTotal.cr | number : "1.2-2" }}</span>
+          </span>
+          <span class="totals-chip__cell">
+            <span class="lbl">Net ({{ paymentForm.get('CurrencyCode')?.getRawValue() }})</span>
+            <span class="val val--net">{{ activeBranchMatchingTotal.net | number : "1.2-2" }}</span>
+          </span>
         </div>
       </div>
       <div class="table-responsive table-borderless" #matchingScrollContainer style="max-height: 55vh; overflow-y: auto;">
@@ -1991,4 +2034,5 @@
       }
     </div>
   </div>
+
 </div>
