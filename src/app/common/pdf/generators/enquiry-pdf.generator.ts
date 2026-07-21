@@ -316,9 +316,9 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
   if (mode === 'AIR') {
     return [
       ...baseColumns,
-      { header: 'Pkg Type', field: 'PackageType', width: 46, alignment: 'left' },
-      { header: 'No. of Pkg', field: 'NoOfPackage', width: 46, alignment: 'right', decimals: 0 },
-      { header: 'Dims', field: 'Dims', width: 88, alignment: 'right' },
+      { header: 'Pkg Type', field: 'PackageType', width: 35, alignment: 'left' },
+      { header: 'No. of Pkg', field: 'NoOfPackage', width: 35, alignment: 'right', decimals: 0 },
+      { header: 'Dims', field: 'Dims', width: 70, alignment: 'right' },
       { header: 'Gross Wt.', field: 'GrossWeight', width: 52, alignment: 'right', decimals: 3 },
       { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 65, alignment: 'right', decimals: 3 }
     ];
@@ -329,7 +329,7 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
       ...baseColumns,
       { header: 'Cont. Type', field: 'ContainerType', width: 58, alignment: 'left' },
       { header: 'No. of Cont.', field: 'NoofContainers', width: 50, alignment: 'right', decimals: 0 },
-      { header: 'Pkg Type', field: 'PackageType', width: 50, alignment: 'left' },
+      { header: 'Pkg Type', field: 'PackageType', width: 35, alignment: 'left' },
       { header: 'Gross Wt.', field: 'GrossWeight', width: 55, alignment: 'right', decimals: 3 },
       { header: 'CBM', field: 'Volume', width: 45, alignment: 'right', decimals: 3 }
     ];
@@ -338,7 +338,7 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
   if (mode === 'ROAD') {
     return [
       ...baseColumns,
-      { header: 'No. of Pkg', field: 'Qty', width: 48, alignment: 'right', decimals: 0 },
+      { header: 'No. of Pkg', field: 'Qty', width: 35, alignment: 'right', decimals: 0 },
       { header: 'Gross Wt.', field: 'GrossWeight', width: 52, alignment: 'right', decimals: 3 },
       { header: 'Net Wt.', field: 'NetWeight', width: 50, alignment: 'right', decimals: 3 },
       { header: 'CBM', field: 'Volume', width: 45, alignment: 'right', decimals: 3 },
@@ -348,9 +348,9 @@ function getEnquiryCargoColumns(mode: 'FCL' | 'LCL' | 'AIR' | 'ROAD'): any[] {
 
   return [
     ...baseColumns,
-    { header: 'No. of Pkg', field: 'NoOfPackage', width: 48, alignment: 'right', decimals: 0 },
-    { header: 'Dims', field: 'Dims', width: 88, alignment: 'right' },
-    { header: 'Pkg Type', field: 'PackageType', width: 48, alignment: 'left' },
+    { header: 'No. of Pkg', field: 'NoOfPackage', width: 35, alignment: 'right', decimals: 0 },
+    { header: 'Dims', field: 'Dims', width: 70, alignment: 'right' },
+    { header: 'Pkg Type', field: 'PackageType', width: 35, alignment: 'left' },
     { header: 'Gross Wt.', field: 'GrossWeight', width: 55, alignment: 'right', decimals: 3 },
     { header: 'CBM', field: 'Volume', width: 45, alignment: 'right', decimals: 3 }
   ];
