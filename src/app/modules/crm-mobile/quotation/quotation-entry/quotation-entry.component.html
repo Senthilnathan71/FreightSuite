@@ -3311,7 +3311,7 @@
                   <p style="margin: 0;padding: 4px;font-weight: bolder;">{{ getDepartmentName(route.DepartmentMasterSid) }}</p>
                 </div>
                 <div style="padding:2px; display:flex;padding-left:82px;">
-                  <strong style="width:80px;">Valid</strong>
+                  <strong style="width:40px;">Valid</strong>
                   <span>: {{ route.effDate | formatDate }} &ndash; {{ route.expdate | formatDate }}</span>
                 </div>
                 <div>
@@ -3339,9 +3339,9 @@
 
         <tr>
           <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Cargo Type</th>
-          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Commodity</th>
-          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Pkg Type</th>
-          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">No. of Pkg</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder; width:25%;">Commodity</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder; width:7%;">Pkg Type</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder; width:7%;">No. of Pkg</th>
           @if(routeHasPrintDimensions(route)){
             <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Dims</th>
           }
@@ -3349,14 +3349,14 @@
           <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Net Wt</th>
           <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">{{ getRouteCbmOrChargeableLabel(route) }}</th>
           <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Haz</th>
-          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Non-Stack.</th>
+          <th style="text-align:center; border:1px solid #000; padding:3px 5px;font-weight:bolder;">Non-Stack</th>
         </tr>
 
         @for(cargoRow of getRoutePrintProductRows(route); track $index){
         <tr>
           <td style="border:1px solid #000; padding:3px 5px;">{{ cargoRow.cargoType || '-' }}</td>
           <td style="border:1px solid #000; padding:3px 5px;">{{ cargoRow.commodity || '-' }}</td>
-          <td style="border:1px solid #000; padding:3px 5px;">{{ cargoRow.packageType || '-' }}</td>
+          <td style="border:1px solid #000; padding:3px 5px; text-align:center;">{{ cargoRow.packageType || '-' }}</td>
           <td style="border:1px solid #000; padding:3px 5px; text-align:end;">{{ cargoRow.noOfPackage | number:'1.0-0' }}</td>
           @if(routeHasPrintDimensions(route)){
             <td style="border:1px solid #000; padding:3px 5px;text-align:end;">{{ cargoRow.dimensions || '-' }}</td>
@@ -3462,10 +3462,10 @@
       <td colspan="8" style="padding:4px 23px;">
         <table style="width:100%; border-collapse:collapse;">
           <tr>
-            <td style="width:100px; white-space:nowrap;"><strong>Carrier</strong></td>
+            <td style="width:50px; white-space:nowrap;"><strong>Carrier</strong></td>
             <td style="width:40%;">: {{ carrier?.CarrierName || '' }}</td>
 
-            <td style="width:100px; white-space:nowrap;"><strong>TT. Days</strong></td>
+            <td style="width:50px; white-space:nowrap;"><strong>TT. Days</strong></td>
             <td>: {{ carrier?.TransitTime || '' }}</td>
           </tr>
         </table>

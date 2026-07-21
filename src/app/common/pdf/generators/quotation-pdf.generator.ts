@@ -104,7 +104,7 @@ function buildCustomerInfo(data: QuotationPdfData, isContract: boolean): any {
 function infoLine(label: string, value: string): any {
   return {
     columns: [
-      { text: label, bold: true, width: 72 },
+      { text: label, bold: true, width: 55 },
       { text: ':', width: 5 },
       { text: value || '', width: '*' }
     ],
@@ -155,7 +155,7 @@ function buildRouteSections(data: QuotationPdfData): any[] {
           { text: deptName, bold: true, margin: [7, 1, 0, 2] },
           {
             columns: [
-              { text: 'Valid', bold: true, width: 40 },
+              { text: 'Valid', bold: true, width: 20 },
               { text: `: ${formatDate(route.effDate)} - ${formatDate(route.expDate)}`, width: '*' }
             ],
             margin: [0, 1, 0, 2]
@@ -476,7 +476,7 @@ function buildLabeledGrid(cells: Array<{ label: string; value: string} | null>):
         if (!cell) return { text: '', width: '*' };
         return {
           columns: [
-            { text: cell.label, bold: true, width: 45 },
+            { text: cell.label, bold: true, width: 30 },
             { text: `: ${cell.value}`, width: '*' }
           ],
           width: '*'
@@ -591,7 +591,7 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
   const header = [
     'Cargo Type', 'Commodity', 'Pkg Type', 'No. of Pkg',
     ...(showDim ? ['Dims'] : []),
-    'G. Weight', 'Net Wt', isAir ? 'Chrg Wt' : 'CBM', 'Haz', 'Non-Stack.'
+    'G. Weight', 'Net Wt', isAir ? 'Chrg Wt' : 'CBM', 'Haz', 'Non-Stack'
   ].map((text: string) => ({ text, bold: true, alignment: 'center', fontSize: 7 }));
 
   const body: any[] = [header];
@@ -600,7 +600,7 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
     body.push([
       { text: row.cargoType || '-', alignment: 'left', fontSize: 7 },
       { text: row.commodity || '-', alignment: 'left', fontSize: 7 },
-      { text: row.packageType || '-', alignment: 'left', fontSize: 7 },
+      { text: row.packageType || '-', alignment: 'center', fontSize: 7 },
       { text: formatNumeric(row.noOfPackage), alignment: 'right', fontSize: 7 },
       ...(showDim ? [{ text: row.dimensions || '-', alignment: 'right', fontSize: 7 }] : []),
       { text: formatNumeric(row.grossWeight, 3), alignment: 'right', fontSize: 7 },
@@ -635,8 +635,8 @@ function buildRouteProductTable(route: any, data: QuotationPdfData): any {
     table: {
       headerRows: 1,
       widths: showDim
-        ? ['9%', '13%', '8%', '9%', '14%', '11%', '11%', '10%', '7%', '8%']
-        : ['10%', '20%', '8%', '11%', '13%', '13%', '12%', '5%', '8%'],
+        ? ['9%', '20%', '7%', '8%', '12%', '11%', '11%', '10%', '4%', '8%']
+        : ['10%', '22%', '7%', '8%', '13%', '13%', '12%', '4%', '8%'],
       body
     },
     layout: {
