@@ -253,7 +253,7 @@ export class CreditRequestListComponent extends BaseListComponent implements OnI
         filterable: true,
         visible: true,
         template: 'status',
-        width: '100px',
+        width: '150px',
         dataType: 'string',
         cellClass: 'approval-status-column',
         emptyStatusText: 'No Request'

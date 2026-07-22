@@ -145,7 +145,7 @@
 
 <div class="row compact-form">
   <!-- Toolbar -->
-  <div class="col-12 px-0">
+  <div class="col-12">
     <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0 pt-1">
       <div class="col-md-5 pb-0">
         <div class="d-flex align-items-center gap-2">
@@ -260,7 +260,7 @@
   </div>
 
   <!-- Header Section -->
-  <div class="col-md-12 px-0 mb-1">
+  <div class="col-md-12 mb-1">
     <div class="card h-100 mb-0">
       <div class="card-body pb-1">
         <form [formGroup]="voucherMatchingForm" novalidate>
@@ -386,7 +386,7 @@
   </div>
 
   <!-- ===== Unified Matching Card (Total + Source + Object) ===== -->
-  <div class="col-12 px-0" *ngIf="panelsVisible"
+  <div class="col-12" *ngIf="panelsVisible"
     [class.position-fixed]="isFullScreen"
     [style.top]="isFullScreen ? '0' : ''"
     [style.left]="isFullScreen ? '0' : ''"
@@ -922,7 +922,7 @@
   </div>
 
   <!-- Empty state -->
-  <div class="col-12 px-0" *ngIf="!panelsVisible">
+  <div class="col-12" *ngIf="!panelsVisible">
     <div class="card">
       <div class="card-body text-center py-4 text-muted">
         <i class="fas fa-search fa-2x mb-2"></i>

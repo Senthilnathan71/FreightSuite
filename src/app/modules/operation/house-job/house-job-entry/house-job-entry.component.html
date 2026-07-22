@@ -1312,7 +1312,7 @@
                 </div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Gross Weight</div>
+                <div class="stat-label">Gross Wt</div>
                 <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
@@ -1329,11 +1329,11 @@
             } @else if(selectedCargoMode === "LCL"){
             <div class="widget-body">
               <div class="stat-item">
-                <div class="stat-label">Gross Weight</div>
+                <div class="stat-label">Gross Wt</div>
                 <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Net Weight</div>
+                <div class="stat-label">Net Wt</div>
                 <div class="stat-value">{{c['NetWeight']?.value ? c['NetWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
@@ -1354,11 +1354,11 @@
             } @else if(selectedCargoMode === "AIR"){
             <div class="widget-body">
               <div class="stat-item">
-                <div class="stat-label">Chargeable Weight</div>
+                <div class="stat-label">Chargeable Wt</div>
                 <div class="stat-value">{{c['ChargeableWeight']?.value ? c['ChargeableWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Gross Weight</div>
+                <div class="stat-label">Gross Wt</div>
                 <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
@@ -1383,11 +1383,11 @@
                 <div class="stat-value">{{c['NoOfPackage']?.value ? c['NoOfPackage']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Gross Weight</div>
+                <div class="stat-label">Gross Wt</div>
                 <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Net Weight</div>
+                <div class="stat-label">Net Wt</div>
                 <div class="stat-value">{{c['NetWeight']?.value ? c['NetWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
@@ -1395,7 +1395,7 @@
                 <div class="stat-value">{{c['Volume']?.value ? c['Volume']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Chargeable Weight</div>
+                <div class="stat-label">Chargeable Wt</div>
                 <div class="stat-value">{{c['ChargeableWeight']?.value ? c['ChargeableWeight']?.value : '-' }}</div>
               </div>
             </div>
@@ -1793,11 +1793,11 @@
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Gross Wt. <span class="text-danger">*</span></label>
-                      @if (shouldShowCargoFieldError(cargo, 'GrossWeight')) {
+                      <!-- @if (shouldShowCargoFieldError(cargo, 'GrossWeight')) {
                       <div class="error-message cargo-error-message" role="alert">
                         <span>{{ getCargoFieldErrorMessage(cargo, 'GrossWeight') }}</span>
                       </div>
-                      }
+                      } -->
                     </div>
                   </aside>
                   <aside class="col-md-2">
@@ -2060,9 +2060,9 @@
                           </td>
                           <td>
                             <input type="text" formControlName="ExternlQty" class="custom-input-field sm text-end" [onlyNumbers] >
-                            @if (shouldShowProductFieldError(product, 'ExternlQty')) {
+                            <!-- @if (shouldShowProductFieldError(product, 'ExternlQty')) {
                             <div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'ExternlQty') }}</div>
-                            }
+                            } -->
                           </td>
                           @if(usesDimensionalCargoFields()){
                             <td>
@@ -2073,9 +2073,15 @@
                             <td><input type="text" formControlName="Length" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2">@if (shouldShowProductFieldError(product, 'Length')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Length') }}</div>}</td>
                             <td><input type="text" formControlName="Width" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2">@if (shouldShowProductFieldError(product, 'Width')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Width') }}</div>}</td>
                             <td><input type="text" formControlName="Height" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="2">@if (shouldShowProductFieldError(product, 'Height')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Height') }}</div>}</td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volumetric', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'Volumetric')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Volumetric') }}</div>}</td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'Volume')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Volume') }}</div>}</td>
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">@if (shouldShowProductFieldError(product, 'GrossWeight')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'GrossWeight') }}</div>}</td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volumetric', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">
+                              <!-- @if (shouldShowProductFieldError(product, 'Volumetric')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Volumetric') }}</div>} -->
+                            </td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="5" [DecimalPrecisionAfter]="3">
+                              <!-- @if (shouldShowProductFieldError(product, 'Volume')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'Volume') }}</div>} -->
+                            </td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3">
+                              <!-- @if (shouldShowProductFieldError(product, 'GrossWeight')) {<div class="error-message" role="alert">{{ getProductFieldErrorMessage(product, 'GrossWeight') }}</div>} -->
+                            </td>
                             <td><input type="text" formControlName="NetWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3"></td>
                           }
                           @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
@@ -3201,7 +3207,7 @@
 
                 <aside class="col-md-3">
                   <div class="custom-form-group" [class.filled]="!!otherForm.get('RiderCommodityDescription')?.value">
-                    <textarea id="rider-commodity-desc" rows="2" placeholder="" 
+                    <textarea id="rider-commodity-desc" rows="1" placeholder="" 
                       class="custom-input-field sm" formControlName="RiderCommodityDescription"></textarea>
                     <label for="rider-commodity-desc" class="input-label">Rider Commodity Description <span class="text-danger"></span></label>
                   </div>

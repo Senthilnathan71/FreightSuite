@@ -1,23 +1,24 @@
 <div class="accounts-reports-container">
   <!-- Page Header -->
   <div class="page-header">
-    <div class="row align-items-center">
-      <div class="col">
-        <h4 class="page-title mb-0">
-          <i class="mdi mdi-chart-bar"></i> Accounts Reports
-        </h4>
-        <p class="text-muted mb-0">Select a report to view and export financial data</p>
+    <div class="page-header__main">
+      <span class="page-header__icon">
+        <i class="fas fa-chart-bar"></i>
+      </span>
+      <div class="page-header__text">
+        <h4 class="page-header__title">Accounts Reports</h4>
+        <p class="page-header__subtitle">Select a report to view and export financial data</p>
       </div>
-      <div class="col-auto" *ngIf="!selectedReport">
-        <button class="btn btn-secondary btn-sm" type="button" (click)="openReportOrderPanel()">
-          <i class="mdi mdi-sort"></i>
-        </button>
-      </div>
-      <div class="col-auto" *ngIf="selectedReport">
-        <button class="btn btn-secondary btn-sm" (click)="onReportSelected(selectedReport!)">
-           <i class="fas fa-chevron-left me-1"></i> Back to Reports
-        </button>
-      </div>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn-secondary btn-sm page-header__sort" *ngIf="!selectedReport"
+        type="button" title="Reorder reports" (click)="openReportOrderPanel()">
+        <i class="mdi mdi-sort"></i>
+      </button>
+      <button class="btn btn-secondary btn-sm" *ngIf="selectedReport" type="button"
+        (click)="onReportSelected(selectedReport!)">
+        <i class="fas fa-chevron-left me-1"></i> Back to Reports
+      </button>
     </div>
   </div>
 

@@ -2,7 +2,7 @@
   <p style="color: white" class="m-0">Loading...</p>
 </ngx-spinner>
 <div class="row compact-form">
-  <div class="col-12 px-0">
+  <div class="col-12">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
       <div class="col-md-5 d-flex pb-1">
         <h4 class="page-title mb-0">{{ isViewMode ? ' Invoice' : (isEditMode ? 'Edit Invoice' :
@@ -146,6 +146,7 @@
     </div>
   </div>
 
+  <div class="col-12">
   <div class="nav-pills-container">
     <div class="nav-pills">
       <div class="nav-pill" *ngFor="let tabs of tabs" [class.active]="selectedTab === tabs.name"
@@ -158,8 +159,9 @@
       </div>
     </div>
   </div>
+  </div>
 
-  <div class="col-md-12 px-0">
+  <div class="col-md-12">
     <div class="card mb-1">
       <div class="card-body">
         <form [formGroup]="invoiceForm" novalidate>

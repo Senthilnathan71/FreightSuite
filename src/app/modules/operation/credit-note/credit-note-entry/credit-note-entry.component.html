@@ -9,7 +9,7 @@
 </ngx-spinner>
 
 <div class="row compact-form">
-  <div class="col-12 px-0">
+  <div class="col-12">
     <div
       class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0 credit-note-entry-header"
     >
@@ -240,33 +240,35 @@
     </div>
   </div>
 
-  <div class="nav-pills-container">
-    <div class="nav-pills">
-      <div
-        class="nav-pill"
-        *ngFor="let tabs of tabs"
-        [class.active]="selectedTab === tabs.name"
-        (click)="selectTab(tabs.name)"
-      >
-        <div class="pill-icon">
-          <i [class]="tabs.icon"></i>
+  <div class="col-12">
+    <div class="nav-pills-container mx-0">
+      <div class="nav-pills">
+        <div
+          class="nav-pill"
+          *ngFor="let tabs of tabs"
+          [class.active]="selectedTab === tabs.name"
+          (click)="selectTab(tabs.name)"
+        >
+          <div class="pill-icon">
+            <i [class]="tabs.icon"></i>
+          </div>
+          <span class="pill-label">{{ tabs.name }}</span>
+          <div class="pill-indicator" *ngIf="selectedTab === tabs.name"></div>
         </div>
-        <span class="pill-label">{{ tabs.name }}</span>
-        <div class="pill-indicator" *ngIf="selectedTab === tabs.name"></div>
+        <!-- <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
+          <div class="pill-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+          <span class="pill-label">
+            Outstanding: {{ invoiceOutstandingAmount | numberFormat }}
+            {{ selectedOutstandingInvoice?.CurrencyCode }}
+          </span>
+        </div> -->
       </div>
-      <!-- <div class="nav-pill outstanding-info-pill" *ngIf="showOutstandingInfo">
-        <div class="pill-icon">
-          <i class="fas fa-file-invoice-dollar"></i>
-        </div>
-        <span class="pill-label">
-          Outstanding: {{ invoiceOutstandingAmount | numberFormat }}
-          {{ selectedOutstandingInvoice?.CurrencyCode }}
-        </span>
-      </div> -->
     </div>
   </div>
 
-  <div class="col-md-12 px-0">
+  <div class="col-md-12">
     <div class="card mb-1">
       <div class="card-body">
         <form [formGroup]="creditNoteForm" novalidate>

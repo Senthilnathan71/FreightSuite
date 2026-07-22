@@ -169,7 +169,7 @@ export function generateInvoiceWithoutTaxDocument(data: InvoicePdfData): any {
           buildInvoiceInfo(data)
         ],
         // Top >= ~12 so the company name clears the box's top border line (drawn at y=10).
-        margin: [20, 14, 20, 0]
+        margin: [20, 6, 20, 0]
       };
     },
 

@@ -57,7 +57,7 @@ const DEFAULT_COMPANY_HEADER_SETTINGS: CompanyHeaderPrintSettings = {
   companyAlignment: 'center'
 };
 
-const COMPANY_HEADER_LOGO_HEIGHT = 58;
+const COMPANY_HEADER_LOGO_HEIGHT = 56;
 
 function firstNonEmpty(...values: any[]): string {
   for (const value of values) {
@@ -239,7 +239,7 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
       paddingLeft: () => 0,
       paddingRight: () => 0,
       paddingTop: () => 0,
-      paddingBottom: () => 8
+      paddingBottom: () => 4
     },
     margin: [0, 5, 0, 5]
   };
