@@ -3504,6 +3504,54 @@ isRateLockDisabled(): boolean {
       return;
     }
 
+    // Cargo-level guard (mirrors booking-entry): a cargo row cannot be saved without a
+    // real Gross Weight and CBM. Validators.required treats the default 0 as valid, so
+    // check the numeric value directly. This applies whether or not the cargo has product
+    // rows — a zero Gross Weight / CBM on the cargo header blocks save. CBM is not
+    // applicable to Air.
+    const cargoValidationErrors: string[] = [];
+    this.quoteRoutes.controls.forEach((route: FormGroup, routeIndex: number) => {
+      const isAir = this.isAirQuotationSegment(route);
+      this.quoteCargo(routeIndex).controls.forEach((cargoControl: AbstractControl, cargoIndex: number) => {
+        const cargoForm = cargoControl as FormGroup;
+        const grossWeight = Number(cargoForm.get('GrossWeight')?.value) || 0;
+        const volume = Number(cargoForm.get('Volume')?.value) || 0;
+        if (grossWeight <= 0) {
+          cargoValidationErrors.push(`Route ${routeIndex + 1} > Cargo ${cargoIndex + 1}: Gross Weight is required`);
+          cargoForm.get('GrossWeight')?.setErrors({ min: true });
+        }
+        if (!isAir && volume <= 0) {
+          cargoValidationErrors.push(`Route ${routeIndex + 1} > Cargo ${cargoIndex + 1}: CBM is required`);
+          cargoForm.get('Volume')?.setErrors({ min: true });
+        }
+
+        // Same rule at the product level: every product row must carry a real Gross
+        // Weight and CBM. CBM is not applicable to Air.
+        this.quoteProducts(routeIndex, cargoIndex).controls.forEach((productControl: AbstractControl, productIndex: number) => {
+          const productForm = productControl as FormGroup;
+          const productGross = Number(productForm.get('GrossWeight')?.value) || 0;
+          const productVolume = Number(productForm.get('Volume')?.value) || 0;
+          if (productGross <= 0) {
+            cargoValidationErrors.push(`Route ${routeIndex + 1} > Cargo ${cargoIndex + 1} > Product ${productIndex + 1}: Gross Weight is required`);
+            productForm.get('GrossWeight')?.setErrors({ min: true });
+          }
+          if (!isAir && productVolume <= 0) {
+            cargoValidationErrors.push(`Route ${routeIndex + 1} > Cargo ${cargoIndex + 1} > Product ${productIndex + 1}: CBM is required`);
+            productForm.get('Volume')?.setErrors({ min: true });
+          }
+        });
+      });
+    });
+
+    if (cargoValidationErrors.length) {
+      this.appSettingService.showWarning(cargoValidationErrors[0]);
+      this.quoteRoutes.markAllAsTouched();
+      this.selectedTab1 = 'Route Details';
+      this.isSaving = false;
+      if (resolve) resolve(false);
+      return;
+    }
+
     this.quoteRoutes.controls.forEach((route:FormGroup,routeIndex:number)=>{
       const carrierArr = this.quoteCarriers(routeIndex);
       carrierArr.controls.forEach((carrier:FormGroup,carrierIndex:number) => {
