@@ -748,20 +748,6 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       { key: 'NoOfUnit', label: 'No of Units' }
     ];
 
-    const numericFieldMap = [
-      { key: 'NoOfUnit', label: 'No. of Unit', max: '999,999.999' },
-      { key: 'RevenueNumberOfUnit', label: 'Revenue No. of Unit', max: '999,999.999' },
-      { key: 'CostNumberOfUnit', label: 'Cost No. of Unit', max: '999,999.999' },
-      { key: 'RevenueExchangeRate', label: 'Revenue Exchange Rate', max: '999.999' },
-      { key: 'CostExchangeRate', label: 'Cost Exchange Rate', max: '999.999' },
-      { key: 'RevenueRate', label: 'Revenue Per Unit', max: '99,999,999.999' },
-      { key: 'CostRate', label: 'Cost Per Unit', max: '99,999,999.999' },
-      { key: 'RevenueAmount', label: 'Revenue Amount', max: '999,999,999,999.999' },
-      { key: 'RevenueLocalAmount', label: 'Revenue Local Amount', max: '999,999,999,999.999' },
-      { key: 'CostAmount', label: 'Cost Amount', max: '999,999,999,999.999' },
-      { key: 'CostLocalAmount', label: 'Cost Local Amount', max: '999,999,999,999.999' }
-    ];
-
     for (let rateIndex = 0; rateIndex < this.rateFormArray.length; rateIndex++) {
       const rate = this.rateFormArray.at(rateIndex) as FormGroup;
 
@@ -773,20 +759,6 @@ export class CostEntryComponent implements OnInit, OnDestroy {
         if (value === null || value === undefined || value === '') {
           errorMessages.push(
             `[SNo: ${rateIndex + 1}] ${field.label} is required.`
-          );
-        }
-      }
-
-
-      for (const field of numericFieldMap) {
-        const control = rate.get(field.key);
-        if (control?.hasError('max')) {
-          errorMessages.push(
-            `[SNo: ${rateIndex + 1}] ${field.label} must be ${field.max} or less.`
-          );
-        } else if (control?.hasError('decimalPrecision')) {
-          errorMessages.push(
-            `[SNo: ${rateIndex + 1}] ${field.label} has too many digits or decimal places.`
           );
         }
       }
@@ -881,33 +853,28 @@ createRateFormGroup(data?: any): FormGroup {
 
     NoOfUnit: [
       (data?.NoOfUnit || data?.RevenueNumberOfUnit || data?.CostNumberOfUnit) ?? '',
-      [Validators.required, greaterThanZero(), Validators.max(999999.999)]
+      [ Validators.required , greaterThanZero()]
     ],
     RevenueNumberOfUnit: [
-      (data?.RevenueNumberOfUnit || data?.NoOfUnit) ?? '',
-      [Validators.max(999999.999)]
+      (data?.RevenueNumberOfUnit || data?.NoOfUnit) ?? ''
     ],
-    CostNumberOfUnit: [(data?.CostNumberOfUnit || data?.NoOfUnit) ?? '', [Validators.max(999999.999)]],
+    CostNumberOfUnit: [(data?.CostNumberOfUnit || data?.NoOfUnit) ?? ''],
     
     // Revenue Fields (disabled only when from quotation AND revenue side has a value)
     RevenueCurrencyMasterSid: [
       data?.RevenueCurrencyMasterSid ?? null
     ],
     RevenueExchangeRate: [
-      data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate) : '',
-      [Validators.max(999.999)]
+      data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate) : ''
     ],
     RevenueRate: [
-      data?.RevenueRate != null ? Number(data.RevenueRate) : '',
-      [Validators.max(99999999.999)]
+      data?.RevenueRate != null ? Number(data.RevenueRate) : ''
     ],
     RevenueAmount: [
-      data?.RevenueAmount != null ? Number(data.RevenueAmount) : '',
-      [Validators.max(999999999999.999)]
+      data?.RevenueAmount != null ? Number(data.RevenueAmount) : ''
     ],
     RevenueLocalAmount: [
-      data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount) : '',
-      [Validators.max(999999999999.999)]
+      data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount) : ''
     ],
     RevenueDrCr: [
       data?.RevenueDrCr ?? 'C'
@@ -929,10 +896,10 @@ createRateFormGroup(data?: any): FormGroup {
 
     // Cost Related Fields (disabled when from quotation AND cost side has a value)
     CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
-    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate) : '', [Validators.max(999.999)]],
-    CostRate: [data?.CostRate != null ? Number(data.CostRate) : '', [Validators.max(99999999.999)]],
-    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount) : '', [Validators.max(999999999999.999)]],
-    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : '', [Validators.max(999999999999.999)]],
+    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate) : ''],
+    CostRate: [data?.CostRate != null ? Number(data.CostRate) : ''],
+    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount) : ''],
+    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : ''],
     CostDrCr: [data?.CostDrCr ?? 'D'],
     CostAgentMasterSid: [data?.CostAgentMasterSid ?? null],
     CostAgentBranchSid: [data?.CostAgentBranchSid ?? null],
