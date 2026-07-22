@@ -2389,6 +2389,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     if (allRates.length > 0) {
       this.rateResult = [...allRates];
     }
+    // Charge-row edits don't pass through the bookingForm valueChanges subscriptions,
+    // so recompute dirty here too (drives the cost tab's hasUnsavedChanges disable).
+    if (this.initialFormValue) {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.getCurrentFormState()
+      );
+    }
   }
 
   handleMilestoneChange(allmilestones: any[]) {

@@ -1352,7 +1352,7 @@
       <app-cost-entry #costEntryComponent screenName="Booking" [currencyList]="currencyList"
         [customerList]="customerList" [agentList]="agentList" [dataItems]="bookingRateArr"
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" [isFormDisabled]="isFormDisabled"
-        [costRevenueAccess]="costRevenueAccess"
+        [costRevenueAccess]="costRevenueAccess" [hasUnsavedChanges]="hasUnsavedChanges()"
         (dataEmitter)="handleRateChange($event)" (reloadParent)="loadBookingById($event)"></app-cost-entry>
     </div>
 

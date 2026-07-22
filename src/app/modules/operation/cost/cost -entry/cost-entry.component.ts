@@ -198,6 +198,12 @@ export class CostEntryComponent implements OnInit, OnDestroy {
    * so it cannot be distinguished by screenName).
    */
   @Input() requireAuthorization = false;
+  /**
+   * Parent screen's unsaved-changes state (bound to its hasUnsavedChanges()).
+   * While true, Payment Request / Generate Voucher are disabled — generating navigates
+   * away and would build the voucher from data that differs from what is persisted.
+   */
+  @Input() hasUnsavedChanges = false;
   private _costRevenueAccess: string = 'NONE';
   @Input()
   set costRevenueAccess(value: string) {
@@ -389,6 +395,8 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   availableBillingParties: any[] = [];
   selectedVoucherType: 'Invoice' | 'Vendor Invoice' | 'Payment Request' | null = null;
   isProcessingVoucherType = false;
+  isOpeningVoucherModal = false;
+  isGeneratingVoucher = false;
   currentVoucherTypeFilter: 'revenue' | 'cost' = 'revenue';
   private paymentRequestNumberCache = new Map<number, string>();
   private resolvingPaymentRequestNumbers = new Set<number>();
@@ -3008,29 +3016,43 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   async openVoucherTypeModal() {
-     if (!(await this.ensureAuthorizedForAction('voucher'))) {
+    if (this.isOpeningVoucherModal) return;
+    this.isOpeningVoucherModal = true;
+    try {
+      if (this.hasUnsavedChanges) {
+        this.appSettingService.showWarning('You have unsaved changes. Please save before generating a voucher.');
         return;
-     }
-     if (!this.isVoucherGenerationAllowed()) {
+      }
+      if (!(await this.ensureAuthorizedForAction('voucher'))) {
+        return;
+      }
+      if (!this.isVoucherGenerationAllowed()) {
         const status = this.parentFormValue?.status;
         this.appSettingService.showWarning(`Cannot generate voucher. Booking status is '${status || 'Invalid'}'`);
         return;
-    }
-    if (!this.isEditMode || !this.rateFormArray?.length) {
-      this.appSettingService.showWarning('No rates available for voucher generation');
-      return;
-    }
+      }
+      if (!this.isEditMode || !this.rateFormArray?.length) {
+        this.appSettingService.showWarning('No rates available for voucher generation');
+        return;
+      }
 
-    this.initVoucherForm();
-    // Open voucher type selection modal
-    this.voucherTypeModalRef = this.modalService.open(this.voucherTypeModal, {
-      size: 'lg',
-      backdrop: 'static',
-      keyboard: false
-    });
+      this.initVoucherForm();
+      // Open voucher type selection modal
+      this.voucherTypeModalRef = this.modalService.open(this.voucherTypeModal, {
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false
+      });
+    } finally {
+      this.isOpeningVoucherModal = false;
+    }
   }
 
   async openPaymentRequest() {
+    if (this.hasUnsavedChanges) {
+      this.appSettingService.showWarning('You have unsaved changes. Please save before creating a payment request.');
+      return;
+    }
     if (!(await this.ensureAuthorizedForAction('payment request'))) {
       return;
     }
@@ -3928,6 +3950,18 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   async proceedWithSelectedCharges() {
+    // In-flight lock: block re-entry from double-clicks while validations/ledger
+    // fetch/createVoucher are pending (buttons also [disabled] on this flag)
+    if (this.isGeneratingVoucher) return;
+    this.isGeneratingVoucher = true;
+    try {
+      await this.doProceedWithSelectedCharges();
+    } finally {
+      this.isGeneratingVoucher = false;
+    }
+  }
+
+  private async doProceedWithSelectedCharges() {
     if (this.selectedDetailCount === 0) {
       this.appSettingService.showWarning('Please select at least one charge');
       return;
@@ -4346,54 +4380,52 @@ createRateFormGroup(data?: any): FormGroup {
       }
     };
 
-    // Create voucher
-    this.operationService.createVoucher(payload).subscribe({
-      next: (resp: any) => {
-        if (!resp.status) {
-          const msg = Array.isArray(resp.message)
-            ? sortValidationErrors(resp.message).join('\n')
-            : resp.message;
-          console.error('Voucher generation error', msg);
-          this.appSettingService.showError(msg);
-          this.spinner.hide();
-          return;
-        } else {
-          const voucherNumber = resp.data.VoucherNumber;
-          const voucherHeaderSid = resp.data.VoucherHeaderSid;
-          this.appSettingService.showSuccess(`Voucher generated successfully! Voucher Number: ${voucherNumber}`);
-          this.reloadParent.emit(this.routeParentSid);
-          this.chargeSelectionModalRef.close();
-
-          if (voucherHeaderSid) {
-            const targetRoute = this.selectedVoucherType === 'Vendor Invoice'
-              ? '/operation/vendor-invoice/entry'
-              : '/operation/invoice/entry';
-
-            const joinedWords = this.screenName.split(' ').join('');
-            const key = `${joinedWords}Id`;
-            this.router.navigate([targetRoute, voucherHeaderSid], {
-              queryParams: {
-                from: joinedWords,
-                [key]: this.routeParentSid,
-              }
-            });
-          }
-          this.spinner.hide();
-        }
-      },
-      error: (error) => {
-        console.error(error);
-        this.toaster.clear();
-        const backendMessage = error?.error?.message;
-
-        const msg = Array.isArray(backendMessage)
-          ? sortValidationErrors(backendMessage).join('\n')
-          : backendMessage || 'Something went wrong. Please try again.';
-
+    // Create voucher (awaited so the isGeneratingVoucher lock holds until the response lands)
+    try {
+      const resp: any = await firstValueFrom(this.operationService.createVoucher(payload));
+      if (!resp.status) {
+        const msg = Array.isArray(resp.message)
+          ? sortValidationErrors(resp.message).join('\n')
+          : resp.message;
+        console.error('Voucher generation error', msg);
         this.appSettingService.showError(msg);
         this.spinner.hide();
+        return;
+      } else {
+        const voucherNumber = resp.data.VoucherNumber;
+        const voucherHeaderSid = resp.data.VoucherHeaderSid;
+        this.appSettingService.showSuccess(`Voucher generated successfully! Voucher Number: ${voucherNumber}`);
+        this.reloadParent.emit(this.routeParentSid);
+        this.chargeSelectionModalRef.close();
+
+        if (voucherHeaderSid) {
+          const targetRoute = this.selectedVoucherType === 'Vendor Invoice'
+            ? '/operation/vendor-invoice/entry'
+            : '/operation/invoice/entry';
+
+          const joinedWords = this.screenName.split(' ').join('');
+          const key = `${joinedWords}Id`;
+          this.router.navigate([targetRoute, voucherHeaderSid], {
+            queryParams: {
+              from: joinedWords,
+              [key]: this.routeParentSid,
+            }
+          });
+        }
+        this.spinner.hide();
       }
-    });
+    } catch (error) {
+      console.error(error);
+      this.toaster.clear();
+      const backendMessage = (error as any)?.error?.message;
+
+      const msg = Array.isArray(backendMessage)
+        ? sortValidationErrors(backendMessage).join('\n')
+        : backendMessage || 'Something went wrong. Please try again.';
+
+      this.appSettingService.showError(msg);
+      this.spinner.hide();
+    }
   }
 
   cancelChargeSelection() {

@@ -574,24 +574,8 @@ hblModalRef?: NgbModalRef;
   }
 
   hasUnsavedChanges(): boolean {
-    const currentSnapshot = this.buildCurrentStateSnapshot();
-    if (this.initialStateSnapshot && this.isDirty) {
-      // console.log('[HouseJob dirty source]', {
-      //   changedSections: {
-      //     houseJobForm: !this.deepEqual(this.initialStateSnapshot.houseJobForm, currentSnapshot.houseJobForm),
-      //     cargoForm: !this.deepEqual(this.initialStateSnapshot.cargoForm, currentSnapshot.cargoForm),
-      //     otherForm: !this.deepEqual(this.initialStateSnapshot.otherForm, currentSnapshot.otherForm),
-      //     proxyForm: !this.deepEqual(this.initialStateSnapshot.proxyForm, currentSnapshot.proxyForm),
-      //     detailForm: !this.deepEqual(this.initialStateSnapshot.detailForm, currentSnapshot.detailForm),
-      //     bookingProducts: !this.deepEqual(this.initialStateSnapshot.bookingProducts, currentSnapshot.bookingProducts),
-      //     connectionResult: !this.deepEqual(this.initialStateSnapshot.connectionResult, currentSnapshot.connectionResult),
-      //     rateResult: !this.deepEqual(this.initialStateSnapshot.rateResult, currentSnapshot.rateResult),
-      //     milestoneResult: !this.deepEqual(this.initialStateSnapshot.milestoneResult, currentSnapshot.milestoneResult),
-      //     selectedDepartmentType: this.initialStateSnapshot.selectedDepartmentType !== currentSnapshot.selectedDepartmentType,
-      //     selectedFCLLCL: this.initialStateSnapshot.selectedFCLLCL !== currentSnapshot.selectedFCLLCL,
-      //   },
-      // });
-    }
+    // NOTE: bound in the template ([hasUnsavedChanges] on app-cost-entry), so this runs
+    // every change-detection cycle — must stay flag-only, no snapshot building here.
     // console.log('[HouseJob dirty check]', {
     //   isDirty: this.isDirty,
     //   formSaved: this.formSaved,

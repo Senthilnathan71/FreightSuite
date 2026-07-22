@@ -93,12 +93,14 @@
 
           <div class="buttons">
             <button *ngIf="!isBooking" type="button" class="btn btn-warning btn-sm" (click)="openPaymentRequest()"
-              [disabled]="isFormDisabled || !isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Create payment request from prepaid cost rows">
+              [disabled]="isFormDisabled || !isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid() || hasUnsavedChanges"
+              [title]="hasUnsavedChanges ? 'Save your changes before creating a payment request' : 'Create payment request from prepaid cost rows'">
               <i class="fas fa-file-import me-1"></i>
               Payment Request
             </button>
             <button type="button" class="btn btn-success btn-sm" (click)="openVoucherTypeModal()"
-              [disabled]="isFormDisabled || !isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Generate Invoice/Voucher from rates">
+              [disabled]="isFormDisabled || !isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid() || isOpeningVoucherModal || isGeneratingVoucher || hasUnsavedChanges"
+              [title]="hasUnsavedChanges ? 'Save your changes before generating a voucher' : 'Generate Invoice/Voucher from rates'">
               <i class="fas fa-file-invoice me-1"></i>
               Generate Voucher
             </button>
@@ -1058,7 +1060,7 @@
 <ng-template #chargeSelectionModal let-modal>
   <div class="modal-header modalHeaderpart">
     <h5 class="modal-title">Select Charges for {{ selectedVoucherType }}</h5>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="cancelChargeSelection()">
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" [disabled]="isGeneratingVoucher" (click)="cancelChargeSelection()">
     </button>
   </div>
 
@@ -1536,12 +1538,12 @@
   </div>
 
   <div class="modal-footer py-1">
-    <button type="button" class="btn btn-secondary btn-sm" (click)="cancelChargeSelection()">
+    <button type="button" class="btn btn-secondary btn-sm" [disabled]="isGeneratingVoucher" (click)="cancelChargeSelection()">
       Cancel
     </button>
-    <button type="button" class="btn btn-info btn-sm" [disabled]="selectedDetailCount === 0"
+    <button type="button" class="btn btn-info btn-sm" [disabled]="selectedDetailCount === 0 || isGeneratingVoucher"
       (click)="proceedWithSelectedCharges()">
-
+      <span class="spinner-border spinner-border-sm me-1" *ngIf="isGeneratingVoucher"></span>
       Generate Voucher ({{ selectedDetailCount }} charges)
     </button>
   </div>

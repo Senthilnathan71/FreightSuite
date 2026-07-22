@@ -1441,7 +1441,7 @@
       <app-cost-entry #costEntryComponent [screenName]="selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job'"
         [currencyList]="currencyList" [customerList]="customerList" [agentList]="agentList" [dataItems]="bookingRateArr"
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)" [isFormDisabled]="isFormDisabled"
-        [costRevenueAccess]="costRevenueAccess"
+        [costRevenueAccess]="costRevenueAccess" [hasUnsavedChanges]="hasUnsavedChanges()"
         (reloadParent)="loadHouseById($event)"></app-cost-entry>
     </div>
     <div class="workspace-content" [hidden]="selectedTab !== 'Proxy'">
