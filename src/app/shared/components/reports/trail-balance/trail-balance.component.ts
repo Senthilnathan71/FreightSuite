@@ -59,11 +59,8 @@ export class TrailBalanceComponent {
     if (!this.currentBranch?.BranchMasterSid) return;
     this.masterService.getAllBranches().subscribe({
       next: (response: any) => {
-        console.log("Branch API response:", response);
-
         if (response) {
           this.branchList = response;
-          console.log("Branch List:", this.branchList);
         }
       },
       error: (error) => {
@@ -77,11 +74,8 @@ export class TrailBalanceComponent {
   loadCOA(CompanyMasterSid: number): void {
     this.masterService.getAllCoa(CompanyMasterSid).subscribe({
       next: (response: any) => {
-        console.log("Branch API response:", response);
-
         if (response) {
           this.COAList = response;
-          console.log("Branch List:", this.COAList);
         }
       },
       error: (error) => {
@@ -323,7 +317,7 @@ export class TrailBalanceComponent {
     /* ================= TABLE HEADERS ================= */
 
     const tableHeaders: ExcelHeader[] = [
-      { key: 'type', label: 'Type' },
+      { key: 'type', label: 'Category' },
       { key: 'group', label: 'Group' },
       { key: 'subGroup', label: 'Sub Group' },
       { key: 'ledger', label: 'Ledger' },
@@ -345,7 +339,7 @@ export class TrailBalanceComponent {
 
       for (const item of group.items || []) {
         const cells: ExcelCell[] = [
-          { value: item.LedgerType || '' },
+          { value: item.Category || '' },
           { value: item.GroupName || '' },
           { value: item.SubGroupName || ''  }, 
           { value: item.LedgerName || ''  },
