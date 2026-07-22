@@ -611,7 +611,7 @@
                     placeholder=""
                     class="custom-input-field sm text-end"
                     formControlName="ExchangeRate"
-                    (change)="checkAndUpdateForAllPartyDetail(); recalculateAllMatchingPartyAmounts()"
+                    (change)="onHeaderExchangeRateChanged()"
                     DecimalPrecision
                     [DecimalPrecisionBefore]="4"
                     [DecimalPrecisionAfter]="
@@ -1145,6 +1145,7 @@
                     "
                     (input)="calculateLocalAmount(i, true)"
                     (blur)="calculateLocalAmount(i, true)"
+                    (change)="onDetailExchangeRateChanged(i)"
                   />
                 </td>
                 <td class="dofi-min-w-125">
