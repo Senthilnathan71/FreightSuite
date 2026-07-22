@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, map, Observable, of, switchMap, throwError } from 'rxjs';
+import { catchError, finalize, map, Observable, of, shareReplay, switchMap, throwError } from 'rxjs';
 import { getFirstValidationError, handleError, sortValidationErrors } from 'src/app/common/error-handling/payload-validation-handler';
 import { CompanyConfigCacheService } from 'src/app/core/services/company-config-cache.service';
 
@@ -102,6 +102,26 @@ export class ShipmentMilestoneService {
     };
   }
 
+  /** One in-flight insert per milestone identity. A double-click on a print/download button fires
+   *  the capture again before the first response lands; the backend dedup is check-then-insert, so
+   *  only a call arriving AFTER the first row commits gets skipped. Concurrent duplicate calls must
+   *  therefore share the FIRST HTTP request instead of racing it. The entry clears when the request
+   *  settles, so a later genuine call still reaches the backend (which then finds the row). */
+  private inFlightInserts = new Map<string, Observable<ResponseData>>();
+
+  private dedupInFlight(key: string, factory: () => Observable<ResponseData>): Observable<ResponseData> {
+    const pending = this.inFlightInserts.get(key);
+    if (pending) {
+      return pending;
+    }
+    const shared = factory().pipe(
+      finalize(() => this.inFlightInserts.delete(key)),
+      shareReplay(1),
+    );
+    this.inFlightInserts.set(key, shared);
+    return shared;
+  }
+
   getShipmentMilestoneByShipmentNo(
     payload: FetchShipmentMilestone
   ): Observable<ResponseData> {
@@ -176,7 +196,16 @@ export class ShipmentMilestoneService {
   }
 
   safeInsertMilestone(payload: any): Observable<ResponseData> {
-    return this.configCache
+    const key = [
+      'safe-insert',
+      payload?.CompanyMasterSid,
+      payload?.BranchMasterSid,
+      payload?.HouseJobSid ?? '',
+      payload?.BookingHeaderSid ?? '',
+      payload?.ShipmentNo ?? '',
+      payload?.MilestoneCode,
+    ].join('|');
+    return this.dedupInFlight(key, () => this.configCache
       .isConfigEnabled(ShipmentMilestoneService.AUTO_INSERT_CONFIG, payload?.CompanyMasterSid)
       .pipe(
         switchMap((enabled) => enabled
@@ -189,11 +218,18 @@ export class ShipmentMilestoneService {
               })
             )
           : of(this.skippedResponse()))
-      );
+      ));
   }
 
   insertMilestoneByMasterJob(payload: InsertMilestoneByMasterJobPayload): Observable<ResponseData> {
-    return this.configCache
+    const key = [
+      'master-job',
+      payload?.CompanyMasterSid,
+      payload?.BranchMasterSid,
+      payload?.MasterJobSid,
+      payload?.MilestoneCode,
+    ].join('|');
+    return this.dedupInFlight(key, () => this.configCache
       .isConfigEnabled(ShipmentMilestoneService.AUTO_INSERT_CONFIG, payload?.CompanyMasterSid)
       .pipe(
         switchMap((enabled) => enabled
@@ -206,7 +242,7 @@ export class ShipmentMilestoneService {
               })
             )
           : of(this.skippedResponse()))
-      );
+      ));
   }
 
 

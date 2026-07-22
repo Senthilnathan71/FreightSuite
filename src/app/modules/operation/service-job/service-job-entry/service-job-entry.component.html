@@ -887,7 +887,7 @@
 
       <app-cost-entry #costEntryComponent [screenName]="selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job'" [currencyList]="currencyList" [dataItems]="serviceJobRateArr"
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)" [isFormDisabled]="isFormDisabled"
-        [costRevenueAccess]="costRevenueAccess" [requireAuthorization]="true"
+        [costRevenueAccess]="costRevenueAccess" [requireAuthorization]="true" [hasUnsavedChanges]="hasUnsavedChanges()"
         (reloadParent)="loadServiceJobById($event)"></app-cost-entry>
     </div>
 

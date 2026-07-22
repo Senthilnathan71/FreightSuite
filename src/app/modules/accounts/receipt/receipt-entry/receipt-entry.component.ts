@@ -863,6 +863,22 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.patchCurrencyExchangeRate(); // existing API call
   }
 
+  /**
+   * Header Ex-Rate (change) hook. Valid foreign rate → sync everywhere (which also runs
+   * the legacy chain). 0/blank → keep the legacy chain verbatim (party row mirrors the 0,
+   * validator flags exchangeRateZero) — sync deliberately no-ops on 0.
+   */
+  onHeaderExchangeRateChanged(): void {
+    const currencySid = this.r['CurrencyMasterSid']?.getRawValue();
+    const rate = toNumber(this.r['ExchangeRate']?.getRawValue());
+    if (currencySid && rate && currencySid !== this.currentCompany?.CurrencyMasterSid) {
+      this.syncExchangeRateAcrossForm(currencySid, 'header');
+    } else {
+      this.checkAndUpdateForAllPartyDetail();
+      this.recalculateAllMatchingPartyAmounts();
+    }
+  }
+
 
   loadAllLookups(): Observable<void> {
     const filterOption = {
@@ -3947,6 +3963,66 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       exCtrl?.enable({ emitEvent: false });
     }
     this.patchCurrencyExchangeRateForDetail(currencySid, index);
+  }
+
+  /**
+   * One-rate-per-currency: after a committed Exchange Rate change (header or a detail row),
+   * copy the new rate onto every OTHER control carrying the same currency — including
+   * disabled party/auto-bank rows (the validator reads them via .value) — then re-run the
+   * affected recalcs. Behaves exactly as if the user typed the same rate into each field
+   * manually; NEVER calls the master-rate fetches (they'd overwrite the typed rate).
+   */
+  syncExchangeRateAcrossForm(currencySid: number, source: 'header' | number): void {
+    if (this.isPosted || this.isReadOnly || this.isLoading) return;
+    if (!currencySid) return;
+    // Company currency is forced to 1 + disabled everywhere — can never be a source.
+    if (currencySid === this.currentCompany?.CurrencyMasterSid) return;
+
+    const sourceCtrl = source === 'header'
+      ? this.r['ExchangeRate']
+      : (this.detailItems.at(source) as FormGroup)?.get('ExchangeRate');
+    const rate = toNumber(sourceCtrl?.getRawValue());
+    if (!rate) return; // 0/NaN: let the validator complain; never propagate garbage
+
+    const formatted = this.getFormattedAndPaddedExchangeRate(rate, currencySid);
+    // Same 6dp comparison the validator's Rule 3 uses
+    const sameRate = (v: any) =>
+      Number(toNumber(v).toFixed(6)) === Number(toNumber(formatted).toFixed(6));
+
+    // A detail-row edit in the header currency also drives the header rate.
+    const headerAffected = this.r['CurrencyMasterSid']?.getRawValue() === currencySid;
+    if (headerAffected && source !== 'header' && !sameRate(this.r['ExchangeRate']?.getRawValue())) {
+      this.r['ExchangeRate']?.setValue(formatted, { emitEvent: false });
+    }
+
+    // Silent-set targets; recalc per row ONLY for a non-header currency. For the header
+    // currency the single checkAndUpdateForAllPartyDetail() pass below recalcs every row
+    // from the final rates (it ends each row with calculateLocalAmount(i, true)).
+    for (let i = 0; i < this.detailItems.length; i++) {
+      if (i === source) continue;
+      const row = this.detailItems.at(i) as FormGroup;
+      if (row.get('CurrencyMasterSid')?.getRawValue() !== currencySid) continue;
+      const exCtrl = row.get('ExchangeRate');
+      if (sameRate(exCtrl?.getRawValue())) continue;
+      exCtrl?.setValue(formatted, { emitEvent: false });
+      if (!headerAffected) {
+        this.calculateLocalAmount(i, true);
+      }
+    }
+
+    if (headerAffected) {
+      this.checkAndUpdateForAllPartyDetail();      // party-row sync + all-row Local/Party recalc
+      this.recalculateAllMatchingPartyAmounts();   // matchPartyAmt from the new header rate
+    }
+
+    this.validateAmount();
+    this.receiptForm.updateValueAndValidity();     // clears inconsistentExchangeRates live
+  }
+
+  /** Detail-row Ex-Rate (change) hook. Row-local recalc already rides (input)/(blur). */
+  onDetailExchangeRateChanged(index: number): void {
+    const row = this.detailItems.at(index) as FormGroup;
+    this.syncExchangeRateAcrossForm(row?.get('CurrencyMasterSid')?.getRawValue(), index);
   }
 
   patchCurrencyExchangeRate() {
