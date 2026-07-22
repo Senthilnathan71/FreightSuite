@@ -64,7 +64,8 @@ export class ExportJobVolumeTeuReportComponent {
     { key: 'portOfDestination', label: 'Port of Destination' },
     { key: 'TEUCount', label: 'No of TEU' },
     { key: 'weight', label: 'Gross Weight' },
-    { key: 'chargebaleWt', label: 'Chargeable Wt' }
+    { key: 'chargebaleWt', label: 'Chargeable Wt' },
+    { key: 'cbm', label: 'CBM' }
   ];
 
   const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
@@ -81,7 +82,8 @@ export class ExportJobVolumeTeuReportComponent {
       { value: item.portOfDestination || '' },
       { value: item.TEUCount ?? 0  , alignment:{horizontal:"center"}},
       { value: this.formatNumber(item.weight ?? 0) },
-      { value: this.formatNumber(item.chargebaleWt ?? 0) }
+      { value: this.formatNumber(item.chargebaleWt ?? 0) },
+      { value: this.formatNumber(item.cbm ?? 0) }
     ];
 
     return { cells, style: 'data' };
@@ -115,6 +117,7 @@ export class ExportJobVolumeTeuReportComponent {
       22, // PODestination
       12, // TEU
       15, // Weight
+      15, // CBM
       18  // Chargeable Wt
     ],
   };

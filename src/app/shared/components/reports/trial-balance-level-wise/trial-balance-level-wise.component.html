@@ -3,7 +3,7 @@
 
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        Trial Balance Report
+        Trial Balance Level Wise
     </h4>
 
 
@@ -24,24 +24,23 @@
                     <strong style="margin-bottom: 4px;width: 150px;">Branch </strong>
                     <span class="ms-1 my-0">: {{ params?.BranchInvolved}}</span>
                 </div>
-                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Sub Total </strong>
-                    <span class="ms-1 my-0">: {{ params?.SubTotal === true ? 'Yes' : 'No' }}</span>
+                  <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 150px;">Subledger </strong>
+                    <span class="ms-1 my-0">: {{ params?.Subledger === true ? 'Yes' : 'No' }}</span>
                 </div>
             </div>
             <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Group Name </strong>
-                    <span class="ms-1 my-0">: {{ params?.GroupNameResolved }}</span>
+                    <strong style="margin-bottom: 4px;width: 150px;">Category Wise </strong>
+                    <span class="ms-1 my-0">: {{ params?.CategoryWise === true ? 'Yes' : 'No' }}</span>
                 </div>
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">SubGroup Name </strong>
-                    <span class="ms-1 my-0">: {{ params?.SubGroupNameResolved }}</span>
+                 <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 150px;">Group Wise </strong>
+                    <span class="ms-1 my-0">: {{ params?.GroupWise === true ? 'Yes' : 'No' }}</span>
                 </div>
-               
-                <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Subledger </strong>
-                    <span class="ms-1 my-0">: {{ params?.Subledger === true ? 'Yes' : 'No' }}</span>
+                 <div class="d-flex align-items-center">
+                    <strong style="margin-bottom: 4px;width: 150px;">Subgroup Wise </strong>
+                    <span class="ms-1 my-0">: {{ params?.SubgroupWise === true ? 'Yes' : 'No' }}</span> 
                 </div>
             </div>
         </div>
@@ -52,9 +51,9 @@
                     <thead>
                         <tr class="bg-info">
                             <th class="bg-transparent text-light text-center">Category</th>
-                            <th class="bg-transparent text-light text-center">Group</th>
-                            <th class="bg-transparent text-light text-center">Sub Group</th>
-                            <th class="bg-transparent text-light text-center">Ledger</th>
+                            <th class="bg-transparent text-light text-center" *ngIf="showGroupCol">Group</th>
+                            <th class="bg-transparent text-light text-center" *ngIf="showSubGroupCol">Sub Group</th>
+                            <th class="bg-transparent text-light text-center" *ngIf="showLedgerCol">Ledger</th>
                             <th class="bg-transparent text-light text-center" *ngIf="params?.Subledger">Subledger</th>
                             <th class="bg-transparent text-light text-center">Opening Debit</th>
                             <th class="bg-transparent text-light text-center">Opening Credit</th>
@@ -85,21 +84,21 @@
                                 </td>
 
                                 <!-- GROUP -->
-                                <td>
+                                <td *ngIf="showGroupCol">
                                     <ng-container *ngIf="!params?.Subledger || item.showGroup">
                                         {{ item.GroupName }}
                                     </ng-container>
                                 </td>
 
                                 <!-- SUB GROUP -->
-                                <td>
+                                <td *ngIf="showSubGroupCol">
                                     <ng-container *ngIf="!params?.Subledger || item.showSubGroup">
                                         {{ item.SubGroupName }}
                                     </ng-container>
                                 </td>
 
                                 <!-- LEDGER -->
-                                <td>
+                                <td *ngIf="showLedgerCol">
                                     <ng-container *ngIf="!params?.Subledger || item.showLedger">
                                         {{ item.LedgerName }}
                                     </ng-container>
@@ -122,7 +121,7 @@
 
                             <!-- SUBGROUP TOTAL -->
                             <tr class="bg-light fw-bold" *ngIf="params?.SubTotal">
-                                <td [attr.colspan]="params?.Subledger ? 5 : 4" class="text-end"><strong>Total</strong>
+                                <td [attr.colspan]="labelColspan" class="text-end"><strong>Total</strong>
                                 </td>
                                 <!-- <td></td> -->
                                 <td class="text-end">{{group.totals.OpeningDebit | number:'1.2-2'}}</td>
@@ -138,7 +137,7 @@
 
                         <!-- GRAND TOTAL (NO ngFor) -->
                         <tr class="bg-secondary text-white fw-bold" *ngIf="data?.grandTotal">
-                            <td [attr.colspan]="params?.Subledger ? 5 : 4" class="text-end">Grand Total</td>
+                            <td [attr.colspan]="labelColspan" class="text-end">Grand Total</td>
                             <!-- <td></td> -->
                             <td class="text-end">{{data.grandTotal.TotalOpeningDebit | number:'1.2-2'}}</td>
                             <td class="text-end">{{data.grandTotal.TotalOpeningCredit | number:'1.2-2'}}</td>

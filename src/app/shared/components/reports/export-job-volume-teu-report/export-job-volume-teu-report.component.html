@@ -48,6 +48,7 @@
                         <th class="bg-transparent text-light text-center">No of TEU</th>
                         <th class="bg-transparent text-light text-center">Gross Weight</th>
                         <th class="bg-transparent text-light text-center">Chargeable Wt</th>
+                        <th class="bg-transparent text-light text-center">CBM</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,9 +66,10 @@
                         <td class="text-center">{{item.TEUCount}}</td>
                         <td class="text-end">{{item.weight | number:"1.3-3"}}</td>
                         <td class="text-end">{{item.chargebaleWt | number:"1.3-3"}}</td>
+                        <td class="text-end">{{item.cbm | number:"1.3-3"}}</td>
                     </tr>
                     <tr *ngIf="!fullData?.data || fullData.data.length === 0">
-                        <td colspan="13" class="text-center fw-bold py-1">
+                        <td colspan="14" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>

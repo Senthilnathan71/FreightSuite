@@ -187,6 +187,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     this.setupSalesmanFilterVisibility();
     // Ledger Report: flip the Subledger to multi-select + department for charge-type ledgers.
     this.setupLedgerSubledgerMode();
+    // Trial Balance Level report: CategoryWise / GroupWise / SubgroupWise / Subledger are mutually exclusive.
+    this.setupLevelWiseLock();
     this.setupFormValueChanges();
   }
 
@@ -276,6 +278,51 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
       .pipe(distinctUntilChanged())
       .subscribe((value) => apply(!!value));
     this.subscriptions.add(sub);
+  }
+
+  /**
+   * Trial Balance Level report only: CategoryWise, GroupWise, SubgroupWise and Subledger are mutually
+   * exclusive — at most one can be active at a time. Ticking any one forces the other three to false
+   * and disables them; when none is ticked, all four are re-enabled. Guarded by the presence of all
+   * four controls, so it is a no-op on every other report. Must run AFTER setupCascadingListeners
+   * (which resets this.subscriptions) so its subscriptions survive.
+   */
+  private setupLevelWiseLock(): void {
+    const names = ['CategoryWise', 'GroupWise', 'SubgroupWise', 'Subledger'];
+    const controls = names.map((n) => this.parameterForm.get(n));
+    if (controls.some((c) => !c)) return;
+
+    const activeName = (): string | null => {
+      const idx = controls.findIndex((c) => !!c!.value);
+      return idx >= 0 ? names[idx] : null;
+    };
+
+    const apply = (active: string | null) => {
+      names.forEach((n, i) => {
+        const control = controls[i]!;
+        if (active && n !== active) {
+          control.setValue(false, { emitEvent: false });
+          control.disable({ emitEvent: false });
+        } else {
+          control.enable({ emitEvent: false });
+        }
+      });
+    };
+
+    apply(activeName()); // initial state
+
+    names.forEach((n, i) => {
+      const sub = controls[i]!.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe((ticked) => {
+          if (ticked) {
+            apply(n);
+          } else if (!activeName()) {
+            apply(null);
+          }
+        });
+      this.subscriptions.add(sub);
+    });
   }
 
   /**

@@ -417,7 +417,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'trial-balance',
-        title: 'Trail Balance',
+        title: 'Trial Balance',
         component: TrailBalanceComponent,
         filenameTemplate: 'Trail_Balance_Report_{date}',
         module: 'accounts-report',
@@ -440,6 +440,36 @@ export class ReportRegistryService {
       console.warn('Trail Balance Report component not yet created:', error);
     }
 
+    // Trial Balance Level Wise Report
+     try {
+      const { TrialBalanceLevelWiseComponent } = await import(
+        '../components/reports/trial-balance-level-wise/trial-balance-level-wise.component'
+      );
+
+      this.registerReport({
+        id: 'trial-balance-level',
+        title: 'Trial Balance Level Wise',
+        component: TrialBalanceLevelWiseComponent,
+        filenameTemplate: 'Trail_Balance_Level_Wise_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/trial-balance-level/report',
+        emailSubjectTemplate: 'Trail Balance Level Wise Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Trail Balance Level Wise Report</strong> for Group: <strong>{GroupName}</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Trail Balance Level Wise Report component not yet created:', error);
+    }
       // Balance_Sheet Report
     //  try {
     //   const { BalanceSheetsComponent } = await import(

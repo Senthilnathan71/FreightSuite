@@ -63,16 +63,17 @@ export class TradelaneProfitabilityComponent {
       { key: 'profit', label: 'Profit' },
       { key: 'grossWt', label: 'Gross Weight' },
       { key: 'netWt', label: 'Net Weight' },
-      { key: 'vol', label: 'CBM' }
+      { key: 'vol', label: 'CBM' },
+      { key: 'chargeableWt', label: 'Chargeable Wt' }
     ];
 
     const rows: ExcelRow[] = [];
     const colCount = tableHeaders.length;
     const bookingHeaderValues = ['Booking No','Booking Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
     const masterHeaderValues = ['MBL No','MBL Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
-    const masterAirHeaderValues = ['MAWB No','MAWB Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const masterAirHeaderValues = ['MAWB No','MAWB Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM', 'Chargeable Wt'];
     const houseHeaderValues = ['HBL No','HBL Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
-    const houseAirHeaderValues = ['HAWB No','HAWB Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const houseAirHeaderValues = ['HAWB No','HAWB Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM', 'Chargeable Wt'];
     const buildHeaderRow = (values: string[]): ExcelRow => ({
       cells: values.map(value => ({ value, alignment: { horizontal: 'center' } })),
       style: 'header'
@@ -192,7 +193,8 @@ export class TradelaneProfitabilityComponent {
               { value: this.formatNumber(item.profit ?? 0) },
               { value: this.formatNumber(item.grossWt ?? 0) },
               { value: this.formatNumber(item.netWt ?? 0) },
-              { value: this.formatNumber(item.vol ?? 0) }
+              { value: this.formatNumber(item.vol ?? 0) },
+              { value: this.formatNumber(item.chargeableWt ?? 0) }
             ],
             style: 'data'
           });
@@ -208,7 +210,8 @@ export class TradelaneProfitabilityComponent {
             { value: this.formatNumber(masterAirTotals?.profit ?? 0) },
             { value: this.formatNumber(masterAirTotals?.grossWt ?? 0) },
             { value: this.formatNumber(masterAirTotals?.netWt ?? 0) },
-            { value: this.formatNumber(masterAirTotals?.vol ?? 0) }
+            { value: this.formatNumber(masterAirTotals?.vol ?? 0) },
+            { value: this.formatNumber(masterAirTotals?.chargeableWt ?? 0) }
           ],
           style: 'total'
         });
@@ -283,7 +286,8 @@ export class TradelaneProfitabilityComponent {
               { value: this.formatNumber(item.profit ?? 0) },
               { value: this.formatNumber(item.grossWt ?? 0) },
               { value: this.formatNumber(item.netWt ?? 0) },
-              { value: this.formatNumber(item.vol ?? 0) }
+              { value: this.formatNumber(item.vol ?? 0) },
+              { value: this.formatNumber(item.chargeableWt ?? 0) }
             ],
             style: 'data'
           });
@@ -299,7 +303,8 @@ export class TradelaneProfitabilityComponent {
             { value: this.formatNumber(houseAirTotals?.profit ?? 0) },
             { value: this.formatNumber(houseAirTotals?.grossWt ?? 0) },
             { value: this.formatNumber(houseAirTotals?.netWt ?? 0) },
-            { value: this.formatNumber(houseAirTotals?.vol ?? 0) }
+            { value: this.formatNumber(houseAirTotals?.vol ?? 0) },
+            { value: this.formatNumber(houseAirTotals?.chargeableWt ?? 0) }
           ],
           style: 'total'
         });
@@ -308,6 +313,24 @@ export class TradelaneProfitabilityComponent {
           cells: [{ value: '', colspan: colCount }],
           style: 'section'
         });
+      }
+    });
+
+    // The whole report is one continuous table sized to the widest section (9 cols, incl.
+    // Chargeable Wt for the air waybill sections). The 8-column ocean sections (Booking /
+    // Master Job / House Job) would otherwise leave an empty column on the right. Instead of
+    // adding a filler cell (which inherits the row's header colour / borders), stretch the last
+    // real cell (CBM) to span the leftover column(s) so the section fills the full width with no
+    // empty column. Section banner rows already span the full width via colspan, so skip them.
+    const totalCols = tableHeaders.length;
+    const visualWidth = (row: ExcelRow): number =>
+      row.cells.reduce((n, c) => n + (c.colspan && c.colspan > 1 ? c.colspan : 1), 0);
+    rows.forEach(row => {
+      if (row.style === 'section' || row.cells.length === 0) return;
+      const width = visualWidth(row);
+      if (width < totalCols) {
+        const last = row.cells[row.cells.length - 1];
+        last.colspan = (last.colspan && last.colspan > 1 ? last.colspan : 1) + (totalCols - width);
       }
     });
 
@@ -330,7 +353,7 @@ export class TradelaneProfitabilityComponent {
       suppressSectionBorders: true,
       tableHeaders,
       rows,
-      columnWidths: [40, 12, 12, 12, 12, 12, 12, 12]
+      columnWidths: [40, 12, 12, 12, 12, 12, 12, 12, 12]
     };
   }
 
@@ -346,9 +369,10 @@ export class TradelaneProfitabilityComponent {
         profit: totals.profit + Number(item?.profit || 0),
         grossWt: totals.grossWt + Number(item?.grossWt || 0),
         netWt: totals.netWt + Number(item?.netWt || 0),
-        vol: totals.vol + Number(item?.vol || 0)
+        vol: totals.vol + Number(item?.vol || 0),
+        chargeableWt: totals.chargeableWt + Number(item?.chargeableWt || 0)
       }),
-      { revenue: 0, cost: 0, profit: 0, grossWt: 0, netWt: 0, vol: 0 }
+      { revenue: 0, cost: 0, profit: 0, grossWt: 0, netWt: 0, vol: 0 , chargeableWt: 0}
     );
   }
 
