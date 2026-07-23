@@ -354,10 +354,9 @@ export class CurrencyFormatService {
 
   /**
    * Truncates a number to a specified number of decimal places without rounding.
-   * Uses Math.trunc() to simply cut off additional decimal places.
-   * 
-   * **Formula:** Math.trunc(value × 10^places) / 10^places
-   * 
+   * Cuts the decimal string rendered by toFixed (float-safe — scaled
+   * Math.trunc corrupted boundary values like 4.31 → 4.3099).
+   *
    * **Important:** This does NOT round. It simply discards extra decimal places.
    * 
    * @private
@@ -371,8 +370,18 @@ export class CurrencyFormatService {
    * this.truncate(1234.9999, 2); // Returns: 1234.99 (NOT 1235.00)
    */
   private truncate(value: number, decimalPlaces: number): number {
-    const factor = Math.pow(10, decimalPlaces);
-    return Math.trunc(value * factor) / factor;
+    // Runtime values can be strings despite the number type (form controls,
+    // API decimals) — Number() mirrors the implicit ToNumber coercion the old
+    // `value * factor` math applied (null/'' → 0, undefined/junk → NaN).
+    const num = Number(value);
+    if (!Number.isFinite(num)) return num;
+    // String-based cut: toFixed renders the double's true decimal value
+    // (4.31 → "4.310000"), avoiding the scaled-float error where
+    // 4.31 * 10000 = 43099.99999999999 made Math.trunc drop the last
+    // decimal (4.31 → 4.3099). Two guard digits keep this a truncation —
+    // digits at the target precision are never rounded up.
+    const fixed = num.toFixed(decimalPlaces + 2);
+    return Number(fixed.slice(0, fixed.length - 2));
   }
 
   /**
