@@ -11,6 +11,7 @@ import { buildCompanyHeader } from '../builders/pdf-header.builder';
 
 export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
   const content: any[] = [
+    buildHeader(data),
     buildJobInfoSection(data)
   ];
 
@@ -29,7 +30,9 @@ export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'landscape',
-    pageMargins: [15, 100, 15, 34],
+    // Header moved into `content` (first item) so it self-sizes to the company address
+    // length. A small top margin keeps it clear of the box's top border (drawn at y=12).
+    pageMargins: [15, 10, 15, 34],
     background: (_: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',
@@ -41,7 +44,6 @@ export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
         lineColor: '#000'
       }]
     }),
-    header: () => buildHeader(data),
     content,
     footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
     styles: getMasterJobCardStyles(),
@@ -70,11 +72,11 @@ function buildHeader(data: MasterJobCardPdfData): any {
           paddingTop: () => 0,
           paddingBottom: () => 0
         },
-        margin: [0, 6, 0, 0]
+        margin: [0, 0, 0, 0]
       },
       buildTitle(data)
     ],
-    margin: [15, 12, 15, 6]
+    margin: [0, 8, 0, 6]
   };
 }
 
