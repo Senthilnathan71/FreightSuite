@@ -71,10 +71,11 @@
         <ng-container *ngIf="currentBranch?.addressLine2">, </ng-container>{{ currentBranch.cityMaster.cityName }}
       </ng-container>
       <ng-container *ngIf="currentBranch?.postalCode">
-        <ng-container *ngIf="currentBranch?.addressLine2 || currentBranch?.cityMaster?.cityName">, </ng-container><strong>Postal Code :</strong> {{ currentBranch.postalCode }}
+        <ng-container *ngIf="currentBranch?.addressLine2 || currentBranch?.cityMaster?.cityName">, </ng-container>
+        <strong>{{ postalCodeLabel }} :</strong> {{ currentBranch.postalCode }}
       </ng-container>
       <ng-container *ngIf="currentBranch?.phoneNumber">
-        <ng-container *ngIf="currentBranch?.addressLine2 || currentBranch?.cityMaster?.cityName || currentBranch?.postalCode">, </ng-container><strong>Ph.no :</strong> {{ currentBranch.phoneNumber }}
+        <ng-container *ngIf="currentBranch?.addressLine2 || currentBranch?.cityMaster?.cityName || currentBranch?.postalCode">, </ng-container><strong>{{ phoneLabel }} :</strong> {{ currentBranch.phoneNumber }}
       </ng-container>
     </div>
 

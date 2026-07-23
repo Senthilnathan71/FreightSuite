@@ -168,6 +168,9 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
   const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
   const postalCode = branch?.postalCode || company?.postalCode || '';
   const phone = branch?.phoneNumber || company?.phoneNumber || '';
+  const isPoBoxCountry = ['ae', 'sa', 'om'].includes(resolveCompanyCountryCode(data));
+  const postalCodeLabel = isPoBoxCountry ? 'P.O.Box' : 'Postal Code';
+  const phoneLabel = isPoBoxCountry ? 'Tel.No' : 'Ph.no';
   const taxRegistration = resolveTaxRegistration(data);
   const showTaxRegistration = data.showTaxRegistration === true && !!taxRegistration.value;
   const cityLine: any[] = [];
@@ -183,8 +186,8 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
 
   if (addressLine2) appendText(addressLine2);
   if (city) appendText(city);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phone) appendText([{ text: 'Ph.no : ', bold: true }, { text: phone }]);
+  if (postalCode) appendText([{ text: `${postalCodeLabel} : `, bold: true }, { text: postalCode }]);
+  if (phone) appendText([{ text: `${phoneLabel} : `, bold: true }, { text: phone }]);
 
   const companyInfoStack: any[] = [
     { text: (company?.companyName || '').toUpperCase(), fontSize: 14, bold: true, alignment: printSettings.companyAlignment },
@@ -216,7 +219,7 @@ export function buildCompanyHeader(data: CompanyHeaderData): any {
     if (printSettings.logoPosition === slot) {
       const logoNode = buildCompanyHeaderLogo(logo, slotAlign[slot], logoHeight);
       if (logoNode) {
-        stack.push({ ...logoNode, margin: [8, 0, 15, 0] });
+        stack.push({ ...logoNode, margin: [8, 2, 15, 0] });
       }
     }
     if (printSettings.companyPosition === slot) {

@@ -62,6 +62,18 @@ export class PrintHeaderComponent {
     ).toLowerCase();
   }
 
+  get isPoBoxCountry(): boolean {
+    return ['ae', 'sa', 'om'].includes(this.companyCountryCode);
+  }
+
+  get postalCodeLabel(): string {
+    return this.isPoBoxCountry ? 'P.O.Box' : 'Postal Code';
+  }
+
+  get phoneLabel(): string {
+    return this.isPoBoxCountry ? 'Tel.No' : 'Ph.no';
+  }
+
   get taxRegistrationLabel(): string {
     return this.companyCountryCode === 'in' ? 'GST No' : 'VAT No';
   }
