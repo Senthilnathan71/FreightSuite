@@ -7,6 +7,7 @@ import {
 } from '../interfaces/pdf-document.interfaces';
 import { formatDate, formatNumberWithCommas } from '../helpers/pdf-formatters';
 import { getPdfStyles } from '../styles/pdf-styles';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 
 export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
   const content: any[] = [
@@ -52,33 +53,9 @@ export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
 }
 
 function buildHeader(data: MasterJobCardPdfData): any {
-  const company = data.company || {} as any;
-  const branch = data.branch || {} as any;
-  const detailLine1 = branch.addressLine1 || company.addressLine1 || '';
-  const detailLine2 = [
-    branch.addressLine2 || company.addressLine2 || '',
-    branch.cityName || branch.cityMaster?.cityName || company.city || '',
-    (branch.postalCode || company.postalCode) ? `Postal Code : ${branch.postalCode || company.postalCode}` : '',
-    (branch.phoneNumber || company.phoneNumber) ? `Ph.no : ${branch.phoneNumber || company.phoneNumber}` : ''
-  ].filter(Boolean).join(', ');
-
   return {
     stack: [
-      {
-        columns: [
-          data.logo ? { image: data.logo, fit: [52, 52], width: 62, margin: [4, 4, 0, 0] } : { text: '', width: 62 },
-          {
-            width: '*',
-            stack: [
-              { text: (company.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: 'center' },
-              { text: branch.branchName || '', bold: true, fontSize: 10, alignment: 'center', margin: [0, 1, 0, 0] },
-              { text: detailLine1, fontSize: 8, alignment: 'center', margin: [0, 1, 0, 0] },
-              { text: detailLine2, fontSize: 8, alignment: 'center', margin: [0, 1, 0, 0] }
-            ]
-          },
-          { text: '', width: 62 }
-        ]
-      },
+      buildCompanyHeader(data),
       {
         table: {
           widths: ['*'],
@@ -658,7 +635,9 @@ export function transformMasterJobCardApiData(
       city: company?.City || company?.city || '',
       postalCode: company?.ZipCode || company?.postalCode || '',
       phoneNumber: company?.Phone || company?.phoneNumber || '',
-      email: company?.Email || company?.email || ''
+      email: company?.Email || company?.email || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.BranchName || branch?.branchName || '',
@@ -667,7 +646,9 @@ export function transformMasterJobCardApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.UserName || userData?.userName || '',

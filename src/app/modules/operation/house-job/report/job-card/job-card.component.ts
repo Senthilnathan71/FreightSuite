@@ -15,6 +15,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { OperationService } from '../../../operation.service';
 import { saveAs } from 'file-saver';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { toNumber } from 'src/app/common/helper';
 
 interface summaryDTO {
   revenue : any[];
@@ -72,7 +73,6 @@ export class JobCardComponent implements OnChanges {
   ) { }
 
   ngOnInit() {
-    this.getSalespersons()
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(
       localStorage.getItem('selected-company')
@@ -80,10 +80,11 @@ export class JobCardComponent implements OnChanges {
     this.currentBranch = this.appSettingsService.decrypt(
       localStorage.getItem('selected-branch')
     );
-     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.getSalespersons();
     this.loadCityName();
     this.calculateChargeWiseProfit();
   }
@@ -130,11 +131,8 @@ export class JobCardComponent implements OnChanges {
   }
 
   getSalespersonName(UserMasterSid:number){
-
-    if(!UserMasterSid||this.salemanList.length===0){
-      return "";
-    }
-    return this.salemanList.find(user =>user.UserMasterSid === UserMasterSid)?.userName || ""
+  const salesman = this.salemanList.find(s => s.UserMasterSid === UserMasterSid);
+  return salesman ? salesman.userName : '';
   }
 
   // Helper methods
@@ -305,8 +303,8 @@ get profit() {
     const data = [...rateFormValue];
 
     data.forEach(item => {
-      const costAmt = parseFloat(item.CostLocalAmount);
-      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const costAmt = toNumber(item.CostLocalAmount);
+      const revenueAmt = toNumber(item.RevenueLocalAmount);
       const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
       const chargeName = charge?.chargeName || charge?.ChargeName || item?.ChargeDescription || "";
 
