@@ -661,6 +661,7 @@ export function transformBookingApiData(
     containerTypes?: any[];
   },
   options?: {
+    companyCountryCode?: string;
     printSettings?: {
       logoPosition: 'left' | 'center' | 'right';
       companyPosition: 'left' | 'center' | 'right';
@@ -709,15 +710,14 @@ export function transformBookingApiData(
   };
 
   return {
+    companyCountryCode: options?.companyCountryCode || '',
     company: {
       companyName: company?.companyName || '',
       addressLine1: company?.addressLine1 || company?.Address || '',
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
       postalCode: company?.postal_code || company?.ZipCode || '',
-      phoneNumber: company?.phoneNumber || company?.Phone || '',
-      countryMaster: company?.countryMaster,
-      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
+      phoneNumber: company?.phoneNumber || company?.Phone || ''
     },
     branch: {
       branchName: branch?.branchName || '',
@@ -726,9 +726,7 @@ export function transformBookingApiData(
       cityName: branch?.cityMaster?.cityName || '',
       postalCode: branch?.postalCode || '',
       phoneNumber: branch?.phoneNumber || '',
-      cityMaster: branch?.cityMaster,
-      countryMaster: branch?.countryMaster,
-      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
+      cityMaster: branch?.cityMaster
     },
     userData: {
       userName: userData?.userName || '',
@@ -886,22 +884,22 @@ export function transformCroApiData(
   company: any,
   branch: any,
   userData: any,
-  logo?: string
+  logo?: string,
+  companyCountryCode?: string
 ): CroPdfData {
   const booking = apiData;
   const bookingOthers = booking.bookingOthers?.[0] || {};
   const bookingCargo = booking.bookingCargo || [];
 
   return {
+    companyCountryCode: companyCountryCode || '',
     company: {
       companyName: company?.companyName || '',
       addressLine1: company?.addressLine1 || '',
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
       postalCode: company?.postal_code || '',
-      phoneNumber: company?.phoneNumber || '',
-      countryMaster: company?.countryMaster,
-      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
+      phoneNumber: company?.phoneNumber || ''
     },
     branch: {
       branchName: branch?.branchName || '',
@@ -909,9 +907,7 @@ export function transformCroApiData(
       cityName: branch?.cityMaster?.cityName || '',
       postalCode: branch?.postalCode || '',
       phoneNumber: branch?.phoneNumber || '',
-      cityMaster: branch?.cityMaster,
-      countryMaster: branch?.countryMaster,
-      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
+      cityMaster: branch?.cityMaster
     },
     userData: {
       userName: userData?.userName || '',

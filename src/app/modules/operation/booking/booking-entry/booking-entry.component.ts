@@ -6002,6 +6002,7 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
         },
         type,
         {
+          companyCountryCode: String(this.appSettingService.getCurrentCompanyCountry()?.countryCode || '').toLowerCase(),
           printSettings: this.companySettings.getPrintSettings()
         }
       );
@@ -6722,9 +6723,11 @@ private async generateBookingPdfBlobForMail(type: 'booking' | 'cro' = 'booking')
       carriers: this.carrierList,
       containerTypes: this.containerTypeList
     };
+    const companyCountryCode = String(this.appSettingService.getCurrentCompanyCountry()?.countryCode || '').toLowerCase();
     const pdfData = type === 'cro'
-      ? transformCroApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo) as any
+      ? transformCroApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo, companyCountryCode) as any
       : transformBookingApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo, lookups, {
+          companyCountryCode,
           printSettings: this.companySettings.getPrintSettings()
         });
 

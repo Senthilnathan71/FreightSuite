@@ -349,6 +349,7 @@ export class PdfMakeService {
     lookups?: any,
     type: BookingDocumentType = 'booking',
     options?: {
+      companyCountryCode?: string;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
@@ -357,7 +358,7 @@ export class PdfMakeService {
     }
   ): void {
     const pdfData = type === 'cro'
-      ? transformCroApiData(apiData, company, branch, userData, logo) as any
+      ? transformCroApiData(apiData, company, branch, userData, logo, options?.companyCountryCode) as any
       : transformBookingApiData(apiData, company, branch, userData, logo, lookups, options);
     this.generateBooking(pdfData, type);
   }
@@ -374,6 +375,7 @@ export class PdfMakeService {
     lookups?: any,
     type: BookingDocumentType = 'booking',
     options?: {
+      companyCountryCode?: string;
       printSettings?: {
         logoPosition: 'left' | 'center' | 'right';
         companyPosition: 'left' | 'center' | 'right';
@@ -382,7 +384,7 @@ export class PdfMakeService {
     }
   ): Promise<Blob> {
     const pdfData = type === 'cro'
-      ? transformCroApiData(apiData, company, branch, userData, logo) as any
+      ? transformCroApiData(apiData, company, branch, userData, logo, options?.companyCountryCode) as any
       : transformBookingApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateBookingBlob(pdfData, type);
   }

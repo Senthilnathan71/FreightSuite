@@ -163,8 +163,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           sortable: true,
           filterable: true,
           visible: true,
-          dataType: 'string',
-          width: '120px',
+          dataType: 'string'
         },
         {
           key: 'Status',

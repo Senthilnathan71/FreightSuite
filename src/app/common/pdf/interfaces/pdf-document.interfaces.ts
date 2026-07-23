@@ -153,6 +153,7 @@ export interface EnquiryCargoData extends PdfCargoItem {
 // BOOKING PDF DATA
 // =====================
 export interface BookingPdfData extends PdfDocumentBase {
+  companyCountryCode?: string;
   printSettings?: {
     logoPosition: 'left' | 'center' | 'right';
     companyPosition: 'left' | 'center' | 'right';
@@ -221,6 +222,7 @@ export interface BookingProductData extends PdfProductItem {
 // CRO (Container Release Order) PDF DATA
 // =====================
 export interface CroPdfData extends PdfDocumentBase {
+  companyCountryCode?: string;
   printSettings?: {
     logoPosition: 'left' | 'center' | 'right';
     companyPosition: 'left' | 'center' | 'right';

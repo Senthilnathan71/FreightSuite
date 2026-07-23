@@ -235,7 +235,7 @@ function buildInvoiceHeader(data: InvoicePdfData): any {
   return [
     buildCompanyHeader({
       ...data,
-      showTaxRegistration: true
+      // showTaxRegistration: true
     }),
     bottomLine
   ];
