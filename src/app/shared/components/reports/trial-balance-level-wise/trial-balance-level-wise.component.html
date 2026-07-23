@@ -20,30 +20,19 @@
                     <strong style="margin-bottom: 4px;width: 150px;">To Date </strong>
                     <span class="ms-1 my-0">: {{ params?.toDate | formatDate }}</span>
                 </div>
+            </div>
+             <div>
                 <div class="d-flex align-items-center">
                     <strong style="margin-bottom: 4px;width: 150px;">Branch </strong>
                     <span class="ms-1 my-0">: {{ params?.BranchInvolved}}</span>
                 </div>
-                  <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Subledger </strong>
-                    <span class="ms-1 my-0">: {{ params?.Subledger === true ? 'Yes' : 'No' }}</span>
-                </div>
-            </div>
-            <div>
                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Category Wise </strong>
-                    <span class="ms-1 my-0">: {{ params?.CategoryWise === true ? 'Yes' : 'No' }}</span>
-                </div>
-                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Group Wise </strong>
-                    <span class="ms-1 my-0">: {{ params?.GroupWise === true ? 'Yes' : 'No' }}</span>
-                </div>
-                 <div class="d-flex align-items-center">
-                    <strong style="margin-bottom: 4px;width: 150px;">Subgroup Wise </strong>
-                    <span class="ms-1 my-0">: {{ params?.SubgroupWise === true ? 'Yes' : 'No' }}</span> 
+                    <strong style="margin-bottom: 4px;width: 150px;">Level </strong>
+                    <span class="ms-1 my-0">: {{ params?.Level }}</span>
                 </div>
             </div>
         </div>
+        
         <div>
 
             <div class="table-responsive">

@@ -287,19 +287,7 @@ export class TrialBalanceLevelWiseComponent {
           { label: 'From Date', value: this.formatDate(this.params?.fromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.toDate) },
           { label: 'Branch', value: this.params?.BranchInvolved || '' },
-          { label: 'Subledger', value: showSubledger ? 'Yes' : 'No' },
-          {
-            label: 'Category Wise',
-            value: this.params?.CategoryWise === true ? 'Yes' : 'No',
-          },
-          {
-            label: 'Group Wise',
-            value: this.params?.GroupWise === true ? 'Yes' : 'No',
-          },
-          {
-            label: 'Subgroup Wise',
-            value: this.params?.SubgroupWise === true ? 'Yes' : 'No',
-          },
+          { label: 'Level', value: this.params?.Level || '' }
         ],
       },
       tableHeaders,
