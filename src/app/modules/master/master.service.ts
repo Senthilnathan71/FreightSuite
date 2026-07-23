@@ -2835,6 +2835,14 @@ getFieldConfiguration() {
     );
   }
 
+  // Menus allowed to be configured for authorization (CRM/Accounts/Operation, excluding
+  // auto-post document types and auto-approval menus).
+  getAuthorizableMenus(companyMasterSid: number) {
+    return this.http
+      .get<{ data: any[] }>(`authority/authorizable-menus?CompanyMasterSid=${companyMasterSid}`)
+      .pipe(map((resp: any) => resp?.data || []));
+  }
+
   getAuthorityById(payload: any) {
     return this.http.post<{ data: any }>(`authority/fetch`,payload).pipe(
       map((resp) => {

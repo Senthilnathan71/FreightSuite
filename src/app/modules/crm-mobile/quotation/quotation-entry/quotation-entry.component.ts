@@ -74,6 +74,7 @@ import { ElementStateGuardDirective } from 'src/app/core/Directives/element-stat
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
+import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -154,6 +155,9 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   selectedItem : any;
   quotationApproved : boolean;
   selectedDepartment: any = '';
+  // Product rows whose CBM (Volume) the user typed by hand; auto-calc from dimensions
+  // must not overwrite these, mirroring booking's manual-override behaviour.
+  private manualVolumeProducts = new WeakSet<AbstractControl>();
   quoteAuthorized : boolean;
   isStandardRate : boolean;
   authorizerDetails = {
@@ -209,7 +213,14 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   currencyMaster: any[] = [];
   chargeUnitMaster: any[] = [];
   packageUnitMaster: any[] = [];
-  measurementUnitList: any[] = [];
+  // Dimension UOM list for Length/Width/Height. Hardcoded { id, name } to match booking and
+  // enquiry exactly: the id (1=M, 2=CM, 3=Inch) is what VolumetricAndCbmCalculationService
+  // switches on, and what the voice-fill / auto-calc expect. Do NOT repopulate from the API.
+  measurementUnitList: any[] = [
+    { id: 1, name: 'M' },
+    { id: 2, name: 'CM' },
+    { id: 3, name: 'Inch' }
+  ];
   weightUnitList: any[] = [];
   // Mirrors the enquiry's hardcoded list; EnquiryCargo.WeightUnitSid stores these ids, not UOMMasterSid.
   readonly dimensionUnits = [
@@ -510,6 +521,7 @@ dataFromEnqPage:any;
     private voiceParserService: VoiceParserService,
     private companySettings: CompanySettingsManagerService,
     private currencyConfigService : CurrencyConfigurationService,
+    private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -2505,7 +2517,7 @@ private syncApprovedByControlState(): void {
     }
   }
 
-  private deriveProductVolumetric(product: any): number {
+  private deriveProductVolumetric(product: any, shipmentType: 'LCL' | 'AIR' = 'AIR'): number {
     const existing = Number(product?.Volumetric ?? product?.volumetric);
     if (!Number.isNaN(existing) && existing > 0) return existing;
 
@@ -2513,9 +2525,12 @@ private syncApprovedByControlState(): void {
     const width = Number(product?.Width ?? product?.width ?? 0) || 0;
     const height = Number(product?.Height ?? product?.height ?? 0) || 0;
     const qty = Number(product?.ExternalQty ?? product?.ExternlQty ?? 0) || 0;
+    const uomSid = product?.ProductUnit ?? product?.UomMasterSid ?? 2;
 
     if (length > 0 && width > 0 && height > 0 && qty > 0) {
-      return Number((((length * width * height) / 6000) * qty).toFixed(this.digitsAfterDecimal));
+      return this.volumetricAndCbmCalculationService.calculateVolumetric(
+        qty, length, width, height, uomSid, shipmentType, this.digitsAfterDecimal
+      );
     }
     return 0;
   }
@@ -2579,7 +2594,8 @@ private syncApprovedByControlState(): void {
       Volumetric: [derivedVolumetric],
       Width : [data?.Width ?? ''],
       Height : [data?.Height ?? ''],
-       ProductUnit : [this.resolvePackageTypeSid(data?.ProductUnit ?? data?.PackageTypeId ?? data?.PackageType)],
+       // ProductUnit is the dimension UOM (maps to DB UomMasterSid). Default to cm (2), as booking does.
+       ProductUnit : [this.resolvePackageTypeSid(data?.ProductUnit ?? data?.PackageTypeId ?? data?.PackageType) ?? 2],
       ChargeableWeight : [
         data?.ChargeableWeight ? 
         Number(data?.ChargeableWeight).toFixed(this.digitsAfterDecimal) : 
@@ -2601,7 +2617,19 @@ private syncApprovedByControlState(): void {
     this.handleCalculation(routeIndex, cargoIndex);
     this.subscription.add(
       productForm.valueChanges.subscribe(() => {
-        this.updateCargoTotals(routeIndex, cargoIndex);
+        // Recompute CBM/Volumetric from dimensions and roll the totals up to the cargo/route.
+        this.handleCalculation(routeIndex, cargoIndex);
+      })
+    );
+    // Track manual CBM edits so dimension-driven auto-calc doesn't overwrite them (booking parity).
+    // Auto-calc writes Volume with { emitEvent: false }, so any emitted change here is user-driven.
+    this.subscription.add(
+      productForm.get('Volume')?.valueChanges.subscribe((value) => {
+        if (value !== null && value !== undefined && value !== '' && Number(value) > 0) {
+          this.manualVolumeProducts.add(productForm);
+        } else {
+          this.manualVolumeProducts.delete(productForm);
+        }
       })
     );
     productForm.get("GrossWeight").valueChanges.subscribe(() => {
@@ -2633,17 +2661,24 @@ private syncApprovedByControlState(): void {
     const isFCL = cargoMode === "FCL";
     const isAir = cargoMode === 'AIR';
     const isRoad = cargoMode === 'ROAD';
+    const isDimensional = isLCL || isAir; // LCL & AIR carry UOM + dimensions, like booking
 
+    // Field-required policy mirrors booking's product form:
+    //  - Pkg Type, No of Pkg, Gross Wt. are always required.
+    //  - CBM (Volume) is required for every mode except surface/ROAD.
+    //  - UOM + Volumetric are required only for the dimensional modes (LCL/AIR).
+    //  - Length/Width/Height are optional inputs that drive the auto-calc (booking too).
     const productControlsToValidate = {
-        GrossWeight: isLCL || isFCL || isRoad,
-        NetWeight: isLCL || isFCL || isRoad,
-        Volume: isLCL || isFCL,
-        ExternalQty: isLCL || isFCL,
-        ExternalPkg: false,
-        Length: isAir,
-        Width: isAir,
-        Height: isAir,
-        ProductUnit: isAir,
+        ExternalPkg: true,
+        ExternalQty: true,
+        GrossWeight: true,
+        NetWeight: false,
+        Volume: !isRoad,
+        ProductUnit: isDimensional,
+        Volumetric: isDimensional,
+        Length: false,
+        Width: false,
+        Height: false,
     };
 
     this.quoteProducts(routeIndex, cargoIndex).controls.forEach(productControl => {
@@ -2919,7 +2954,8 @@ private syncApprovedByControlState(): void {
       }));
       this.currencyConfigService.initializeConfigurations(this.currencyMaster);
       this.chargeUnitMaster = chargeUnits.data || [];
-      this.measurementUnitList = measurementUnits.data || [];
+      // measurementUnitList stays the hardcoded { id, name } dimension-UOM list (see field
+      // declaration) so its ids match the calc service — do not overwrite it with the API data.
       this.weightUnitList = weightUnits.data || [];
       this.packageTypes = packageTypes.data || [];
       this.incoList = incos || [];
@@ -4362,6 +4398,16 @@ isRateLockDisabled(): boolean {
 
   isFclQuotationSegment(segmentOrRoute: AbstractControl | string | null | undefined): boolean {
     return this.getRouteCargoMode(segmentOrRoute) === 'FCL';
+  }
+
+  /**
+   * Mirrors booking's `usesDimensionalCargoFields()`: LCL and AIR cargo modes carry the
+   * dimensional apparatus (UOM / Length / Width / Height + auto-calculated CBM & Volumetric).
+   * Drives both which product columns render and which product fields are required.
+   */
+  isDimensionalQuotationSegment(segmentOrRoute: AbstractControl | string | null | undefined): boolean {
+    const mode = this.getRouteCargoMode(segmentOrRoute);
+    return mode === 'LCL' || mode === 'AIR';
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
@@ -6704,22 +6750,43 @@ ${this.userData.userName}`;
       targetCtrl.get('ChargeableWeight')?.enable();
       return;
     }
-    productFormArr.controls.forEach((productForm:FormGroup)=>{
-      totalPackageQty += Number(productForm.get('ExternalQty')?.value) || 0;
-      totalGrossWeight += Number(productForm.get('GrossWeight')?.value) || 0;
-      totalNetWeight += Number(productForm.get('NetWeight')?.value) || 0;
-      totalVolume += Number(productForm.get('Volume')?.value) || 0;
 
+    // Cargo mode decides the volumetric divisor (AIR = 6000, LCL = 5000) and whether the
+    // dimensional apparatus is active — same rule as booking's usesDimensionalCargoFields().
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const cargoMode = this.getRouteCargoMode(routeForm, routeForm.get('segmentType')?.value);
+    const isDimensional = cargoMode === 'LCL' || cargoMode === 'AIR';
+    const shipmentType: 'LCL' | 'AIR' = cargoMode === 'AIR' ? 'AIR' : 'LCL';
+
+    productFormArr.controls.forEach((productForm:FormGroup)=>{
+      const qty = Number(productForm.get('ExternalQty')?.value) || 0;
       const length = Number(productForm.get('Length')?.value) || 0;
       const width = Number(productForm.get('Width')?.value) || 0;
       const height = Number(productForm.get('Height')?.value) || 0;
-      const qty = Number(productForm.get('ExternalQty')?.value) || 0;
-      const mappedChargeable = Number(productForm.get('ChargeableWeight')?.value) || 0;
-      const volumetricChargeable = length > 0 && width > 0 && height > 0 && qty > 0
-        ? ((length * width * height) / 6000) * qty
-        : 0;
+      const uomSid = productForm.get('ProductUnit')?.value;
+      const gross = Number(productForm.get('GrossWeight')?.value) || 0;
 
-      totalChargeableWeight += Math.max(volumetricChargeable, mappedChargeable);
+      let volumetric = Number(productForm.get('Volumetric')?.value) || 0;
+
+      // Auto-calculate CBM & Volumetric from the dimensions for LCL/AIR, via the shared service
+      // that booking uses. The user's manually-typed CBM is preserved (manualVolumeProducts).
+      if (isDimensional && qty > 0 && length > 0 && width > 0 && height > 0 && uomSid) {
+        const { cbm, volumetric: vol } = this.volumetricAndCbmCalculationService.calculateCBMAndVolumetric(
+          qty, length, width, height, uomSid, shipmentType, this.digitsAfterDecimal
+        );
+        volumetric = vol;
+        productForm.get('Volumetric')?.setValue(vol > 0 ? vol : '', { emitEvent: false });
+        if (!this.manualVolumeProducts.has(productForm)) {
+          productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+        }
+      }
+
+      totalPackageQty += qty;
+      totalGrossWeight += gross;
+      totalNetWeight += Number(productForm.get('NetWeight')?.value) || 0;
+      totalVolume += Number(productForm.get('Volume')?.value) || 0;
+      // Chargeable weight = heavier of volumetric weight and actual gross weight (booking parity).
+      totalChargeableWeight += Math.max(volumetric, gross);
     });
     targetCtrl.get('PackageQty')?.setValue(totalPackageQty > 0 ? Number(totalPackageQty.toFixed(this.digitsAfterDecimal)) : '', { emitEvent: false });
     targetCtrl.get('GrossWeight')?.setValue(totalGrossWeight);

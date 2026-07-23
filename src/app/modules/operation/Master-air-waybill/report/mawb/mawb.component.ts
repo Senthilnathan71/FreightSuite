@@ -1573,20 +1573,30 @@ getOtherPrepaidTotal(): number {
     return this.pdfDepsPromise;
   }
 
+  // Embed the MAWB template as its original bytes. Fetching the asset and reading it
+  // via readAsDataURL preserves the source PNG exactly (an ~100 KB 8-bit indexed PNG).
+  // The previous canvas.toDataURL() re-encoded it into a much larger 32-bit truecolor
+  // PNG, inflating every embedded PDF page for no quality gain.
   private preloadMawbImage(): void {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        this.mawbImageBase64 = canvas.toDataURL('image/png');
-      }
-    };
-    img.src = 'assets/images/MAWB.png';
+    fetch('assets/images/MAWB.png')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load MAWB.png: ${response.status}`);
+        }
+        return response.blob();
+      })
+      .then((blob) => new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      }))
+      .then((dataUrl) => {
+        this.mawbImageBase64 = dataUrl;
+      })
+      .catch((error) => {
+        console.error('MAWB background preload failed:', error);
+      });
   }
 
   private buildMawbPdfContent(house?: any): any[] {

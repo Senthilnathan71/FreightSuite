@@ -181,7 +181,9 @@ auditLogs: any[] = []; // Stores audit logs
     forkJoin({
       companies: this.masterService.getAllCompanies(),
       departments: this.masterService.getAllDepartments(CompanyMasterSid),
-      menus: this.settingsService.getAllMenu(),
+      // Only CRM/Accounts/Operation menus, excluding auto-post document types and
+      // auto-approval menus (those never require manual authorization).
+      menus: this.masterService.getAuthorizableMenus(CompanyMasterSid),
       users: this.masterService.getAllFfUserByCompany(CompanyMasterSid),
       // Voucher-backed menus authorize by menu only (no department required).
       menuOnlyMenus: this.masterService.getMenuOnlyAuthorityMenus().pipe(catchError(() => of([]))),
@@ -393,6 +395,16 @@ auditLogs: any[] = []; // Stores audit logs
 
     if (this.authDetails.length > this.maxAuthorityDetails) {
       this.appSettingService.showWarning(`Only ${this.maxAuthorityDetails} authorization levels are allowed`);
+      resolve?.(false);
+      return;
+    }
+
+    // Block menus that are not authorizable (Auto Post document type or Auto Approval enabled).
+    const selectedMenuSid = Number(this.authorityForm.get('MenuMaster')?.value);
+    if (selectedMenuSid && !this.menuResults?.some((m: any) => Number(m.MenuMasterSid) === selectedMenuSid)) {
+      this.appSettingService.showWarning(
+        'This menu has Auto Post or Auto Approval enabled and cannot be set for Authorization.'
+      );
       resolve?.(false);
       return;
     }
