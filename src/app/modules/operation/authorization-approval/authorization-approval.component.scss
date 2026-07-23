@@ -1,0 +1,150 @@
+:host {
+  --aa-info: #0d6efd;
+  --aa-border: #e5e9f0;
+}
+
+.page-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* ── Filter bar ───────────────────────────────────────────── */
+.filter-bar {
+  .form-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  input.form-control-sm {
+    height: 32px;
+  }
+}
+
+/* Compact ng-select to match the small controls */
+.aa-select {
+  ::ng-deep .ng-select-container {
+    min-height: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border-color: var(--aa-border);
+    font-size: 0.82rem;
+  }
+  ::ng-deep .ng-select-container:hover {
+    border-color: var(--aa-info);
+  }
+  &.ng-select-focused ::ng-deep .ng-select-container {
+    border-color: var(--aa-info);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.12);
+  }
+  ::ng-deep .ng-value-label {
+    font-weight: 500;
+  }
+}
+
+/* ── Bulk action bar ──────────────────────────────────────── */
+.bulk-bar {
+  .selected-pill {
+    font-size: 0.78rem;
+    background: #eef4ff;
+    color: var(--aa-info);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+table {
+  font-size: 0.8rem;
+
+  thead tr {
+    th {
+      white-space: nowrap;
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      vertical-align: middle;
+    }
+  }
+
+  tbody tr {
+    transition: background 0.12s ease;
+    &:hover {
+      background: #f5f9ff;
+    }
+    td {
+      vertical-align: middle;
+    }
+    td .text-truncate {
+      max-width: 190px;
+    }
+  }
+}
+
+.doc-no {
+  font-weight: 600;
+  color: #1f2d3d;
+}
+
+.level-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Status badges */
+.badge-status {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 20px;
+  text-transform: capitalize;
+  &.st-pending { background: #fff4e0; color: #b26a00; }
+  &.st-open { background: #eef2ff; color: #3949ab; }
+  &.st-wait { background: #e8f4fd; color: #0b6ea8; }
+  &.st-approved { background: #e6f6ec; color: #1a7f37; }
+  &.st-rejected { background: #fdecea; color: #c62828; }
+}
+
+/* Waiting pill */
+.waiting-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6c757d;
+  &.warn { color: #c62828; }
+}
+
+/* Action buttons */
+.act-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  transition: background 0.12s ease, color 0.12s ease;
+  padding: 0;
+  &.approve { color: #1a7f37; &:hover { background: #e6f6ec; } }
+  &.reject { color: #c62828; &:hover { background: #fdecea; } }
+  &.view { color: var(--aa-info); &:hover { background: #eef4ff; } }
+  &.open { color: #6c757d; &:hover { background: #f1f3f5; } }
+}
+
+.feather-sm {
+  width: 15px;
+  height: 15px;
+}
+
+/* Empty state */
+.empty-state {
+  color: #98a2b3;
+  i {
+    font-size: 2rem;
+    opacity: 0.5;
+  }
+}

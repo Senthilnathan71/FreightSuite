@@ -1,0 +1,257 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12">
+    <!-- Header: title + search + report/reset -->
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+      <div class="col pb-1">
+        <div class="d-flex gap-2 align-items-center">
+          <h5 class="page-title mb-0 text-info">Authorization Approval</h5>
+          <app-favorite-star screenName="Authorization Approval" class="mt-1 me-1"></app-favorite-star>
+        </div>
+      </div>
+
+      <div class="col-md pb-1">
+        <div class="d-flex gap-2 col-12 px-0 align-items-center">
+          <div class="form-outline flex-grow-1 position-relative">
+            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
+              aria-label="Search" [(ngModel)]="filterValue" (keyup.enter)="applyFilters()">
+            <button *ngIf="filterValue"
+              class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+              (click)="clearFilterValue()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="applyFilters()">
+            <i class="fas fa-search me-1"></i> Search
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-auto pb-1">
+        <div class="d-flex flex-wrap align-items-center justify-content-md-end gap-1 gap-md-2 mx-0">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()">
+            <i class="fas fa-file-alt me-1"></i> Report
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetPage()">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter row -->
+    <div class="row bg-white mb-1 py-2 px-1 rounded shadow-sm mx-auto align-items-end g-2 filter-bar">
+      <div class="col-12 col-md-5">
+        <label class="form-label mb-1 small text-muted fw-semibold">Menu</label>
+        <ng-select class="aa-select" [items]="menus" bindLabel="MenuName" bindValue="MenuMasterSid"
+          [(ngModel)]="selectedMenu" placeholder="All Menus" [clearable]="true" (change)="onMenuChange()">
+        </ng-select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label mb-1 small text-muted fw-semibold">From</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFrom">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label mb-1 small text-muted fw-semibold">To</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="dateTo">
+      </div>
+      <div class="col-12 col-md-3">
+        <button type="button" class="btn btn-info btn-sm w-100" (click)="applyFilters()">
+          <i class="fas fa-filter me-1"></i> Apply Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Bulk action bar -->
+    <div class="row bg-white mb-1 py-2 rounded shadow-sm mx-auto align-items-center bulk-bar"
+      *ngIf="totalLengthOfCollection > 0">
+      <div class="col d-flex align-items-center gap-2">
+        <span class="selected-pill">{{ selectedCount }} selected</span>
+        <span class="small text-muted">of {{ totalLengthOfCollection }} pending</span>
+      </div>
+      <div class="col-auto d-flex gap-2">
+        <button type="button" class="btn btn-success btn-sm" [disabled]="selectedCount === 0"
+          (click)="openBulkDecision('Approved')">
+          <i class="fas fa-check me-1"></i> Approve Selected
+        </button>
+        <button type="button" class="btn btn-danger btn-sm" [disabled]="selectedCount === 0"
+          (click)="openBulkDecision('Rejected')">
+          <i class="fas fa-times me-1"></i> Reject Selected
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="row bg-white py-2 rounded shadow-sm mx-auto" *ngIf="totalLengthOfCollection > 0">
+      <div class="col-12 p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle no-wrap tablebordered table-sm mb-1">
+            <thead>
+              <tr class="bg-info">
+                <th class="bg-transparent text-light text-center" style="width:36px">
+                  <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()">
+                </th>
+                <th class="bg-transparent text-light">Form Name</th>
+                <th class="bg-transparent text-light">Transaction Id</th>
+                <th class="bg-transparent text-light">Customer Name</th>
+                <th class="bg-transparent text-light">Location</th>
+                <th class="bg-transparent text-light">Department</th>
+                <th class="bg-transparent text-light text-center">Level</th>
+                <th class="bg-transparent text-light">Submitted By</th>
+                <th class="bg-transparent text-light">Submitted Date</th>
+                <th class="bg-transparent text-light text-center">Waiting</th>
+                <th class="bg-transparent text-light text-center">Status</th>
+                <th class="bg-transparent text-light text-center" style="width:120px">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows; track rowKey(row)) {
+              <tr>
+                <td class="text-center">
+                  <input type="checkbox" [checked]="isSelected(row)" (change)="toggleRow(row)">
+                </td>
+                <td><div class="text-truncate">{{ row.MenuName }}</div></td>
+                <td><div class="text-truncate doc-no">{{ row.DocumentNo }}</div></td>
+                <td><div class="text-truncate">{{ row.CustomerName }}</div></td>
+                <td><div class="text-truncate">{{ row.LocationName }}</div></td>
+                <td><div class="text-truncate">{{ row.DepartmentName }}</div></td>
+                <td class="text-center"><span class="level-pill">{{ row.ApprovalLevel }}/{{ row.TotalLevels }}</span></td>
+                <td><div class="text-truncate">{{ row.SubmittedBy }}</div></td>
+                <td><div class="text-truncate">{{ row.SubmittedDate | formatDate }}</div></td>
+                <td class="text-center">
+                  <span class="waiting-pill" [class.warn]="row.WaitingDays > 7">
+                    {{ row.WaitingDays != null ? row.WaitingDays + ' d' : '-' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-status"
+                    [ngClass]="{
+                      'st-pending': row.CurrentStatus === 'Pending',
+                      'st-open': row.CurrentStatus === 'Open',
+                      'st-wait': row.CurrentStatus === 'WaitingForFinalApproval' || row.CurrentStatus === 'WaitingForCustomerApproval',
+                      'st-approved': row.CurrentStatus === 'Approved',
+                      'st-rejected': row.CurrentStatus === 'Rejected'
+                    }">
+                    {{ row.CurrentStatus }}
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex justify-content-center gap-1">
+                    <button class="act-btn approve" title="Approve" (click)="openDecision(row, 'Approved')">
+                      <i class="fas fa-check"></i>
+                    </button>
+                    <button class="act-btn reject" title="Reject" (click)="openDecision(row, 'Rejected')">
+                      <i class="fas fa-times"></i>
+                    </button>
+                    <button class="act-btn view" title="View" (click)="openDetails(row)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="act-btn open" title="Open document" (click)="goToLink(row)">
+                      <i-feather name="external-link" class="feather-sm"></i-feather>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="d-flex justify-content-end mt-2">
+          <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
+            (pageChange)="updatePaginationData()" [maxSize]="10" [rotate]="true" [ellipses]="false" size="sm">
+          </ngb-pagination>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 text-center py-5 empty-state" *ngIf="totalLengthOfCollection === 0">
+      <i class="fas fa-clipboard-check d-block mb-2"></i>
+      <div>No pending documents found</div>
+    </div>
+  </div>
+</div>
+
+<!-- Approve / Reject confirmation modal -->
+<ng-template #decisionModal let-modal>
+  <div class="modal-header py-2" [ngClass]="decisionType === 'Approved' ? 'bg-success' : 'bg-danger'">
+    <h6 class="modal-title text-white mb-0">
+      {{ decisionType === 'Approved' ? 'Approve' : 'Reject' }}
+      {{ isBulkDecision ? (selectedCount + ' document(s)') : 'Document' }}
+    </h6>
+    <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p class="mb-2" *ngIf="!isBulkDecision">
+      <strong>{{ decisionRow?.MenuName }}</strong> — {{ decisionRow?.DocumentNo }}
+    </p>
+    <p class="mb-2" *ngIf="isBulkDecision">
+      You are about to {{ decisionType === 'Approved' ? 'approve' : 'reject' }} {{ selectedCount }} selected document(s).
+    </p>
+    <label class="form-label mb-1 small text-muted">Remarks</label>
+    <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="decisionRemarks"
+      placeholder="Optional remarks"></textarea>
+  </div>
+  <div class="modal-footer py-2">
+    <button type="button" class="btn btn-light btn-sm" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-sm" [ngClass]="decisionType === 'Approved' ? 'btn-success' : 'btn-danger'"
+      (click)="confirmDecision(modal)">
+      Confirm {{ decisionType === 'Approved' ? 'Approve' : 'Reject' }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- Approval timeline modal -->
+<ng-template #detailsModal let-modal>
+  <div class="modal-header py-2 bg-info">
+    <h6 class="modal-title text-white mb-0">
+      Approval Details — {{ decisionRow?.MenuName }} {{ decisionRow?.DocumentNo }}
+    </h6>
+    <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <div class="mb-2">
+      Overall status:
+      <span class="badge" [ngClass]="detailStatus === 'Approved' ? 'bg-success' : 'bg-warning text-dark'">
+        {{ detailStatus }}
+      </span>
+    </div>
+    <table class="table table-sm table-bordered mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Level</th>
+          <th>Approver</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (log of detailLogs; track log) {
+        <tr>
+          <td>{{ log.approvalLevel }}<span class="text-muted small" *ngIf="log.isFinalAuthorizer"> (Final)</span></td>
+          <td>{{ log.approvedBy }}</td>
+          <td>
+            <span class="badge"
+              [ngClass]="log.approvalStatus === 'Approved' ? 'bg-success' : (log.approvalStatus === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark')">
+              {{ log.approvalStatus }}
+            </span>
+          </td>
+          <td>{{ log.approvalDate | formatDate }}</td>
+          <td>{{ log.Remarks }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer py-2">
+    <button type="button" class="btn btn-light btn-sm" (click)="modal.dismiss()">Close</button>
+  </div>
+</ng-template>

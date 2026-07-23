@@ -374,6 +374,16 @@ export const ROUTES: RouteInfo[] = [
         labelClass: '',
         submenu: []
       },
+      {
+        path: '/operation/authorization-approval',
+        title: 'Authorization Approval',
+        icon: 'fas fa-dot-circle',
+        class: '',
+        extralink: false,
+        label: '',
+        labelClass: '',
+        submenu: []
+      },
         {
         path: '/master/year/list',
         title: 'Year',

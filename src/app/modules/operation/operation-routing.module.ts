@@ -10,6 +10,7 @@ import { ProfitabilityReportListComponent } from './profitability-report/profita
 import { ProfitabilityReportEntryComponent } from './profitability-report/profitability-report-entry/profitability-report-entry.component';
 import { InvoiceListComponent } from './Invoice/invoice-list/invoice-list.component';
 import { InvoiceEntryComponent } from './Invoice/invoice-entry/invoice-entry.component';
+import { AuthorizationApprovalComponent } from './authorization-approval/authorization-approval.component';
 import { LoadingPlanEntryComponent } from './loading-plan/loading-plan-entry/loading-plan-entry.component';
 import { SplitBookingEntryComponent } from './Split-Booking/split-booking-entry/split-booking-entry.component';
 import { MergeBookingComponent } from './merge-booking/merge-booking/merge-booking.component';
@@ -641,6 +642,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Pro Rate',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Pro Rate' }],
+        },
+      },
+      {
+        path: 'authorization-approval',
+        component: AuthorizationApprovalComponent,
+        data: {
+          title: 'Authorization Approval',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Authorization Approval' }],
         },
       },
     ],
