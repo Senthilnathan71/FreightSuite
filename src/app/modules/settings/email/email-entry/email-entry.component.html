@@ -3,78 +3,74 @@
   <p style="color:white;margin:0;">Loading...</p>
 </ngx-spinner>
 
-<div class="p-2" [formGroup]="emailForm" style="margin:0;">
+<div class="p-2 email-highlight-wrap" [formGroup]="emailForm" style="margin:0;">
 
   <!-- HEADER (NO EXTRA SPACE) -->
-  <div class="d-flex justify-content-between align-items-center px-3 py-1"
-    style="background:#f8f9fa;
-           border:1px solid #e0e0e0;
-           border-radius:10px;
-           margin-bottom:10px;">
+  <div class="d-flex justify-content-between align-items-center px-1 py-1 bg-info">
 
     <!-- TITLE -->
-    <h5 class="mb-0 fw-semibold text-dark">
-      <i class="fas fa-envelope me-2 text-primary"></i>Email
+    <h5 class="mb-0 fw-semibold text-white email-highlight-title">
+      <span class="email-icon-badge">
+        <i class="fas fa-envelope text-white"></i>
+      </span>
+      Email
     </h5>
 
     <!-- BUTTONS -->
     <div class="d-flex align-items-center gap-2">
 
-      <button type="button"
-        class="btn btn-secondary btn-sm px-3"
-        (click)="closeModal()">
-        <i class="fas fa-times me-1"></i> Close
+         <button type="button"
+        class="btn btn-info btn-sm px-3 d-flex align-items-center email-send-btn"
+        style="gap:6px;"
+        (click)="saveForm()"
+        [disabled]="isFormDisabled">
+        <i class="fas fa-paper-plane"></i>
+        <span>Send</span>
       </button>
 
       <button type="button"
-        class="btn btn-secondary btn-sm px-3"
+        class="btn btn-secondary btn-sm px-3 email-reset-btn"
         (click)="resetForm()">
         <i class="fas fa-undo me-1"></i> Reset
       </button>
 
-      <!-- ✅ UPDATED SEND BUTTON -->
-      <button type="button"
-        class="btn btn-info btn-sm px-3 d-flex align-items-center"
-        style="gap:6px;"
-        (click)="saveForm()"
-        [disabled]="isFormDisabled">
+ 
 
-        <i class="fas fa-paper-plane"></i>
-        <span>Send</span>
-
+        <button type="button"
+        class="btn btn-secondary btn-sm px-2 email-close-btn"
+        title="Close"
+        (click)="closeModal()">
+        <i class="fas fa-times"></i>
       </button>
 
     </div>
   </div>
 
   <!-- MAIN CARD -->
-  <div class="p-3"
-    style="background:#fff;
-           border-radius:12px;
-           border:1px solid #e9ecef;
-           box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+  <div class="p-3 email-highlight-card"
+    style="border:2px solid #e9ecef; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
 
     <!-- EMAIL FIELDS -->
     <div class="row g-2">
 
-      <div class="col-12">
+      <div class="col-12 mt-0">
         <input type="text" formControlName="EmailTo"
           placeholder="To *"
-          class="form-control"
+          class="form-control email-highlight-input"
           style="border-radius:8px;">
       </div>
 
       <div class="col-md-6">
         <input type="text" formControlName="EmailCC"
           placeholder="CC *"
-          class="form-control"
+          class="form-control email-highlight-input"
           style="border-radius:8px;">
       </div>
 
       <div class="col-md-6">
         <input type="text" formControlName="EmailBCC"
           placeholder="BCC"
-          class="form-control"
+          class="form-control email-highlight-input"
           style="border-radius:8px;">
       </div>
 
@@ -84,24 +80,26 @@
     <div class="row mt-2">
 
       <!-- ATTACHMENTS -->
-      <aside class="col-md-4">
+      <aside class="col-md-4 attachment-highlight-panel">
 
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-2 attachment-highlight-header">
           <h6 class="fw-semibold mb-0">Attachments</h6>
 
           <div>
             <i class="fas fa-plus text-success me-2"
+              class="attachment-action-icon"
               style="cursor:pointer;"
               (click)="fileInput.click()"></i>
 
             <i class="fas fa-trash text-danger"
+              class="attachment-action-icon"
               style="cursor:pointer;"
               (click)="clearFiles()"></i>
           </div>
         </div>
 
         <!-- DROP AREA -->
-        <div class="text-center mb-2"
+        <div class="text-center mb-2 upload-highlight-zone"
           style="border:2px dashed #dee2e6;
                  border-radius:10px;
                  padding:18px;
@@ -111,7 +109,7 @@
           (dragover)="onDragOver($event)"
           (click)="fileInput.click()">
 
-          <i class="fas fa-cloud-upload-alt text-primary mb-2"></i>
+          <i class="fas fa-cloud-upload-alt text-primary mb-2 upload-highlight-icon"></i>
           <p class="mb-0 small text-muted">Upload files</p>
 
           <input type="file" class="d-none" multiple #fileInput (change)="onFileChange($event)">
@@ -120,7 +118,7 @@
         <!-- FILE LIST -->
         <div *ngIf="selectedFiles.length > 0">
           <div *ngFor="let file of selectedFiles; let i = index"
-            class="d-flex justify-content-between align-items-center mb-2 px-2 py-1"
+            class="d-flex justify-content-between align-items-center mb-2 px-2 py-1 file-highlight-row"
             style="background:#f1f3f5;border-radius:8px;">
 
             <span class="small text-truncate">{{file.name}}</span>
@@ -140,16 +138,16 @@
       </aside>
 
       <!-- MESSAGE -->
-      <aside class="col-md-8">
+      <aside class="col-md-8 message-highlight-panel">
 
         <div class="mb-2">
           <input type="text" formControlName="Subject"
             placeholder="Subject *"
-            class="form-control"
+            class="form-control email-highlight-input"
             style="border-radius:8px;">
         </div>
 
-        <textarea class="form-control"
+        <textarea class="form-control email-highlight-input message-highlight-box"
           formControlName="Mailbody"
           rows="5"
           placeholder="Write your message..."

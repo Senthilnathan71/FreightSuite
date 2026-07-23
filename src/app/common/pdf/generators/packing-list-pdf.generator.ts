@@ -4,16 +4,39 @@
  */
 
 import { PackingListPdfData } from '../interfaces/pdf-document.interfaces';
-import { buildDivider } from '../builders/pdf-section.builder';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
 import { formatDate, formatNumber } from '../helpers/pdf-formatters';
+
+function buildPackingListHeader(data: PackingListPdfData): any {
+  return {
+    stack: [
+      buildCompanyHeader(data),
+      {
+        canvas: [
+          {
+            type: 'line',
+            x1: 0,
+            y1: 0,
+            x2: 575,
+            y2: 0,
+            lineWidth: 0.25,
+            lineColor: '#000000'
+          }
+        ],
+        margin: [0, 2, 0, 0]
+      }
+    ],
+    margin: [10, 10, 10, 0]
+  };
+}
 
 export function generatePackingListDocument(data: PackingListPdfData): any {
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: data.config?.pageMargins || [20, 20, 20, 55],
+    pageMargins: data.config?.pageMargins || [20, 82, 20, 55],
     background: function (currentPage, pageSize) {
       return {
         canvas: [
@@ -24,9 +47,8 @@ export function generatePackingListDocument(data: PackingListPdfData): any {
         ]
       };
     },
+    header: () => buildPackingListHeader(data),
     content: [
-      buildPackingListHeader(data),
-      buildDivider({ width: 575, margin: [-10, 4, -10, 6], thickness: 0.25 }),
       {
         text: 'Packing List',
         alignment: 'center',
@@ -53,86 +75,6 @@ export function generatePackingListDocument(data: PackingListPdfData): any {
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
   };
-}
-
-function buildPackingListHeader(data: PackingListPdfData): any {
-  const company: any = data.company || {};
-  const branch: any = data.branch || {};
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || branch?.PostalCode || branch?.ZipCode || company?.postalCode || company?.PostalCode || company?.ZipCode || '';
-  const phone = branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || company?.phoneNumber || company?.PhoneNumber || company?.Phone || '';
-  const cityLine: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (cityLine.length) cityLine.push({ text: ', ' });
-    if (Array.isArray(text)) {
-      cityLine.push(...text);
-    } else {
-      cityLine.push({ text });
-    }
-  };
-
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-  if (addressLine2) appendText(addressLine2);
-  if (city) appendText(city);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
-
-  const companyInfoStack: any[] = [
-    { text: (company?.companyName || '').toUpperCase(), style: 'companyName', fontSize: 14, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 4] },
-    { text: branch?.branchName || '', style: 'branchName', fontSize: 10, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 2] },
-    { text: branch?.addressLine1 || company?.addressLine1 || '', style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] },
-    { text: cityLine, style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
-  ];
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [70, 70], alignment: slot, margin: slot === 'right' ? [0, 0, 8, 0] : [8, 0, 0, 0] });
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin: companyMargin });
-    }
-
-    return { stack };
-  };
-
-  return {
-    table: {
-      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-    },
-    layout: 'noBorders',
-    margin: [0, 0, 0, 5]
-  };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildPartyBlocks(data: PackingListPdfData): any {
@@ -413,7 +355,9 @@ export function transformPackingListApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || company?.city || '',
       postalCode: company?.postalCode || company?.postal_code || company?.PostalCode || company?.ZipCode || '',
-      phoneNumber: company?.phoneNumber || company?.PhoneNumber || company?.Phone || ''
+      phoneNumber: company?.phoneNumber || company?.PhoneNumber || company?.Phone || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.branchName || branch?.BranchName || '',
@@ -422,7 +366,9 @@ export function transformPackingListApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.PostalCode || branch?.ZipCode || branch?.postal_code || '',
       phoneNumber: branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.userName || userData?.UserName || '',
