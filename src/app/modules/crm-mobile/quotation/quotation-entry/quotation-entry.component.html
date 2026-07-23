@@ -1172,11 +1172,18 @@
                                         <th class="bg-transparent text-light" scope="col"
                                           *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1"></th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col"> Pkg Type</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg</th>
+                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col"> Pkg Type <span class="text-danger">*</span></th>
+                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg <span class="text-danger">*</span></th>
+                                        @if(isDimensionalQuotationSegment(route)){
+                                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
+                                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">L</th>
+                                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">W</th>
+                                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">H</th>
+                                          <th class="bg-transparent text-light dofi-min-w-100" scope="col">Volumetric <span class="text-danger">*</span></th>
+                                        }
                                       <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Wt. <span class="text-danger">*</span></th>
                                       <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Wt.</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM <span class="text-danger" *ngIf="!isAirQuotationSegment(route)">*</span></th>
+                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM <span class="text-danger" *ngIf="!isSurfaceQuotationSegment(route)">*</span></th>
                                         <th class="bg-transparent text-light">Is Haz</th>
                                         <th class="bg-transparent text-light">Non Stackable</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
@@ -1187,7 +1194,7 @@
                                     </thead>
                                     <tbody>
                                       <tr *ngIf="quoteProducts(routeIndex, cargoIndex).controls.length === 0" class="text-center">
-                                        <td colspan="11" class="ps-3">No products added.</td>
+                                        <td colspan="16" class="ps-3">No products added.</td>
                                       </tr>
                                       <tr *ngFor="let product of quoteProducts(routeIndex, cargoIndex).controls; let productIndex = index"
                                         [formGroupName]="productIndex"
@@ -1217,6 +1224,29 @@
                                         <td>
                                           <input type="text" formControlName="ExternalQty" class="custom-input-field sm text-end" [onlyNumbers]>
                                         </td>
+                                        @if(isDimensionalQuotationSegment(route)){
+                                        <td>
+                                          <ng-select class="ng-select" formControlName="ProductUnit"
+                                            [items]="measurementUnitList" bindLabel="name" bindValue="id"
+                                            appendTo="body" placeholder=""></ng-select>
+                                        </td>
+                                        <td>
+                                          <input type="text" formControlName="Length" class="custom-input-field sm text-end"
+                                            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2">
+                                        </td>
+                                        <td>
+                                          <input type="text" formControlName="Width" class="custom-input-field sm text-end"
+                                            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2">
+                                        </td>
+                                        <td>
+                                          <input type="text" formControlName="Height" class="custom-input-field sm text-end"
+                                            DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2">
+                                        </td>
+                                        <td>
+                                          <input type="text" formControlName="Volumetric" class="custom-input-field sm text-end"
+                                            DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                                        </td>
+                                        }
                                         <td>
                                           <input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                         </td>
