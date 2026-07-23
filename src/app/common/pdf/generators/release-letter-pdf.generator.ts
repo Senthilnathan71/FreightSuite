@@ -59,15 +59,21 @@ function buildHeader(data: ReleaseLetterPdfData): any {
 
 function buildTitle(data: ReleaseLetterPdfData): any {
   return {
-    table: {
-      widths: ['*'],
-      body: [[{ text: data.reportTitle, bold: true, alignment: 'center', fontSize: 12, margin: [0, 4, 0, 4] }]]
-    },
-    layout: {
-      hLineWidth: (i: number) => (i === 0 ? 0.25 : 0),
-      vLineWidth: () => 0,
-      hLineColor: () => '#000'
-    },
+    stack: [
+      {
+        canvas: [{
+          type: 'line',
+          x1: 8,
+          y1: 0,
+          x2: 548,
+          y2: 0,
+          lineWidth: 0.25,
+          lineColor: '#000'
+        }],
+        margin: [0, 0, 0, 0]
+      },
+      { text: data.reportTitle, bold: true, alignment: 'center', fontSize: 12, margin: [0, 4, 0, 4] }
+    ],
     margin: [0, 0, 0, 6]
   };
 }
