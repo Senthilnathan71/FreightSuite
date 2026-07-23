@@ -314,7 +314,9 @@ export function transformPaymentRequestApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.city || '',
       postalCode: company?.postalCode || '',
-      phoneNumber: company?.phoneNumber || company?.Phone || ''
+      phoneNumber: company?.phoneNumber || company?.Phone || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.branchName || branch?.BranchName || '',
@@ -323,7 +325,9 @@ export function transformPaymentRequestApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || '',
       phoneNumber: branch?.phoneNumber || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.userName || userData?.UserName || '',

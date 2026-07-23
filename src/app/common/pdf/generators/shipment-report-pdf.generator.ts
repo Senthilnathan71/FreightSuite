@@ -621,7 +621,9 @@ export function transformShipmentReportApiData(
       city: company?.City || company?.city || '',
       postalCode: company?.ZipCode || company?.postalCode || '',
       phoneNumber: company?.Phone || company?.phoneNumber || '',
-      email: company?.Email || company?.email || ''
+      email: company?.Email || company?.email || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.BranchName || branch?.branchName || '',
@@ -630,7 +632,9 @@ export function transformShipmentReportApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.UserName || userData?.userName || '',
