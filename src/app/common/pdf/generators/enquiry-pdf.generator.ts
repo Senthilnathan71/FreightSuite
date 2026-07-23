@@ -536,7 +536,9 @@ export function transformEnquiryApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
       postalCode: company?.postal_code || company?.ZipCode || '',
-      phoneNumber: company?.phoneNumber || company?.Phone || ''
+      phoneNumber: company?.phoneNumber || company?.Phone || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.branchName || '',
@@ -545,7 +547,9 @@ export function transformEnquiryApiData(
       cityName: branch?.cityMaster?.cityName || '',
       postalCode: branch?.postalCode || '',
       phoneNumber: branch?.phoneNumber || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.userName || '',

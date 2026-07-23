@@ -715,7 +715,9 @@ export function transformBookingApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
       postalCode: company?.postal_code || company?.ZipCode || '',
-      phoneNumber: company?.phoneNumber || company?.Phone || ''
+      phoneNumber: company?.phoneNumber || company?.Phone || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.branchName || '',
@@ -724,7 +726,9 @@ export function transformBookingApiData(
       cityName: branch?.cityMaster?.cityName || '',
       postalCode: branch?.postalCode || '',
       phoneNumber: branch?.phoneNumber || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.userName || '',
@@ -895,7 +899,9 @@ export function transformCroApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
       postalCode: company?.postal_code || '',
-      phoneNumber: company?.phoneNumber || ''
+      phoneNumber: company?.phoneNumber || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.branchName || '',
@@ -903,7 +909,9 @@ export function transformCroApiData(
       cityName: branch?.cityMaster?.cityName || '',
       postalCode: branch?.postalCode || '',
       phoneNumber: branch?.phoneNumber || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.userName || '',

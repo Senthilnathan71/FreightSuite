@@ -252,7 +252,9 @@ export function transformImdemintyApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || company?.city || '',
       postalCode: company?.ZipCode || company?.postalCode || '',
-      phoneNumber: company?.Phone || company?.phoneNumber || ''
+      phoneNumber: company?.Phone || company?.phoneNumber || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.BranchName || branch?.branchName || '',
@@ -261,7 +263,9 @@ export function transformImdemintyApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.UserName || userData?.userName || '',

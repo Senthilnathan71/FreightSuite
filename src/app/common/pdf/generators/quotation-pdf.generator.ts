@@ -773,7 +773,9 @@ export function transformQuotationApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
       postalCode: company?.postal_code || company?.ZipCode || '',
-      phoneNumber: company?.phoneNumber || company?.Phone || ''
+      phoneNumber: company?.phoneNumber || company?.Phone || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.branchName || '',
@@ -782,7 +784,9 @@ export function transformQuotationApiData(
       cityName: branch?.cityMaster?.cityName || '',
       postalCode: branch?.postalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.userName || '',
