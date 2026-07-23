@@ -11,6 +11,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { AuthorizationApprovalService } from './authorization-approval.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface';
 
 @Component({
   selector: 'app-authorization-approval',
@@ -25,6 +27,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     NgxSpinnerModule,
     FavoriteStarComponent,
     CustomDatePipe,
+    CommonPaginationComponent,
   ],
   providers: [CustomDatePipe],
   templateUrl: './authorization-approval.component.html',
@@ -50,6 +53,13 @@ export class AuthorizationApprovalComponent implements OnInit {
   page = 1;
   pageSize = 10;
   totalLengthOfCollection = 0;
+  paginationConfig: PaginationConfig = {
+    page: 1,
+    pageSize: 10,
+    totalRecords: 0,
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3,
+  };
 
   // Selection (keyed by menu+document)
   selectedKeys = new Set<string>();
@@ -128,6 +138,7 @@ export class AuthorizationApprovalComponent implements OnInit {
           this.rows = [];
           this.totalLengthOfCollection = 0;
         }
+        this.syncPaginationConfig();
         this.pruneSelection();
         this.spinner.hide();
       },
@@ -169,6 +180,26 @@ export class AuthorizationApprovalComponent implements OnInit {
   }
 
   updatePaginationData(): void {
+    this.loadPending();
+  }
+
+  private syncPaginationConfig(): void {
+    this.paginationConfig = {
+      ...this.paginationConfig,
+      page: this.page,
+      pageSize: this.pageSize,
+      totalRecords: this.totalLengthOfCollection,
+    };
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.loadPending();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
     this.loadPending();
   }
 

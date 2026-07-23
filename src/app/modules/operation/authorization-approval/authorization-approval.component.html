@@ -9,34 +9,16 @@
 
 <div class="row compact-form">
   <div class="col-12">
-    <!-- Header: title + search + report/reset -->
-    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
-      <div class="col pb-1">
-        <div class="d-flex gap-2 align-items-center">
-          <h5 class="page-title mb-0 text-info">Authorization Approval</h5>
-          <app-favorite-star screenName="Authorization Approval" class="mt-1 me-1"></app-favorite-star>
+    <!-- Toolbar: title + actions + filters (single card) -->
+    <div class="aa-toolbar bg-white rounded shadow-sm mb-2">
+      <!-- header line -->
+      <div class="aa-toolbar-head d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="aa-title-icon"><i class="fas fa-clipboard-check"></i></span>
+          <h5 class="page-title mb-0">Authorization Pending</h5>
+          <app-favorite-star screenName="Authorization Approval" class="ms-1"></app-favorite-star>
         </div>
-      </div>
-
-      <div class="col-md pb-1">
-        <div class="d-flex gap-2 col-12 px-0 align-items-center">
-          <div class="form-outline flex-grow-1 position-relative">
-            <input name="filterValue" type="text" class="form-control pe-5" placeholder="Search"
-              aria-label="Search" [(ngModel)]="filterValue" (keyup.enter)="applyFilters()">
-            <button *ngIf="filterValue"
-              class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-              (click)="clearFilterValue()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="applyFilters()">
-            <i class="fas fa-search me-1"></i> Search
-          </button>
-        </div>
-      </div>
-
-      <div class="col-md-auto pb-1">
-        <div class="d-flex flex-wrap align-items-center justify-content-md-end gap-1 gap-md-2 mx-0">
+        <div class="d-flex gap-2">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="report()">
             <i class="fas fa-file-alt me-1"></i> Report
           </button>
@@ -45,34 +27,46 @@
           </button>
         </div>
       </div>
+
+      <!-- filter line -->
+      <div class="row g-2 align-items-end aa-filters">
+        <div class="col-12 col-md-3">
+          <label class="aa-label">Search</label>
+          <div class="position-relative">
+            <input name="filterValue" type="text" class="form-control form-control-sm pe-4"
+              placeholder="Transaction, customer…" [(ngModel)]="filterValue" (keyup.enter)="applyFilters()">
+            <button *ngIf="filterValue" type="button"
+              class="btn btn-sm position-absolute top-50 end-0 translate-middle-y p-1 text-secondary"
+              (click)="clearFilterValue()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="aa-label">Menu</label>
+          <ng-select class="aa-select" [items]="menus" bindLabel="MenuName" bindValue="MenuMasterSid"
+            [(ngModel)]="selectedMenu" placeholder="All Menus" [clearable]="true" (change)="onMenuChange()">
+          </ng-select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="aa-label">From</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFrom">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="aa-label">To</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="dateTo">
+        </div>
+        <div class="col-12 col-md-2">
+          <button type="button" class="btn btn-info btn-sm w-100 aa-apply" (click)="applyFilters()">
+            <i class="fas fa-filter me-1"></i> Apply
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Filter row -->
-    <div class="row bg-white mb-1 py-2 px-1 rounded shadow-sm mx-auto align-items-end g-2 filter-bar">
-      <div class="col-12 col-md-5">
-        <label class="form-label mb-1 small text-muted fw-semibold">Menu</label>
-        <ng-select class="aa-select" [items]="menus" bindLabel="MenuName" bindValue="MenuMasterSid"
-          [(ngModel)]="selectedMenu" placeholder="All Menus" [clearable]="true" (change)="onMenuChange()">
-        </ng-select>
-      </div>
-      <div class="col-6 col-md-2">
-        <label class="form-label mb-1 small text-muted fw-semibold">From</label>
-        <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFrom">
-      </div>
-      <div class="col-6 col-md-2">
-        <label class="form-label mb-1 small text-muted fw-semibold">To</label>
-        <input type="date" class="form-control form-control-sm" [(ngModel)]="dateTo">
-      </div>
-      <div class="col-12 col-md-3">
-        <button type="button" class="btn btn-info btn-sm w-100" (click)="applyFilters()">
-          <i class="fas fa-filter me-1"></i> Apply Filters
-        </button>
-      </div>
-    </div>
-
-    <!-- Bulk action bar -->
+    <!-- Bulk action bar — only visible while rows are selected -->
     <div class="row bg-white mb-1 py-2 rounded shadow-sm mx-auto align-items-center bulk-bar"
-      *ngIf="totalLengthOfCollection > 0">
+      *ngIf="selectedCount > 0">
       <div class="col d-flex align-items-center gap-2">
         <span class="selected-pill">{{ selectedCount }} selected</span>
         <span class="small text-muted">of {{ totalLengthOfCollection }} pending</span>
@@ -119,7 +113,11 @@
                   <input type="checkbox" [checked]="isSelected(row)" (change)="toggleRow(row)">
                 </td>
                 <td><div class="text-truncate">{{ row.MenuName }}</div></td>
-                <td><div class="text-truncate doc-no">{{ row.DocumentNo }}</div></td>
+                <td>
+                  <a *ngIf="row.authorizeLink" class="doc-no doc-link text-truncate d-inline-block"
+                    (click)="goToLink(row)" title="Open document">{{ row.DocumentNo }}</a>
+                  <span *ngIf="!row.authorizeLink" class="doc-no text-truncate d-inline-block">{{ row.DocumentNo }}</span>
+                </td>
                 <td><div class="text-truncate">{{ row.CustomerName }}</div></td>
                 <td><div class="text-truncate">{{ row.LocationName }}</div></td>
                 <td><div class="text-truncate">{{ row.DepartmentName }}</div></td>
@@ -164,11 +162,11 @@
             </tbody>
           </table>
         </div>
-        <div class="d-flex justify-content-end mt-2">
-          <ngb-pagination [collectionSize]="totalLengthOfCollection" [(page)]="page" [pageSize]="pageSize"
-            (pageChange)="updatePaginationData()" [maxSize]="10" [rotate]="true" [ellipses]="false" size="sm">
-          </ngb-pagination>
-        </div>
+        <app-common-pagination
+          [config]="paginationConfig"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)">
+        </app-common-pagination>
       </div>
     </div>
 

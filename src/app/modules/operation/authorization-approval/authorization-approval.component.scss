@@ -7,26 +7,65 @@
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: 0.2px;
+  color: #0b6ea8;
 }
 
-/* ── Filter bar ───────────────────────────────────────────── */
-.filter-bar {
-  .form-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+/* ── Toolbar card (title + actions + filters) ─────────────── */
+.aa-toolbar {
+  padding: 0.85rem 1rem 1rem;
+  border: 1px solid var(--aa-border);
+
+  .aa-toolbar-head {
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #eef2f7;
   }
 
-  input.form-control-sm {
-    height: 32px;
+  .aa-title-icon {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #e8f4fd;
+    color: #0b6ea8;
+    font-size: 0.9rem;
+  }
+
+  .aa-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #0b6ea8;
+    margin-bottom: 0.25rem;
+  }
+
+  .aa-filters {
+    input.form-control-sm {
+      height: 34px;
+      border-radius: 6px;
+      border-color: var(--aa-border);
+    }
+    input.form-control-sm:focus {
+      border-color: var(--aa-info);
+      box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.12);
+    }
+  }
+
+  .aa-apply {
+    height: 34px;
+    font-weight: 600;
   }
 }
 
 /* Compact ng-select to match the small controls */
 .aa-select {
   ::ng-deep .ng-select-container {
-    min-height: 32px;
-    height: 32px;
+    min-height: 34px;
+    height: 34px;
     border-radius: 6px;
     border-color: var(--aa-border);
     font-size: 0.82rem;
@@ -87,6 +126,17 @@ table {
 .doc-no {
   font-weight: 600;
   color: #1f2d3d;
+  max-width: 220px;
+}
+
+.doc-link {
+  color: #0b6ea8;
+  cursor: pointer;
+  text-decoration: none;
+  &:hover {
+    color: #095a86;
+    text-decoration: underline;
+  }
 }
 
 .level-pill {
