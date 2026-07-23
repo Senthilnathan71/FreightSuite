@@ -1,11 +1,9 @@
 import { InvoicePdfData } from '../interfaces/pdf-document.interfaces';
 import { PdfTermItem } from '../interfaces/pdf-base.interface';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { buildSectionTitle } from '../builders/pdf-section.builder';
 import { PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS, getPdfStyles } from '../styles/pdf-styles';
 import { formatDate, formatNumberWithCommas } from '../helpers/pdf-formatters';
-
-const LOGO_HEIGHT_PT = 75;
-const LOGO_FIT: [number, number] = [110, LOGO_HEIGHT_PT];
 
 export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
@@ -52,140 +50,12 @@ export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
 }
 
 function buildHeader(data: InvoicePdfData): any {
-  const company = data.company || {} as any;
-  const branch = data.branch || {} as any;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const companyStack: any[] = [];
-
-  if (company.companyName) {
-    companyStack.push({
-      text: String(company.companyName).toUpperCase(),
-      style: 'companyName',
-      fontSize: 16,
-      bold: true,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 0, 0, 1],
-      noWrap: true
-    });
-  }
-
-  const branchName = branch.branchName || branch.BranchName || '';
-  if (branchName) {
-    companyStack.push({
-      text: String(branchName).toUpperCase(),
-      fontSize: 12,
-      bold: true,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 0, 0, 1],
-      noWrap: true
-    });
-  }
-
-  const addressLine1 = branch.addressLine1 || company.addressLine1;
-  if (addressLine1) {
-    companyStack.push({
-      text: addressLine1,
-      style: 'addressText',
-      fontSize: 10,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 0, 0, 1],
-      noWrap: true
-    });
-  }
-
-  const addressLine2 = branch.addressLine2 || company.addressLine2;
-  const city = branch.cityMaster?.cityName || branch.cityName || branch.City || company.city || '';
-  const postalCode = branch.postalCode || company.postalCode;
-  const phone = branch.phoneNumber || company.phoneNumber;
-  const addressDetailsLine: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (addressDetailsLine.length) addressDetailsLine.push({ text: ', ', noWrap: true });
-    if (Array.isArray(text)) {
-      addressDetailsLine.push(...text);
-    } else {
-      addressDetailsLine.push({ text, noWrap: true });
-    }
-  };
-
-  if (addressLine2) appendText(addressLine2);
-  if (city) appendText(city);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true, noWrap: true }, { text: postalCode, noWrap: true }]);
-  if (phone) appendText([{ text: 'Ph.no : ', bold: true, noWrap: true }, { text: phone, noWrap: true }]);
-
-  if (addressDetailsLine.length) {
-    companyStack.push({
-      text: addressDetailsLine,
-      style: 'addressText',
-      fontSize: 10,
-      alignment: printSettings.companyAlignment,
-      noWrap: true
-    });
-  }
-
-  const slotAlign: Record<'left' | 'center' | 'right', 'left' | 'center' | 'right'> = {
-    left: 'left',
-    center: 'center',
-    right: 'right'
-  };
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && data.logo) {
-      stack.push(buildPdfLogoColumn(data.logo, slotAlign[slot]));
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyStack, margin: companyMargin });
-    }
-    return { stack };
-  };
-
   return {
     stack: [
-      {
-        table: {
-          widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-          body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-        },
-        layout: {
-          hLineWidth: () => 0,
-          vLineWidth: () => 0,
-          paddingLeft: () => 0,
-          paddingRight: () => 0,
-          paddingTop: () => 0,
-          paddingBottom: () => 0
-        },
-        margin: [0, 5, 0, 2]
-      },
+      buildCompanyHeader(data),
       horizontalLine(0.1, [0, 0, 0, 0])
     ]
   };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 410];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [410, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: InvoicePdfData): any {
@@ -487,21 +357,6 @@ function buildLabeledText(label: string, value: any, labelWidth = 100): any {
       { width: '*', text: value || '' }
     ]
   };
-}
-
-function buildPdfLogoColumn(logo: string | null | undefined, alignment: 'left' | 'center' | 'right' = 'left'): any {
-  if (!logo || logo === 'none') {
-    return { text: '', width: 1 };
-  }
-
-  if (logo.startsWith('data:image/svg+xml')) {
-    const svgPayload = logo.split(',')[1] || '';
-    const isBase64 = logo.includes(';base64,');
-    const svg = isBase64 ? atob(svgPayload) : decodeURIComponent(svgPayload);
-    return { svg, fit: LOGO_FIT, alignment, margin: [8, 0, 15, 0] };
-  }
-
-  return { image: logo, fit: LOGO_FIT, alignment, margin: [8, 0, 15, 0] };
 }
 
 function formatContainerNumberType(printData: any, fallback = ''): string {

@@ -141,7 +141,7 @@ function buildTitle(data: ProofOfDeliveryPdfData): any {
       ]
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 || i === 1 ? 0.5 : 0),
+      hLineWidth: (i: number) => (i === 0 ? 0.5 : 0),
       vLineWidth: () => 0,
       hLineColor: () => '#000',
       paddingLeft: () => 0,

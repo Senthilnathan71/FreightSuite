@@ -4,35 +4,58 @@
  */
 
 import { CommercialInvoicePdfData } from '../interfaces/pdf-document.interfaces';
-import { buildDivider } from '../builders/pdf-section.builder';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
 import { formatDate, formatNumber } from '../helpers/pdf-formatters';
+
+function buildCommercialInvoiceHeader(data: CommercialInvoicePdfData): any {
+  return {
+    stack: [
+      buildCompanyHeader(data),
+      {
+        canvas: [
+          {
+            type: 'line',
+            x1: 15,
+            y1: 0,
+            x2: 805,
+            y2: 0,
+            lineWidth: 0.25,
+            lineColor: '#000000'
+          }
+        ],
+        margin: [0, 2, 0, 0]
+      }
+    ],
+    margin: [10, 8, 10, 0]
+  };
+}
 
 export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData): any {
   const baseStyles = getPdfStyles();
   const styles = {
     ...baseStyles,
-    documentTitle: { ...baseStyles.documentTitle, fontSize: 8 },
-    labelBold: { ...baseStyles.labelBold, fontSize: 8 },
-    tableHeader: { ...baseStyles.tableHeader, fontSize: 8 },
-    tableCell: { ...baseStyles.tableCell, fontSize: 8 },
-    tableCellBold: { ...baseStyles.tableCellBold, fontSize: 8, bold: true }
+    documentTitle: { ...baseStyles.documentTitle, fontSize: 13 },
+    labelBold: { ...baseStyles.labelBold, fontSize: 10 },
+    tableHeader: { ...baseStyles.tableHeader, fontSize: 10 },
+    tableCell: { ...baseStyles.tableCell, fontSize: 10 },
+    tableCellBold: { ...baseStyles.tableCellBold, fontSize: 10, bold: true }
   };
   const lightBorderedLayout = {
     hLineWidth: () => 0.5,
     vLineWidth: () => 0.5,
     hLineColor: () => '#000000',
     vLineColor: () => '#000000',
-    paddingLeft: () => 4,
-    paddingRight: () => 4,
-    paddingTop: () => 3,
-    paddingBottom: () => 3
+    paddingLeft: () => 5,
+    paddingRight: () => 5,
+    paddingTop: () => 5,
+    paddingBottom: () => 5
   };
 
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || 'landscape',
-    pageMargins: data.config?.pageMargins || [20, 20, 20, 30],
+    pageMargins: data.config?.pageMargins || [20, 82, 20, 30],
     background: function (currentPage, pageSize) {
       return {
         canvas: [
@@ -43,14 +66,13 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
         ]
       };
     },
+    header: () => buildCommercialInvoiceHeader(data),
     content: [
-      buildCommercialInvoiceHeader(data),
-      buildDivider({ width: 800, margin: [0, 4, 0, 6], thickness: 1 }),
       {
         text: 'Commercial Invoice',
         alignment: 'center',
         bold: true,
-        fontSize: 8,
+        fontSize: 13,
         margin: [0, 0, 0, 8]
       },
       buildHeaderBlocks(data, lightBorderedLayout),
@@ -62,25 +84,25 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
       columns: [
         {
           text: `Printed By : ${data.userData?.userName || ''}`,
-          fontSize: 8,
+          fontSize: 9,
           alignment: 'left',
           width: 120
         },
         {
           text: 'This document is computer-generated and does not require a signature.',
-          fontSize: 8,
+          fontSize: 9,
           alignment: 'center',
           width: '*'
         },
         {
           text: `Printed On : ${formatDate(new Date())}`,
-          fontSize: 8,
+          fontSize: 9,
           alignment: 'right',
           width: 120
         },
         {
           text: currentPage && pageCount ? `Page ${currentPage} of ${pageCount}` : '',
-          fontSize: 8,
+          fontSize: 9,
           alignment: 'right',
           width: 60
         }
@@ -88,88 +110,8 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
       margin: [25, -6, 25, 0]
     }),
     styles,
-    defaultStyle: { ...PDF_DEFAULT_CONFIG.defaultStyle, fontSize: 8 }
+    defaultStyle: { ...PDF_DEFAULT_CONFIG.defaultStyle, fontSize: 10 }
   };
-}
-
-function buildCommercialInvoiceHeader(data: CommercialInvoicePdfData): any {
-  const company: any = data.company || {};
-  const branch: any = data.branch || {};
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-
-  const city = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || branch?.PostalCode || branch?.ZipCode || company?.postalCode || company?.PostalCode || company?.ZipCode || '';
-  const phone = branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || company?.phoneNumber || company?.PhoneNumber || company?.Phone || '';
-  const cityLine: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (cityLine.length) cityLine.push({ text: ', ' });
-    if (Array.isArray(text)) {
-      cityLine.push(...text);
-    } else {
-      cityLine.push({ text });
-    }
-  };
-
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-  if (addressLine2) appendText(addressLine2);
-  if (city) appendText(city);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phone) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phone }]);
-
-  const companyInfoStack: any[] = [
-    { text: (company?.companyName || '').toUpperCase(), style: 'companyName', fontSize: 14, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 4] },
-    { text: branch?.branchName || '', style: 'branchName', fontSize: 10, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 2] },
-    { text: branch?.addressLine1 || company?.addressLine1 || '', style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] },
-    { text: cityLine, style: 'addressText', fontSize: 8, alignment: printSettings.companyAlignment, margin: [0, 0, 0, 2] }
-  ];
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [70, 70], alignment: slot, margin: slot === 'right' ? [0, 0, 8, 0] : [8, 0, 0, 0] });
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin: companyMargin });
-    }
-
-    return { stack };
-  };
-
-  return {
-    table: {
-      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-    },
-    layout: 'noBorders',
-    margin: [0, 0, 0, 5]
-  };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildHeaderBlocks(data: CommercialInvoicePdfData, layout: any): any {
@@ -362,7 +304,9 @@ export function transformCommercialInvoiceApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || company?.city || '',
       postalCode: company?.postalCode || company?.PostalCode || company?.postal_code || company?.ZipCode || '',
-      phoneNumber: company?.phoneNumber || company?.PhoneNumber || company?.Phone || ''
+      phoneNumber: company?.phoneNumber || company?.PhoneNumber || company?.Phone || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.branchName || branch?.BranchName || '',
@@ -371,7 +315,9 @@ export function transformCommercialInvoiceApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.PostalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.userName || userData?.UserName || '',

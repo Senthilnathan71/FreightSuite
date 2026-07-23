@@ -3,6 +3,7 @@ import {
   ReleaseLetterLclCargoRow,
   ReleaseLetterPdfData
 } from '../interfaces/pdf-document.interfaces';
+import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
 import { getPdfStyles } from '../styles/pdf-styles';
 
@@ -50,94 +51,10 @@ export function generateReleaseLetterDocument(data: ReleaseLetterPdfData): any {
 }
 
 function buildHeader(data: ReleaseLetterPdfData): any {
-  const company: any = data.company || {};
-  const branch: any = data.branch || {};
-  const logo = data.logo;
-  const printSettings = data.printSettings || {
-    logoPosition: 'left' as const,
-    companyPosition: 'center' as const,
-    companyAlignment: 'center' as const
-  };
-  const locationLine: any[] = [];
-  const appendText = (text: string | any[]) => {
-    if (locationLine.length) locationLine.push({ text: ', ' });
-    if (Array.isArray(text)) {
-      locationLine.push(...text);
-    } else {
-      locationLine.push({ text });
-    }
-  };
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2 || '';
-  const cityName = branch?.cityName || branch?.cityMaster?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || branch?.PostalCode || branch?.ZipCode || company?.postalCode || company?.PostalCode || company?.ZipCode || '';
-  const phoneNumber = branch?.phoneNumber || branch?.PhoneNumber || branch?.Phone || company?.phoneNumber || company?.PhoneNumber || company?.Phone || '';
-
-  if (addressLine2) appendText(addressLine2);
-  if (cityName) appendText(cityName);
-  if (postalCode) appendText([{ text: 'Postal Code : ', bold: true }, { text: postalCode }]);
-  if (phoneNumber) appendText([{ text: 'Ph.no\u00a0:\u00a0', bold: true }, { text: phoneNumber }]);
-
-  const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
-  const companyInfoStack = [
-    { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: printSettings.companyAlignment },
-    { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: detailLine1, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] },
-    { text: locationLine, fontSize: 9, alignment: printSettings.companyAlignment, margin: [0, 1, 0, 0] }
-  ];
-
-  const buildSlot = (slot: 'left' | 'center' | 'right') => {
-    const stack: any[] = [];
-    if (printSettings.logoPosition === slot && logo) {
-      stack.push({
-        image: logo,
-        fit: [55, 55],
-        alignment: slot,
-        margin: slot === 'right' ? [0, 0, 6, 0] : [6, 0, 0, 0]
-      });
-    }
-    if (printSettings.companyPosition === slot) {
-      const companyMargin = slot === 'right'
-        ? (stack.length ? [0, 4, 18, 0] : [0, 0, 18, 0])
-        : (stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0]);
-      stack.push({ stack: companyInfoStack, margin: companyMargin });
-    }
-    return { stack };
-  };
-
   return {
-    table: {
-      widths: getHeaderWidths(printSettings.logoPosition, printSettings.companyPosition),
-      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
-    },
-    layout: {
-      hLineWidth: () => 0,
-      vLineWidth: () => 0,
-      paddingLeft: () => 0,
-      paddingRight: () => 0,
-      paddingTop: () => 0,
-      paddingBottom: () => 0
-    },
+    stack: [buildCompanyHeader(data)],
     margin: [0, 6, 0, 6]
   };
-}
-
-function getHeaderWidths(
-  logoPosition: 'left' | 'center' | 'right',
-  companyPosition: 'left' | 'center' | 'right'
-): any[] {
-  if (companyPosition === 'center' && logoPosition !== 'center') {
-    return [110, '*', 110];
-  }
-
-  if (companyPosition === 'right' && logoPosition === 'left') {
-    return [110, '*', 300];
-  }
-
-  if (companyPosition === 'left' && logoPosition === 'right') {
-    return [300, '*', 110];
-  }
-
-  return ['33%', '34%', '33%'];
 }
 
 function buildTitle(data: ReleaseLetterPdfData): any {
@@ -421,7 +338,9 @@ export function transformReleaseLetterApiData(
       addressLine2: company?.addressLine2 || '',
       city: company?.City || company?.city || '',
       postalCode: company?.ZipCode || company?.postalCode || '',
-      phoneNumber: company?.Phone || company?.phoneNumber || ''
+      phoneNumber: company?.Phone || company?.phoneNumber || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.BranchName || branch?.branchName || '',
@@ -430,7 +349,9 @@ export function transformReleaseLetterApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.UserName || userData?.userName || '',
