@@ -11,9 +11,6 @@ import { buildCompanyHeader } from '../builders/pdf-header.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
 import { formatDate, formatNumberWithCommas } from '../helpers/pdf-formatters';
 
-// HTML print logo uses 90px. pdfMake works in pt, so convert px -> pt (72/96).
-const INVOICE_LOGO_HEIGHT_PX = 90;
-const INVOICE_LOGO_HEIGHT_PT = INVOICE_LOGO_HEIGHT_PX * 0.75;
 const CHARGES_TABLE_FONT_SIZE = 7;
 
 // -----------------------------------------------------------------------------
@@ -118,32 +115,20 @@ function formatDetailCurrencyAmount(data: InvoicePdfData, detail: any, value: an
 export function generateInvoiceWithoutTaxDocument(data: InvoicePdfData): any {
   const chargesCount = data.charges?.length || 0;
   const resolvedTerms = getInvoiceTerms(data);
-  const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
-  // Reserved height for the repeating page header (company + title + Billed To block).
-  // The Billed To block height varies with the billing-address line count, so the reserved
-  // margin grows/shrinks with it -> content always sits snug (no fixed gap, no overlap).
-  const headerPrintData = (data as any).invoicePrintData;
-  const billingAddress = headerPrintData?.BillingAddress || data.invoice?.customerAddress || '';
-  const billingAddressLineCount = billingAddress
-    ? (String(billingAddress).split(/\r?\n/).filter((line: string) => line.trim()).length || 1)
-    : 0;
-  const LINE_HEIGHT = 11;                 // approx height of one Billed To line
-  const baseTopMargin = 120 + billingAddressLineCount * LINE_HEIGHT;
-  const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
-  // Dubai company: when VAT No is absent the company info stack is ~6pt shorter,
-  // pulling the header bottom line above the first content line -> double-line.
-  const companyVatNoForMargin = (data as any)?.companyVatNo || (data as any)?.companyPan || '';
-  const extraTopMarginForVATLine = !companyVatNoForMargin ? -6 : 0;
-  const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForVATLine;
+  // Only the company block repeats in the page header now (fixed height, driven by the
+  // logo). The INVOICE title + Billed To block moved into `content` so they flow
+  // naturally with the rest of the page -> no reserved-height guessing, so a long
+  // billing address can never be clipped and a short one leaves no empty gap.
+  // HEADER_TOP_MARGIN is the single dial: raise it if the company block overlaps the
+  // content, lower it if a gap appears below the company block.
+  const HEADER_TOP_MARGIN = 82;
   const configuredMargins = data.config?.pageMargins as number[] | undefined;
-  const resolvedPageMargins = configuredMargins
-    ? [
-        configuredMargins[0] ?? 20,
-        Math.max(configuredMargins[1] ?? dynamicTopMargin, dynamicTopMargin),
-        configuredMargins[2] ?? 20,
-        Math.max(configuredMargins[3] ?? 42, 42)
-      ]
-    : [20, dynamicTopMargin, 20, 42];
+  const resolvedPageMargins = [
+    configuredMargins?.[0] ?? 20,
+    HEADER_TOP_MARGIN,
+    configuredMargins?.[2] ?? 20,
+    configuredMargins?.[3] ?? 42
+  ];
 
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -164,9 +149,7 @@ export function generateInvoiceWithoutTaxDocument(data: InvoicePdfData): any {
     header: () => {
       return {
         stack: [
-          buildInvoiceHeader(data),
-          buildInvoiceTitle(data),
-          buildInvoiceInfo(data)
+          buildInvoiceHeader(data)
         ],
         // Top >= ~12 so the company name clears the box's top border line (drawn at y=10).
         margin: [20, 6, 20, 0]
@@ -174,6 +157,8 @@ export function generateInvoiceWithoutTaxDocument(data: InvoicePdfData): any {
     },
 
     content: [
+      buildInvoiceTitle(data),
+      buildInvoiceInfo(data),
       buildShipmentDetails(data),
       buildChargesTable(data),
       buildAmountInWords(data),
@@ -279,7 +264,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   ];
 
   if (billingAddress) {
-    leftStack.push({ text: billingAddress, margin: [0, 0, 0, 3] });
+    leftStack.push({ text: billingAddress, margin: [0, 0, 0, 0] });
   }
 
   const rightStack: any[] = [];
