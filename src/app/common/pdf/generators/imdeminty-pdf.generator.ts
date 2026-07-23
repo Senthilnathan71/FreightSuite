@@ -12,23 +12,21 @@ function buildImdemintyHeader(data: ImdemintyPdfData): any {
     stack: [
       buildCompanyHeader(data),
       {
-        table: {
-          widths: ['*'],
-          body: [[{ text: '', border: [false, false, false, true] }]]
-        },
-        layout: {
-          hLineWidth: () => 0.25,
-          vLineWidth: () => 0,
-          hLineColor: () => '#000000',
-          paddingLeft: () => 0,
-          paddingRight: () => 0,
-          paddingTop: () => 0,
-          paddingBottom: () => 0
-        },
+        canvas: [
+          {
+            type: 'line',
+            x1: 15,
+            y1: 0,
+            x2: 550,
+            y2: 0,
+            lineWidth: 0.25,
+            lineColor: '#000000'
+          }
+        ],
         margin: [0, 6, 0, 0]
       }
     ],
-    margin: [10, 22, 10, 0]
+    margin: [10, 14, 10, 0]
   };
 }
 
@@ -41,7 +39,7 @@ export function generateImdemintyDocument(data: ImdemintyPdfData): any {
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: 'portrait',
-    pageMargins: data.config?.pageMargins || [20, 108, 20, 32],
+    pageMargins: data.config?.pageMargins || [20, 90, 20, 32],
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
         {
@@ -95,7 +93,7 @@ function buildTitle(): any {
       ]]
     },
     layout: {
-      hLineWidth: (i: number) => (i === 0 ? 0.25 : 0),
+      hLineWidth: () => 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000000',
       paddingLeft: () => 0,

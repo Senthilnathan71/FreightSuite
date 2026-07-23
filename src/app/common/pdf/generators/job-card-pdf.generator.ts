@@ -15,7 +15,7 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'landscape',
-    pageMargins: [15, 116, 15, 28],
+    pageMargins: [15, 112, 15, 28],
     background: (_: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',
@@ -28,13 +28,13 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
       }]
     }),
     header: () => ({
-      margin: [15, 14, 15, 0],
+      margin: [15, 12, 15, 0],
       stack: [
-        buildHeader(data)
+        buildHeader(data),
+        buildTitle(data)
       ]
     }),
     content: [
-      buildTitle(data),
       buildPartySection(data),
       buildJobInfoSection(data, isSea, isServiceJob),
       buildProductsTable(data, isSea),
@@ -56,7 +56,7 @@ function buildHeader(data: JobCardPdfData): any {
   return {
     stack: [
       buildCompanyHeader({ ...data, companyHeaderLogoHeight: 78 }),
-      { canvas: [{ type: 'line', x1: -1, y1: 0, x2: 813, y2: 0, lineWidth: 0.25, lineColor: '#000' }] }
+      { canvas: [{ type: 'line', x1: 15, y1: 0, x2: 798, y2: 0, lineWidth: 0.25, lineColor: '#000' }] }
     ]
   };
 }
@@ -67,14 +67,14 @@ function buildTitle(data: JobCardPdfData): any {
   return {
     table: {
       widths: ['*'],
-      body: [[{ text: title, bold: true, alignment: 'center', fontSize: 10, margin: [0, 2, 0, 3] }]]
+      body: [[{ text: title, bold: true, alignment: 'center', fontSize: 14, margin: [0, 6, 0, 5] }]]
     },
     layout: {
       hLineWidth: () => 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000'
     },
-    margin: [0, -2, 0, 5]
+    margin: [0, 0, 0, 0]
   };
 }
 
@@ -641,7 +641,9 @@ export function transformJobCardApiData(
       city: company?.City || company?.city || '',
       postalCode: company?.ZipCode || company?.postalCode || '',
       phoneNumber: company?.Phone || company?.phoneNumber || '',
-      email: company?.Email || company?.email || ''
+      email: company?.Email || company?.email || '',
+      countryMaster: company?.countryMaster,
+      countryCode: company?.countryMaster?.countryCode || company?.countryCode || ''
     },
     branch: {
       branchName: branch?.BranchName || branch?.branchName || '',
@@ -650,7 +652,9 @@ export function transformJobCardApiData(
       cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
       postalCode: branch?.postalCode || branch?.ZipCode || '',
       phoneNumber: branch?.phoneNumber || branch?.Phone || '',
-      cityMaster: branch?.cityMaster
+      cityMaster: branch?.cityMaster,
+      countryMaster: branch?.countryMaster,
+      countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || ''
     },
     userData: {
       userName: userData?.UserName || userData?.userName || '',
