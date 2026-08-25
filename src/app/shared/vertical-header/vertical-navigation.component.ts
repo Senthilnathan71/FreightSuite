@@ -351,7 +351,7 @@ ngOnInit(): void {
     this.ensureYearMatchesCompany(this.selectedCompanyId);
   }
 
-  // Setup document search subscription
+  // // Setup document search subscription
   this.setupDocumentSearchSubscription();
 
   this.logoService.loadInitialBothLogos();
