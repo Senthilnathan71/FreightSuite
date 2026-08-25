@@ -581,7 +581,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       },{ emitEvent: false });
 
       if (this.loginform.get('email')?.valid) {
-        this.getFinancialYears(savedEmail);
+        // this.getFinancialYears(savedEmail);
       }
     }
   }
@@ -599,7 +599,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       takeUntil(this.unsubscribe$) // Unsubscribe on component destruction
     ).subscribe(email => {
       if (this.loginform.get('email')?.valid) {
-        this.getFinancialYears(email);
+        // this.getFinancialYears(email);
       } else {
         this.financialYears = []; // Clear dropdown if email is invalid
         this.loginform.get('yearMasterSid')?.reset("");
@@ -633,11 +633,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   login() {
-    if (this.loginform.invalid) {
-      this.loginform.markAllAsTouched();
-      this.appSettingService.showWarning(this.getValidationWarning());
-      return;
-    }
+    // if (this.loginform.invalid) {
+    //   this.loginform.markAllAsTouched();
+    //   this.appSettingService.showWarning(this.getValidationWarning());
+    //   return;
+    // }
 
     this.isSubmitted = true;
     this.isLoading = true;
