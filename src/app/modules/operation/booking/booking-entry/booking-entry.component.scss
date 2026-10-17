@@ -3,7 +3,95 @@
   font-size: 12px;
 }
 
+:host .btn-info,
+:host .btn-info:hover,
+:host .btn-info:focus,
+:host .btn-info:not(:disabled):not(.disabled):active,
+:host .btn-info:not(:disabled):not(.disabled):focus-visible {
+  background: var(--fs-btn-primary-bg) !important;
+  border-color: var(--fs-btn-primary-bg) !important;
+  color: var(--fs-text-on-primary) !important;
+  box-shadow: none !important;
+}
 
+:host .btn-warning,
+:host .btn-warning:hover,
+:host .btn-warning:focus,
+:host .btn-warning:not(:disabled):not(.disabled):active,
+:host .btn-warning:not(:disabled):not(.disabled):focus-visible {
+  background: #d5a447 !important;
+  border-color: #d5a447 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .nav-pills-container {
+  border: 1px solid var(--fs-border);
+  background: linear-gradient(180deg, #ffffff 0%, #f5f9fb 100%);
+}
+
+:host ::ng-deep .nav-pills {
+  gap: 6px;
+}
+
+:host ::ng-deep .nav-pill {
+  border: 1px solid #c9d4cb;
+  border-radius: 6px;
+  color: var(--fs-text-secondary);
+  background:
+    linear-gradient(90deg, var(--fs-primary) 0 4px, transparent 4px),
+    linear-gradient(180deg, #ffffff 0%, #f2f9fc 100%);
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 1px 4px rgba(82, 105, 87, 0.12);
+  transition: all 0.18s ease;
+}
+
+:host ::ng-deep .nav-pill:hover {
+  color: var(--fs-primary);
+  border-color: var(--fs-primary);
+  background:
+    linear-gradient(90deg, var(--fs-primary) 0 4px, transparent 4px),
+    linear-gradient(180deg, #edf3ee 0%, #ffffff 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 3px 8px rgba(82, 105, 87, 0.16);
+}
+
+:host ::ng-deep .nav-pill.active {
+  color: #ffffff;
+  border-color: var(--fs-primary);
+  background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
+  box-shadow: 0 0 0 2px rgba(82, 105, 87, 0.12), 0 5px 12px rgba(82, 105, 87, 0.22);
+}
+
+:host ::ng-deep .nav-pill .pill-icon,
+:host ::ng-deep .pill-icon {
+  color: var(--fs-primary);
+}
+
+:host ::ng-deep .nav-pill.active .pill-icon {
+  color: #ffffff;
+}
+
+:host ::ng-deep .split-table-container thead th,
+:host ::ng-deep .split-table-container thead td,
+:host ::ng-deep .split-table-container thead .bg-info,
+:host ::ng-deep .split-table-container thead .bg-warning,
+:host ::ng-deep .split-table-container thead th.bg-transparent.text-light,
+:host ::ng-deep .split-table-container thead th.bg-warning.text-light,
+:host ::ng-deep .split-table-container thead th.bg-transparent.text-white,
+:host ::ng-deep .booking-products-table thead th,
+:host ::ng-deep .booking-products-table thead td {
+  background: var(--fs-table-header-bg) !important;
+  color: var(--fs-text-secondary) !important;
+  border-color: var(--fs-border) !important;
+  font-weight: 600;
+}
+
+:host ::ng-deep .booking-products-table thead th .text-danger,
+:host ::ng-deep .split-table-container thead th .text-danger {
+  color: #a3312b !important;
+}
 
 .booking-products-table {
   overflow-y: visible !important;
@@ -151,6 +239,46 @@
 }
 
 .bookingStyle {
+  background: linear-gradient(180deg, #f9faf7 0%, #f3f6f2 100%);
+  border: 1px solid var(--fs-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(82, 105, 87, 0.08);
+  overflow: hidden;
+
+  .smart-header {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(242, 247, 242, 0.98) 100%);
+    border-bottom: 1px solid var(--fs-border);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .brand-icon {
+    background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
+    color: var(--fs-text-on-primary);
+  }
+
+  .workspace-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .custom-accordion-quotation .accordion-button {
+    background: linear-gradient(90deg, #0b5f89 0%, #0e6c98 100%) !important;
+    color: #ffffff;
+    border: 0;
+    border-radius: 0;
+    width: 100%;
+    padding: 5px 12px;
+    text-align: left;
+    box-shadow: none;
+  }
+
   .quick-form-grid {
     grid-template-columns:
       minmax(280px, 0.95fr)

@@ -4,17 +4,17 @@
 // Import this partial in component SCSS files that render section tables.
 
 // Design tokens — use !default so importing files can override before this import.
-$brand:       #05608D !default;
-$brand-light: #0891b2 !default;
-$brand-dark:  #044a6c !default;
+$brand:       #879B82 !default;
+$brand-light: #A3B39B !default;
+$brand-dark:  #6E826F !default;
 
-$color-amber:  #f59e0b !default;
-$color-purple: #8b5cf6 !default;
-$color-orange: #f97316 !default;
-$color-green:  #16a34a !default;
-$color-red:    #ef4444 !default;
-$color-cyan:   #06b6d4 !default;
-$color-pink:   #ec4899 !default;
+$color-amber:  #C49A67 !default;
+$color-purple: #8B9582 !default;
+$color-orange: #BE8A6C !default;
+$color-green:  #7E9679 !default;
+$color-red:    #A86D63 !default;
+$color-cyan:   #90A58F !default;
+$color-pink:   #A68B87 !default;
 
 $bg-card:     #ffffff !default;
 $bg-card-alt: #f8fafc !default;

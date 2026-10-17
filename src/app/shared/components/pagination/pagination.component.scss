@@ -7,26 +7,41 @@
     .page-link {
       padding: 0.25rem 0.5rem;
       font-size: 0.875rem;
+      color: #526957;
+      border-color: #DCE3DB;
+      background: #fff;
 
       &:focus {
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        box-shadow: 0 0 0 0.2rem rgba(82, 105, 87, 0.18);
       }
     }
 
     .page-item.active .page-link {
-      background-color: #05608d;
-      border-color: #05608d;
+      background-color: #526957;
+      border-color: #526957;
+      color: #fff;
+    }
+
+    .page-item:not(.disabled):hover .page-link {
+      background-color: #EDF4EE;
+      border-color: #D6DFD7;
+      color: #3F5244;
     }
 
     .page-item.disabled .page-link {
-      color: #6c757d;
-      background-color: #fff;
-      border-color: #dee2e6;
+      color: #7a877c;
+      background-color: #f5f7f3;
+      border-color: #e5eae4;
     }
   }
 
   .text-muted {
     font-size: 0.875rem;
+    color: #6B8068 !important;
+  }
+
+  label {
+    color: #6B8068 !important;
   }
 
   @media (max-width: 768px) {

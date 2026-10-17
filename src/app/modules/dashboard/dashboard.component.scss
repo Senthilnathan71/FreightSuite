@@ -13,7 +13,7 @@
     left: 0;
     right: 0;
     height: 200px;
-    background: linear-gradient(135deg, #05608D 0%, #3699ff 50%, #4fc3f7 100%);
+    background: linear-gradient(135deg, #879B82 0%, #A3B39B 50%, #6E826F 100%);
     z-index: 0;
   }
 }
@@ -237,24 +237,24 @@
   }
 
   .btn-apply {
-    background: linear-gradient(135deg, #05608D 0%, #3699ff 100%);
+    background: linear-gradient(135deg, #526957 0%, #68806C 100%);
     color: white;
-    box-shadow: 0 2px 8px rgba(5, 96, 141, 0.3);
+    box-shadow: 0 2px 8px rgba(82, 105, 87, 0.28);
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(5, 96, 141, 0.4);
+      box-shadow: 0 4px 12px rgba(82, 105, 87, 0.34);
     }
   }
 
   .btn-reset {
     background: #f8f9fa;
-    color: #05608D;
+    color: #526957;
     border: 1px solid #D3D9E4;
 
     &:hover {
       background: #e9ecef;
-      border-color: #05608D;
+      border-color: #526957;
     }
   }
 }
@@ -316,16 +316,16 @@
     font-size: 0.9rem;
 
     &:hover {
-      border-color: #05608D;
-      color: #05608D;
+      border-color: #879B82;
+      color: #6E826F;
       transform: translateY(-1px);
     }
 
     &.active {
-      background: linear-gradient(135deg, #05608D 0%, #3699ff 100%);
+      background: linear-gradient(135deg, #879B82 0%, #A3B39B 100%);
       color: white;
-      border-color: #05608D;
-      box-shadow: 0 4px 15px rgba(5, 96, 141, 0.3);
+      border-color: #6E826F;
+      box-shadow: 0 4px 15px rgba(135, 155, 130, 0.24);
     }
   }
 }
@@ -736,7 +736,7 @@
   }
 
   &.metric-cyan {
-    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    background: linear-gradient(135deg, #90A58F 0%, #A3B39B 100%);
 
     .metric-icon-bg {
       background: rgba(255, 255, 255, 0.2);
@@ -777,7 +777,7 @@
   }
 
   &.metric-cyan:hover {
-    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+    box-shadow: 0 8px 25px rgba(144, 165, 143, 0.35);
   }
 
   &.metric-emerald:hover {
@@ -812,7 +812,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #05608D, #3699ff);
+    background: linear-gradient(90deg, #879B82, #A3B39B);
   }
 
   &:hover {
@@ -837,7 +837,7 @@
   }
 
   &.card-gradient {
-    background: linear-gradient(135deg, #05608D 0%, #3699ff 100%);
+    background: linear-gradient(135deg, #879B82 0%, #A3B39B 100%);
     color: white;
 
     .metric-label, .label {
@@ -864,9 +864,9 @@
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
-    background: linear-gradient(135deg, #05608D 0%, #3699ff 100%);
+    background: linear-gradient(135deg, #879B82 0%, #A3B39B 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(5, 96, 141, 0.3);
+    box-shadow: 0 4px 12px rgba(135, 155, 130, 0.25);
   }
 
   .metric-pulse {

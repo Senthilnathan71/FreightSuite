@@ -115,7 +115,7 @@
 .brand-icon {
   width: 24px;
   height: 24px;
-  background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+  background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -293,7 +293,7 @@
 // Custom-accordian
 
 .custom-accordion .accordion-button {
-  background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
+  background: linear-gradient(to left, #526957 0%, #738A76 100%) !important;
   color: #fff;
   padding: 1px;
 }
@@ -312,7 +312,7 @@
   }
 
   .accordion-button {
-    background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
+    background: linear-gradient(to left, #526957 0%, #738A76 100%) !important;
     color: #ffffff;
     border-radius: 6px 0px 0px 0px;
     width: 100%;
@@ -658,9 +658,22 @@
 // Modal-------------------------------
 
 .modalHeaderpart {
-  background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
-  color: #ffffff;
+  background: linear-gradient(135deg, #526957 0%, #6B8068 100%) !important;
+  color: #ffffff !important;
   padding: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.modalHeaderpart .modal-title,
+.modalHeaderpart .h4,
+.modalHeaderpart h4 {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.modalHeaderpart .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 1;
 }
 
 // =========================
@@ -3948,23 +3961,21 @@ textarea:disabled {
 }
 
 .custom-dropdown-item:hover {
-   background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
-  /* Hover color */
-  color: white;
-    border-radius: 15px;
-  /* Text color on hover */
+  background: rgba(135, 155, 130, 0.12);
+  color: #2f3f31;
+  border-radius: 10px;
 }
 
 .custom-dropdown-item.active {
-  background-color: #0056b3;
-  /* Active item color */
-  color: white;
+  background-color: rgba(135, 155, 130, 0.16);
+  color: #2f3f31;
+  border: 1px solid rgba(135, 155, 130, 0.25);
 }
 
 .dropdown-item.active,
 .dropdown-item:active {
-  background-color: transparent !important;
-  color: inherit !important;
+  background-color: rgba(135, 155, 130, 0.12) !important;
+  color: #2f3f31 !important;
 }
 
 

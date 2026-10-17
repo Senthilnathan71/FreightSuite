@@ -1,10 +1,35 @@
 /* -------------------------------
-   Filter Row Background
+   Page header & filter row theme
 --------------------------------*/
+:host .page-title {
+  color: var(--fs-text-primary);
+  font-weight: 700;
+}
+
 .advanced-filter-row {
-  background: #f5f8fb;
-  border-top-color: #d7e2ec !important;
+  background: #f3f7f2;
+  border-top-color: #dce5db !important;
   margin: 2px;
+}
+
+:host ::ng-deep .form-control,
+:host ::ng-deep .ng-select .ng-select-container,
+:host ::ng-deep .input-group {
+  border-radius: 8px;
+}
+
+:host ::ng-deep .btn-info {
+  background: var(--fs-btn-primary-bg);
+  border-color: var(--fs-btn-primary-bg);
+  color: var(--fs-text-on-primary);
+}
+
+:host ::ng-deep .btn-info:hover,
+:host ::ng-deep .btn-info:focus,
+:host ::ng-deep .btn-info:not(:disabled):not(.disabled):active {
+  background: var(--fs-btn-primary-hover);
+  border-color: var(--fs-btn-primary-hover);
+  color: var(--fs-text-on-primary);
 }
 
 /* Make all visible filter columns share space equally */

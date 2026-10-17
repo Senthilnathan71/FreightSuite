@@ -25,7 +25,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
       display: block;
     }
 
-    .blufin-login-shell {
+    .Freight-Suite-login-shell {
       min-height: 100vh;
       width: 100%;
       padding: 0;
@@ -61,7 +61,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
       object-position: center;
     }
 
-    .blufin-login-shell .login-panel {
+    .Freight-Suite-login-shell .login-panel {
       width: 100%;
       min-width: 0;
       max-width: none;
@@ -451,7 +451,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     }
 
     @media (max-width: 900px) {
-      .blufin-login-shell {
+      .Freight-Suite-login-shell {
         min-height: 100svh;
         overflow: auto;
       }

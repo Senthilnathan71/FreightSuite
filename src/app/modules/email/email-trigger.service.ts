@@ -114,7 +114,7 @@ export class EmailTriggerService {
           <a href="#" style="color:#fff;text-decoration:none;margin:0 8px">Unsubscribe</a>
         </div>
         <div style="opacity:0.8">
-          Â© ${new Date().getFullYear()} Dofi Infosys. All rights reserved.
+          Â© ${new Date().getFullYear()} Freight Suite. All rights reserved.
         </div>
       </div>
     </div>
@@ -665,7 +665,7 @@ ${userName}`
         menumail: context?.['menumail'] || '',
         userEmail: userData?.userEmail || '',
         userName: context?.['userName'] || userData?.userName || '',
-        companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',
+        companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Freight Suite',
         branchName: branchInfo?.branchName || branchInfo?.BranchName || '',
         logoUrl
       };
@@ -702,7 +702,7 @@ ${userName}`
       menumail: context?.['menumail'] || '',
       userEmail: userData?.userEmail || '',
       userName: context?.['userName'] || userData?.userName || '',
-      companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',
+      companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Freight Suite',
       branchName: branchInfo?.branchName || branchInfo?.BranchName || '',
       logoUrl
     };
@@ -712,7 +712,7 @@ ${userName}`
     const companyInfo = this.appSettingService.getCurrentCompanyInfo();
     const branchInfo = this.appSettingService.getCurrentBranchInfo();
     return {
-      companyName: context?.companyName || companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',
+      companyName: context?.companyName || companyInfo?.companyName || companyInfo?.CompanyName || 'Freight Suite',
       branchName: context?.branchName || branchInfo?.branchName || branchInfo?.BranchName || '',
       logoUrl: context?.logoUrl || this.getStoredLogoUrl()
     };
@@ -723,7 +723,7 @@ ${userName}`
     const companyLogo = localStorage.getItem('current_company_logo') || '';
     if (reportLogo.startsWith('data:')) return reportLogo;
     if (companyLogo.startsWith('data:')) return companyLogo;
-    return 'assets/logo/dofi-logo.svg';
+    return 'assets/logo/freight-suite-logo.svg';
   }
 
   // ðŸ”¥ MAIN DESIGN UPGRADE HERE

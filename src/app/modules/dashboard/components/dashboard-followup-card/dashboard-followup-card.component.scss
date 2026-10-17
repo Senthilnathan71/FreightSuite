@@ -34,7 +34,7 @@
   gap: 8px;
 
   .ct-icon {
-    color: #05608D;
+    color: #6E826F;
     font-size: 12px;
   }
 }
@@ -117,7 +117,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background: #05608D;
+    background: #879B82;
     position: sticky;
     top: 0;
     z-index: 1;
@@ -156,7 +156,7 @@
 }
 
 .link {
-  color: #05608D;
+  color: #6E826F;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -192,9 +192,9 @@
   border-radius: 5px;
   font-size: 10px;
   font-weight: 600;
-  background: rgba(#05608D, 0.06);
+  background: rgba(#879B82, 0.08);
   color: #475569;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(#879B82, 0.18);
 }
 
 .action-btn {

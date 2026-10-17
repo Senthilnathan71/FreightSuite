@@ -3,8 +3,8 @@ input[type="file"] {
 }
 
 :host {
-  --edoc-brand: #1c628f;
-  --edoc-brand-dark: #174f73;
+  --edoc-brand: #526957;
+  --edoc-brand-dark: #3f5244;
   --edoc-ink: #243b53;
   --edoc-muted: #71849a;
   --edoc-line: #d6e2ec;
@@ -14,11 +14,11 @@ input[type="file"] {
 }
 
 .edoc-toolbar {
-  background: linear-gradient(90deg, var(--edoc-brand) 0%, #2678a8 68%, #2678a8 100%);
-  border: 1px solid #17608d;
+  background: linear-gradient(90deg, var(--edoc-brand) 0%, #617a65 68%, #617a65 100%);
+  border: 1px solid #4a5d4e;
   border-radius: 8px;
   padding: 5px 5px;
-  box-shadow: 0 8px 24px rgba(20, 70, 105, 0.16);
+  box-shadow: 0 8px 24px rgba(82, 105, 87, 0.18);
 
   .page-title {
     color: #ffffff;
@@ -43,6 +43,12 @@ input[type="file"] {
     background: #ffffff;
     border-color: #ffffff;
     color: var(--edoc-brand);
+  }
+
+  .btn:hover,
+  .btn:focus {
+    filter: brightness(0.98);
+    box-shadow: 0 4px 12px rgba(82, 105, 87, 0.2);
   }
 }
 
@@ -78,9 +84,9 @@ input[type="file"] {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    background: var(--edoc-brand);
+    background: linear-gradient(135deg, var(--edoc-brand) 0%, #718574 100%);
     color: #ffffff;
-    box-shadow: 0 6px 14px rgba(28, 98, 143, .24);
+    box-shadow: 0 6px 14px rgba(82, 105, 87, 0.22);
   }
 
   strong {
