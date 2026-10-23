@@ -270,6 +270,7 @@ ngOnInit(): void {
   } catch (err) {
     console.warn('Decryption failed for selected company/branch:', err);
   }
+  console.log(storedCompany,'storedCompany')
 
   if (this.userData?.userCompanyMaster?.length) {
     this.companyList = this.userData.userCompanyMaster.map(ucm => ({
@@ -317,7 +318,7 @@ ngOnInit(): void {
           const companyToStore = {
             CompanyMasterSid: companyToUse.CompanyMasterSid,
             companyName: companyToUse.companyMaster.companyName,
-            CountryName: companyToUse.companyMaster.countryMaster.countryName
+            CountryName: companyToUse.companyMaster?.countryMaster?.countryName
           };
 
           const branchToStore = {
@@ -350,7 +351,7 @@ ngOnInit(): void {
     this.ensureYearMatchesCompany(this.selectedCompanyId);
   }
 
-  // Setup document search subscription
+  // // Setup document search subscription
   this.setupDocumentSearchSubscription();
 
   this.logoService.loadInitialBothLogos();
