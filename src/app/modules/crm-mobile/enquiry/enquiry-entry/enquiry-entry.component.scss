@@ -2,6 +2,17 @@
   display: block;
 }
 
+:host .btn-info,
+:host .btn-info:hover,
+:host .btn-info:focus,
+:host .btn-info:not(:disabled):not(.disabled):active,
+:host .btn-info:not(:disabled):not(.disabled):focus-visible {
+  background: var(--fs-btn-primary-bg) !important;
+  border-color: var(--fs-btn-primary-bg) !important;
+  color: var(--fs-text-on-primary) !important;
+  box-shadow: none !important;
+}
+
 :host .btn:disabled,
 :host .btn.disabled {
   background-color: #8fa4b1 !important;
@@ -13,7 +24,7 @@
 }
 
 .nav-pills-container {
-  border-bottom: 1px solid #d9e5ec;
+  border-bottom: 1px solid var(--fs-border);
   background: linear-gradient(180deg, #ffffff 0%, #f5f9fb 100%);
 }
 
@@ -22,37 +33,37 @@
 }
 
 .nav-pill {
-  border: 1px solid #b9d5e2;
+  border: 1px solid #c9d4cb;
   border-radius: 6px;
-  color: #385466;
+  color: var(--fs-text-secondary);
   background:
-    linear-gradient(90deg, #05608d 0 4px, transparent 4px),
+    linear-gradient(90deg, var(--fs-primary) 0 4px, transparent 4px),
     linear-gradient(180deg, #ffffff 0%, #f2f9fc 100%);
   font-weight: 700;
   cursor: pointer;
   position: relative;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 1px 4px rgba(5, 96, 141, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 1px 4px rgba(82, 105, 87, 0.12);
   transition: all 0.18s ease;
 
   &:hover {
-    color: #05608d;
-    border-color: #05608d;
+    color: var(--fs-primary);
+    border-color: var(--fs-primary);
     background:
-      linear-gradient(90deg, #05608d 0 4px, transparent 4px),
-      linear-gradient(180deg, #e9f7fb 0%, #ffffff 100%);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 3px 8px rgba(5, 96, 141, 0.16);
+      linear-gradient(90deg, var(--fs-primary) 0 4px, transparent 4px),
+      linear-gradient(180deg, #edf3ee 0%, #ffffff 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 3px 8px rgba(82, 105, 87, 0.16);
   }
 
   &.active {
     color: #ffffff;
-    border-color: #05608d;
-    background: linear-gradient(135deg, #05608d 0%, #087aa8 100%);
-    box-shadow: 0 0 0 2px rgba(5, 96, 141, 0.12), 0 5px 12px rgba(5, 96, 141, 0.22);
+    border-color: var(--fs-primary);
+    background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
+    box-shadow: 0 0 0 2px rgba(82, 105, 87, 0.12), 0 5px 12px rgba(82, 105, 87, 0.22);
   }
 }
 
 .pill-icon {
-  color: #05608d;
+  color: var(--fs-primary);
 }
 
 .nav-pill.active .pill-icon {
@@ -66,7 +77,7 @@
   bottom: -5px;
   height: 3px;
   border-radius: 999px;
-  background: #05608d;
+  background: var(--fs-primary);
 }
 
 .lead-actions-menu {
@@ -202,11 +213,24 @@
     vertical-align: middle;
   }
 
+  thead tr {
+    // background: var(--fs-table-header-bg) !important;
+  }
+
   thead td {
+    background: var(--fs-table-header-bg) !important;
+    color: var(--fs-text-secondary) !important;
     padding-left: 4px;
     padding-right: 4px;
     white-space: nowrap;
+    border-color: var(--fs-border) !important;
+    font-weight: 600;
   }
+
+  .bdy-title {
+  background: #526957 !important;
+  color: var(--fs-text-secondary) !important;
+}
 
   tbody td {
     padding-left: 4px;

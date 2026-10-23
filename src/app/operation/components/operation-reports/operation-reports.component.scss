@@ -25,8 +25,8 @@
     justify-content: center;
     color: #ffffff;
     font-size: 1rem;
-    background: linear-gradient(135deg, #f06fa9 0%, #f597c0 100%);
-    box-shadow: 0 6px 14px rgba(245, 151, 192, 0.4);
+    background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
+    box-shadow: 0 6px 14px rgba(82, 105, 87, 0.25);
   }
 
   &__text {

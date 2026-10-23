@@ -6,24 +6,24 @@
 // 
 // Theme Global setting colors
 // 
-$themecolor: #05608D;
-$themecolor-dark: #028ee1;
-$themecolor-alt: #26c6da;
-$theme-light: #fff;
-$theme-dark: #212529;
+$themecolor: #526957;
+$themecolor-dark: #3F5244;
+$themecolor-alt: #718574;
+$theme-light: #F5F7F3;
+$theme-dark: #303A33;
 
-$skin1: #05608D; //#2962ff;
-$skin2: #fe5419;
-$skin3: #00b0ff;
-$skin4: #6659f7;
-$skin5: #414755;
-$skin6: #fff;
+$skin1: #526957;
+$skin2: #627966;
+$skin3: #718574;
+$skin4: #E8EEE8;
+$skin5: #303A33;
+$skin6: #FFFFFF;
 
 // 
 // Topbar settings
 // 
 
-$topbar: $theme-light;
+$topbar: #FFFFFF;
 $topbar-height: 44px;
 $topbar-navlink-padding: 0px 14px;
 $topbar-navlink-font-size: 0.875rem;
@@ -34,11 +34,11 @@ $topbar-navbrand-padding: 0 10px 0 10px;
 // Sidebar settings
 // 
 
-$sidebar: $theme-light;
-$sidebar-alt: #e8eff0;
-$sidebar-text: #fff;
-$sidebar-icons: #fff;
-$sidebar-text-dark: #212529;
+$sidebar: #526957;
+$sidebar-alt: #E8EEE8;
+$sidebar-text: #FFFFFF;
+$sidebar-icons: #FFFFFF;
+$sidebar-text-dark: #303A33;
 $sidebar-icons-dark: #4f5467;
 
 $sidebar-width-full: 250px;
@@ -91,17 +91,17 @@ $gray-800: #343a40 !default;
 $gray-900: #212529 !default;
 $black: #000 !default;
 
-$blue: #05608D !default;  // 2962ff
-$indigo: #3699ff !default; // 3699ff
-$purple: #7460ee !default;
-$pink: #e83e8c !default;
-$red: #F93232 !default; // f64e60
-$orange: #fb8c00 !default;
-$yellow: #ee9d01 !default;
-$green: #17D540 !default; // 0bb7af
-$teal: #20c997 !default;
-$cyan: #4fc3f7 !default;
-$text-muted: $gray-500 !default;
+$blue: #526957 !default;
+$indigo: #718574 !default;
+$purple: #526957 !default;
+$pink: #F4B5A9 !default;
+$red: #A3312B !default;
+$orange: #D98B2B !default;
+$yellow: #D3A12E !default;
+$green: #28613B !default;
+$teal: #3B6150 !default;
+$cyan: #E5EDF5 !default;
+$text-muted: #6B8068 !default;
 
 $light-primary: #e1f0ff !default;
 $light-info: #d8e2ff !default;
@@ -127,15 +127,15 @@ $colors: (
   "gray-dark": $gray-800,
 );
 
-$primary: #3699ff !default;
-$secondary: $gray-600 !default;
-$success: $green !default;
-$info: $blue !default;
-$warning: $yellow !default;
-$danger: $red !default;
-$light: $gray-100 !default;
-$dark: $gray-800 !default;
-$muted: $gray-500 !default;
+$primary: #526957 !default;
+$secondary: #6B8068 !default;
+$success: #28613B !default;
+$info: #6B8068 !default;
+$warning: #80530C !default;
+$danger: #A3312B !default;
+$light: #F5F7F3 !default;
+$dark: #303A33 !default;
+$muted: #6B8068 !default;
 $cyan: $cyan !default;
 $orange: $orange !default;
 $theme-colors: (
@@ -200,9 +200,9 @@ $enable-negative-margins: true;
 // 
 // Body
 // 
-$main-body-bg: #eef5f9 !default;
-$body-bg: #fff !default;
-$body-color: #3e5569 !default;
+$main-body-bg: #F5F7F3 !default;
+$body-bg: #FFFFFF !default;
+$body-color: #303A33 !default;
 $grid-gutter-width: 20px !default;
 
 // 

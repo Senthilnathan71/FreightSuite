@@ -1,3 +1,33 @@
+:host {
+  display: block;
+}
+
+#main-wrapper {
+  background: var(--fs-page-bg);
+  color: var(--fs-text-primary);
+}
+
+.topbar {
+  background: var(--fs-topbar-bg);
+  border-bottom: 1px solid var(--fs-border);
+}
+
+.left-sidebar {
+  background: var(--fs-sidebar-bg);
+  box-shadow: var(--fs-shadow-card);
+}
+
+.page-wrapper {
+  background: var(--fs-page-bg);
+  color: var(--fs-text-primary);
+}
+
+.footer {
+  background: transparent;
+  color: var(--fs-text-secondary);
+  border-top: 1px solid var(--fs-border);
+}
+
 .max-width {
   max-width: 1440px;
   margin: 0 auto;

@@ -1,16 +1,16 @@
 @import 'mixins';
 
-$ng-select-highlight: #05608D !default;
+$ng-select-highlight: #6B8068 !default;
 $ng-select-primary-text: #333 !default;
 $ng-select-disabled-text: #ffffff !default;
 $ng-select-border: #D3D9E4 !default;
 $ng-select-border-radius: 4px !default;
 $ng-select-bg: #ffffff !default;
-$ng-select-selected: lighten($ng-select-highlight, 46) !default;
+$ng-select-selected: rgba(107, 128, 104, 0.14) !default;
 $ng-select-selected-text: $ng-select-primary-text !default;
 
-$ng-select-marked:$ng-select-highlight !default; //lighten($ng-select-highlight, 48) !default; 
-$ng-select-marked-text: white !default;
+$ng-select-marked: #6B8068 !default;
+$ng-select-marked-text: #ffffff !default;
 
 $ng-select-box-shadow:
 	inset 0 1px 1px rgba(0, 0, 0, 0.075),

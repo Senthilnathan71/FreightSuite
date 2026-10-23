@@ -1,10 +1,101 @@
-.header-name {
+:host {
+  .header-name {
     color: white;
     font-size: 13px;
     font-weight: 600;
-    // padding: 0px;
-}
-.values-name {
+  }
+
+  .values-name {
     font-size: 10px;
-    font-weight: none;
+    font-weight: normal;
+  }
+
+  .nav-pills-container {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f9fb 100%);
+    border: 1px solid var(--fs-border);
+    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .nav-pills {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .pills-left {
+    display: flex;
+    flex-wrap: nowrap;
+    flex: 1;
+    gap: 8px;
+  }
+
+  .nav-pill {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid #c9d4cb;
+    border-radius: 6px;
+    color: var(--fs-text-secondary);
+    background:
+      linear-gradient(90deg, var(--fs-primary) 0 4px, transparent 4px),
+      linear-gradient(180deg, #ffffff 0%, #f2f9fc 100%);
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s ease;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 1px 4px rgba(82, 105, 87, 0.12);
+  }
+
+  .nav-pill:hover {
+    color: var(--fs-primary);
+    border-color: var(--fs-primary);
+    background:
+      linear-gradient(90deg, var(--fs-primary) 0 4px, transparent 4px),
+      linear-gradient(180deg, #edf3ee 0%, #ffffff 100%);
+  }
+
+  .nav-pill.active {
+    color: #ffffff;
+    border-color: var(--fs-primary);
+    background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
+    box-shadow: 0 0 0 2px rgba(82, 105, 87, 0.12), 0 5px 12px rgba(82, 105, 87, 0.22);
+  }
+
+  .pill-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fs-primary);
+    font-size: 12px;
+    transition: color 0.2s ease;
+  }
+
+  .nav-pill.active .pill-icon {
+    color: #ffffff;
+  }
+
+  .pill-label {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .pill-indicator {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -5px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--fs-primary);
+  }
+
+  .nav-pill.active .pill-indicator {
+    background: #ffffff;
+  }
 }

@@ -13,7 +13,7 @@
     font-weight: 700;
     color: #1a202c;
     margin: 0;
-    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+    background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -45,16 +45,23 @@
     }
   }
 }
+ .brand-icon,
  .header-icon {
     width: 24px;
     height: 24px;
-    background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+    background: linear-gradient(135deg, var(--fs-primary) 0%, var(--fs-primary-light) 100%);
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--fs-text-on-primary);
     font-size: 12px;
+    box-shadow: 0 4px 12px rgba(82, 105, 87, 0.18);
+  }
+
+  .brand-icon i,
+  .header-icon i {
+    color: var(--fs-text-on-primary) !important;
   }
 // Progress Steps Styling
 .progress-steps {
@@ -217,13 +224,13 @@
 
       .header-icon {
         font-size: 16px;
-        color: #667eea;
+        color: var(--fs-primary);
         display: flex;
         align-items: center;
         justify-content: center;
         width: 30px;
         height: 30px;
-        background: rgba(102, 126, 234, 0.1);
+        background: rgba(82, 105, 87, 0.1);
         border-radius: 50%;
         transition: all 0.3s ease;
       }
@@ -266,7 +273,7 @@
 // Compact Action Buttons Styling
 .action-buttons-section {
   .action-icon {
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(82, 105, 87, 0.1);
     border-radius: 50%;
     width: 35px;
     height: 35px;
@@ -276,6 +283,7 @@
 
     i {
       font-size: 16px;
+      color: var(--fs-primary);
     }
   }
 

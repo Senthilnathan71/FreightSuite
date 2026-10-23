@@ -412,7 +412,7 @@ customEmailValidator(): ValidatorFn {
             <a href="#" style="color:#fff;text-decoration:none;margin:0 8px">Unsubscribe</a>
           </div>
           <div style="opacity:0.8">
-            Â© ${new Date().getFullYear()} Dofi Infosys. All rights reserved.
+            Â© ${new Date().getFullYear()} Freight Suite. All rights reserved.
           </div>
         </div>
       </div>

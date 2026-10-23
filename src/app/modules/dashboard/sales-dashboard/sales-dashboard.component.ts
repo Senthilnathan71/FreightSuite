@@ -1234,7 +1234,7 @@ async navigateToCreateQuote(customer: CustomerNoQuote): Promise<void> {
         label: 'Lead Created',
         value: counts.totalLeads,
         icon: 'fas fa-search',
-        color: 'linear-gradient(90deg, #044a6c, #05608D)',
+        color: 'linear-gradient(90deg, #6E826F, #879B82)',
         tooltip: this.getFunnelTooltip(
           'Lead Created',
           counts.totalLeads,
@@ -1280,7 +1280,7 @@ async navigateToCreateQuote(customer: CustomerNoQuote): Promise<void> {
         label: 'Enquiry Created',
         value: counts.leadsWithEnquiry,
         icon: 'fas fa-comment-dots',
-        color: 'linear-gradient(90deg, #06b6d4, #22d3ee)',
+        color: 'linear-gradient(90deg, #90A58F, #A3B39B)',
         tooltip: this.getFunnelTooltip(
           'Enquiry Created',
           counts.leadsWithEnquiry,
@@ -1391,18 +1391,18 @@ async navigateToCreateQuote(customer: CustomerNoQuote): Promise<void> {
     );
 
     const palette = [
-      '#05608D',
-      '#06b6d4',
-      '#f59e0b',
-      '#16a34a',
-      '#f97316',
-      '#8b5cf6',
-      '#ec4899',
-      '#0ea5a4',
-      '#dc2626',
-      '#64748b',
-      '#84cc16',
-      '#14b8a6',
+      '#879B82',
+      '#90A58F',
+      '#C49A67',
+      '#7E9679',
+      '#BE8A6C',
+      '#8B9582',
+      '#A68B87',
+      '#8DB09A',
+      '#A86D63',
+      '#6E826F',
+      '#A3B39B',
+      '#7C8D7D',
     ];
     const segmentColors = chartData.map((item, index) =>
       item.source === 'NoData' ? '#cbd5e1' : palette[index % palette.length],
@@ -1437,7 +1437,7 @@ async navigateToCreateQuote(customer: CustomerNoQuote): Promise<void> {
       plotOptions: {
         pie: {
           donut: {
-            background: '#0d4f74',
+            background: '#52664F',
             size: '62%',
             labels: {
               show: true,

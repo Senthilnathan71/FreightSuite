@@ -1,7 +1,405 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --fs-primary: #526957;
+  --fs-primary-light: #718574;
+  --fs-primary-hover: #3F5244;
+  --fs-primary-soft: #E8EEE8;
+  --fs-page-bg: #F5F7F3;
+  --fs-surface: #FFFFFF;
+  --fs-sidebar-bg: #526957;
+  --fs-topbar-bg: #FFFFFF;
+  --fs-text-primary: #303A33;
+  --fs-text-secondary: #6B8068;
+  --fs-text-muted: #6B8068;
+  --fs-text-on-primary: #FFFFFF;
+  --bs-primary: #526957;
+  --bs-primary-rgb: 82, 105, 87;
+  --bs-info: #6B8068;
+  --bs-info-rgb: 107, 128, 104;
+  --bs-link-color: #6B8068;
+  --bs-link-hover-color: #526957;
+  --fs-border: #DCE3DB;
+  --fs-divider: #E6EAE4;
+  --fs-input-border: #C8D2C7;
+  --fs-nav-text: #F2F5F0;
+  --fs-nav-hover: #627966;
+  --fs-nav-active-bg: #E8EEE8;
+  --fs-nav-active-text: #303A33;
+  --fs-table-header-bg: linear-gradient(180deg, #5b6d5f 0%, #4e6054 100%);
+  --fs-table-header-text: #ffffff;
+  --fs-table-row-bg: #FFFFFF;
+  --fs-table-row-alt: #F4F7F2;
+  --fs-table-row-hover: #EAF1EA;
+  --fs-table-selected: #E8EEE8;
+  --fs-btn-primary-bg: #526957;
+  --fs-btn-primary-hover: #3F5244;
+  --fs-btn-secondary-bg: #E8EEE8;
+  --fs-btn-secondary-text: #303A33;
+  --fs-tab-active-bg: #526957;
+  --fs-tab-active-text: #FFFFFF;
+  --fs-tab-inactive-text: #68736A;
+  --fs-success-bg: #E4F1E7;
+  --fs-success-text: #28613B;
+  --fs-warning-bg: #FFF0D4;
+  --fs-warning-text: #80530C;
+  --fs-danger-bg: #FBE7E5;
+  --fs-danger-text: #A3312B;
+  --fs-info-bg: #E5EDF5;
+  --fs-info-text: #355879;
+  --fs-radius-sm: 6px;
+  --fs-radius-md: 8px;
+  --fs-radius-lg: 12px;
+  --fs-shadow-card: 0 1px 3px rgba(48, 58, 51, 0.08);
+}
 
-// html, body { height: 100%; }
-// body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  background: var(--fs-page-bg);
+  color: var(--fs-text-primary);
+}
+
+body {
+  font-family: "Nunito Sans", "Segoe UI", sans-serif;
+}
+
+.page-header,
+.card-header,
+.panel-heading,
+.section-header {
+  background: linear-gradient(180deg, #f1f5f0 0%, #edf3ee 100%);
+  color: var(--fs-text-secondary);
+  border-color: var(--fs-border);
+}
+
+.page-title,
+.page-header h1,
+.page-header h2,
+.page-header h3,
+.page-header h4,
+.page-header h5,
+.page-header h6,
+.card-header .card-title,
+.panel-heading {
+  color: var(--fs-text-secondary) !important;
+}
+
+.card,
+.panel,
+.modal-content,
+.form-control,
+.form-select,
+.dropdown-menu,
+.table,
+.table-hover,
+.input-group-text {
+  border-color: var(--fs-border);
+}
+
+.card,
+.panel,
+.modal-content,
+.dropdown-menu {
+  background: var(--fs-surface);
+  color: var(--fs-text-primary);
+  border-radius: var(--fs-radius-md);
+  box-shadow: var(--fs-shadow-card);
+}
+
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-info,
+.btn-success,
+.btn-warning,
+.btn-danger,
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-info {
+  border-radius: var(--fs-radius-sm);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.btn-primary,
+.btn-info,
+.btn-success,
+.btn-warning,
+.btn-danger {
+  background: var(--fs-btn-primary-bg);
+  border-color: var(--fs-btn-primary-bg);
+  color: var(--fs-text-on-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:not(:disabled):not(.disabled):active,
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:not(:disabled):not(.disabled):active,
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:not(:disabled):not(.disabled):active,
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:not(:disabled):not(.disabled):active {
+  background: var(--fs-btn-primary-hover);
+  border-color: var(--fs-btn-primary-hover);
+  color: var(--fs-text-on-primary);
+  box-shadow: 0 0 0 0.2rem rgba(82, 105, 87, 0.15);
+}
+
+.text-info,
+.text-info * {
+  color: #6B8068 !important;
+}
+
+.bg-info,
+.badge.bg-info,
+.table thead.bg-info,
+thead.bg-info,
+tr.bg-info {
+  /* background: var(--fs-table-header-bg) !important; */
+  color: var(--fs-table-header-text) !important;
+}
+
+.text-light,
+.table thead .text-light,
+.table thead th.text-light,
+.table thead td.text-light,
+.table thead .fw-bold,
+.table thead th.fw-bold,
+.table thead td.fw-bold,
+.table thead th,
+.table thead td,
+.table > thead > tr > th,
+.table > thead > tr > td,
+.table thead * {
+  --bs-text-opacity: 1;
+  color: var(--fs-table-header-text) !important;
+}
+
+.fw-bold,
+.table thead .fw-bold,
+.table thead th.fw-bold,
+.table thead td.fw-bold,
+.table thead th,
+.table thead td,
+.table > thead > tr > th,
+.table > thead > tr > td {
+  font-weight: 700 !important;
+}
+
+.table-sage-header,
+.table thead .table-sage-header,
+.table thead th.table-sage-header,
+.table thead th.bg-transparent.text-light,
+.table thead th.bg-transparent.text-white,
+.table thead th.text-light,
+.table thead th.text-white,
+.table thead th,
+.table thead td,
+.mat-mdc-header-row,
+thead tr {
+  background: var(--fs-table-header-bg) !important;
+  color: var(--fs-table-header-text) !important;
+  border-color: var(--fs-border) !important;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.table > thead > tr > th,
+.table > thead > tr > td {
+  vertical-align: middle;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+
+.table tbody tr:hover,
+tr:hover,
+.dropdown-item:hover,
+.dropdown-item:focus,
+.list-group-item:hover,
+.nav-item:hover {
+  background: var(--fs-table-row-hover);
+  color: var(--fs-text-primary);
+}
+
+.btn-outline-secondary,
+.btn-secondary {
+  background: var(--fs-btn-secondary-bg);
+  border-color: var(--fs-border);
+  color: var(--fs-btn-secondary-text);
+}
+
+.btn-outline-secondary:hover,
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-outline-secondary:focus {
+  background: #dfe9df;
+  border-color: #c9d2c9;
+  color: var(--fs-text-primary);
+}
+
+.form-control,
+.form-select,
+textarea,
+input,
+select,
+.ng-select .ng-select-container,
+.input-group-text {
+  background: var(--fs-surface);
+  color: var(--fs-text-primary);
+  border: 1px solid var(--fs-input-border);
+  border-radius: var(--fs-radius-sm);
+}
+
+.form-select,
+.dropdown-menu,
+.dropdown-item,
+select,
+option {
+  color: var(--fs-text-primary);
+}
+
+.dropdown-menu {
+  background: var(--fs-surface);
+  border-color: var(--fs-border);
+}
+
+.dropdown-item {
+  color: var(--fs-text-primary);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus,
+.dropdown-item.active,
+.dropdown-item:active {
+  background: #EDF4EE;
+  color: var(--fs-text-primary);
+}
+
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked,
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected,
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected.ng-option-marked {
+  background-color: #6B8068;
+  color: #ffffff;
+}
+
+.form-select:focus,
+select:focus,
+.dropdown-toggle:focus {
+  border-color: var(--fs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(82, 105, 87, 0.15);
+}
+
+.form-control::placeholder,
+.form-select::placeholder,
+textarea::placeholder,
+input::placeholder,
+select::placeholder {
+  color: var(--fs-text-secondary);
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus,
+input:focus,
+select:focus,
+.ng-select.ng-select-focused .ng-select-container {
+  border-color: var(--fs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(82, 105, 87, 0.15);
+  outline: none;
+}
+
+.table thead th,
+.mat-mdc-header-row,
+thead tr {
+  background: var(--fs-table-header-bg);
+  color: var(--fs-text-secondary);
+  border-bottom-color: var(--fs-border);
+}
+
+.table tbody tr:nth-child(even) {
+  background: var(--fs-table-row-alt);
+}
+
+.table tbody tr:hover,
+tr:hover {
+  background: var(--fs-table-row-hover);
+  color: var(--fs-text-primary);
+}
+
+.table thead th:hover,
+.table thead th:focus,
+.table thead th:focus-visible {
+  background: #E8EEE8;
+  color: var(--fs-text-secondary);
+}
+
+.table > :not(caption) > * > * {
+  border-bottom-color: var(--fs-divider);
+  color: var(--fs-text-primary);
+}
+
+.nav-pills .nav-link.active,
+.nav-tabs .nav-link.active,
+.nav-link.active {
+  background: var(--fs-tab-active-bg);
+  color: var(--fs-tab-active-text);
+}
+
+.badge.bg-success,
+.badge-success,
+.status-success {
+  background: var(--fs-success-bg);
+  color: var(--fs-success-text);
+}
+
+.badge.bg-warning,
+.badge-warning,
+.status-warning {
+  background: var(--fs-warning-bg);
+  color: var(--fs-warning-text);
+}
+
+.badge.bg-danger,
+.badge-danger,
+.status-danger {
+  background: var(--fs-danger-bg);
+  color: var(--fs-danger-text);
+}
+
+.badge.bg-info,
+.badge-info,
+.status-info {
+  background: var(--fs-info-bg);
+  color: var(--fs-info-text);
+}
+
+.search-box .app-search .form-control,
+.app-search .form-control,
+.global-search .form-control,
+input[placeholder],
+input[type="search"],
+input[type="text"] {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-input-border);
+  color: var(--fs-text-primary);
+  box-shadow: none;
+}
+
+.footer {
+  background: #F5F7F3;
+  color: #6B8068;
+  border-top: 1px solid var(--fs-border);
+}
+
+.footer span,
+.footer .fw-bold {
+  color: #6B8068;
+}
 
 /* Party-row Narration popover on matching grids (receipt / payment / voucher-matching).
    Opened by clicking the narration icon next to the Voucher No.; stays open (autoClose:'outside')

@@ -77,8 +77,8 @@
               -moz-appearance: none;
 
               &:checked {
-                background-color: #0d6efd;
-                border-color: #0d6efd;
+                background-color: #526957;
+                border-color: #526957;
                 background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
               }
 
@@ -172,7 +172,7 @@
       width: 30px; // initial circle
       height: 30px;
       border-radius: 50%;
-      background-color: #05608d;
+      background-color: #526957;
       color: #fff;
       border: none;
       cursor: pointer;
@@ -222,13 +222,13 @@
 
     // Override Bootstrap default styles
     thead th {
-      background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
-      color: white !important;
+      background: #DDE6DF !important;
+      color: #6B8068 !important;
       border: none !important;
     }
 
     .enterprise-header {
-      background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
+      background: #DDE6DF !important;
       border-bottom: none;
 
       tr:first-child {
@@ -246,7 +246,7 @@
         padding: 8px 8px;
         font-size: 13px;
         font-weight: 600;
-        color: white !important;
+        color: #6B8068 !important;
         text-transform: capitalize;
         letter-spacing: 0.3px;
         vertical-align: middle;
@@ -269,7 +269,7 @@
           position: relative;
 
           &:hover {
-            background-color: rgba(255, 255, 255, 0.1) !important;
+            background-color: rgba(82, 105, 87, 0.08) !important;
           }
 
           .header-content {
@@ -285,7 +285,7 @@
 
               .sort-icon {
                 font-size: 10px;
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(82, 105, 87, 0.7);
                 opacity: 0.7;
                 transition: all 0.15s ease;
                 cursor: pointer;
@@ -293,30 +293,30 @@
                 &.fa-sort-up,
                 &.fa-sort-down {
                   opacity: 1;
-                  color: white;
+                  color: #526957;
                 }
 
                 &:hover {
                   opacity: 1;
-                  color: white;
+                  color: #526957;
                 }
               }
 
               .filter-icon {
                 font-size: 10px;
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(82, 105, 87, 0.7);
                 opacity: 0.7;
                 transition: all 0.15s ease;
                 cursor: pointer;
 
                 &:hover {
                   opacity: 1;
-                  color: white;
+                  color: #526957;
                 }
 
                 &.active {
                   opacity: 1;
-                  color: #ffc107;
+                  color: #526957;
                 }
               }
             }
@@ -327,9 +327,7 @@
       // Filter Row Styling
       .filter-row {
         th {
-          background: rgba(255, 255, 255, 0.1) !important;
-          padding: 4px 8px;
-
+          background: rgba(82, 105, 87, 0.05) !important;
           .filter-input-container {
             position: relative;
             display: flex;

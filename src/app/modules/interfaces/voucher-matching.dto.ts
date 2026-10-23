@@ -27,7 +27,7 @@ export interface IVoucherMatchingHeader {
 //     VoucherMatchingDate : new Date(),
 //     Narration : 'Being',
 //     Remarks : 'NA',
-//     SubledgerName : 'DOFI LOGISTICS',
+//     SubledgerName : 'Freight Suite',
 //     MatchingDetail : [{...}],
 //     voucherMatchings : [{...}]
 // }
@@ -53,7 +53,7 @@ export type createVoucherMatchingDto =
 //     VoucherMatchingDate : new Date(),
 //     Narration : 'Being',
 //     Remarks : 'NA',
-//     SubledgerName : 'DOFI LOGISTICS',
+//     SubledgerName : 'Freight Suite',
 // }
 export type updateVoucherMatchingDto =
     Omit<IVoucherMatchingHeader,
