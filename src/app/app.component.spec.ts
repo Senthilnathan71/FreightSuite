@@ -1,35 +1,24 @@
-import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule
-      ],
-      declarations: [
-        AppComponent
-      ],
-    }).compileComponents();
-  });
+  it('should clear read-only mode when navigating to the login route', () => {
+    const sessionStateService = {
+      isReadOnly$: of(false),
+      setReadOnly: jasmine.createSpy('setReadOnly'),
+      acquireScreenLock: jasmine.createSpy('acquireScreenLock').and.returnValue(true),
+      releaseScreenLock: jasmine.createSpy('releaseScreenLock')
+    };
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+    const app = new AppComponent(
+      { setDevice: jasmine.createSpy('setDevice') } as any,
+      { isMobile: () => false } as any,
+      sessionStateService as any,
+      { url: '/login', events: of() } as any
+    );
 
-  it(`should have as title 'starterkit-new'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('starterkit-new');
-  });
+    app['syncRouteLock']('/login');
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('starterkit-new app is running!');
+    expect(sessionStateService.setReadOnly).toHaveBeenCalledWith(false);
   });
 });

@@ -5,6 +5,7 @@ import { catchError, map, Observable, throwError, timeout } from "rxjs";
 import { environment } from "../../environments/environment";
 import { CompanySettingsManagerService } from "./services/company-settings-manager.service";
 import { Router } from "@angular/router";
+import { SessionStateService } from "./services/session-state.service";
 
 @Injectable()
 export class HttpInterceptorService implements HttpInterceptor {
@@ -18,7 +19,8 @@ export class HttpInterceptorService implements HttpInterceptor {
     constructor(
         private appSettingService: AppSettingsService,
         private companySettingsManager: CompanySettingsManagerService,
-        private router: Router
+        private router: Router,
+        private sessionStateService: SessionStateService
     ) { }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -29,6 +31,22 @@ export class HttpInterceptorService implements HttpInterceptor {
         req: HttpRequest<any>,
         next: HttpHandler
     ): Observable<HttpEvent<any>> {
+
+        const method = req.method.toUpperCase();
+        const isWriteRequest = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
+        if (isWriteRequest && this.sessionStateService.isReadOnly) {
+            const readOnlyMessage = 'This session is active elsewhere. You are in read-only mode.';
+            this.appSettingService.showWarning(readOnlyMessage, 'Read-Only Mode');
+
+            return throwError(() => new HttpErrorResponse({
+                status: 403,
+                statusText: 'Forbidden',
+                error: {
+                    message: readOnlyMessage
+                }
+            }));
+        }
 
         let baseUrl = this.baseURL;
 
@@ -84,9 +102,8 @@ export class HttpInterceptorService implements HttpInterceptor {
                     }
                 }
 
-                if (error.status === 403) {
-                    // Permission error
-                    // this.appSettingService.showError("You don’t have permission");
+                if (error.status === 403 && error?.error?.message) {
+                    this.appSettingService.showWarning(error.error.message, 'Read-Only Mode');
                 }
 
                 return throwError(() => error);

@@ -581,7 +581,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       },{ emitEvent: false });
 
       if (this.loginform.get('email')?.valid) {
-        // this.getFinancialYears(savedEmail);
+        this.getFinancialYears(savedEmail);
       }
     }
   }
@@ -609,8 +609,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   getFinancialYears(email: string): void {
     this.masterService.getYearMasterByUserId(email).subscribe((resp: any) => {
+      console.log("Financial years response:", resp);
       if (resp.status && resp.data) {
         this.financialYears = resp.data;
+        console.log("Financial years fetched:", this.financialYears);
         const defaultYear = this.financialYears.find((fy: any) =>
           String(fy.YearName).replace(/\s+/g, '').toUpperCase() === 'FY2026'
         );
@@ -693,12 +695,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.isLoading = false;
 
       // Handle session-active-elsewhere
-      if (!resp.status && resp.message === 'SESSION_ACTIVE_ELSEWHERE') {
-        this.spinner.hide();
-        this.activeSessionInfo = resp.data?.activeSessionInfo;
-        this.pendingLoginParams = { ...param, forceLogin: true };
-        return;
-      }
+      // if (!resp.status && resp.message === 'SESSION_ACTIVE_ELSEWHERE') {
+      //   this.spinner.hide();
+      //   this.activeSessionInfo = resp.data?.activeSessionInfo;
+      //   this.pendingLoginParams = { ...param, forceLogin: true };
+      //   return;
+      // }
 
       if (!resp.status) {
         this.spinner.hide();

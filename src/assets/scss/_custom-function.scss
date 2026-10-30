@@ -81,6 +81,7 @@ $prefixVariable: dofi- !default;
       var(--r) calc(50% - var(--f)/2));
   background: #BD1550;
   box-shadow: 0 calc(-1*var(--f)) 0 inset #0005;
+  right: 3px;
 }
 
 

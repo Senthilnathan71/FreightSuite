@@ -46,7 +46,7 @@
                     [class.bg-secondary]="row.Status !== 'A'"></span>
                   <span class="fw-semibold text-truncate">{{ row.MailName || 'Untitled' }}</span>
                 </div>
-                <span class="badge rounded-pill status-badge"
+                <span class="btn btn-info mail-card-action-btn"
                   [class.bg-success]="row.Status === 'A'"
                   [class.bg-secondary]="row.Status !== 'A'">
                   {{ getStatusLabel(row.Status) }}

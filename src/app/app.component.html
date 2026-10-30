@@ -1,3 +1,7 @@
+<div *ngIf="readOnly" class="alert alert-warning text-center mb-0" role="alert">
+  Read-Only Mode: Active session detected elsewhere.
+</div>
+
 <router-outlet>
   <app-spinner></app-spinner>
 </router-outlet>

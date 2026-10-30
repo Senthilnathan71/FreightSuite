@@ -4,6 +4,26 @@
   line-height: 1;
 }
 
+:host ::ng-deep .btn-info.mail-card-action-btn,
+:host ::ng-deep .btn.btn-info.mail-card-action-btn,
+:host ::ng-deep .mail-card-action-btn {
+  background: var(--fs-btn-primary-bg) !important;
+  border-color: var(--fs-btn-primary-bg) !important;
+  color: var(--fs-text-on-primary) !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .btn-info.mail-card-action-btn:hover,
+:host ::ng-deep .btn.btn-info.mail-card-action-btn:hover,
+:host ::ng-deep .mail-card-action-btn:hover,
+:host ::ng-deep .btn-info.mail-card-action-btn:focus,
+:host ::ng-deep .btn.btn-info.mail-card-action-btn:focus,
+:host ::ng-deep .mail-card-action-btn:focus {
+  background: var(--fs-btn-primary-hover) !important;
+  border-color: var(--fs-btn-primary-hover) !important;
+  color: var(--fs-text-on-primary) !important;
+}
+
 :host .quote-net-weight-field .text-danger {
   display: inline;
 }
@@ -368,4 +388,63 @@
     max-width: 100%;
     flex: 1 1 320px;
   }
+}
+
+:host .custom-accordion-quotation .accordion-button {
+  background: linear-gradient(180deg, #5b6d5f 0%, #4e6054 100%) !important;
+  color: var(--fs-text-on-primary) !important;
+  border: 0;
+  border-radius: 0;
+  width: 100%;
+  padding: 5px 12px;
+  text-align: left;
+  box-shadow: none;
+  min-height: 42px;
+  overflow: visible;
+  gap: 0.5rem;
+}
+
+:host .custom-accordion-quotation .accordion-button:hover,
+:host .custom-accordion-quotation .accordion-button:focus,
+:host .custom-accordion-quotation .accordion-button:not(.collapsed) {
+  background: linear-gradient(180deg, #526957 0%, #3f5244 100%) !important;
+  color: var(--fs-text-on-primary) !important;
+}
+
+:host .custom-accordion-quotation .accordion-button h6,
+:host .custom-accordion-quotation .accordion-button .fw-semibold,
+:host .custom-accordion-quotation .accordion-button .my-1 {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[_nghost-ng-c2382731550] .custom-accordion-quotation[_ngcontent-ng-c2382731550] .accordion-button[_ngcontent-ng-c2382731550] .ribbon-e[_ngcontent-ng-c2382731550] {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+:host .custom-accordion-quotation .accordion-button .ribbon-e + * {
+  margin-right: 56px;
+}
+
+:host .workspace-content .content-layout,
+:host .workspace-content {
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+}
+
+:host .custom-accordion-quotation .accordion-button::after {
+  margin-left: 0.25rem;
 }
