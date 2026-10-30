@@ -4,6 +4,7 @@ import { Subject, Subscription, interval, switchMap, catchError, of } from 'rxjs
 import { Router } from '@angular/router';
 import { AppSettingsService } from './app-settings.service';
 import { CompanySettingsManagerService } from './company-settings-manager.service';
+import { SessionStateService } from './session-state.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,8 @@ export class SessionService implements OnDestroy {
     private http: HttpClient,
     private router: Router,
     private appSettingsService: AppSettingsService,
-    private companySettingsManager: CompanySettingsManagerService
+    private companySettingsManager: CompanySettingsManagerService,
+    private sessionStateService: SessionStateService
   ) {
     // Listen for localStorage changes from other tabs (multi-tab logout sync)
     if (typeof window !== 'undefined') {
@@ -25,6 +27,7 @@ export class SessionService implements OnDestroy {
         if (event.key === null) {
           // localStorage was cleared (logout from another tab)
           this.stopHeartbeat();
+          this.sessionStateService.clear();
           this.router.navigate(['auth/login']);
         }
       });
@@ -50,6 +53,13 @@ export class SessionService implements OnDestroy {
         })
       )
       .subscribe(response => {
+        const readOnly = !!response?.readOnly || response?.message === 'SESSION_ACTIVE_ELSEWHERE';
+        if (readOnly) {
+          this.sessionStateService.setReadOnly(true);
+        } else {
+          this.sessionStateService.setReadOnly(false);
+        }
+
         if (response && response.status === false && response.message === 'SESSION_INVALIDATED') {
           this.handleSessionInvalidation();
         }
@@ -61,6 +71,7 @@ export class SessionService implements OnDestroy {
    */
   stopHeartbeat(): void {
     this.isPolling = false;
+    this.sessionStateService.clear();
     if (this.pollingSubscription) {
       this.pollingSubscription.unsubscribe();
       this.pollingSubscription = null;

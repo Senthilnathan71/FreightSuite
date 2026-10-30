@@ -83,7 +83,7 @@
 :host ::ng-deep .booking-products-table thead th,
 :host ::ng-deep .booking-products-table thead td {
   background: var(--fs-table-header-bg) !important;
-  color: var(--fs-text-secondary) !important;
+  // color: var(--fs-text-secondary) !important;
   border-color: var(--fs-border) !important;
   font-weight: 600;
 }

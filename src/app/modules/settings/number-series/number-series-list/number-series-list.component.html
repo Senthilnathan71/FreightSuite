@@ -30,7 +30,7 @@
           <div class="card-header d-flex justify-content-between align-items-center py-2"
                [ngClass]="{'bg-light-success': item.configured, 'bg-light': !item.configured}">
             <h6 class="mb-0">{{ item.MenuName }}</h6>
-            <span class="badge" [ngClass]="{'bg-success': item.configured, 'bg-secondary': !item.configured}">
+            <span class="btn btn-info mail-card-action-btn" [ngClass]="{'bg-success': item.configured, 'bg-secondary': !item.configured}">
               {{ item.configured ? 'Configured' : 'Not Configured' }}
             </span>
           </div>
@@ -63,7 +63,7 @@
 
             <!-- Badges: POL/POD and Department-wise indicators -->
             <div class="small mt-1 d-flex flex-wrap gap-1" *ngIf="item.configured && (item.POLPODFlagRequired === 'Y' || item.DepartmentWiseCounter === 'Y')">
-              <span class="badge bg-warning text-dark" *ngIf="item.POLPODFlagRequired === 'Y'">
+              <span class="btn btn-info mail-card-action-btn" *ngIf="item.POLPODFlagRequired === 'Y'">
                 POL/POD {{ item.POLPODPortWiseCounter === 'N' ? '(Common)' : '(Port-wise)' }}
               </span>
               <span class="badge bg-info" *ngIf="item.DepartmentWiseCounter === 'Y'">Department-wise Counter</span>

@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { catchError, map, mergeMap, of } from "rxjs";
 import { AppSettingsService } from "src/app/core/services/app-settings.service";
 import { SessionService } from "src/app/core/services/session.service";
+import { SessionStateService } from "src/app/core/services/session-state.service";
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,8 @@ export class authService {
     constructor(
         private http: HttpClient,
         private appSettingsService: AppSettingsService,
-        private sessionService: SessionService
+        private sessionService: SessionService,
+        private sessionStateService: SessionStateService
     ) { }
 
     public login(params: any) {
@@ -23,6 +25,7 @@ export class authService {
             mergeMap((res: any) => {
                 // Handle session-active-elsewhere response (pass through to login component)
                 if (!res.status && res.message === 'SESSION_ACTIVE_ELSEWHERE') {
+                    this.sessionStateService.setReadOnly(true);
                     return of(res);
                 }
 
@@ -31,10 +34,12 @@ export class authService {
                     this.appSettingsService.storeUserProfile(res.data.user);
                     this.loginEmail = res.data.user?.UserEmail || '';
 
+                    this.sessionStateService.setReadOnly(false);
                     this.sessionService.startHeartbeat();
                     return of(res);
                 }
 
+                this.sessionStateService.setReadOnly(false);
                 return of(res);
             }),
             catchError((err) => {

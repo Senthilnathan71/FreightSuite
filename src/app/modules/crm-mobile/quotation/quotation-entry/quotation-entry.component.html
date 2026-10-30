@@ -1307,7 +1307,7 @@
                                 <span class="fw-semibold my-1 text-warning ps-2 d-inline-flex align-items-center gap-2" *ngIf="shouldShowAuthorityStatusForCarrier(routeIndex, carrierIndex)">
                                   @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex)){
                                   @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Approved"){
-                                  <span class="badge bg-success">Approved</span>
+                                  <span class="btn btn-info mail-card-action-btn">Approved</span>
                                   } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Rejected"){
                                   <span class="badge bg-danger">Rejected</span>
                                   } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Counter"){
